@@ -1,0 +1,16 @@
+<launch>
+  <!-- By default we do not overwrite the URDF. Change the following to true to change the default behavior -->
+  <arg name="load_robot_description" default="false"/>
+
+  <!-- Load universal robotic description format (URDF) -->
+  <param if="$(arg load_robot_description)" name="robot_description" command="$(find xacro)/xacro.py '$(find cob_hardware_config)/cob3-1/urdf/cob3-1.urdf.xacro'"/>
+
+  <!-- The semantic description that corresponds to the URDF -->
+  <param name="robot_description_semantic" textfile="$(find mdr_moveit)/config/cob3_1.srdf" />
+  
+  <!-- Load to the parameter server yaml files -->
+  <group ns="robot_description_planning">    
+    <rosparam command="load" file="$(find mdr_moveit)/config/joint_limits.yaml"/>
+  </group>
+  
+</launch>
