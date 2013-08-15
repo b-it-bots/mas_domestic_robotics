@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_manipulation</name>
+  <version>0.0.1</version>
+  <description>Manipulation packages for domestic service robots.</description>
+  <license>GPLv3</license>
+
+  <author email="sven.schneider@h-brs.de">Sven Schneider</author>
+  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
+  <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
