@@ -57,3 +57,31 @@
     local-name: universal_robot
     uri: git@github.com:ros-industrial/universal_robot.git
     version: groovy-dev
+
+
+###
+# TODO: merge from upstream!!!
+# debian packages not ready for catkin
+# can be deleted later
+- git:
+    local-name: cob_common
+    uri: git@github.com:b-it-bots/cob_common.git
+    version: groovy_catkin
+
+- git:
+    local-name: cob_drivers
+    uri: git@github.com:b-it-bots/cob_drivers.git
+    version: groovy_catkin
+
+- git:
+    local-name: cob_extern
+    uri: git@github.com:b-it-bots/cob_extern.git
+    version: groovy_catkin
+
+- git:
+    local-name: pr2_common
+    uri: git@github.com:b-it-bots/pr2_common.git
+    version: groovy_devel
+
+### end
+
