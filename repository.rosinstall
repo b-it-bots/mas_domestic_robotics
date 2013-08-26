@@ -81,7 +81,7 @@
 - git:
     local-name: pr2_common
     uri: git@github.com:b-it-bots/pr2_common.git
-    version: groovy_devel
+    version: hydro-devel
 
 ### end
 
