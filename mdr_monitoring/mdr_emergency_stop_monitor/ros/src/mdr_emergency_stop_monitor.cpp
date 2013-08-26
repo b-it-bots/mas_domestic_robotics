@@ -1,7 +1,7 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "cob_relayboard/EmergencyStopState.h"
-#include "mcr_speech_srvs/Say.h"
+#include "mcr_speech_msgs/Say.h"
 #include <string>
 
 
@@ -9,7 +9,7 @@ cob_relayboard::EmergencyStopState lastEmergencyStopState;
 ros::ServiceClient say_client;
 
 void emergencyCallback(const cob_relayboard::EmergencyStopState& data){
-	mcr_speech_srvs::Say message;
+	mcr_speech_msgs::Say message;
 	
 	if(lastEmergencyStopState.emergency_button_stop != data.emergency_button_stop){
 		
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
  	
  
-  say_client = n.serviceClient<mcr_speech_srvs::Say>("/say");
+  say_client = n.serviceClient<mcr_speech_msgs::Say>("/say");
   ros::Subscriber emergency_sub = n.subscribe("/emergency_stop_state", 1000, emergencyCallback);
   
   
