@@ -1,6 +1,6 @@
 - git:
     local-name: mas_third_party_software
-    uri: git@github.com:b-it-bots/third-party-software.git
+    uri: git@github.com:b-it-bots/mas_third_party_software.git
     version: groovy_catkin
 
 - git:
