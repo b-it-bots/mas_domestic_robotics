@@ -69,8 +69,8 @@
     version: groovy_catkin
 
 - git:
-    local-name: cob_drivers
-    uri: git@github.com:b-it-bots/cob_drivers.git
+    local-name: cob_driver
+    uri: git@github.com:b-it-bots/cob_driver.git
     version: groovy_catkin
 
 - git:
