@@ -1,0 +1,3 @@
+geometry_msgs/PointStamped position
+---
+int64 result
