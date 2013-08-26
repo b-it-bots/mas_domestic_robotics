@@ -14,18 +14,8 @@
     version: groovy_catkin
 
 - git:
-    local-name: cob_navigation
-    uri: git@github.com:ipa320/cob_navigation.git
-    version: groovy_catkin
-
-- git:
     local-name: cob_simulation
     uri: git@github.com:ipa320/cob_simulation.git
-    version: groovy_catkin
-
-- git:
-    local-name: cob_manipulation
-    uri: git@github.com:ipa320/cob_manipulation.git
     version: groovy_catkin
 
 - git:
@@ -85,3 +75,17 @@
 
 ### end
 
+
+###
+# TODO: not yet catkinized
+#- git:
+#    local-name: cob_navigation
+#    uri: git@github.com:ipa320/cob_navigation.git
+#    version: groovy_catkin
+
+#- git:
+#    local-name: cob_manipulation
+#    uri: git@github.com:ipa320/cob_manipulation.git
+#    version: groovy_catkin
+
+### end
