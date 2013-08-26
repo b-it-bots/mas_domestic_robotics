@@ -1,0 +1,14 @@
+# /bin/bash
+
+### install debian packages
+sudo apt-get install -y  python-setuptools ros-groovy-ros python-rosinstall python-vcstools
+
+### install further repositories
+rosinstall .. /opt/ros/groovy repository.rosinstall
+
+### install dependencies of BRSU repositories
+dependent_repositories=('mas_common_robotics' 'mas_third_party_software')
+for i in $dependent_repositories
+do
+    ../$i/repository.debs
+done
