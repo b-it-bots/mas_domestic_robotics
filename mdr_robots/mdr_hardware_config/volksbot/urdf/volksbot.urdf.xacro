@@ -17,7 +17,7 @@
 	<include filename="$(find mdr_description)/urdf/torso/volksbot/torso.urdf.xacro"/>
 	
 	<!-- ptu -->
-	<include filename="$(find mdr_description)/urdf/ptu/ptu46.urdf.xacro"/>
+	<include filename="$(find mcr_description)/urdf/ptu/ptu46.urdf.xacro"/>
 	
 	<!-- head -->
 	<include filename="$(find mdr_description)/urdf/head/volksbot/head.urdf.xacro"/>

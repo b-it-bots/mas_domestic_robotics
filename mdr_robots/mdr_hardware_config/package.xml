@@ -13,6 +13,7 @@
   <license>GPLv3</license>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>mcr_description</run_depend>
   <run_depend>mdr_calibration_data</run_depend>
   <run_depend>mdr_description</run_depend>
 </package>
