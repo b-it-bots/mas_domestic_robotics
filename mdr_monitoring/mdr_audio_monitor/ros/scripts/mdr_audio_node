@@ -1,0 +1,9 @@
+#!/usr/bin/python
+import roslib
+roslib.load_manifest('mdr_audio_monitor')
+
+import mdr_audio_monitor.mdr_audio_monitor
+
+if __name__ == "__main__":
+
+    mdr_audio_monitor.mdr_audio_monitor.main()

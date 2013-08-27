@@ -1,0 +1,26 @@
+<package>
+  <name>mdr_audio_monitor</name>
+  <description>
+     brsu_audio_monitor
+  </description>
+  <version>0.1.0</version>
+  <author>b-it-bots</author>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/brsu_audio_node</url>
+
+  <author email="matthias.fueller@-brs.de">Sven Schneider</author>
+  <maintainer email="matthias.fueller@-brs.de">Sven Schneider</maintainer>
+  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
+  <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <run_depend>rospy</run_depend>
+
+  <build_depend>mdr_monitoring_msgs</build_depend>
+  <run_depend>mdr_monitoring_msgs</run_depend>
+
+</package>
+
+
