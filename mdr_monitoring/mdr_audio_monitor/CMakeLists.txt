@@ -50,8 +50,8 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 install(PROGRAMS
-  ros/scripts/mdr_audio_monitor
-  ros/scr/mdr_audio_monitor/mdr_audio_monitor.py
+  ros/scripts/mdr_audio_node
+  ros/src/mdr_audio_monitor/mdr_audio_monitor.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
