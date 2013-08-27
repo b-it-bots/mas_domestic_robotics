@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_hardware_config</name>
+  <version>0.0.1</version>
+  <description>
+    Configuration for each custom robot at BRSU. There is a directory for each
+	robot with configuration about urdf and hardware/device configurations.
+  </description>
+
+  <author email="sven.schneider@h-brs.de">Sven Schneider</author>
+  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
+
+  <license>GPLv3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>mdr_calibration_data</run_depend>
+  <run_depend>mdr_description</run_depend>
+</package>
