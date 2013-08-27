@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
+	<arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
+	<arg name="pkg_env_config" default="$(find mcr_default_env_config)"/>
+	<arg name="pkg_hardware_config" default="$(find mdr_hardware_config)"/>
+
+	<group>
+		<machine name="pc1" address="volksbot" default="true"/>
+
+		<!-- upload robot description -->
+		<include file="$(find mdr_hardware_config)/common/upload_robot.launch" >
+       		<arg name="robot" default="$(arg robot)"/>
+		    <arg name="pkg_hardware_config" default="$(arg pkg_hardware_config)"/>
+       	</include>
+
+		<!-- start state_publisher -->
+		<node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher"/>
+
+		<!-- base -->
+		<include file="$(find mdr_volksbot_motor_controller)/ros/launch/volksbot_motor_controller.launch" />
+		<include file="$(find mdr_bringup)/components/sick_laser_front.launch" />
+
+		<!--head -->
+		<include file="$(find mcr_ptu46)/ros/launch/ptu46.launch" />
+
+		<!-- arm -->
+		<include file="$(find mdr_bringup)/components/katana_arm.launch" />
+  
+		<!-- teleop with joypad-->
+		<include file="$(find mdr_bringup)/tools/teleop.launch" />
+		
+	</group>
+
+</launch>

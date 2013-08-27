@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+    <rosparam command="load" ns="/script_server/katana_arm" file="$(find mdr_default_robot_config)/$(env ROBOT)/arm_joint_configurations.yaml"/>
+    <rosparam command="load" ns="/script_server/katana_arm" file="$(find mdr_default_robot_config)/$(env ROBOT)/arm_trajectory_configurations.yaml"/>
+    <rosparam command="load" ns="/script_server/gripper" file="$(find mdr_default_robot_config)/$(env ROBOT)/gripper_configurations.yaml"/>
+
+    <!-- which joints does this katana instance control? -->
+    <rosparam command="load" file="$(find katana)/config/katana_arm_controllers.yaml" />
+    <param name="katana_type" type="string" value="katana_400_6m180" />
+
+    <!-- katana node -->
+    <node pkg="katana" type="katana" name="katana" output="screen">
+        <param name="config_file_path" type="string" value="$(find kni)/KNI_4.3.0/configfiles400/katana6M180.cfg" />
+        <param name="ip" type="string" value="192.168.88.2" />
+        <param name="port" type="string" value="5566" />
+        <!--<param name="simulation" type="bool" value="true" /> -->
+    </node>
+
+</launch>
+
+
+
+

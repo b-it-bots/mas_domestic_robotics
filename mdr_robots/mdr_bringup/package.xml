@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_bringup</name>
+  <version>0.0.1</version>
+  <description>bringup launch files for BRSU robots, components and tools</description>
+
+  <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
+
+  <license>GPLv3</license>
+
+  <author email="frederik.hegger@h-brs.de">Frederik Hegger</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>mcr_default_env_config</run_depend>
+  <run_depend>mcr_kinect_led</run_depend>
+  <run_depend>mdr_default_robot_config</run_depend>
+  <run_depend>mdr_hardware_config</run_depend>
+  <run_depend>cob_bringup</run_depend>
+  <run_depend>sicktoolbox_wrapper</run_depend>
+  <run_depend>hokuyo_node</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>openni_launch</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>joy</run_depend>
+
+</package>
