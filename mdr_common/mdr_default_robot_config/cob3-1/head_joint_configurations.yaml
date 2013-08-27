@@ -1,0 +1,4 @@
+#joint_names: ["head_axis_joint"]
+front_face: [[-0.471]]
+front_face_sit: [[0.09027]]
+back_table: [[-3.441]]

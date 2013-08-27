@@ -1,0 +1,39 @@
+#group:
+#  group_name: <group_name>
+#  component_name: <component_name>
+#  buttons: [[button_name1,function_name1,parameter_name2,
+#    [button_name2,function_name2,parameter_name2]]
+
+group1:
+  group_name: base
+  component_name: base
+  buttons: []
+group2:
+  group_name: head
+  component_name: head
+  buttons: [[home,move,home],
+    [left,move,left],
+    [right,move,right],
+    [front,move,front],
+    [front_left,move,front_left],
+    [front_right,move,front_right],
+    [back,move,back],
+    [back_left,move,back_left],
+    [back_right,move,back_right]]
+group3:
+  group_name: arm pos
+  component_name: katana_arm
+  buttons: [[home,move,home],
+    [folded,move,folded],
+    [pre_folded,move,pre_folded]]
+group4:
+  group_name: arm traj
+  component_name: katana_arm
+  buttons: [[home_to_folded,move,home_to_folded],
+    [folded_to_home,move,folded_to_home]]
+group5:
+  group_name: gripper
+  component_name: gripper
+  buttons: [[open,move,open],
+    [close,move,close]]
+
