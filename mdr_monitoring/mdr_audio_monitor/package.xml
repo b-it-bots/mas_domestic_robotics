@@ -1,15 +1,13 @@
 <package>
   <name>mdr_audio_monitor</name>
   <description>
-     brsu_audio_monitor
+    Monitor the status of the microphone and signal the state by LEDs.
   </description>
   <version>0.1.0</version>
-  <author>b-it-bots</author>
   <license>BSD</license>
-  <url>http://ros.org/wiki/brsu_audio_node</url>
 
-  <author email="matthias.fueller@-brs.de">Sven Schneider</author>
-  <maintainer email="matthias.fueller@-brs.de">Sven Schneider</maintainer>
+  <author email="matthias.fueller@-brs.de">Matthias Füller</author>
+  <maintainer email="matthias.fueller@-brs.de">Matthias Füller</maintainer>
   <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
   <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
 
