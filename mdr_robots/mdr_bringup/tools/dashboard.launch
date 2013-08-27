@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+
+	<include file="$(find cob_bringup)/tools/dashboard.launch" >
+		<arg name="pkg_robot_config" default="$(find mdr_default_robot_config)"/>
+		<arg name="pkg_env_config" default="$(find mcr_default_env_config)"/>
+	</include>
+	
+</launch>
