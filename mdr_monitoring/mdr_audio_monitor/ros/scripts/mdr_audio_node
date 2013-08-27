@@ -1,6 +1,5 @@
 #!/usr/bin/python
-import roslib
-roslib.load_manifest('mdr_audio_monitor')
+import rospy
 
 import mdr_audio_monitor.mdr_audio_monitor
 
