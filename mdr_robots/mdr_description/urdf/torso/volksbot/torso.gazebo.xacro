@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+	<xacro:macro name="volks_torso_gazebo" params="name">
+		<gazebo reference="${name}_lower_link">
+			<material>Gazebo/Grey</material>
+			<turnGravityOff>false</turnGravityOff>
+		</gazebo>
+
+		<gazebo reference="${name}_upper_link">
+			<material>Gazebo/Grey</material>
+			<turnGravityOff>false</turnGravityOff>
+		</gazebo>
+	</xacro:macro>
+
+</robot>

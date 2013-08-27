@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<robot xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+       xmlns:position="http://playerstage.sourceforge.net/gazebo/xmlschema/#position"
+       xmlns:xacro="http://ros.org/wiki/xacro">
+
+	<xacro:macro name="volksbot_front_wheel_gazebo" params="suffix parent">
+		<gazebo reference="${parent}_${suffix}_front_wheel_link">
+			<mu1 value="100.0" />
+			<mu2 value="100.0" />
+			<kp  value="1000000.0" />
+			<kd  value="1.0" />
+		</gazebo>
+	</xacro:macro>
+	
+	
+	<xacro:macro name="volksbot_rear_wheel_gazebo" params="suffix parent">
+		<gazebo reference="${parent}_${suffix}_rear_wheel_link">
+			<mu1 value="100.0" />
+			<mu2 value="100.0" />
+			<kp  value="1000000.0" />
+			<kd  value="1.0" />
+		</gazebo>
+	</xacro:macro>
+	
+	
+	<xacro:macro name="volksbot_base_gazebo" params="name">
+		<gazebo reference="${name}_link">
+			<selfCollide>true</selfCollide>
+			<sensor name="${name}_contact_sensor" type="contact">
+                <contact>
+			    	<collision>${name}_link_geom</collision>
+			    </contact>
+			    <plugin name="${name}_gazebo_ros_bumper_controller" filename="libgazebo_ros_bumper.so">
+				    <alwaysOn>true</alwaysOn>
+				    <updateRate>100.0</updateRate>
+				    <bumperTopicName>${name}_bumper</bumperTopicName>
+    			</plugin>
+            </sensor>            
+			<material>Gazebo/Grey</material>
+		</gazebo>
+
+		<gazebo>
+			<plugin name="p3d_base_controller" filename="libgazebo_ros_p3d.so">
+				<alwaysOn>true</alwaysOn>
+				<updateRate>100.0</updateRate>
+				<bodyName>${name}_link</bodyName>
+				<topicName>${name}_pose_ground_truth</topicName>
+				<gaussianNoise>0.01</gaussianNoise>
+				<frameName>map</frameName>
+				<xyzOffsets>0 0 0</xyzOffsets> <!-- initialize odometry for fake localization-->
+				<rpyOffsets>0 0 0</rpyOffsets>
+        	</plugin>				
+			<canonicalBody>${name}_footprint</canonicalBody>
+		</gazebo>
+		
+		<gazebo>
+			<plugin name="diffdrive_controller" filename="libdiffdrive_plugin.so">
+				<alwaysOn>true</alwaysOn>
+				<update>100</update>
+				<updateRate>100.0</updateRate>
+				<leftJoint>${name}_link_l_front_wheel_joint</leftJoint>
+				<rightJoint>${name}_link_r_front_wheel_joint</rightJoint>
+				<wheelSeparation>${front_wheel_y * 2}</wheelSeparation>
+				<wheelDiameter>${front_wheel_radius * 2}</wheelDiameter>
+				<torque>5</torque>
+				<robotNamespace>/</robotNamespace>
+				<topicName>cmd_vel</topicName>
+			</plugin>
+		</gazebo>
+
+		<gazebo reference="${name}_lower_case_link">
+			<material>Gazebo/Red</material>
+			<turnGravityOff>false</turnGravityOff>
+		</gazebo>
+
+		<gazebo reference="${name}_middle_case_link">
+			<material>Gazebo/Green</material>
+			<turnGravityOff>false</turnGravityOff>
+		</gazebo>
+
+		<gazebo reference="${name}_upper_case_link">
+			<material>Gazebo/Blue</material>
+			<turnGravityOff>false</turnGravityOff>
+		</gazebo>
+	</xacro:macro>
+
+</robot>

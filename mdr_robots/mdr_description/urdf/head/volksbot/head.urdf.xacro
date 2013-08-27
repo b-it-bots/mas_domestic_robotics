@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+	<!-- kinect -->
+	<include filename="$(find mcr_description)/urdf/sensors/kinect.urdf.xacro"/>
+
+	<xacro:macro name="volksbot_head" params="parent name *origin">
+		<link name="${name}_camera_link" />
+		
+		<joint name="${name}_camera_joint" type="fixed">
+			<insert_block name="origin" />
+			<parent link="${parent}"/>
+			<child link="${name}_camera_link"/>
+		</joint>
+	
+
+		<!-- kinect -->
+		<xacro:kinect name="openni" ros_topic="/cam3d/depth/points1" parent="${name}_camera_link">
+			<origin xyz="0 0 0.01" rpy="0 0 ${M_PI}" />
+		</xacro:kinect>
+
+	</xacro:macro>
+</robot>

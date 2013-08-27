@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_description</name>
+  <version>0.0.1</version>
+  <description>
+    This package contains the description (mechanical, kinematic, visual, etc.)
+	of custom robots at BRSU. The files in this package are parsed and used by
+    a variety of other components. Most users will not interact directly with
+	this package.
+  </description>
+  <license>GPLv3</license>
+
+  <author email="sven.schneider@h-brs.de">Sven Schneider</author>
+  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>mcr_description</run_depend>
+  <run_depend>katana_description</run_depend>
+</package>
