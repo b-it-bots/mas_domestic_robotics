@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_manipulation_msgs</name>
+  <version>0.0.1</version>
+  <description>
+    Messages and service for the interaction with manipulation nodes.
+  </description>
+  <license>GPLv3</license>
+
+  <author email="sven.schneider@h-brs.de">Sven Schneider</author>
+  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+</package>
