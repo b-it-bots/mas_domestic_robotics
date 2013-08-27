@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+	<node pkg="sicktoolbox_wrapper" type="sicklms" name="sicklms" output="screen">
+		<param name="port" type="string" value="/dev/volksbot/sick_lms_200"/>
+		<param name="baud" value="500000"/>
+		<param name="resolution" value="0.5"/>
+		<param name="frame_id" value="/base_laser_front_link"/>
+
+		<remap from="scan" to="scan_front"/>
+	</node>
+</launch>
