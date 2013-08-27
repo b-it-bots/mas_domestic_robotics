@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<robot>
+
+	<!-- common properties -->
+	<property name="M_PI" value="3.1415926535897931" />
+
+	<!-- ptu reference positions -->
+	<property name="ptu_pan_ref" value="0" />
+	<property name="ptu_tilt_ref" value="0" />
+
+	<!-- arm reference positions -->
+	<property name="arm_1_ref" value="0" />
+	<property name="arm_2_ref" value="0" />
+	<property name="arm_3_ref" value="0" />
+	<property name="arm_4_ref" value="0" />
+	<property name="arm_5_ref" value="0" />
+
+	<!-- camera calibration properties -->
+	<!-- hand eye calibration -->
+	<property name="camera_x" value="0" />
+	<property name="camera_y" value="0" />
+	<property name="camera_z" value="0" />
+	<property name="camera_roll" value="0" />
+	<property name="camera_pitch" value="0" />
+	<property name="camera_yaw" value="0" />
+  
+</robot>
