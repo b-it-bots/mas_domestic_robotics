@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_simulation</name>
+  <version>0.1.0</version>
+  <description>The mdr_simulation package</description>
+
+  <author email="matthias.fueller@h-brs.de">Matthias Füller</author>
+  <maintainer email="matthias.fueller@h-brs.de">Matthias Füller</maintainer>
+  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
+  <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <metapackage/> -->
+  </export>
+</package>
