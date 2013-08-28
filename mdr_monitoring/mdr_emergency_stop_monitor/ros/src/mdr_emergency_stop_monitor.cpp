@@ -6,7 +6,7 @@
 
 
 cob_relayboard::EmergencyStopState lastEmergencyStopState;
-ros::ServiceClient say_client;
+ros::Publisher say_client;
 
 void emergencyCallback(const cob_relayboard::EmergencyStopState& data){
 	mcr_speech_msgs::Say message;
@@ -14,25 +14,25 @@ void emergencyCallback(const cob_relayboard::EmergencyStopState& data){
 	if(lastEmergencyStopState.emergency_button_stop != data.emergency_button_stop){
 		
 		if(data.emergency_button_stop == true){
-			message.request.phrase = "emergency button pressed";
-			ROS_INFO(message.request.phrase.c_str());
-			say_client.call(message);
+			message.phrase = "emergency button pressed";
+			ROS_INFO(message.phrase.c_str());
+			say_client.publish(message);
 		}else{
-			message.request.phrase = "emergency button released";
-			ROS_INFO(message.request.phrase.c_str());
-			say_client.call(message);
+			message.phrase = "emergency button released";
+			ROS_INFO(message.phrase.c_str());
+			say_client.publish(message);
 		}
 	}
 	
 	if(lastEmergencyStopState.scanner_stop != data.scanner_stop){
 		if(data.scanner_stop == true){
-			message.request.phrase = "laser scanner emergency issued";
-			ROS_INFO(message.request.phrase.c_str());
-			say_client.call(message);
+			message.phrase = "laser scanner emergency issued";
+			ROS_INFO(message.phrase.c_str());
+			say_client.publish(message);
 		}else{
-			message.request.phrase = "laser scanner emergency released";
-			ROS_INFO(message.request.phrase.c_str());
-			say_client.call(message);
+			message.phrase = "laser scanner emergency released";
+			ROS_INFO(message.phrase.c_str());
+			say_client.publish(message);
 		}
 	}
 	
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
  	
  
-  say_client = n.serviceClient<mcr_speech_msgs::Say>("/say");
+  say_client = n.advertise<mcr_speech_msgs::Say>("~say",1,true);
   ros::Subscriber emergency_sub = n.subscribe("/emergency_stop_state", 1000, emergencyCallback);
   
   

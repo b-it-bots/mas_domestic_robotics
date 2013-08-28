@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+	<node pkg="mdr_mockup_gui" type="mdr_mockup_speech_wrapper" name="mdr_mockup_speech_wrapper" cwd="node" respawn="false" output="screen">
+	  <remap from="~say" to="/Say"/>
+	  <remap from="~GetLastRecognizedSpeech" to="/GetLastRecognizedSpeech"/>
+        </node>
+</launch>

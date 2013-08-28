@@ -1,0 +1,55 @@
+<package>
+  <name>mdr_mockup_gui</name>
+  <version>0.1.0</version>
+  <description>
+     mdr_mockup_gui
+  </description>
+
+  <author email="matthias.fueller@h-brs.de">Matthias Füller</author>
+  <maintainer email="matthias.fueller@h-brs.de">Matthias Füller</maintainer>
+  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
+  <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
+
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>mcr_speech_msgs</build_depend>
+
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>mcr_speech_msgs</run_depend>
+
+   
+<!-- 
+
+  <depend package="roscpp"/>  
+  <depend package="rospy"/>  
+  <depend package="std_msgs"/>
+  <depend package="std_srvs"/>
+  <depend package="brsu_msgs"/>
+  <depend package="brsu_srvs"/>
+  <depend package="cob_srvs"/>
+  <depend package="cob_gazebo"/>
+  <depend package="cob_script_server"/>
+  <depend package="brsu_virtual_2d_scanner"/>
+  <depend package="brsu_people_tracker"/>
+  <depend package="brsu_follow_person"/>  
+  <depend package="brsu_leg_detector"/>
+  <depend package="brsu_topic_to_service"/>
+  <depend package="brsu_bottle_weight"/>
+  <depend package="hbrs_srvs"/>
+  <depend package="hbrs_msgs"/>
+  <depend package="control_msgs"/>
+  <depend package="move_base_msgs"/>
+
+-->
+
+
+</package>
+
+
