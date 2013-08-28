@@ -18,6 +18,7 @@
   <run_depend>xacro</run_depend>
   <build_depend>cob_hardware_config</build_depend>
   <run_depend>cob_hardware_config</run_depend>
+  <run_depend>moveit_planners_ompl</run_depend>
 
 
   <buildtool_depend>catkin</buildtool_depend>
