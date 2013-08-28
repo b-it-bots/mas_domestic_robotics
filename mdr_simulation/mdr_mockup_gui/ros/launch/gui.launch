@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<launch>
+	<node pkg="mdr_mockup_gui" type="gui" name="mdr_mockup_gui" cwd="node" respawn="false" output="screen">
+	  <!-- topic remapping -->
+	  <remap from="~say" to="/Say"/>
+	  <remap from="~recognized_speech" to="/GetLastRecognizedSpeech"/>
+	  
+	  <!-- parameter values -->
+	  <rosparam command="load" file="$(find mdr_mockup_gui)/ros/config/speech_places.yaml" param="speech_places"/>
+	  <rosparam command="load" file="$(find mdr_mockup_gui)/ros/config/speech_commands.yaml" param="speech_commands"/>
+	  <rosparam command="load" file="$(find mdr_mockup_gui)/ros/config/speech_names.yaml" param="speech_names"/>
+	  <rosparam command="load" file="$(find mdr_mockup_gui)/ros/config/speech_objects.yaml" param="speech_objects"/>
+	  <rosparam command="load" file="$(find mdr_mockup_gui)/ros/config/speech_objects.yaml" param="identified_objects"/>
+
+	  <!-- param remapping -->
+<!--
+	  <remap from="~speech_places" to=""/>
+	  <remap from="~speech_commands" to=""/>
+	  <remap from="~speech_objects" to=""/>
+	  <remap from="~speech_names" to=""/>
+-->
+
+        </node>
+</launch>
