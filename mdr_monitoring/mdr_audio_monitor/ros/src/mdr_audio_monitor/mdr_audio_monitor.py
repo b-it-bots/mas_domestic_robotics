@@ -38,5 +38,5 @@ def get_audio_device_state():
 	
 	
 def main():
-	rospy.init_node('brsu_node_status')
+	rospy.init_node('audio_monitor')
 	get_audio_device_state()

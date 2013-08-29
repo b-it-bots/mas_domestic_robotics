@@ -4,5 +4,4 @@ import rospy
 import mdr_audio_monitor.mdr_audio_monitor
 
 if __name__ == "__main__":
-
     mdr_audio_monitor.mdr_audio_monitor.main()
