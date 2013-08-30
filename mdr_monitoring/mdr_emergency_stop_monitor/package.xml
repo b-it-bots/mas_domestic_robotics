@@ -1,3 +1,4 @@
+<?xml version="1.0"?>
 <package>
   <name>mdr_emergency_stop_monitor</name>
   <description>
@@ -5,7 +6,6 @@
   </description>
   <version>0.1.0</version>
 
-  <author>MAS robotics</author>
   <author email="matthias.fueller@h-brs.de">Matthias Füller</author>
   <maintainer email="matthias.fueller@h-brs.de">Matthias Füller</maintainer>
   <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
@@ -13,17 +13,16 @@
 
   <license>BSD</license>
 
+  <build_depend>roscpp</build_depend>
   <build_depend>std_msgs</build_depend>
-  <build_depend>std_srvs</build_depend>
   <build_depend>mcr_speech_msgs</build_depend>
   <build_depend>cob_relayboard</build_depend>
 
+  <run_depend>roscpp</run_depend>
+  <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
-  <run_depend>std_srvs</run_depend>
   <run_depend>mcr_speech_msgs</run_depend>
   <run_depend>cob_relayboard</run_depend>
   
   <buildtool_depend>catkin</buildtool_depend>
 </package>
-
-

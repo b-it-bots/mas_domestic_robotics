@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+
+	<!-- Controller_manager -->
+	<include file="$(find mdr_controller_configuration_gazebo)/ros/launch/controller_manager.launch" />
+	
+	<!-- Ptu -->
+	<include file="$(find mdr_controller_configuration_gazebo)/ros/launch/ptu_controller.launch"/>
+	
+	<!-- Arm -->
+	<include file="$(find mdr_controller_configuration_gazebo)/ros/launch/arm_controller.launch"/>
+
+</launch>
