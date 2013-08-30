@@ -4,13 +4,12 @@ project(mdr_emergency_stop_monitor)
 find_package(catkin REQUIRED
   COMPONENTS
     std_msgs
-    std_srvs
     cob_relayboard
     mcr_speech_msgs
 )
 
 catkin_package(
-  CATKIN_DEPENDS std_msgs std_srvs cob_relayboard mcr_speech_msgs
+  CATKIN_DEPENDS message_runtime std_msgs cob_relayboard mcr_speech_msgs
 )
 
 add_executable(mdr_emergency_stop_monitor
