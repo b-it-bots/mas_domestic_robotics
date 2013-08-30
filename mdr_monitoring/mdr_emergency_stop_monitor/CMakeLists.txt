@@ -25,11 +25,7 @@ target_link_libraries(mdr_emergency_stop_monitor
   ${catkin_LIBRARIES}
 )
 
-
-
 install(TARGETS mdr_emergency_stop_monitor
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
