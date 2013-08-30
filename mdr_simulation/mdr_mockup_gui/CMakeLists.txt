@@ -5,12 +5,8 @@ find_package(catkin REQUIRED COMPONENTS roscpp rospy sensor_msgs mcr_speech_msgs
 
 catkin_python_setup()
 
-generate_messages(
-   DEPENDENCIES
-   sensor_msgs
-   mcr_speech_msgs
-)
 catkin_package(
+ CATKIN_DEPENDS sensor_msgs mcr_speech_msgs
 )
 
 include_directories(

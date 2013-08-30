@@ -1,17 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mdr_audio_monitor)
 
-find_package(catkin REQUIRED COMPONENTS rospy)
+find_package(catkin REQUIRED COMPONENTS rospy mdr_monitoring_msgs)
 
 catkin_python_setup()
 
-generate_messages(
-  DEPENDENCIES
-  mdr_monitoring_msgs
-)
-
 catkin_package(
-  CATKIN_DEPENDS rospy 
+  CATKIN_DEPENDS rospy mdr_monitoring_msgs
 )
 
 install(PROGRAMS
