@@ -8,7 +8,7 @@
 	<!-- send robot urdf to param server -->
 	<include file="$(arg pkg_hardware_config)/common/upload_robot.launch" >
 		<arg name="robot" default="$(arg robot)"/>
-	    <arg name="pkg_hardware_config" default="$(arg pkg_hardware_config)"/>
+		<arg name="pkg_hardware_config" default="$(arg pkg_hardware_config)"/>
 	</include>
 
 	<!-- push robot_description to factory and spawn robot in gazebo -->
@@ -16,5 +16,5 @@
 
 	<!-- start gazebo controllers -->
 	<include file="$(find mdr_controller_configuration_gazebo)/ros/launch/default_controllers_$(arg robot).launch" />
-	
+
 </launch>

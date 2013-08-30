@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-	
+
 	<param name="/use_sim_time" value="true"/>
 
 	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
@@ -8,7 +8,7 @@
 	<arg name="pkg_robot_config" default="$(find mdr_default_robot_config)"/>
 	<arg name="pkg_env_config" default="$(find mcr_default_env_config)"/>
 
-    <!-- default parameter -->
+	<!-- default parameter -->
 	<include file="$(arg pkg_robot_config)/upload_param.launch">
 		<arg name="robot" value="$(arg robot)" />
 	</include>
@@ -16,9 +16,9 @@
 		<arg name="robot_env" value="$(arg robot_env)" />
 	</include>
 
-    <!-- robot -->
+	<!-- robot -->
 	<include file="$(find mdr_bringup_sim)/robots/$(arg robot).launch" >
-    	<arg name="robot" value="$(arg robot)"/>
+		<arg name="robot" value="$(arg robot)"/>
 	</include>
 
 	<!-- world -->

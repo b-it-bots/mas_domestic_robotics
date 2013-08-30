@@ -41,15 +41,15 @@ void emergencyCallback(const cob_relayboard::EmergencyStopState& data)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "mdr_emergency_stop_monitor");
-  ros::NodeHandle n("~");
+	ros::init(argc, argv, "mdr_emergency_stop_monitor");
+	ros::NodeHandle n("~");
  	
-  say_client = n.advertise<mcr_speech_msgs::Say>("say", 1, true);
-  ros::Subscriber emergency_sub = n.subscribe("/emergency_stop_state", 10, emergencyCallback);
-  
-  
-  ros::spin();
+	say_client = n.advertise<mcr_speech_msgs::Say>("say", 1, true);
+	ros::Subscriber emergency_sub = n.subscribe("/emergency_stop_state", 10, emergencyCallback);
 
-  return 0;
+
+	ros::spin();
+
+	return 0;
 }
 
