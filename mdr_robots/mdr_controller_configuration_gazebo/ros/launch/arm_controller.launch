@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+
+	<rosparam file="$(find katana_arm_gazebo)/config/katana_arm_controller.yaml" command="load"/>
+	<rosparam file="$(find katana_arm_gazebo)/config/katana_gripper_controller.yaml" command="load"/>
+	
+	<node name="katana_arm_controller_spawner" pkg="pr2_controller_manager" type="spawner" args="katana_arm_controller" />
+	
+	<group ns="katana_arm_controller">
+		<node pkg="katana_joint_movement_adapter" type="joint_movement_adapter" name="joint_movement_adapter" output="screen">
+			<param name="max_acc" value="1.190799" />
+			<param name="max_vel" value="2.646220" />
+		</node>
+	</group>
+
+</launch>
