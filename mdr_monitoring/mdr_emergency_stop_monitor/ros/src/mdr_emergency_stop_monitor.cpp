@@ -42,7 +42,7 @@ void emergencyCallback(const cob_relayboard::EmergencyStopState& data){
 int main(int argc, char **argv)
 {
 
-  ros::init(argc, argv, "brsu_monitoring");
+  ros::init(argc, argv, "emergency_stop_monitor");
   ros::NodeHandle n;
  	
  
