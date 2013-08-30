@@ -16,11 +16,11 @@ void emergencyCallback(const cob_relayboard::EmergencyStopState& data)
 			!= data.emergency_button_stop) {
 		if (data.emergency_button_stop == true){
 			message.phrase = "emergency button pressed";
-			ROS_INFO(message.phrase.c_str());
+			ROS_INFO("%s", message.phrase.c_str());
 			say_client.publish(message);
 		} else {
 			message.phrase = "emergency button released";
-			ROS_INFO(message.phrase.c_str());
+			ROS_INFO("%s", message.phrase.c_str());
 			say_client.publish(message);
 		}
 	}
@@ -28,11 +28,11 @@ void emergencyCallback(const cob_relayboard::EmergencyStopState& data)
 	if (last_emergency_stop_state.scanner_stop != data.scanner_stop) {
 		if (data.scanner_stop == true) {
 			message.phrase = "laser scanner emergency issued";
-			ROS_INFO(message.phrase.c_str());
+			ROS_INFO("%s", message.phrase.c_str());
 			say_client.publish(message);
 		} else {
 			message.phrase = "laser scanner emergency released";
-			ROS_INFO(message.phrase.c_str());
+			ROS_INFO("%s", message.phrase.c_str());
 			say_client.publish(message);
 		}
 	}
