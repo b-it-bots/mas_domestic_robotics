@@ -6,9 +6,9 @@
 	<arg name="pkg_hardware_config" default="$(find cob_hardware_config)"/>
 
 	<!-- upload default configuration parameters -->
-    <include file="$(find cob_default_robot_config)/upload_param.launch">
-	    <arg name="robot" value="$(arg robot)" />
-    </include>
+	<include file="$(find cob_default_robot_config)/upload_param.launch">
+		<arg name="robot" value="$(arg robot)" />
+	</include>
 
 	<!-- startup simulated robot -->
 	<include file="$(find cob_gazebo)/launch/robot.launch" >
