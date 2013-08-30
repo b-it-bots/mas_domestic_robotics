@@ -25,31 +25,6 @@
   <run_depend>mcr_speech_msgs</run_depend>
 
    
-<!-- 
-
-  <depend package="roscpp"/>  
-  <depend package="rospy"/>  
-  <depend package="std_msgs"/>
-  <depend package="std_srvs"/>
-  <depend package="brsu_msgs"/>
-  <depend package="brsu_srvs"/>
-  <depend package="cob_srvs"/>
-  <depend package="cob_gazebo"/>
-  <depend package="cob_script_server"/>
-  <depend package="brsu_virtual_2d_scanner"/>
-  <depend package="brsu_people_tracker"/>
-  <depend package="brsu_follow_person"/>  
-  <depend package="brsu_leg_detector"/>
-  <depend package="brsu_topic_to_service"/>
-  <depend package="brsu_bottle_weight"/>
-  <depend package="hbrs_srvs"/>
-  <depend package="hbrs_msgs"/>
-  <depend package="control_msgs"/>
-  <depend package="move_base_msgs"/>
-
--->
-
-
 </package>
 
 
