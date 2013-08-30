@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_volksbot_motorcontroller</name>
+  <version>0.0.1</version>
+  <description>driver for the VolksBot motor controller</description>
+
+  <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
+  <maintainer email="jan.paulus@h-brs.de">Jan Paulus</maintainer>
+
+  <license>GPLv3</license>
+
+  <author email="jan.paulus@h-brs.de">Jan Paulus</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>pr2_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>tf</build_depend>
+
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>pr2_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  
+</package>
