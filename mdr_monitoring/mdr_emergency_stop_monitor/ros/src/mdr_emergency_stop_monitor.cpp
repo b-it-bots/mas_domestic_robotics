@@ -5,53 +5,52 @@
 #include <string>
 
 
-cob_relayboard::EmergencyStopState lastEmergencyStopState;
+cob_relayboard::EmergencyStopState last_emergency_stop_state;
 ros::Publisher say_client;
 
-void emergencyCallback(const cob_relayboard::EmergencyStopState& data){
+void emergencyCallback(const cob_relayboard::EmergencyStopState& data)
+{
 	mcr_speech_msgs::Say message;
-	
-	if(lastEmergencyStopState.emergency_button_stop != data.emergency_button_stop){
-		
-		if(data.emergency_button_stop == true){
+
+	if (last_emergency_stop_state.emergency_button_stop
+			!= data.emergency_button_stop) {
+		if (data.emergency_button_stop == true){
 			message.phrase = "emergency button pressed";
 			ROS_INFO(message.phrase.c_str());
 			say_client.publish(message);
-		}else{
+		} else {
 			message.phrase = "emergency button released";
 			ROS_INFO(message.phrase.c_str());
 			say_client.publish(message);
 		}
 	}
-	
-	if(lastEmergencyStopState.scanner_stop != data.scanner_stop){
-		if(data.scanner_stop == true){
+
+	if (last_emergency_stop_state.scanner_stop != data.scanner_stop) {
+		if (data.scanner_stop == true) {
 			message.phrase = "laser scanner emergency issued";
 			ROS_INFO(message.phrase.c_str());
 			say_client.publish(message);
-		}else{
+		} else {
 			message.phrase = "laser scanner emergency released";
 			ROS_INFO(message.phrase.c_str());
 			say_client.publish(message);
 		}
 	}
-	
-	lastEmergencyStopState = data;
+
+	last_emergency_stop_state = data;
 }
 
 int main(int argc, char **argv)
 {
+	ros::init(argc, argv, "emergency_stop_monitor");
+	ros::NodeHandle n;
 
-  ros::init(argc, argv, "emergency_stop_monitor");
-  ros::NodeHandle n;
- 	
- 
-  say_client = n.advertise<mcr_speech_msgs::Say>("~say",1,true);
-  ros::Subscriber emergency_sub = n.subscribe("/emergency_stop_state", 1000, emergencyCallback);
-  
-  
-  ros::spin();
+	say_client = n.advertise<mcr_speech_msgs::Say>("~say", 1, true);
+	ros::Subscriber emergency_sub = n.subscribe("/emergency_stop_state", 1000,
+			emergencyCallback);
 
-  return 0;
+	ros::spin();
+
+	return 0;
 }
 
