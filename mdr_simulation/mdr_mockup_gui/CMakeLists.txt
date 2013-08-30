@@ -14,9 +14,9 @@ include_directories(
 )
 
 install(PROGRAMS
-  ros/scripts/mdr_mockup_gui
-  ros/src/mdr_mockup_gui/mdr_mockup_gui.py
-  ros/scripts/mdr_mockup_speech_wrapper
-  ros/src/mdr_mockup_gui/mdr_mockup_speech_wrapper.py
+  ros/scripts/gui
+  ros/scripts/speech_wrapper
+  ros/src/${PROJECT_NAME}/gui.py
+  ros/src/${PROJECT_NAME}/speech_wrapper.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
