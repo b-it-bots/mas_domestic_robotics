@@ -680,8 +680,8 @@ namespace mdr_lwr_kinematics
 
     // replaced consistency_limit (scalar) w/ consistency_limits (vector).
     // Assume [0]th free_params element for now.  Probably wrong.
-    double max_limit = fmin(joint_max_vector_[free_params_[0]], initial_guess+consistency_limits[free_params_[0]]);
-    double min_limit = fmax(joint_min_vector_[free_params_[0]], initial_guess-consistency_limits[free_params_[0]]);
+    double max_limit = joint_max_vector_[free_params_[0]];
+    double min_limit = joint_min_vector_[free_params_[0]];
 
     int num_positive_increments = (int)((max_limit-initial_guess)/search_discretization_);
     int num_negative_increments = (int)((initial_guess-min_limit)/search_discretization_);
@@ -895,8 +895,8 @@ namespace mdr_lwr_kinematics
 
     // moveit replaced consistency_limit (scalar) w/ consistency_limits (vector)
     // Assuming [0]th free_params element.  Probably wrong.
-    double max_limit = fmin(joint_max_vector_[free_params_[0]], initial_guess+consistency_limits[free_params_[0]]);
-    double min_limit = fmax(joint_min_vector_[free_params_[0]], initial_guess-consistency_limits[free_params_[0]]);
+    double max_limit = joint_max_vector_[free_params_[0]];
+    double min_limit = joint_min_vector_[free_params_[0]];
 
     int num_positive_increments = (int)((max_limit-initial_guess)/search_discretization_);
     int num_negative_increments = (int)((initial_guess-min_limit)/search_discretization_);
