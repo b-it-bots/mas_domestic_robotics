@@ -6,15 +6,12 @@
   </description>
   <version>0.1.0</version>
 
-  <author>MAS robotics</author>
   <author email="matthias.fueller@h-brs.de">Matthias Füller</author>
   <maintainer email="matthias.fueller@h-brs.de">Matthias Füller</maintainer>
   <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
   <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
 
   <license>BSD</license>
-
-  <url>http://ros.org/wiki/brsu_monitoring</url>
 
   <build_depend>std_msgs</build_depend>
   <build_depend>std_srvs</build_depend>
@@ -28,5 +25,3 @@
   
   <buildtool_depend>catkin</buildtool_depend>
 </package>
-
-
