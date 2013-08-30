@@ -13,8 +13,6 @@
 
   <license>BSD</license>
 
-  <url>http://ros.org/wiki/brsu_monitoring</url>
-
   <build_depend>std_msgs</build_depend>
   <build_depend>std_srvs</build_depend>
   <build_depend>mcr_speech_msgs</build_depend>
