@@ -1,9 +1,8 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
-#include "cob_relayboard/EmergencyStopState.h"
-#include "mcr_speech_msgs/Say.h"
+#include <ros/ros.h>
+#include <std_msgs/String.h>
+#include <cob_relayboard/EmergencyStopState.h>
 #include <string>
-
+#include <mcr_speech_msgs/Say.h>
 
 cob_relayboard::EmergencyStopState lastEmergencyStopState;
 ros::Publisher say_client;
