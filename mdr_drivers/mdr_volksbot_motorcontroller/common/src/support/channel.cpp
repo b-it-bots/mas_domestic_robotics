@@ -5,7 +5,7 @@
 ///  @date 16.10.2006
 //////////////////////////////////////////////////////////////////////////////
 
-#include "support/CChannel.h"
+#include "support/channel.h"
 
 namespace VMC
 {
