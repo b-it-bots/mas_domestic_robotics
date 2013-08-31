@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<library path="lib/liblwr_ikfast_moveit_kinematics">
+  <class name="mdr_lwr_kinematics/IKFastKinematicsPlugin"
+         type="mdr_lwr_kinematics::IKFastKinematicsPlugin"
+         base_class_type="kinematics::KinematicsBase">
+    <description>
+      Kinematics plugin for the Kuka LWR using an IK fast generated solver.
+    </description>
+  </class>
+</library>

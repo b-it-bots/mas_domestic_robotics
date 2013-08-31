@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<!--
+Robot description of the LBR to be used by OpenRave. This description does not
+contain models to visualize the robot, instead it is used to generate the LBR
+kinematics with ikfast [1]. The description is based on joint limits measured
+from the real LBR and the DH-parameters in [3].
+To generate the kinematics use the following command:
+# python `openrave-config --python-dir`/openravepy/ikfast.py --robot=lbr.robot.xml --baselink=0 --eelink=7 --freeindex=2 --iktype=transform6d --savefile=lbr_ik.cpp
+
+[1] http://openrave.programmingvision.com/en/main/openravepy/ikfast.html
+[2] Paolo Robuffo Giordano. Visual Estimation and Control of Robot Manipulating Systems. Ph.D. Thesis, Università di Roma "La Sapienza", 2007.
+-->
+<Robot name="lbr">
+	<KinBody>
+		<Body name="arm_0_link">
+			<Translation>0.0 0.0 0.0</Translation>
+			<RotationAxis>1 0 0 0</RotationAxis>
+			<RotationMat>
+				1 0 0
+				0 1 0
+				0 0 1
+			</RotationMat>
+		</Body>
+
+		<!-- arm -->
+		<Body name="arm_1_link" type="dynamic">
+			<offsetfrom>arm_0_link</offsetfrom>
+			<Translation>0.0 0.0 0.0</Translation>
+			<RotationMat>
+				-0.95507231 0.29637287 0
+				-0.29637287 -0.95507231 0
+				0 0 1
+			</RotationMat>
+		</Body>
+		
+		<Joint type="hinge" name="arm_1_joint">
+			<Body>arm_0_link</Body>
+			<Body>arm_1_link</Body>
+			<offsetfrom>arm_1_link</offsetfrom>
+			<weight>1</weight>
+			<limitsrad>-2.9670597283903604 2.9670597283903604</limitsrad>
+			<axis>0 0 1</axis>
+			<maxvel>1.5708</maxvel>
+			<resolution>1</resolution>
+		</Joint>
+		
+		<Body name="arm_2_link" type="dynamic">
+			<offsetfrom>arm_1_link</offsetfrom>
+			<Translation>0.0 -0.002 0.1915</Translation>
+			<RotationMat>
+				1 0 0
+				0 0 -1
+				0 1 0
+			</RotationMat>
+		</Body>
+
+		<Joint type="hinge" name="arm_2_joint">
+			<Body>arm_1_link</Body>
+			<Body>arm_2_link</Body>
+			<offsetfrom>arm_2_link</offsetfrom>
+			<weight>1</weight>
+			<limitsrad>-2.0943951023931953 2.0943951023931953</limitsrad>
+			<axis>0 0 1</axis>
+			<maxvel>1.5708</maxvel>
+			<resolution>1</resolution>
+		</Joint>
+		
+		<Body name="arm_3_link" type="dynamic">
+			<offsetfrom>arm_2_link</offsetfrom>
+			<Translation>0.0 0.2085 0.0</Translation>
+			<RotationMat>
+				1 0 0
+				0 0 1
+				0 -1 0
+			</RotationMat>
+		</Body>
+		
+		<Joint type="hinge" name="arm_3_joint">
+			<Body>arm_2_link</Body>
+			<Body>arm_3_link</Body>
+			<offsetfrom>arm_3_link</offsetfrom>
+			<weight>1</weight>
+			<limitsrad>-2.9670597283903604 2.9670597283903604</limitsrad>
+			<axis>0 0 1</axis>
+			<maxvel>1.5708</maxvel>
+			<resolution>1</resolution>
+		</Joint>
+		
+		<Body name="arm_4_link" type="dynamic">
+			<offsetfrom>arm_3_link</offsetfrom>
+			<Translation>0.0 0.002 0.1915</Translation>
+			<RotationMat>
+				1 0 0
+				0 0 1
+				0 -1 0
+			</RotationMat>
+		</Body>
+		
+		<Joint type="hinge" name="arm_4_joint">
+			<Body>arm_3_link</Body>
+			<Body>arm_4_link</Body>
+			<offsetfrom>arm_4_link</offsetfrom>
+			<weight>1</weight>
+			<limitsrad>-2.0943951023931953 2.0943951023931953</limitsrad>
+			<axis>0 0 1</axis>
+			<maxvel>1.5708</maxvel>
+			<resolution>1</resolution>
+		</Joint>
+		
+		<Body name="arm_5_link" type="dynamic">
+			<offsetfrom>arm_4_link</offsetfrom>
+			<Translation>0.0 -0.2085 0.0</Translation>
+			<RotationMat>
+				1 0 0
+				0 0 -1
+				0 1 0
+			</RotationMat>
+		</Body>
+		
+		<Joint type="hinge" name="arm_5_joint">
+			<Body>arm_4_link</Body>
+			<Body>arm_5_link</Body>
+			<offsetfrom>arm_5_link</offsetfrom>
+			<weight>1</weight>
+			<limitsrad>-2.9670597283903604 2.9670597283903604</limitsrad>
+			<axis>0 0 1</axis>
+			<maxvel>1.5708</maxvel>
+			<resolution>1</resolution>
+		</Joint>
+		
+		<Body name="arm_6_link" type="dynamic">
+			<offsetfrom>arm_5_link</offsetfrom>
+			<Translation>0 0.046 0.1815</Translation>
+			<RotationMat>
+				1 0 0
+				0 0 -1
+				0 1 0
+			</RotationMat>
+		</Body>
+		
+		<Joint type="hinge" name="arm_6_joint">
+			<Body>arm_5_link</Body>
+			<Body>arm_6_link</Body>
+			<offsetfrom>arm_6_link</offsetfrom>
+			<weight>1</weight>
+			<limitsrad>-2.0943951023931953 2.0943951023931953</limitsrad>
+			<axis>0 0 1</axis>
+			<maxvel>1.5708</maxvel>
+			<resolution>1</resolution>
+		</Joint>
+		
+		<!-- right hand base -->
+		<Body name="arm_7_link" type="dynamic">
+			<offsetfrom>arm_6_link</offsetfrom>
+			<Translation>0.0 0.057 0.046</Translation>
+			<RotationMat>
+				1 0 0
+				0 0 1
+				0 -1 0
+			</RotationMat>
+		</Body>
+		
+		<Joint type="hinge" name="arm_7_joint">
+			<Body>arm_6_link</Body>
+			<Body>arm_7_link</Body>
+			<offsetfrom>arm_7_link</offsetfrom>
+			<weight>1</weight>
+			<limitsrad>-2.9670597283903604 2.9670597283903604</limitsrad>
+			<axis>0 0 1</axis>
+			<maxvel>1.5708</maxvel>
+			<resolution>1</resolution>
+		</Joint>
+		
+		<!-- adjacency information to avoid selfcollisions -->
+		<adjacent>arm_0_link arm_1_link</adjacent>
+		<adjacent>arm_1_link arm_2_link</adjacent>
+		<adjacent>arm_2_link arm_3_link</adjacent>
+		<adjacent>arm_3_link arm_4_link</adjacent>
+		<adjacent>arm_4_link arm_5_link</adjacent>
+		<adjacent>arm_5_link arm_6_link</adjacent>
+		<adjacent>arm_5_link arm_7_link</adjacent>
+		<adjacent>arm_6_link arm_7_link</adjacent>
+	</KinBody>
+	
+	<!-- used controller -->
+	<Controller>IdealController</Controller>
+	
+	<!-- hand manipulator -->
+	<Manipulator name="arm">
+		<base>arm_0_link</base>
+		<effector>arm_7_link</effector>
+		<direction>0 0 1</direction>
+		<Translation>0 0 0.2</Translation>
+	</Manipulator>
+</Robot>
