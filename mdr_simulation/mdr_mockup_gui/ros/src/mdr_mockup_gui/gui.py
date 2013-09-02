@@ -1,21 +1,15 @@
 #!/usr/bin/env python
 
-#ROS imports
-#PKG = 'brsu_mockup_nodes' # this package name
-
 import rospy
-#import exceptions
 
-#import brsu_msgs.msg
-#import brsu_srvs.srv 
-#import std_srvs.srv
-#import hbrs_msgs.msg
-#import hbrs_srvs.srv
+from std_msgs.msg import Bool
+
+from mcr_perception_msgs.msg import ObjectList
+from mcr_perception_msgs.msg import Object
 
 from Tkinter import *
 
 from mcr_speech_msgs.msg import RecognizedSpeech
-
 
 
 class Application(Frame):
@@ -29,6 +23,8 @@ class Application(Frame):
 		rospy.init_node('mdr_mockup_gui')
 
 		self.pub = rospy.Publisher('~recognized_speech', RecognizedSpeech, latch=True)
+		self.set_objects_publisher = rospy.Publisher('~set_recognized_objects', ObjectList)
+		self.set_doorstate_publisher = rospy.Publisher('~change_door_status', Bool)
 
 		#Class variables
 		self.radio_button_selection = StringVar() # stores the selection
@@ -41,10 +37,12 @@ class Application(Frame):
 		self.radiobuttons_speech_locations = []
 		self.checkbuttons_objects_identified = []
 
+		self.openDoorStatus = False
+
 		self.grid()
 		self.createWidgets()
 				
-
+		
 	#inserts radiobuttons
 	def insertSpeechRadioButtons(self, speech_data, radioButtonArray, column, headline):
 		
@@ -128,28 +126,29 @@ class Application(Frame):
 		self.pub.publish(data)
 
 	def openDoor(self):
-		rospy.wait_for_service('~change_door_status')
-		open_door_proxy = rospy.ServiceProxy('~change_door_status', hbrs_srvs.srv.ReturnBool)
-		open_door_proxy()
+		self.openDoorStatus = not self.openDoorStatus
+		status = Bool()
+		status.data = self.openDoorStatus
+
+		self.set_doorstate_publisher.publish(status)
+
 
 	def setObjects(self):
-		rospy.wait_for_service('~set_recognized_objects')
-		set_objects_proxy = rospy.ServiceProxy('~set_recognized_objects', hbrs_srvs.srv.SetObjects)
-		
-		recognized_objects = []
+
+		recognized_objects = ObjectList()
 
 		#test all checkbuttons if active
 		for i in range(len(self.checkbutton_selection_list)):
 			object_names = rospy.get_param("~identified_objects", ["<~identified_objects empty>"])		
 			if self.checkbutton_selection_list[i].get() > 0: 			
-				found_object = hbrs_msgs.msg.Object()
+				found_object = Object()
 				found_object.name = object_names[i]
 				found_object.pose.pose.position.x = 0.5
 				found_object.pose.pose.position.y = 0.3
 				found_object.pose.pose.position.z = 0.5
-				recognized_objects.append(found_object)
-		#specifiy objects		
-		set_objects_proxy(recognized_objects)
+				recognized_objects.objects.append(found_object)
+		self.set_objects_publisher.publish(recognized_objects)		
+		
 
 def main():
 	app = Application()
