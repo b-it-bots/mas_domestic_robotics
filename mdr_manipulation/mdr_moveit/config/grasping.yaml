@@ -1,0 +1,4 @@
+# GraspIt! configuration
+eef:
+  database_id: Schunk
+  approach_direction: [0.0, 0.0, 1.0]
