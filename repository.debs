@@ -1,7 +1,7 @@
 # /bin/bash
 
 ### install debian packages
-sudo apt-get install -y  python-setuptools ros-groovy-ros python-rosinstall python-vcstools ros-groovy-moveit-planners-ompl
+sudo apt-get install -y  python-setuptools ros-groovy-ros python-rosinstall python-vcstools ros-groovy-moveit-planners-ompl liblog4cpp5-dev
 
 ### install further repositories
 rosinstall .. /opt/ros/groovy repository.rosinstall
