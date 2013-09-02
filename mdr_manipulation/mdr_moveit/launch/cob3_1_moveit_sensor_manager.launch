@@ -1,3 +1,8 @@
 <launch>
 
+  <!-- Set the file describing which sensor(s) to use to build the octomap  -->
+  <arg name="moveit_octomap_sensor_params_file" default="$(find mdr_config)/config/sensors_rgbd.yaml" />
+  <rosparam command="load" file="$(find mdr_moveit)/config/sensors_rgbd.yaml" />
+  <rosparam command="load" file="$(find mdr_moveit)/config/octomap.yaml" />
+
 </launch>

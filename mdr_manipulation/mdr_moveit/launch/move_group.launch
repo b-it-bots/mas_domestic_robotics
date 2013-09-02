@@ -53,5 +53,7 @@
     <param name="planning_scene_monitor/publish_state_updates" value="$(arg publish_monitored_planning_scene)" />
     <param name="planning_scene_monitor/publish_transforms_updates" value="$(arg publish_monitored_planning_scene)" />
   </node>
-  
+
+  <rosparam command="load" file="$(find mdr_moveit)/config/grasping.yaml"/>
+
 </launch>
