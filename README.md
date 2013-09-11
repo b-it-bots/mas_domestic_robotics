@@ -54,7 +54,7 @@ In order to understand at least the different core components of ROS, you have t
     cd ..
     catkin_make
     
-## Clone and compile the MAS domestic robotics repository
+## Clone and compile the MAS domestic robotics software
 First of all you have to clone the repository.
 
     cd ~/catkin_ws/src;
