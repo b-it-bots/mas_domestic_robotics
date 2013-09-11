@@ -105,7 +105,7 @@ In a new terminal you can open the Gazebo GUI to see the environment and the rob
      roslaunch mdr_bringup robot.launch
 
 
-## Test the arm and gripper
+## Test the arm, hand, torso, tray and head
      roslaunch mdr_bringup dashboard.launch
 
 ## Test the base
