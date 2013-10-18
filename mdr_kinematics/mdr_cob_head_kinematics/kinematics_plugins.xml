@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<library path="lib/libmdr_cob_head_kinematics">
+  <class type="mdr_cob_head_kinematics::head_kinematics_plugin"
+         base_class_type="kinematics::KinematicsBase">
+    <description>
+      Kinematics plugin for the combined torso/head kinematics chain of the
+      Care-o-bot.
+    </description>
+  </class>
+</library>

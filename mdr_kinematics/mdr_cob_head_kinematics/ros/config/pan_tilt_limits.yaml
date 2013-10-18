@@ -1,0 +1,7 @@
+pan_tilt_limits:
+  pan:
+    min_position: -0.176
+    max_position: 0.176
+  tilt:
+    min_position: -3.661
+    max_position: 0.534
