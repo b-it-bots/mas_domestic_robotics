@@ -17,7 +17,7 @@
 
   <run_depend>cob_default_robot_config</run_depend>
   <run_depend>cob_gazebo</run_depend>
-  <run_depend>gazebo</run_depend> 
+  <run_depend>gazebo_ros</run_depend> 
   <run_depend>mcr_default_env_config</run_depend>
   <run_depend>mcr_gazebo_worlds</run_depend>
   <run_depend>mdr_controller_configuration_gazebo</run_depend>
