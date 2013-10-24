@@ -9,7 +9,15 @@ find_package(catkin REQUIRED
 )
 
 catkin_package(
-  CATKIN_DEPENDS message_runtime std_msgs cob_relayboard mcr_speech_msgs
+  CATKIN_DEPENDS
+    message_runtime
+    std_msgs
+    cob_relayboard
+    mcr_speech_msgs
+)
+
+include_directories(
+  ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(mdr_emergency_stop_monitor
@@ -20,7 +28,9 @@ target_link_libraries(mdr_emergency_stop_monitor
   ${catkin_LIBRARIES}
 )
 
-add_dependencies(mdr_emergency_stop_monitor ${catkin_EXPORTED_TARGETS})
+add_dependencies(mdr_emergency_stop_monitor
+  ${catkin_EXPORTED_TARGETS}
+)
 
 install(TARGETS mdr_emergency_stop_monitor
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
