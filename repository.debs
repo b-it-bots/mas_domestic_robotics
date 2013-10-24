@@ -1,10 +1,10 @@
 # /bin/bash
 
 ### install debian packages
-sudo apt-get install -y  python-setuptools ros-groovy-ros python-rosinstall python-vcstools ros-groovy-moveit-planners-ompl liblog4cpp5-dev
+sudo apt-get install -y  python-setuptools ros-hydro-ros python-rosinstall python-vcstools ros-hydro-moveit-planners-ompl liblog4cpp5-dev
 
 ### install further repositories
-rosinstall .. /opt/ros/groovy repository.rosinstall
+rosinstall .. /opt/ros/hydro repository.rosinstall
 
 ### install dependencies of BRSU repositories
 dependent_repositories=('mas_common_robotics' 'mas_third_party_software')
