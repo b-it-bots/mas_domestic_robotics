@@ -1,7 +1,7 @@
 ## Install Ubuntu
 The repository and its related components have been tested under the following Ubuntu distributions:
 
-- ROS Groovy: Ubuntu 12.04
+- ROS Hydro: Ubuntu 12.04
 
 If you do not have a Ubuntu distribution on your computer you can download it here
 
@@ -34,7 +34,7 @@ If you have never worked with git before, we recommend to go through the followi
 The repository has been tested successfully with the following ROS distributions. Use the link behind a ROS distribution to get to the particular ROS installation instructions.
 
 
-- ROS Groovy - http://www.ros.org/wiki/Groovy/Installation/Ubuntu
+- ROS Hydro - http://www.ros.org/wiki/Hydro/Installation/Ubuntu
 
 NOTE: Do not forget to update your .bashrc!
   
