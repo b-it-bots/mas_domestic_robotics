@@ -16,6 +16,10 @@ catkin_package(
     mcr_speech_msgs
 )
 
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
+
 add_executable(mdr_emergency_stop_monitor
   ros/src/mdr_emergency_stop_monitor.cpp
 )
