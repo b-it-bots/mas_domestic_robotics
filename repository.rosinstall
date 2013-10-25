@@ -18,10 +18,10 @@
 #    uri: git@github.com:ipa320/cob_simulation.git
 #    version: groovy_catkin
 
-#- git:
-#    local-name: cob_command_tools
-#    uri: git@github.com:ipa320/cob_command_tools.git
-#    version: groovy_catkin
+- git:
+    local-name: cob_command_tools
+    uri: git@github.com:mas-group/cob_command_tools.git
+    version: hydro_dev
 
 #- git:
 #    local-name: cob_substitute
