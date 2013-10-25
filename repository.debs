@@ -1,7 +1,7 @@
 # /bin/bash
 
 ### install debian packages
-sudo apt-get install -y  python-setuptools ros-hydro-ros python-rosinstall python-vcstools ros-hydro-moveit-planners-ompl liblog4cpp5-dev ros-hydro-cob-common ros-hydro-pr2-msgs ros-hydro-laser-geometry ros-hydro-control-msgs ros-hydro-diagnostic-updater ros-hydro-xacro
+sudo apt-get install -y  python-setuptools ros-hydro-ros python-rosinstall python-vcstools ros-hydro-moveit-planners-ompl liblog4cpp5-dev ros-hydro-cob-common ros-hydro-pr2-msgs ros-hydro-laser-geometry ros-hydro-control-msgs ros-hydro-diagnostic-updater ros-hydro-xacro ros-hydro-interactive-markers ros-hydro-rviz
 
 ### install further repositories
 rosinstall .. /opt/ros/hydro repository.rosinstall
