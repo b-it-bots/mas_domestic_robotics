@@ -41,7 +41,7 @@
 - git:
     local-name: schunk_modular_robotics
     uri: git@github.com:mas-group/schunk_modular_robotics.git
-    version: hydro-dev
+    version: hydro_dev
 
 #- git:
 #    local-name: universal_robot
