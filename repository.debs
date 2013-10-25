@@ -2,7 +2,7 @@
 
 ### install debian packages
 
-sudo apt-get install -y  python-setuptools ros-hydro-ros python-rosinstall python-vcstools ros-hydro-moveit-planners-ompl liblog4cpp5-dev ros-hydro-cob-common ros-hydro-pr2-msgs ros-hydro-laser-geometry ros-hydro-control-msgs ros-hydro-diagnostic-updater ros-hydro-xacro ros-hydro-interactive-markers ros-hydro-rviz ros-hydro-openni2-launch
+sudo apt-get install -y  python-setuptools ros-hydro-ros python-rosinstall python-vcstools ros-hydro-moveit-planners-ompl liblog4cpp5-dev ros-hydro-cob-common ros-hydro-pr2-msgs ros-hydro-laser-geometry ros-hydro-control-msgs ros-hydro-diagnostic-updater ros-hydro-xacro ros-hydro-interactive-markers ros-hydro-rviz ros-hydro-openni2-launch ros-hydro-pr2-computer-monitor ros-hydro-wifi-ddwrt ros-hydro-robot-state-publisher ros-hydro-hokuyo-node ros-hydro-pr2-dashboard-aggregator ros-hydro-costmap-2d ros-hydro-joy
 
 
 ### install further repositories
