@@ -28,20 +28,20 @@
 #    uri: git@github.com:ipa320/cob_substitute.git
 #    version: groovy_catkin
 
-#- git:
-#    local-name: cob_calibration_data
-#    uri: git@github.com:b-it-bots/cob_calibration_data.git
-#    version: groovy_catkin
+- git:
+    local-name: cob_calibration_data
+    uri: git@github.com:mas-group/cob_calibration_data.git
+    version: hydro_dev
 
 - git:
     local-name: cob_robots
     uri: git@github.com:mas-group/cob_robots.git
     version: hydro_dev
 
-#- git:
-#    local-name: schunk_modular_robotics
-#    uri: git@github.com:b-it-bots/schunk_modular_robotics.git
-#    version: groovy_catkin
+- git:
+    local-name: schunk_modular_robotics
+    uri: git@github.com:mas-group/schunk_modular_robotics.git
+    version: hydro-dev
 
 #- git:
 #    local-name: universal_robot
@@ -53,10 +53,10 @@
 # TODO: merge from upstream!!!
 # debian packages not ready for catkin
 # can be deleted later
-#- git:
-#    local-name: cob_common
-#    uri: git@github.com:b-it-bots/cob_common.git
-#    version: groovy_catkin
+- git:
+    local-name: cob_common
+    uri: git@github.com:mas-group/cob_common.git
+    version: hydro_dev
 
 - git:
     local-name: cob_driver
