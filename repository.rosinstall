@@ -60,7 +60,7 @@
 
 - git:
     local-name: cob_driver
-    uri: git@github.com:ipa320/cob_driver.git
+    uri: git@github.com:mas-group/cob_driver.git
     version: hydro_dev
 
 - git:
