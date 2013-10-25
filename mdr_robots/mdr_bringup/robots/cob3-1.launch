@@ -34,7 +34,7 @@
 		<machine name="hbrs_pc2" address="cob3-1-pc2" default="true" />
 
 		<!-- brsu specific packages -->
-		<include file="$(find mdr_bringup)/components/kinect.launch" />
+		<include file="$(find mdr_bringup)/components/openni2.launch" />
 
 	</group>
 
