@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name><run_depend>mcr_lab_demo</name>
+  <name>mdr_lab_demo</name>
   <version>0.0.1</version>
   <description>lab demo scenario including most of the functionilities developed at BRSU</description>
 
@@ -37,4 +37,4 @@
   <run_depend>mdr_simple_pick</run_depend>
   <run_depend>mdr_table_cleaning</run_depend>
 
-</launch>
+</package>
