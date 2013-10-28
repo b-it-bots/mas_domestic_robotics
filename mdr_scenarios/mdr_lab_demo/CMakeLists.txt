@@ -7,6 +7,7 @@ catkin_package(
   CATKIN_DEPENDS
     mcr_body_detection_3d
     mcr_default_env_config
+    mcr_follow_person
     mcr_leg_detection
     mcr_object_categorization
     mcr_object_recognition_height_based
@@ -16,7 +17,6 @@ catkin_package(
     #mdr_arm_pointing
     #mdr_bottle_weight
     mdr_bringup
-    mdr_follow_person
     mdr_haptic
     mdr_mockup_nodes
     mdr_node_monitor

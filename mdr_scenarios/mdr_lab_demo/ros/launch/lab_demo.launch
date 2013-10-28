@@ -36,8 +36,8 @@
     <include file="$(find mcr_object_recognition_height_based)/ros/launch/object_recognition_height_based.launch" />
     <include file="$(find mcr_virtual_laser_scanner)/ros/launch/virtual_laser_scanner.launch"/>
     <include file="$(find mcr_people_tracking)/ros/launch/waist_tracker.launch"/>
-    <include file="$(find mdr_follow_person)/ros/launch/follow_person_node.launch"/>
-    <include file="$(find mcr_object_categorization)/ros/launch/object_categorization_geometric.launch" />
+    <include file="$(find mcr_follow_person)/ros/launch/follow_person.launch"/>
+    <include file="$(find mcr_object_categorization)/ros/launch/object_categorization.launch" />
 
   </group>
 </launch>
