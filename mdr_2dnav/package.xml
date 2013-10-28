@@ -12,4 +12,9 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <run_depend>cob_navigation_global</run_depend>
+  <run_depend>map_server</run_depend>
+  <run_depend>mcr_default_env_config</run_depend>
+  <run_depend>mcr_navigation_tools</run_depend>
+
 </package>
