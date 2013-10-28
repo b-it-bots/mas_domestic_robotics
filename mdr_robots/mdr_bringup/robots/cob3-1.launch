@@ -35,6 +35,7 @@
 
 		<!-- brsu specific packages -->
 		<include file="$(find mdr_bringup)/components/openni2.launch" />
+		<include file="$(find mdr_bringup)/components/stemmer_cam.launch" />
 	</group>
 
 
