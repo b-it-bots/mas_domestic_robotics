@@ -286,7 +286,7 @@ class haptic_guidance():
 		self.y_velocity_force_normalization = ( abs_range_velocity_y / abs_range_force_y )
 		
 def main():
-	rospy.init_node('mdr_haptic_guidance')
+	rospy.init_node('haptic_guidance')
 	haptic_guidance()
 	rospy.loginfo('haptic guidance: services started')
 	rospy.spin()
