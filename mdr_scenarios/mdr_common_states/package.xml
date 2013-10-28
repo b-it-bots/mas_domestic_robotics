@@ -12,7 +12,9 @@
 
   <license>GPLv3</license>
 
-  <author email="frederik.hegger@h-brs.de">Frederik Hegger</author>
+  <author email="nico.hochgeschwender@h-brs.de">Nico Hochgeschwender</author>
+  <author email="jan.paulus@h-brs.de">Jan Paulus</author>
+  <author email="michael.reckhaus@h-brs.de">Mike Reckhaus</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 

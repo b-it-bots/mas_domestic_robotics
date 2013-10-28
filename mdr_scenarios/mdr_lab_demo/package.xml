@@ -12,7 +12,7 @@
 
   <license>GPLv3</license>
 
-  <author email="frederik.hegger@h-brs.de">Frederik Hegger</author>
+  <author email="michael.reckhaus@h-brs.de">Michael Reckhaus</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
