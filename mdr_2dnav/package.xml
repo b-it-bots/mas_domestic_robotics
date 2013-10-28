@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_2dnav</name>
+  <version>0.0.1</version>
+  <description>launch files for base navigation</description>
+
+  <maintainer email="rhama.dwiputra@h-brs.de">Frederik Hegger</maintainer>
+
+  <license>GPLv3</license>
+
+  <author email="jan.paulus@h-brs.de">Jan Paulus</author> -->
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>
