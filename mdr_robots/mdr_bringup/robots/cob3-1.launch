@@ -35,7 +35,6 @@
 
 		<!-- brsu specific packages -->
 		<include file="$(find mdr_bringup)/components/openni2.launch" />
-		<include file="$(find mcr_door_status)/ros/launch/door_status.launch" />
 	</group>
 
 
