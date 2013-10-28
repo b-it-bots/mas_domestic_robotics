@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-  <node pkg="mcr_aravis_vision" type="aravis_camera_node" name="mcr_rgb_camera" output="screen">
+  <node pkg="mcr_aravis_vision" type="aravis_camera_node" name="rgb_camera" ns="mcr_drivers" output="screen">
     <rosparam command="load" file="$(find mcr_aravis_vision)/ros/config/stemmer_cvc_eh6500.yaml"/>
   </node>
 </launch>
