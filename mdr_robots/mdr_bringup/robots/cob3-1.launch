@@ -31,11 +31,11 @@
 	</group>
 
 	<group>
-		<machine name="hbrs_pc2" address="cob3-1-pc2" default="true" />
+		<machine name="hbrs_pc2" address="cob3-1-pc2" default="true" env-loader="$(find mdr_bringup)/"/>
 
 		<!-- brsu specific packages -->
 		<include file="$(find mdr_bringup)/components/openni2.launch" />
-
+		<include file="$(find mcr_door_status)/ros/launch/door_status.launch" />
 	</group>
 
 
