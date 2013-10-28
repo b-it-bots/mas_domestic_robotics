@@ -7,22 +7,20 @@ catkin_package(
   CATKIN_DEPENDS
     mcr_body_detection_3d
     mcr_default_env_config
-    mcr_leg_detector
+    mcr_follow_person
+    mcr_leg_detection
     mcr_object_categorization
-    mcr_object_recognition
-    mcr_people_tracker
-    mcr_virtual_2d_scanner
+    mcr_object_recognition_height_based
+    mcr_people_tracking
+    mcr_virtual_laser_scanner
     mdr_2dnav
-    mdr_arm_navigation
-    mdr_arm_pointing
-    mdr_bottle_weight
+    #mdr_arm_pointing
+    #mdr_bottle_weight
     mdr_bringup
-    mdr_follow_person
     mdr_haptic
-    mdr_manipulation_launch
     mdr_mockup_nodes
-    mdr_node_status
-    mdr_simple_pick
+    mdr_node_monitor
+    #mdr_simple_pick
     mdr_table_cleaning
 )
 

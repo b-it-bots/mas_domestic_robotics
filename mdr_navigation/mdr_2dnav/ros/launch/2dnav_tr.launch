@@ -3,7 +3,7 @@
 
 	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
 
-	<arg name="map" value="$(find mcr_default_env_config)/$(env ROBOT_ENV)/map2.yaml" />
+	<arg name="map" value="$(find mcr_default_env_config)/$(env ROBOT_ENV)/map.yaml" />
 
 	<!--- Run map_server -->
 	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map)"/>

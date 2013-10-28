@@ -14,25 +14,17 @@
 
     <include file="$(find mdr_2dnav)/ros/launch/2dnav_tr.launch" />
 
-    <include file="$(find mdr_manipulation_launch)/ros/launch/manipulation_launch.launch" />
-    <include file="$(find mdr_arm_navigation)/ros/launch/constraint_aware_kinematics.launch" />
-    <include file="$(find mdr_arm_navigation)/ros/launch/interpolated_ik_motion_planning.launch" />
-    <include file="$(find mdr_arm_navigation)/ros/launch/environment_server.launch" >
-      <arg name="use_monitor" value="true"/>
-      <arg name="use_collision_map" value="false"/>
-    </include>
-    <include file="$(find mdr_simple_pick)/launch/simple_pick.launch" />
-    <include file="$(find mdr_simple_pick)/ros/launch/grasp_crate.launch" />
-    <include file="$(find mcr_leg_detector)/ros/launch/leg_detector_node.launch" />
-    <include file="$(find mdr_bottle_weight)/launch/bottle_weight.launch" />
-    <include file="$(find mdr_table_cleaning)/ros/launch/table_cleaning.launch" />
-    <include file="$(find mdr_arm_pointing)/ros/launch/arm_pointing.launch" />
-    <include file="$(find mdr_haptic)/ros/launch/haptic_base.launch" />
+    <!--include file="$(find mdr_simple_pick)/launch/simple_pick.launch" /-->
+    <include file="$(find mcr_leg_detection)/ros/launch/leg_detection.launch" />
+    <!--include file="$(find mdr_bottle_weight)/launch/bottle_weight.launch" /-->
+    <!--include file="$(find mdr_table_cleaning)/ros/launch/table_cleaning.launch" /-->
+    <!--include file="$(find mdr_arm_pointing)/ros/launch/arm_pointing.launch" /-->
+    <include file="$(find mdr_haptic)/ros/launch/haptic_guidance.launch" />
        
     <!-- DIAGNOSTICS -->
-    <node pkg="mdr_node_status" type="node_status.py" name="mdr_node_status" output="screen">
-      <param name="NodeListFilename" value="$(find mdr_node_status)/ros/config/lab_demo.cfg" />
-    </node>
+    <include file="$(find mcr_node_monitor)/ros/launch/node_status_aggregator.launch" >
+	<arg name="cfg_file" default="lab_demo.cfg" />
+    </include>
   </group>
 
 
@@ -41,11 +33,11 @@
     <machine name="brsu-pc2" address="cob3-1-pc2" env-loader="$(find mdr_bringup)/env.sh" default="true"/>
  
     <include file="$(find mcr_body_detection_3d)/ros/launch/body_detection_3d.launch" />
-    <include file="$(find mcr_object_recognition)/ros/launch/object_recognition.launch" />
-    <include file="$(find mcr_virtual_2d_scanner)/ros/launch/virtual_2d_scanner_node.launch"/>
-    <include file="$(find mcr_people_tracker)/ros/launch/waist_tracker.launch"/>
-    <include file="$(find mdr_follow_person)/ros/launch/follow_person_node.launch"/>
-    <include file="$(find mcr_object_categorization)/ros/launch/object_categorization_geometric.launch" />
+    <include file="$(find mcr_object_recognition_height_based)/ros/launch/object_recognition_height_based.launch" />
+    <include file="$(find mcr_virtual_laser_scanner)/ros/launch/virtual_laser_scanner.launch"/>
+    <include file="$(find mcr_people_tracking)/ros/launch/waist_tracker.launch"/>
+    <include file="$(find mcr_follow_person)/ros/launch/follow_person.launch"/>
+    <include file="$(find mcr_object_categorization)/ros/launch/object_categorization.launch" />
 
   </group>
 </launch>

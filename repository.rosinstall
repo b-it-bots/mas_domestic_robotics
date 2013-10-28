@@ -76,12 +76,10 @@
 ### end
 
 
-###
-# TODO: not yet catkinized
-#- git:
-#    local-name: cob_navigation
-#    uri: git@github.com:ipa320/cob_navigation.git
-#    version: groovy_catkin
+- git:
+    local-name: cob_navigation
+    uri: git@github.com:mas-group/cob_navigation.git
+    version: hydro_dev
 
 #- git:
 #    local-name: cob_manipulation
