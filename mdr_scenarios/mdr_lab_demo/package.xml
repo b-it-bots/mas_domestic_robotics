@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>mdr_lab_demo</name>
+  <name><run_depend>mcr_lab_demo</name>
   <version>0.0.1</version>
   <description>lab demo scenario including most of the functionilities developed at BRSU</description>
 
@@ -16,4 +16,25 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-</package>
+  <run_depend>mcr_body_detection_3d</run_depend>
+  <run_depend>mcr_default_env_config</run_depend>
+  <run_depend>mcr_leg_detector</run_depend>
+  <run_depend>mcr_object_categorization</run_depend>
+  <run_depend>mcr_object_recognition</run_depend>
+  <run_depend>mcr_people_tracker</run_depend>
+  <run_depend>mcr_virtual_2d_scanner</run_depend>
+
+  <run_depend>mdr_2dnav</run_depend>
+  <run_depend>mdr_arm_navigation</run_depend>
+  <run_depend>mdr_arm_pointing</run_depend>
+  <run_depend>mdr_bottle_weight</run_depend>
+  <run_depend>mdr_bringup</run_depend>
+  <run_depend>mdr_follow_person</run_depend>
+  <run_depend>mdr_haptic</run_depend>
+  <run_depend>mdr_manipulation_launch</run_depend>
+  <run_depend>mdr_mockup_nodes</run_depend>
+  <run_depend>mdr_node_status</run_depend>
+  <run_depend>mdr_simple_pick</run_depend>
+  <run_depend>mdr_table_cleaning</run_depend>
+
+</launch>
