@@ -33,7 +33,7 @@ GPSR_PREFIX = 'gpsr_'
 
 # main
 def main():
-	rospy.init_node('gpsr1')
+	rospy.init_node('lab_demo')
 
 	# Create a SMACH state machine
 	sm = smach.StateMachine(outcomes=['overall_success', 'overall_failed'])
