@@ -1,0 +1,340 @@
+#!/usr/bin/python
+
+######################### IMPORTS #########################
+
+import roslib
+roslib.load_manifest('mdr_common_states')
+import rospy
+import smach
+import smach_ros
+
+from simple_script_server import *
+sss = simple_script_server()
+
+import std_msgs.msg
+import std_srvs.srv
+import actionlib_msgs.msg
+
+from mdr_common_states.common_states_face_recognition import *
+from mdr_common_states.common_states_follow_me import *
+from mdr_common_states.common_states_manipulation import *
+from mdr_common_states.common_states_navigation import *
+from mdr_common_states.common_states_object_perception import *
+from mdr_common_states.common_states_search_people import *
+from mdr_common_states.common_states_speech import *
+from mdr_common_states.common_states_carry_box import *
+
+
+######################### INIT THE FUNCTIONAL COMPONENTS AND HARDWARE #########################
+
+class init_manipulator(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['success','failed'])
+		self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
+		
+	def execute(self, userdata):
+		#sss.init("arm")
+		sss.init("sdh")
+
+		sss.recover("arm")
+		sss.recover("sdh")
+
+		# move to initial positions
+		handle_arm = sss.move("arm","folded",False)
+		handle_sdh = sss.move("sdh","cylclosed",False)
+		handle_arm.wait()
+		handle_sdh.wait()
+		
+		rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
+		try:
+			req = SetJointStiffnessRequest()
+			req.joint_stiffness = [300,300,300,300,300,300,300]
+			self.set_joint_stiffness(req)
+		except rospy.ServiceException,e:
+			print "Service call failed: %s"%e
+			return 'failed'
+
+		# check, if all components are working
+		retval_list = []
+		retval_list.append(handle_arm.get_error_code())
+		retval_list.append(handle_sdh.get_error_code())
+		for retval in retval_list:
+			if retval != 0:
+				print 'Something failed in manipulator init:', retval_list
+				return 'failed'
+
+		# \todo check for move hardware errors
+
+		return 'success'
+
+class init_base(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['success','failed'])
+	def execute(self, userdata):
+		# init all components
+		sss.init("base")
+
+		# \todo check for init hardware errors
+
+		sss.recover("base")
+		
+		raw_input("\nMOVE BASE WITH JOYSTICK!\n")
+		
+		return 'success'
+
+class init_torso(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['success','failed'])
+	def execute(self, userdata):
+		raw_input("\nTURN HEAD MANUALLY UP!\n")
+		sss.init("tray")
+		sss.init("torso")
+		sss.init("head")
+
+		# \todo check for init hardware errors
+
+		sss.recover("tray")
+		sss.recover("torso")
+		sss.recover("head")
+
+		# move to initial positions
+		handle_torso = sss.move("torso","home",False)
+		handle_tray = sss.move("tray","down",False)
+		handle_head = sss.move("head","front",False)
+		handle_torso.wait()
+		handle_tray.wait()
+		handle_head.wait()
+
+		# check, if all components are working
+		retval_list = []
+		retval_list.append(handle_torso.get_error_code())
+		retval_list.append(handle_tray.get_error_code())
+		retval_list.append(handle_head.get_error_code())
+		for retval in retval_list:
+			if retval != 0:
+				print 'Something failed in torso:', retval_list
+				return 'failed'
+
+		# \todo check for move hardware errors
+
+		return 'success'
+
+class init_all(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['success','failed'])
+
+	def execute(self, userdata):
+		raw_input("\nTURN HEAD MANUALLY UP!\n")
+		# init all components
+		sss.init("base")
+		#sss.init("arm")
+		sss.init("sdh")
+		sss.init("tray")
+		sss.init("torso")
+		sss.init("head")
+
+		# \todo check for init hardware errors
+
+		sss.recover("base")
+		sss.recover("arm")
+		sss.recover("sdh")
+		sss.recover("tray")
+		sss.recover("torso")
+		sss.recover("head")
+		raw_input("\nMOVE BASE WITH JOYSTICK!\n")
+
+		# move to initial positions
+		handle_arm = sss.move("arm","folded",False)
+		handle_torso = sss.move("torso","home",False)
+		handle_sdh = sss.move("sdh","cylclosed",False)
+		handle_tray = sss.move("tray","down",False)
+		handle_head = sss.move("head","front",False)
+		handle_arm.wait()
+		handle_torso.wait()
+		handle_sdh.wait()
+		handle_tray.wait()
+		handle_head.wait()
+
+		# check, if all components are working
+		retval_list = []
+		retval_list.append(handle_arm.get_error_code())
+		retval_list.append(handle_torso.get_error_code())
+		retval_list.append(handle_sdh.get_error_code())
+		retval_list.append(handle_tray.get_error_code())
+		retval_list.append(handle_head.get_error_code())
+		for retval in retval_list:
+			if retval != 0:
+				print 'Something failed:', retval_list
+				return 'failed'
+
+		# \todo check for move hardware errors
+
+		return 'success'
+
+class init_head_for_recognition(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['success', 'failed'])
+
+	def execute(self, userdata):
+		handle_head = sss.move("head","front_face")
+		handle_head.wait()
+		retval_list = []
+		for retval in retval_list:
+			if retval != 0:
+				print 'Something failed:', retval_list
+				return 'failed'
+		return 'success'
+
+
+
+class wait_for_start(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['success', 'pending'])
+		
+	def execute(self, userdata):
+		print "Type -- S -- to start the scenario"
+		ret = sss.wait_for_input()
+		if ret == 'S':
+			return 'success'
+		else:
+			print "Wrong input key"
+			return 'pending'	
+
+class announce_ready(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['success','failed'])
+		self.clear_tts = rospy.ServiceProxy('/brsu_topic_to_service/clear_stored_infos', std_srvs.srv.Empty)
+		
+	def execute(self, userdata):
+		rospy.wait_for_service('/brsu_topic_to_service/clear_stored_infos',5) 
+		self.clear_tts()
+	
+		announce_ready_phrase = "I am ready now"
+		SAY(announce_ready_phrase)
+		return 'success'
+
+class enter_arena(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['success','failed'])
+
+	def execute(self, userdata):
+
+		door_client = rospy.ServiceProxy('/mdr_perception/door_status/door_status', std_srvs.srv.Empty)   # TODO: this service does not exist anymore, because topic-to-service got removed
+		rospy.wait_for_service('/mdr_perception/door_status/door_status',5) # todo error handling
+
+		wait_for_open_door_phrase = "I am waiting for an open door"
+		SAY(wait_for_open_door_phrase)
+
+		# wait for open door
+		door_open = False
+		while not door_open:
+			print door_open
+			try:
+				res = door_client()
+			except rospy.ServiceException, e:
+				print "Service call failed: %s"%e
+			door_open = res.value
+
+		enter_arena_phrase = "The door is open. I will enter the arena now"
+		SAY(enter_arena_phrase)
+
+		#sss.move("base","entrance_post_in",mode="linear")
+		move_base_direct_brsu([0.2, 0.0, 0.0, 7])
+		sss.move("base","entrance_post_in")
+		#sss.move("torso","shake")
+
+		return 'success'
+
+
+############ counting and comparing states
+
+class increment(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['success'], input_keys=['number_to_increment', 'increment'], output_keys=['result'])
+
+	def execute(self, userdata):
+		userdata.result = userdata.number_to_increment + userdata.increment
+		return 'success'
+
+class compare(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['equal', 'not_equal'], input_keys=['value1', 'value2'])
+
+	def execute(self, userdata):
+		if userdata.value1 == userdata.value2:
+			return 'equal'
+		else:
+			return 'not_equal'
+			
+class pop_item_from_list(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['success', 'no_item'], 
+									input_keys=['list_in'], 
+									output_keys=['popped_element_out'])
+	
+	def execute(self, userdata):
+			if len(userdata.list_in) == 0:
+				return 'no_item'
+			else:
+				userdata.popped_element_out = userdata.list_in.pop()
+				return 'success'
+
+
+class load_search_poses_in_room(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, 
+			outcomes=['success'], 
+			input_keys=['room_name_in', 'room_prefix_in', 'room_suffix_in'],
+			output_keys=['room_poses_out'])
+		
+	def execute(self, userdata):
+		room_poses_result =  []
+		
+		param_available = True
+		i = 1
+		while param_available:
+			pose_string = userdata.room_prefix_in + userdata.room_name_in + str(i)
+			i += 1
+			param_available = rospy.has_param('/script_server/base/' + pose_string)
+			print param_available
+			if param_available:
+				room_poses_result.append(pose_string)
+				
+		room_poses_result.reverse()
+		print room_poses_result	
+		print pose_string	
+		userdata.room_poses_out = room_poses_result		
+		return 'success'
+
+
+class is_array_empty(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, 
+			outcomes=['yes', 'no'], 
+			input_keys=['array_in'])
+		
+	def execute(self, userdata):
+		if userdata.array_in:
+			return 'no'
+		else:
+			return 'yes'
+
+		
+class general_checklist(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['success'])
+	def execute(self, userdata):
+		raw_input("\nSTART DASHBOARD!\n")
+		raw_input("\nSTART WINDOWS NODES!\n")
+		raw_input("\nSPEAKER VOLUME?\n")
+		raw_input("\nCHECK NODES WITH ROBOT_MONITOR\n")
+		raw_input("\nPROTECT EMERGENCY STOP LASER RANGE\n")
+		raw_input("\nCHECK THE LOCALIZATION (INITIAL POSE)\n")
+		raw_input("\nDASHBOARD: MOVE TORSO AND HEAD\n")
+		raw_input("\nDASHBOARD: ARM TO FOLDED\n")
+		raw_input("\nMOVE HEAD AT FRONT_FACE\n")
+		raw_input("\nTEST SPEECH RECOGNITION (JENNY YES)\n")
+		raw_input("\nWAIT FOR: I'M, READY NOW!\n")
+		return 'success'		
+	
+
