@@ -7,13 +7,15 @@ import rospy
 import smach
 import smach_ros
 
+import mcr_speech_msgs.msg
+
 class load_faces(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
-		self.load_person_face = rospy.ServiceProxy('/brsu_face_recognition/load_person_face', brsu_srvs.srv.FaceName)
+		self.load_person_face = rospy.ServiceProxy('/mcr_speech/face_recognition/load_person_face', mcr_speech_msgs.srv.FaceName)
 
 	def execute(self, userdata):
-		rospy.wait_for_service('/brsu_face_recognition/load_person_face', 3)
+		rospy.wait_for_service('/mcr_speech/face_recognition/load_person_face', 3)
 		light_pub.publish(red_light)
 		try:
 			#self.load_person_face("nico")
@@ -219,12 +221,12 @@ class wait_for_arbitrary_phrase(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','not_understood'], 
 									output_keys=['keyword_list_out', 'confidence_list_out'])
-		self.get_last_recognized_speech = rospy.ServiceProxy('/brsu_speech_recognition/get_last_recognized_speech', brsu_srvs.srv.GetLastRecognizedSpeech)
+		self.get_last_recognized_speech = rospy.ServiceProxy('/mcr_speech/speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetLastRecognizedSpeech) # TODO this was a topic from topic-to-service. need to solve this
 	
 	def execute(self, userdata):
 		# wait for the command
 		light_pub.publish(green_light)
-		rospy.wait_for_service('/brsu_speech_recognition/get_last_recognized_speech', 3)
+		rospy.wait_for_service('/mcr_speech/speech_recognition/get_last_recognized_speech', 3) # TODO this was a topic from topic-to-service. need to solve this
 		res = self.get_last_recognized_speech()
 		
 		if res.keyword.strip() != "no_speech" and res.keyword.strip() != "not_understood":
