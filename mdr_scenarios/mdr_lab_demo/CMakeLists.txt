@@ -24,6 +24,8 @@ catkin_package(
     mdr_table_cleaning
 )
 
+catkin_python_setup()
+
 install(PROGRAMS
   ros/scripts/lab_demo
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
