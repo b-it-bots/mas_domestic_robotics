@@ -1,0 +1,8 @@
+<grammar LANGID="409">
+  <RULE NAME="confirmation_rule">
+    <L PROPNAME="yesno">
+      <P VALSTR="yes">yes</P>
+      <P VALSTR="no">no</P>  
+    </L>
+  </RULE>
+</grammar>

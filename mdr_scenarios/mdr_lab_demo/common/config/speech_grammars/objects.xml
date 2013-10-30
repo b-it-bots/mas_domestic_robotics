@@ -1,0 +1,13 @@
+<grammar LANGID="409">
+
+<RULE NAME="objects_rule" TOPLEVEL = "INACTIVE">
+	<L PROPNAME="objects">
+		<P VALSTR="pringles">pringles</P>
+		<P VALSTR="snack">snack</P>
+		<P VALSTR="tomatoes">tomatoes</P>
+		<P VALSTR="sponge">sponge</P>
+		<P VALSTR="milk">milk</P>
+		<P VALSTR="ketchup">ketchup</P>
+	</L>
+</RULE>
+</grammar>

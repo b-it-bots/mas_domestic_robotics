@@ -1,0 +1,19 @@
+<grammar LANGID="409">
+	<RULE NAME="gpsr_rule" TOPLEVEL="ACTIVE">
+			<P>Jenny</P>
+			<O><RULEREF name="gpsr_actions_rule" url="demo_actions.xml" /></O>
+			<O><P>...</P></O>
+			<O><RULEREF name="gpsr_actions_rule" url="demo_actions.xml" /></O>
+			<O><P>...</P></O>
+			<L>
+				<RULEREF name="gpsr_actions_rule" url="demo_actions.xml"/>
+				<!-- exit can only ocur in last sentence
+				<P VALSTR="exit" PROPNAME="action">
+					<L>
+						<P>exit</P>
+					</L>
+				</P> -->
+			</L>
+			<P>...</P>
+	</RULE>
+</grammar>
