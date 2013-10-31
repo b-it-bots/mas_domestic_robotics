@@ -8,6 +8,8 @@ import smach
 import smach_ros
 
 import mcr_speech_msgs.msg
+import mcr_perception_msgs.msg
+
 
 INTRODUCE = 'introduce'
 LEARN_PERSON = 'learn_person'
