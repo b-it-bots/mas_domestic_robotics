@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+	
+  <node pkg="mdr_topic_to_service" type="topic_to_service_node" name="topic_to_service" ns="mcr_common" output="screen"/>
+
+</launch>
