@@ -12,27 +12,6 @@ from mdr_lab_demo.lab_demo_states import *
 from mdr_common_states.common_state_machines import *
 from mdr_common_states.common_states import *
 	
-INTRODUCE = 'introduce'
-LEARN_PERSON = 'learn_person'
-FIND_PERSON = 'find_person'
-IDENTIFY_PERSON = 'identify_person'
-FOLLOW = 'follow_person'
-GUIDE = 'guide'
-MOVE_TO = 'move_to'
-DETECT_OBJECT = 'detect_object'
-POINT_TO_OBJECT = 'point_to_object'
-GRASP = 'grasp'
-CLEAN_TABLE = 'clean_table'
-EXIT = 'exit'
-PENDING = 'pending'
-WEIGHT = 'weight'
-RELEASE = 'release'
-HANDOVER = 'handover'
-CATEGORIZE_OBJECTS = 'categorize_objects'
-CARRY_BOX = 'carry_box'
-
-GPSR_PREFIX = 'gpsr_'
-
 # main
 def main():
 	rospy.init_node('lab_demo')
