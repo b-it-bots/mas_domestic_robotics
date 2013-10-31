@@ -20,7 +20,7 @@ def main():
 	sm = smach.StateMachine(outcomes=['overall_success', 'overall_failed'])
 	
 	
-	names_to_understand = rospy.get_param('/script_server/brsu_speech_names')
+	names_to_understand = rospy.get_param('/script_server/speech_names')
 	speech_grammar_file = rospy.get_param('/SpeechGrammarFile')
 	
 	# TODO: Adapt for competiton######################################### 
