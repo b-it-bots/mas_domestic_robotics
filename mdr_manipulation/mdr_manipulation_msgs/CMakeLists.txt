@@ -6,6 +6,8 @@ find_package(catkin REQUIRED
 )
 
 add_service_files(FILES
+  GetBottleState.srv
+  GetWrench.srv
   Grasp.srv
 )
 
