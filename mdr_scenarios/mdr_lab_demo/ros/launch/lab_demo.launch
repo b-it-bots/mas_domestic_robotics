@@ -12,6 +12,8 @@
   <group>
     <machine name="brsu-pc1" address="cob3-1-pc1" env-loader="$(find mdr_bringup)/env.sh" default="true" />
 
+    <include file="$(find mdr_topic_to_service)/ros/launch/topic_to_service.launch" />
+
     <include file="$(find mdr_2dnav)/ros/launch/2dnav_tr.launch" />
 
     <!--include file="$(find mdr_simple_pick)/launch/simple_pick.launch" /-->
