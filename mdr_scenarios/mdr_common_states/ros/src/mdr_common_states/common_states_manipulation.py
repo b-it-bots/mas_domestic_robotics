@@ -16,7 +16,7 @@ import std_srvs.srv
 import actionlib_msgs.msg
 import moveit_msgs.msg
 
-#import mdr_manipulation_msgs.msg
+import mdr_manipulation_msgs.srv
 
 from mdr_common_states.common_states_speech import *
 
@@ -233,7 +233,7 @@ class put_object_in_hand(smach.State):
 		self.get_close_request = rospy.ServiceProxy('/sdh_controller/one_pad_contact', Trigger)
 		self.get_force_request = rospy.ServiceProxy('/is_external_force_applied', Trigger)
 		self.memorize_current_force = rospy.ServiceProxy('/memorize_current_force', std_srvs.srv.Empty)
-		self.get_bottle_state = rospy.ServiceProxy('/get_bottle_state', BottleState)
+		self.get_bottle_state = rospy.ServiceProxy('/get_bottle_state', mdr_manipulation_msgs.srv.GetBottleState)
 		self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 		self.set_operation_mode = rospy.ServiceProxy('/arm_controller/set_operation_mode', SetOperationMode)
 		self.pub_arm_vel = rospy.Publisher('/arm_controller/command', JointTrajectory)
@@ -317,8 +317,8 @@ class put_object_in_hand(smach.State):
 class weight_bottle(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'],input_keys=['bottle_state','force_x_with_bottle'],output_keys=['bottle_state','force_x_with_bottle'])
-		self.get_bottle_state = rospy.ServiceProxy('/get_bottle_state', BottleState)
-		self.get_wrench = rospy.ServiceProxy('/get_wrench', GetWrench)
+		self.get_bottle_state = rospy.ServiceProxy('/get_bottle_state', mdr_manipulation_msgs.srv.GetBottleState)
+		self.get_wrench = rospy.ServiceProxy('/get_wrench', mdr_manipulation_msgs.srv.GetWrench)
 
 	def execute(self, userdata):
 		#sss.move("arm","pregrasp")

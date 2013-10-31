@@ -70,7 +70,7 @@ class wait_for_command(smach.State):
 		smach.State.__init__(self, outcomes=['success'], 
 									output_keys=['understood_command'], 
 									input_keys=['commands_to_wait_for'])
-		self.get_last_recognized_speech = rospy.ServiceProxy('/mcr_speech/speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetLastRecognizedSpeech)
+		self.get_last_recognized_speech = rospy.ServiceProxy('/mcr_speech/speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetRecognizedSpeech)
 
 	def execute(self, userdata):
 		# wait for the command
@@ -98,7 +98,7 @@ class acknowledge_command(smach.State):
 
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['yes','no'], input_keys=['understood_command'])
-		self.getLastRecognizedSpeech = rospy.ServiceProxy('/mcr_speech/speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetLastRecognizedSpeech)
+		self.getLastRecognizedSpeech = rospy.ServiceProxy('/mcr_speech/speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetRecognizedSpeech)
 		self.clear_last_command_proxy = rospy.ServiceProxy("/mcr_speech/speech_recognition/clear_last_recognized_speech", std_srvs.srv.Empty)
 
 	def execute(self, userdata):
@@ -137,7 +137,7 @@ class acknowledge_command_with_loading_grammar(smach.State):
 
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['yes','no'], input_keys=['understood_command'])
-		self.getLastRecognizedSpeech = rospy.ServiceProxy('/mcr_speech/speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetLastRecognizedSpeech)
+		self.getLastRecognizedSpeech = rospy.ServiceProxy('/mcr_speech/speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetRecognizedSpeech)
 		self.clear_last_command_proxy = rospy.ServiceProxy("/mcr_speech/speech_recognition/clear_last_recognized_speech", std_srvs.srv.Empty)
 
 	def execute(self, userdata):

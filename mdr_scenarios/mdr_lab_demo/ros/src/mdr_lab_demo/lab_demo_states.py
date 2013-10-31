@@ -12,7 +12,7 @@ import mcr_speech_msgs.msg
 class load_faces(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
-		self.load_person_face = rospy.ServiceProxy('/mcr_speech/face_recognition/load_person_face', mcr_speech_msgs.srv.FaceName)
+		self.load_person_face = rospy.ServiceProxy('/mcr_speech/face_recognition/load_person_face', mcr_perception_msgs.srv.SetFaceName)
 
 	def execute(self, userdata):
 		rospy.wait_for_service('/mcr_speech/face_recognition/load_person_face', 3)
@@ -221,7 +221,7 @@ class wait_for_arbitrary_phrase(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','not_understood'], 
 									output_keys=['keyword_list_out', 'confidence_list_out'])
-		self.get_last_recognized_speech = rospy.ServiceProxy('/mcr_speech/speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetLastRecognizedSpeech) # TODO this was a topic from topic-to-service. need to solve this
+		self.get_last_recognized_speech = rospy.ServiceProxy('/mcr_speech/speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetRecognizedSpeech) # TODO this was a topic from topic-to-service. need to solve this
 	
 	def execute(self, userdata):
 		# wait for the command
