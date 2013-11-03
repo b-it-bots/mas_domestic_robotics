@@ -13,10 +13,10 @@
     uri: git@github.com:ipa320/cob_environments.git
     version: hydro_dev
 
-#- git:
-#    local-name: cob_simulation
-#    uri: git@github.com:ipa320/cob_simulation.git
-#    version: groovy_catkin
+- git:
+    local-name: cob_simulation
+    uri: git@github.com:mas-group/cob_simulation.git
+    version: hydro_dev
 
 - git:
     local-name: cob_command_tools
