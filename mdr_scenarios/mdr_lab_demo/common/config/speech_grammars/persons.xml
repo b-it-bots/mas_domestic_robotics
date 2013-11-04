@@ -1,0 +1,18 @@
+<grammar LANGID="409">
+	<RULE NAME="persons_rule">
+		<L PROPNAME="persons">
+			<P VALSTR="nico">nico</P>
+			<P VALSTR="fred">fred</P>
+			<P VALSTR="jan">jan</P>
+			<P VALSTR="chris">chris</P>
+			<P VALSTR="sven">sven</P>
+			<P VALSTR="jose">jose</P>
+			<P VALSTR="mike">mike</P>
+			<P VALSTR="gerhard">gerhard</P>
+			<P VALSTR="paul">paul</P>
+			<P VALSTR="björn">björn</P>
+			<P VALSTR="rhama">rhama</P>
+			<P VALSTR="azden">azden</P>
+		</L>
+	</RULE>
+</grammar>

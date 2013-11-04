@@ -12,10 +12,10 @@
 	</include>
 
 	<group>
-		<machine name="hbrs_pc1" address="cob3-1-pc1" default="true" />
+		<machine name="hbrs_pc1" address="cob3-1-pc1" env-loader="$(find mdr_bringup)/env.sh" default="true" />
 
 		<include file="$(find mdr_default_robot_config)/upload_param.launch" />
-	  <include file="$(find mcr_default_env_config)/upload_param.launch" />
+		<include file="$(find mcr_default_env_config)/upload_param.launch" />
 				
 		<!-- start script_server and upload cob default parameters to parameter server -->
 		<group ns="script_server">
@@ -31,11 +31,11 @@
 	</group>
 
 	<group>
-		<machine name="hbrs_pc2" address="cob3-1-pc2" default="true" />
+		<machine name="hbrs_pc2" address="cob3-1-pc2" env-loader="$(find mdr_bringup)/env.sh" default="true" />
 
 		<!-- brsu specific packages -->
-		<include file="$(find mcr_bringup)/components/kinect.launch" />
-
+		<include file="$(find mdr_bringup)/components/openni2.launch" />
+		<include file="$(find mdr_bringup)/components/stemmer_cam.launch" />
 	</group>
 
 

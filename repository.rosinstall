@@ -8,40 +8,40 @@
     uri: git@github.com:mas-group/mas_common_robotics.git
     version: hydro
 
-#- git:
-#    local-name: cob_environments
-#    uri: git@github.com:ipa320/cob_environments.git
-#    version: groovy_catkin
+- git:
+    local-name: cob_environments
+    uri: git@github.com:ipa320/cob_environments.git
+    version: hydro_dev
 
-#- git:
-#    local-name: cob_simulation
-#    uri: git@github.com:ipa320/cob_simulation.git
-#    version: groovy_catkin
+- git:
+    local-name: cob_simulation
+    uri: git@github.com:mas-group/cob_simulation.git
+    version: hydro_dev
 
-#- git:
-#    local-name: cob_command_tools
-#    uri: git@github.com:ipa320/cob_command_tools.git
-#    version: groovy_catkin
+- git:
+    local-name: cob_command_tools
+    uri: git@github.com:mas-group/cob_command_tools.git
+    version: hydro_dev
 
 #- git:
 #    local-name: cob_substitute
 #    uri: git@github.com:ipa320/cob_substitute.git
 #    version: groovy_catkin
 
-#- git:
-#    local-name: cob_calibration_data
-#    uri: git@github.com:b-it-bots/cob_calibration_data.git
-#    version: groovy_catkin
+- git:
+    local-name: cob_calibration_data
+    uri: git@github.com:mas-group/cob_calibration_data.git
+    version: hydro_dev
 
-#- git:
-#    local-name: cob_robots
-#    uri: git@github.com:b-it-bots/cob_robots.git
-#    version: groovy_catkin
+- git:
+    local-name: cob_robots
+    uri: git@github.com:mas-group/cob_robots.git
+    version: hydro_dev
 
-#- git:
-#    local-name: schunk_modular_robotics
-#    uri: git@github.com:b-it-bots/schunk_modular_robotics.git
-#    version: groovy_catkin
+- git:
+    local-name: schunk_modular_robotics
+    uri: git@github.com:mas-group/schunk_modular_robotics.git
+    version: hydro_dev
 
 #- git:
 #    local-name: universal_robot
@@ -53,14 +53,14 @@
 # TODO: merge from upstream!!!
 # debian packages not ready for catkin
 # can be deleted later
-#- git:
-#    local-name: cob_common
-#    uri: git@github.com:b-it-bots/cob_common.git
-#    version: groovy_catkin
+- git:
+    local-name: cob_common
+    uri: git@github.com:mas-group/cob_common.git
+    version: hydro_dev
 
 - git:
     local-name: cob_driver
-    uri: git@github.com:ipa320/cob_driver.git
+    uri: git@github.com:mas-group/cob_driver.git
     version: hydro_dev
 
 - git:
@@ -76,12 +76,10 @@
 ### end
 
 
-###
-# TODO: not yet catkinized
-#- git:
-#    local-name: cob_navigation
-#    uri: git@github.com:ipa320/cob_navigation.git
-#    version: groovy_catkin
+- git:
+    local-name: cob_navigation
+    uri: git@github.com:mas-group/cob_navigation.git
+    version: hydro_dev
 
 #- git:
 #    local-name: cob_manipulation

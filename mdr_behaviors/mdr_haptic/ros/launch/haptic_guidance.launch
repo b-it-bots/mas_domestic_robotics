@@ -1,5 +1,5 @@
 <launch>
-	<node name="mdr_haptic_guidance" pkg="mdr_haptic" type="mdr_haptic_guidance_node" output="screen">		
+	<node name="haptic_guidance" pkg="mdr_haptic" type="haptic_guidance" ns="mdr_behaviors" output="screen">		
 		<param name="wrench_input" value="/arm_controller/wrench"/>
 		<param name="velocity_input" value="/base_controller/odometry"/>
 		<param name="velocity_output" value="/base_controller/command" />

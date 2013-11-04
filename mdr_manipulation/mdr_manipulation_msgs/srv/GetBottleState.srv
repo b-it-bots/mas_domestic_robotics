@@ -1,0 +1,9 @@
+---
+# the possible states of the bottle
+int8 NO_BOTTLE_GRASPED = 1
+int8 EMPTY = 2
+int8 HALF_FULL = 3
+int8 FULL = 4
+
+# the actual state of the bottle
+int8 state

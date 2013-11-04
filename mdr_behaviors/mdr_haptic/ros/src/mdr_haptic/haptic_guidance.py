@@ -12,9 +12,9 @@ from nav_msgs.msg import *
 class haptic_guidance():
 	def __init__(self):
 		# get parameter :
-		self.wrench_input = rospy.get_param('/mdr_haptic_guidance/wrench_input')
-		self.velocity_input = rospy.get_param('/mdr_haptic_guidance/velocity_input')
-		self.velocity_output = rospy.get_param('/mdr_haptic_guidance/velocity_output')
+		self.wrench_input = rospy.get_param('/mdr_behaviors/haptic_guidance/wrench_input')
+		self.velocity_input = rospy.get_param('/mdr_behaviors/haptic_guidance/velocity_input')
+		self.velocity_output = rospy.get_param('/mdr_behaviors/haptic_guidance/velocity_output')
 
 		
 		# boolean switch for services
@@ -286,7 +286,7 @@ class haptic_guidance():
 		self.y_velocity_force_normalization = ( abs_range_velocity_y / abs_range_force_y )
 		
 def main():
-	rospy.init_node('mdr_haptic_guidance')
+	rospy.init_node('haptic_guidance')
 	haptic_guidance()
 	rospy.loginfo('haptic guidance: services started')
 	rospy.spin()

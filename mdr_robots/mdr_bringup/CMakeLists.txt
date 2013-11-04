@@ -2,7 +2,20 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mdr_bringup)
 find_package(catkin REQUIRED)
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS
+    mcr_aravis_vision
+    mcr_default_env_config
+    mdr_default_robot_config
+    mdr_hardware_config
+    cob_bringup
+    sicktoolbox_wrapper
+    hokuyo_node
+    robot_state_publisher
+    openni2_launch
+    tf
+    joy
+)
 
 install(FILES robot.launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}

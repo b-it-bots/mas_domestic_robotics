@@ -502,7 +502,7 @@ namespace mdr_lwr_kinematics
     for(int i=0; i<3;++i) p_out.p.data[i] = eetrans[i];
     for(int i=0; i<9;++i) p_out.M.data[i] = eerot[i];
     poses.resize(1);
-    tf::PoseKDLToMsg(p_out,poses[0]);	
+    tf::poseKDLToMsg(p_out,poses[0]);	
 
     return valid;
   }  
@@ -521,7 +521,7 @@ namespace mdr_lwr_kinematics
     }
 
     KDL::Frame frame;
-    tf::PoseMsgToKDL(ik_pose,frame);
+    tf::poseMsgToKDL(ik_pose,frame);
 
     IkSolutionList<IkReal> solutions;
     int numsol = solve(frame,vfree,solutions);
@@ -574,7 +574,7 @@ namespace mdr_lwr_kinematics
     }
 	
     KDL::Frame frame;
-    tf::PoseMsgToKDL(ik_pose,frame);
+    tf::poseMsgToKDL(ik_pose,frame);
 
     std::vector<double> vfree(free_params_.size());
 
@@ -668,7 +668,7 @@ namespace mdr_lwr_kinematics
     }
 	
     KDL::Frame frame;
-    tf::PoseMsgToKDL(ik_pose,frame);
+    tf::poseMsgToKDL(ik_pose,frame);
 
     std::vector<double> vfree(free_params_.size());
 
@@ -783,7 +783,7 @@ namespace mdr_lwr_kinematics
     }
 
     KDL::Frame frame;
-    tf::PoseMsgToKDL(ik_pose,frame);
+    tf::poseMsgToKDL(ik_pose,frame);
 
     std::vector<double> vfree(free_params_.size());
 
@@ -883,7 +883,7 @@ namespace mdr_lwr_kinematics
     }
 
     KDL::Frame frame;
-    tf::PoseMsgToKDL(ik_pose,frame);
+    tf::poseMsgToKDL(ik_pose,frame);
 
     std::vector<double> vfree(free_params_.size());
 

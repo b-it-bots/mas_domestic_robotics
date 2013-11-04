@@ -1,0 +1,13 @@
+<GRAMMAR LANGID="409">
+	<RULE NAME="guide_rule" TOPLEVEL="ACTIVE">
+		<P>Jenny</P>
+		<O> Please </O>
+		<L PROPNAME="guide"> 
+			<P VALSTR="guiding">guide</P>
+			<P VALSTR="guiding">start guiding</P>
+			<P VALSTR="stop_guiding">stop guiding</P>
+			<P VALSTR="stop_guiding">stop carrying</P>
+			<RULEREF name="confirmation_rule" url="./confirmation.xml"/>			
+		</L>
+	</RULE>
+</GRAMMAR>
