@@ -72,7 +72,7 @@ class load_search_poses_in_room_gpsr(smach.State):
 		
 	def execute(self, userdata):
 		room_poses_result =  []
-		speech_locations = rospy.get_param("/script_server/brsu_speech_places")	
+		speech_locations = rospy.get_param("/script_server/speech_places")	
 
 		roomname = userdata.room_name_in
 		
