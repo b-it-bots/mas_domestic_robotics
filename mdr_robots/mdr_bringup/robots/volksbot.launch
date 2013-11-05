@@ -6,8 +6,9 @@
 	<arg name="pkg_hardware_config" default="$(find mdr_hardware_config)"/>
 
 	<group>
+<!--
 		<machine name="pc1" address="volksbot" default="true"/>
-
+-->
 		<!-- upload robot description -->
 		<include file="$(find mdr_hardware_config)/common/upload_robot.launch" >
        		<arg name="robot" default="$(arg robot)"/>
@@ -18,7 +19,7 @@
 		<node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher"/>
 
 		<!-- base -->
-		<include file="$(find mdr_volksbot_motor_controller)/ros/launch/volksbot_motor_controller.launch" />
+		<include file="$(find mdr_volksbot_motorcontroller)/ros/launch/volksbot_motorcontroller.launch" />
 		<include file="$(find mdr_bringup)/components/sick_laser_front.launch" />
 
 		<!--head -->
@@ -28,7 +29,13 @@
 		<include file="$(find mdr_bringup)/components/katana_arm.launch" />
   
 		<!-- teleop with joypad-->
+<!--
 		<include file="$(find mdr_bringup)/tools/teleop.launch" />
+-->
+		<!-- Publish joint states for all the joints -->
+		<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+		  <param name="use_gui" value="false"/>
+		</node>
 		
 	</group>
 

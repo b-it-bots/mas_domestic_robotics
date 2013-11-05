@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
-	<include filename="$(find mdr_description)/urdf/base/volksbot/base.gazebo.xacro" />
-	<include filename="$(find mdr_description)/urdf/base/volksbot/base.transmission.xacro" />
-	<include filename="$(find mcr_description)/urdf/sensors/sick_lms_200.urdf.xacro"/>
-	<include filename="$(find mcr_description)/urdf/sensors/hokuyo_lx30.urdf.xacro"/> 
+	<xacro:include filename="$(find mdr_description)/urdf/base/volksbot/base.gazebo.xacro" />
+	<xacro:include filename="$(find mdr_description)/urdf/base/volksbot/base.transmission.xacro" />
+	<xacro:include filename="$(find mcr_description)/urdf/sensors/sick_lms_200.urdf.xacro"/>
+	<xacro:include filename="$(find mcr_description)/urdf/sensors/hokuyo_lx30.urdf.xacro"/> 
 	
 	
 	<!-- base -->
@@ -172,7 +172,7 @@
 			</visual>
 			
 			<collision>
-				<origin xyz="0 0 0" rpy="0 0 0" />
+				<origin xyz="0 0 0.1" rpy="0 0 0" />
 				<geometry>
 					<box size="0.001 0.001 0.001" />
 				</geometry>

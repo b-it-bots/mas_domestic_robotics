@@ -2,12 +2,16 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
 	<!-- Front wheel transmission   -->
-	<xacro:macro name="volksbot_front_wheel_transmission" params="suffix parent reflect">
-		<transmission type="pr2_mechanism_model/SimpleTransmission" name="${parent}_${suffix}_front_wheel_trans">
-			<actuator name="${parent}_${suffix}_front_wheel_motor" />
-			<joint name="${parent}_${suffix}_front_wheel_joint" />
-			<mechanicalReduction>${reflect * 624/35 * 80/18}</mechanicalReduction>
-		</transmission>
+   	<xacro:macro name="volksbot_front_wheel_transmission" params="suffix parent reflect">
+		        <transmission name="${parent}_${suffix}_front_wheel_trans">
+			  <type>transmission_interface/SimpleTransmission</type>
+			  <actuator name="${parent}_${suffix}_front_wheel_motor">
+<!--			    <hardwareInterface>EffortJointInterface</hardwareInterface> -->
+			    <hardwareInterface>VelocityJointInterface</hardwareInterface> 
+			    <mechanicalReduction>${reflect * 624/35 * 80/18}</mechanicalReduction>
+			  </actuator>
+			  <joint name="${parent}_${suffix}_front_wheel_joint" />
+			 </transmission>
 	</xacro:macro>
 
 </robot>
