@@ -95,25 +95,35 @@ The ROBOT_ENV variable can be used to switch between different environments. The
 
 ## Bring up the robot and it's basic components
 ### In Simulation
+
      roslaunch mdr_bringup_sim robot.launch
+     
      
 In a new terminal you can open the Gazebo GUI to see the environment and the robot
 
-     rosrun gazebo gui
+     rosrun gazebo_ros gzclient
+
 
 ### At the Real Robot
+
      roslaunch mdr_bringup robot.launch
 
 
 ## Test the arm, hand, torso, tray and head
+
      roslaunch mdr_bringup dashboard.launch
 
+
 ## Test the base
+
      roslaunch cob_teleop teleop_keyboard.launch
 
+
 ## Visualize the robot state and sensor data
+
      rosrun rviz rviz
      
+
 Click on the menu bar "File -> Open Config", navigate to "~/catkin_ws/src/mas_domestic_robotics" and select the "cob.rviz" file.
 
      
