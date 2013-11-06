@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<launch>
+
+	<node name="emergency_stop_mapper" pkg="mdr_emergency_stop_mapper" type="emergency_stop_mapper" respawn="false" output="screen">
+		<remap from="emergency_stop_active" to="/arm_controller/external_emergency_stop_active" />
+	</node>
+
+</launch>
