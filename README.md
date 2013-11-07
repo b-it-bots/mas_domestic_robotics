@@ -116,7 +116,7 @@ In a new terminal you can open the Gazebo GUI to see the environment and the rob
 
 ## Test the base
 
-     roslaunch cob_teleop teleop_keyboard.launch
+     roslaunch mdr_brinup teleop_keyboard.launch
 
 
 ## Visualize the robot state and sensor data
