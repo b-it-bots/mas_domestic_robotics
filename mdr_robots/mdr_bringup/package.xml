@@ -14,6 +14,7 @@
 
   <run_depend>mcr_aravis_vision</run_depend>
   <run_depend>mcr_default_env_config</run_depend>
+  <run_depend>mcr_teleop</run_depend>
   <run_depend>mcr_kinect_led</run_depend>
   <run_depend>mdr_default_robot_config</run_depend>
   <run_depend>mdr_hardware_config</run_depend>
