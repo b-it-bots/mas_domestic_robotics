@@ -23,6 +23,5 @@
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>openni2_launch</run_depend>
   <run_depend>tf</run_depend>
-  <run_depend>joy</run_depend>
 
 </package>

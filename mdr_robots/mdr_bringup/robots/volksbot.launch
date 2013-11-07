@@ -28,10 +28,6 @@
 		<!-- arm -->
 		<include file="$(find mdr_bringup)/components/katana_arm.launch" />
   
-		<!-- teleop with joypad-->
-<!--
-		<include file="$(find mdr_bringup)/tools/teleop.launch" />
--->
 		<!-- Publish joint states for all the joints -->
 		<node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
 		  <param name="use_gui" value="false"/>

@@ -14,7 +14,6 @@ catkin_package(
     robot_state_publisher
     openni2_launch
     tf
-    joy
 )
 
 install(FILES robot.launch
