@@ -154,10 +154,10 @@ class check_if_persons_are_present(smach.State):
 		smach.State.__init__(self, outcomes=['person_found', 'no_person_found', 'failed'], 
 									input_keys=['visited_person_poses'],
 									output_keys=['person_poses_to_approach', 'approach_state'])
-		self.get_person_list = rospy.ServiceProxy('/mcr_perception/body_detection_3d/getPersonList', mcr_perception_msgs.srv.GetPersonList) 
+		self.get_person_list = rospy.ServiceProxy('/mcr_perception/body_detection_3d/get_person_list', mcr_perception_msgs.srv.GetPersonList) 
 
 	def execute(self, userdata):
-		rospy.wait_for_service('/mcr_perception/body_detection_3d/getPersonList', 3)
+		rospy.wait_for_service('/mcr_perception/body_detection_3d/get_person_list', 3)
 
 		try:
 			person_list = self.get_person_list().person_list.persons
@@ -294,7 +294,7 @@ class check_if_person_is_in_front(smach.State):
 	def __init__(self, distance_threshold = 1.0, angle_threshold = 0.7):
 		smach.State.__init__(self, outcomes=['person_found', 'failed'])
 
-		self.get_person_list = rospy.ServiceProxy('/mcr_perception/leg_detection/getPersonList', mcr_perception_msgs.srv.GetPersonList) 
+		self.get_person_list = rospy.ServiceProxy('/mcr_perception/leg_detection/leg_positions', mcr_perception_msgs.srv.GetPersonList) 
 
 		self.distance_threshold = distance_threshold
 		self.angle_threshold = angle_threshold
@@ -302,7 +302,7 @@ class check_if_person_is_in_front(smach.State):
 		
 		
 	def execute(self, userdata):
-		rospy.wait_for_service('/mcr_perception/leg_detection/getPersonList', 3)	
+		rospy.wait_for_service('/mcr_perception/leg_detection/leg_positions', 3)	
 		
 		if check_if_person_is_in_front.init_tfl == False:
 			check_if_person_is_in_front.transform_listener = tf.TransformListener()
