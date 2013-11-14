@@ -10,6 +10,7 @@ import smach_ros
 import mcr_speech_msgs.msg
 import mcr_perception_msgs.msg
 
+from mdr_common_states.common_states import *
 
 INTRODUCE = 'introduce'
 LEARN_PERSON = 'learn_person'
@@ -32,6 +33,8 @@ CARRY_BOX = 'carry_box'
 
 GPSR_PREFIX = 'gpsr_'
 
+IT = "it"
+
 
 class load_faces(smach.State):
 	def __init__(self):
@@ -39,8 +42,8 @@ class load_faces(smach.State):
 		self.load_person_face = rospy.ServiceProxy('/mcr_speech/face_recognition/load_person_face', mcr_perception_msgs.srv.SetFaceName)
 
 	def execute(self, userdata):
-		rospy.wait_for_service('/mcr_speech/face_recognition/load_person_face', 3)
-		light_pub.publish(red_light)
+		#rospy.wait_for_service('/mcr_perception/face_recognition/load_person_face', 3)
+		set_light_color(COLOR_RED)
 		try:
 			#self.load_person_face("nico")
 			#self.load_person_face("fred")
@@ -245,18 +248,18 @@ class wait_for_arbitrary_phrase(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','not_understood'], 
 									output_keys=['keyword_list_out', 'confidence_list_out'])
-		self.get_last_recognized_speech = rospy.ServiceProxy('/mcr_speech/speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetRecognizedSpeech) # TODO this was a topic from topic-to-service. need to solve this
+		self.get_last_recognized_speech = rospy.ServiceProxy('/mcr_speech_speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetRecognizedSpeech) # TODO this was a topic from topic-to-service. need to solve this
 	
 	def execute(self, userdata):
 		# wait for the command
-		light_pub.publish(green_light)
-		rospy.wait_for_service('/mcr_speech/speech_recognition/get_last_recognized_speech', 3) # TODO this was a topic from topic-to-service. need to solve this
+		set_light_color(COLOR_GREEN)
+		rospy.wait_for_service('/mcr_speech_speech_recognition/get_last_recognized_speech', 3) # TODO this was a topic from topic-to-service. need to solve this
 		res = self.get_last_recognized_speech()
 		
 		if res.keyword.strip() != "no_speech" and res.keyword.strip() != "not_understood":
 			userdata.keyword_list_out = res.keyword_list
 			userdata.confidence_list_out = list(res.confidence_list)
-			light_pub.publish(red_light)
+			set_light_color(COLOR_RED)
 			return 'success'
 		else:
 			rospy.sleep(0.2)
@@ -273,13 +276,13 @@ class decompose_speech_phrase(smach.State):
 									)
 	
 	def execute(self, userdata):
-		speech_objects = rospy.get_param("/script_server/brsu_speech_objects")
+		speech_objects = rospy.get_param("/script_server/speech_objects")
 		speech_objects.append('it') #count "it" as object	
 		
-		speech_locations = rospy.get_param("/script_server/brsu_speech_places")	
-		#speech_locations = speech_locations + rospy.get_param("/script_server/brsu_speech_grasp_locations")	
+		speech_locations = rospy.get_param("/script_server/speech_places")	
+		#speech_locations = speech_locations + rospy.get_param("/script_server/speech_grasp_locations")	
 			
-		speech_actions = rospy.get_param("/script_server/brsu_speech_actions")
+		speech_actions = rospy.get_param("/script_server/speech_actions")
 			
 		words = userdata.keyword_list_in
 		confidences = userdata.confidence_list_in

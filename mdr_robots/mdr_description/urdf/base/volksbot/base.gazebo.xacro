@@ -32,12 +32,14 @@
                 <contact>
 			    	<collision>${name}_link_geom</collision>
 			    </contact>
+
 			    <plugin name="${name}_gazebo_ros_bumper_controller" filename="libgazebo_ros_bumper.so">
 				    <alwaysOn>true</alwaysOn>
 				    <updateRate>100.0</updateRate>
 				    <bumperTopicName>${name}_bumper</bumperTopicName>
     			</plugin>
-            </sensor>            
+
+              </sensor>            
 			<material>Gazebo/Grey</material>
 		</gazebo>
 
@@ -56,18 +58,38 @@
 		</gazebo>
 		
 		<gazebo>
-			<plugin name="diffdrive_controller" filename="libdiffdrive_plugin.so">
-				<alwaysOn>true</alwaysOn>
-				<update>100</update>
-				<updateRate>100.0</updateRate>
+                         <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+                            <robotNamespace>/volksbot</robotNamespace>
+                          </plugin>
+
+<!--			<plugin name="diffdrive_controller" filename="libdiffdrive_plugin.so"> -->
+
+			<plugin name="diffdrive_controller" filename="libgazebo_ros_diff_drive.so">
+
+			  <alwaysOn>true</alwaysOn>
+			  <updateRate>100</updateRate>
+<!--			  <leftJoint>base_link_right_wheel_joint</leftJoint>
+			  <rightJoint>base_link_left_wheel_joint</rightJoint>
+			  <wheelSeparation>0.5380</wheelSeparation>
+			  <wheelDiameter>0.2410</wheelDiameter> -->
+			  <torque>20</torque>
+			  <commandTopic>cmd_vel</commandTopic>
+			  <odometryTopic>odom</odometryTopic>
+			  <odometryFrame>odom</odometryFrame>
+			  <robotBaseFrame>base_footprint</robotBaseFrame>
+
+
 				<leftJoint>${name}_link_l_front_wheel_joint</leftJoint>
 				<rightJoint>${name}_link_r_front_wheel_joint</rightJoint>
 				<wheelSeparation>${front_wheel_y * 2}</wheelSeparation>
 				<wheelDiameter>${front_wheel_radius * 2}</wheelDiameter>
+<!--
 				<torque>5</torque>
 				<robotNamespace>/</robotNamespace>
 				<topicName>cmd_vel</topicName>
+				<commandTopic></commandTopic> -->
 			</plugin>
+
 		</gazebo>
 
 		<gazebo reference="${name}_lower_case_link">

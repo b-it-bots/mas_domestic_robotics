@@ -6,6 +6,7 @@ catkin_package(
   CATKIN_DEPENDS
     mcr_aravis_vision
     mcr_default_env_config
+    mcr_teleop
     mdr_default_robot_config
     mdr_hardware_config
     cob_bringup
@@ -14,7 +15,6 @@ catkin_package(
     robot_state_publisher
     openni2_launch
     tf
-    joy
 )
 
 install(FILES robot.launch

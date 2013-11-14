@@ -1,0 +1,11 @@
+<?xml version="1.0" ?>
+<launch>
+	<node pkg="mcr_teleop" type="teleop_keyboard_node" name="teleop_keyboard" ns="mcr_tools" output="screen">
+      <param name="walk_vel" value="0.15" />
+      <param name="run_vel" value="0.3" />
+      <param name="yaw_rate" value="0.3" />
+      <param name="yaw_run_rate" value="0.6" />
+
+      <remap from="cmd_vel" to="/base_controller/command" />
+  </node>
+</launch>

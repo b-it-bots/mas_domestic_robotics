@@ -2,28 +2,29 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro" name="volksbot">
 
 	<!-- common definitions -->
-	<include filename="$(find mdr_description)/urdf/common.xacro" />
+	<xacro:include filename="$(find mcr_description)/urdf/common.xacro" />
 	
 	<!-- calibration -->
-	<include filename="$(find mdr_calibration_data)/$(env ROBOT)/calibration/calibration.urdf.xacro" />
+	<xacro:include filename="$(find mdr_calibration_data)/$(env ROBOT)/calibration/calibration.urdf.xacro" />
 	
 	<!-- materials for visualization -->
-	<include filename="$(find mdr_description)/urdf/materials.urdf.xacro" />
+	<xacro:include filename="$(find mcr_description)/urdf/materials.urdf.xacro" />
 	
 	<!-- base -->
-	<include filename="$(find mdr_description)/urdf/base/volksbot/base.urdf.xacro"/>
+	<xacro:include filename="$(find mdr_description)/urdf/base/volksbot/base.urdf.xacro"/>
 	
 	<!-- torso -->
-	<include filename="$(find mdr_description)/urdf/torso/volksbot/torso.urdf.xacro"/>
+	<xacro:include filename="$(find mdr_description)/urdf/torso/volksbot/torso.urdf.xacro"/>
 	
 	<!-- ptu -->
-	<include filename="$(find mcr_description)/urdf/ptu/ptu46.urdf.xacro"/>
+	<xacro:include filename="$(find mcr_description)/urdf/ptu/ptu46.urdf.xacro"/>
 	
 	<!-- head -->
-	<include filename="$(find mdr_description)/urdf/head/volksbot/head.urdf.xacro"/>
+	<xacro:include filename="$(find mdr_description)/urdf/head/volksbot/head.urdf.xacro"/>
 	
 	<!-- arm -->
-	<include filename="$(find mdr_description)/urdf/arm/katana_arm.urdf.xacro"/>
+
+	<xacro:include filename="$(find mdr_description)/urdf/arm/katana_arm.urdf.xacro"/>
 
 
 	<xacro:volksbot_base name="base"/>
@@ -31,6 +32,7 @@
 	<xacro:volksbot_torso name="torso" parent="base_upper_case_link">
 		<origin xyz="-0.125 0 0.05" rpy="0 0 0" />
 	</xacro:volksbot_torso>
+
 
 	<xacro:ptu46 name="ptu" parent="torso_upper_link">
 		<origin xyz="0 0 0.0275" rpy="0 0 0" />
@@ -40,8 +42,10 @@
 		<origin xyz="0 0 0.045" rpy="0 0 0" />
 	</xacro:volksbot_head>
 
+
 	<xacro:katana_arm name="arm" parent="base_upper_case_link">
 		<origin xyz="0.128 0 -0.03" rpy="0 0 0" />
 	</xacro:katana_arm>
+
 
 </robot>

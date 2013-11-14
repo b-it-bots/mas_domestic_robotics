@@ -26,6 +26,18 @@ from mdr_common_states.common_states_speech import *
 from mdr_common_states.common_states_carry_box import *
 
 
+######################### FUNCTION TO CHANGE THE COLOR OF THE COB LED'S #########################
+COLOR_RED = ColorRGBA(1.0, 0.0, 0.0, 0.1)
+COLOR_GREEN = ColorRGBA(0.0, 1.0, 0.0, 0.1)
+
+
+def set_light_color(color):
+	light_pub = rospy.Publisher('light_controller/command', ColorRGBA)
+
+	light_pub.publish(color)
+
+
+
 ######################### INIT THE FUNCTIONAL COMPONENTS AND HARDWARE #########################
 
 class init_manipulator(smach.State):
@@ -204,10 +216,10 @@ class wait_for_start(smach.State):
 class announce_ready(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
-		self.clear_tts = rospy.ServiceProxy('/mcr_speech/speech_recognition/clear_stored_infos', std_srvs.srv.Empty) # TODO: topic-to-serice does not exist anymore
+		self.clear_tts = rospy.ServiceProxy('/mcr_common/topic_to_service/clear_stored_infos', std_srvs.srv.Empty) # TODO: topic-to-serice does not exist anymore
 		
 	def execute(self, userdata):
-		rospy.wait_for_service('/mcr_speech/speech_recognition/clear_stored_infos',5) 
+		rospy.wait_for_service('/mcr_common/topic_to_service/clear_stored_infos',5) 
 		self.clear_tts()
 	
 		announce_ready_phrase = "I am ready now"
