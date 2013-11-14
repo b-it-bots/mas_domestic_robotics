@@ -244,18 +244,18 @@ int main(int argc, char **argv)
   ros::Subscriber map_pose_sub = n.subscribe("/base_pose", 1000, basePoseCallback);
   ros::ServiceServer service6 = n.advertiseService("/base_controller/get_base_pose", getBasePose);
   
-  ros::Subscriber subObjectRecognitionResponse = n.subscribe("/moped/camera_poses", 1, objectRecognitionResponseCallback);
-  ros::ServiceServer srvObjectRecognition = n.advertiseService("/mdr_perception/object_recognition/get_object_list", getObjectPoseListSrv);
+  ros::Subscriber subObjectRecognitionResponse = n.subscribe("/mcr_perception/object_recognition_height_based/recognized_objects", 1, objectRecognitionResponseCallback);
+  ros::ServiceServer srvObjectRecognition = n.advertiseService("/mcr_perception/object_recognition/get_object_list", getObjectPoseListSrv);
 
-  ros::Subscriber sub_body_detections = n.subscribe("/mdr_perception/body_detection_3d/people_positions", 1, bodyDetectionCallback);
-  ros::ServiceServer srv_clear_person_list = n.advertiseService("/mdr_perception/body_detection_3d/clear_person_list", clearPersonList);
-  ros::ServiceServer srv_body_list = n.advertiseService("/mdr_perception/body_detection_3d/get_person_list", getBodyDetectionList);
+  ros::Subscriber sub_body_detections = n.subscribe("/mcr_perception/body_detection_3d/people_positions", 1, bodyDetectionCallback);
+  ros::ServiceServer srv_clear_person_list = n.advertiseService("/mcr_perception/body_detection_3d/clear_person_list", clearPersonList);
+  ros::ServiceServer srv_body_list = n.advertiseService("/mcr_perception/body_detection_3d/get_person_list", getBodyDetectionList);
 
-  ros::Subscriber sub_leg_detections = n.subscribe("/mdr_perception/leg_detection/leg_positions", 1, legDetectionCallback);
-  ros::ServiceServer srv_leg_list = n.advertiseService("/mdr_perception/leg_detection/get_person_list", getLegDetectionList);
+  ros::Subscriber sub_leg_detections = n.subscribe("/mcr_perception/leg_detection/leg_positions", 1, legDetectionCallback);
+  ros::ServiceServer srv_leg_list = n.advertiseService("/mcr_perception/leg_detection/get_person_list", getLegDetectionList);
 
-  ros::Subscriber object_categorization_sub = n.subscribe("/mdr_perception/object_categorization/categorized_objects", 1, object_categorizationCallback);
-  ros::ServiceServer mdr_object_categorization_service = n.advertiseService("/mdr_perception/object_categorization/categorized_objects", get_object_categorization);
+  ros::Subscriber object_categorization_sub = n.subscribe("/mcr_perception/object_categorization/categorized_objects", 1, object_categorizationCallback);
+  ros::ServiceServer mdr_object_categorization_service = n.advertiseService("/mcr_perception/object_categorization/categorized_objects", get_object_categorization);
 
 
   ros::spin();
