@@ -227,9 +227,9 @@ int main(int argc, char **argv)
 {
 
   ros::init(argc, argv, "topic_to_service");
-  ros::NodeHandle n;
+  ros::NodeHandle n("~");
  	
-  ros::ServiceServer service_clear = n.advertiseService("/mdr_topic_to_service/clear_stored_infos", clearStoredInfosCallback); 	
+  ros::ServiceServer service_clear = n.advertiseService("clear_stored_infos", clearStoredInfosCallback); 	
  	
   ros::Subscriber sub1 = n.subscribe("/mcr_speech_speech_recognition/recognized_speech", 1000, GetRecognizedSpeechCallback);
   ros::ServiceServer service1 = n.advertiseService("/mcr_speech_speech_recognition/get_last_recognized_speech", lastSpeechCommandCallback);
