@@ -17,10 +17,9 @@ void emergency_stop_state_cb(const cob_relayboard::EmergencyStopState &state)
 }
 
 
-
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "talker");
+    ros::init(argc, argv, "emergency_stop_mapper");
     ros::NodeHandle nh("~");
 
     ros::Rate rate(20); // 20 Hz
@@ -34,7 +33,6 @@ int main(int argc, char **argv)
 
         pub.publish(em_active_msg);
 
-        // rate.sleep();
         ros::spinOnce();
         rate.sleep();
     }
