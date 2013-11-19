@@ -1,6 +1,6 @@
 <package>
 
-  <name>mdr_moveit</name>
+  <name>mdr_moveit_cob</name>
   <version>0.2.0</version>
   <description>
      An automatically generated package with all the configuration and launch files for using the cob3_1 with the MoveIt Motion Planning Framework
@@ -15,10 +15,13 @@
   <url type="repository">https://github.com/ros-planning/moveit_setup_assistant</url>
 
   <run_depend>moveit_ros_move_group</run_depend>
-  <run_depend>xacro</run_depend>
-  <build_depend>cob_hardware_config</build_depend>
-  <run_depend>cob_hardware_config</run_depend>
   <run_depend>moveit_planners_ompl</run_depend>
+  <run_depend>moveit_ros_visualization</run_depend>
+  <run_depend>joint_state_publisher</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>xacro</run_depend>
+  <build_depend>mdr_lwr_kinematics</build_depend>
+  <run_depend>mdr_lwr_kinematics</run_depend>
 
 
   <buildtool_depend>catkin</buildtool_depend>

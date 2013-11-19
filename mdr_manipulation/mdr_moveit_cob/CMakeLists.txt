@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_moveit)
+project(mdr_moveit_cob)
 
 find_package(catkin REQUIRED)
 

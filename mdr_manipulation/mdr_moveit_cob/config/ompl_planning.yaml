@@ -15,6 +15,8 @@ planner_configs:
     type: geometric::RRTConnect
   RRTstarkConfigDefault:
     type: geometric::RRTstar
+  TRRTkConfigDefault:
+    type: geometric::TRRT
   PRMkConfigDefault:
     type: geometric::PRM
   PRMstarkConfigDefault:
@@ -29,9 +31,25 @@ arm:
     - RRTkConfigDefault
     - RRTConnectkConfigDefault
     - RRTstarkConfigDefault
+    - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
   projection_evaluator: joints(arm_1_joint,arm_2_joint)
+  longest_valid_segment_fraction: 0.05
+head:
+  planner_configs:
+    - SBLkConfigDefault
+    - ESTkConfigDefault
+    - LBKPIECEkConfigDefault
+    - BKPIECEkConfigDefault
+    - KPIECEkConfigDefault
+    - RRTkConfigDefault
+    - RRTConnectkConfigDefault
+    - RRTstarkConfigDefault
+    - TRRTkConfigDefault
+    - PRMkConfigDefault
+    - PRMstarkConfigDefault
+  projection_evaluator: joints(torso_lower_neck_pan_joint,torso_lower_neck_tilt_joint)
   longest_valid_segment_fraction: 0.05
 sdh:
   planner_configs:
@@ -43,7 +61,8 @@ sdh:
     - RRTkConfigDefault
     - RRTConnectkConfigDefault
     - RRTstarkConfigDefault
+    - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
-  projection_evaluator: joints(sdh_finger_22_joint,sdh_finger_23_joint)
+  projection_evaluator: joints(sdh_finger_21_joint,sdh_finger_22_joint)
   longest_valid_segment_fraction: 0.05
