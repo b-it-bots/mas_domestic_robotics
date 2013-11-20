@@ -36,6 +36,9 @@
         <joint name="sdh_thumb_2_joint" />
         <joint name="sdh_thumb_3_joint" />
     </group>
+    <group name="tray">
+        <joint name="tray_joint" />
+    </group>
     <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
     <group_state name="home" group="sdh">
         <joint name="sdh_finger_12_joint" value="0" />
@@ -289,6 +292,12 @@
         <joint name="arm_5_joint" value="0" />
         <joint name="arm_6_joint" value="-0.5" />
         <joint name="arm_7_joint" value="0" />
+    </group_state>
+    <group_state name="up" group="tray">
+        <joint name="tray_joint" value="0" />
+    </group_state>
+    <group_state name="down" group="tray">
+        <joint name="tray_joint" value="-3.14159" />
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="sdh" parent_link="arm_7_link" group="sdh" parent_group="arm" />
