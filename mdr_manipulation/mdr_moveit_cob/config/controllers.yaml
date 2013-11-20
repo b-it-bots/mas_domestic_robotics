@@ -1,6 +1,6 @@
 controller_list:
   - name: arm_controller
-    ns: /lwr_controller/joint_trajectory_controller
+    action_ns: joint_trajectory_controller/follow_joint_trajectory
     type: FollowJointTrajectory
     default: true
     joints:
@@ -12,7 +12,7 @@ controller_list:
       - arm_6_joint
       - arm_7_joint
   - name: sdh_controller
-    ns: /sdh_controller/follow_joint_trajectory
+    action_ns: follow_joint_trajectory
     type: FollowJointTrajectory
     default: true
     joints:
@@ -24,7 +24,7 @@ controller_list:
       - sdh_thumb_2_joint
       - sdh_thumb_3_joint
   - name: tray_controller
-    ns: /tray_controller/follow_joint_trajectory
+    action_ns: follow_joint_trajectory
     type: FollowJointTrajectory
     default: true
     joints:
