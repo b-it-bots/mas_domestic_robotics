@@ -36,14 +36,14 @@ joint_limits:
     max_acceleration: 0.1
   torso_lower_neck_pan_joint:
     has_velocity_limits: true
-    max_velocity: 0.5
-    has_acceleration_limits: false
-    max_acceleration: 0
+    max_velocity: 0.4
+    has_acceleration_limits: true
+    max_acceleration: 0.2
   torso_lower_neck_tilt_joint:
     has_velocity_limits: true
-    max_velocity: 0.5
-    has_acceleration_limits: false
-    max_acceleration: 0
+    max_velocity: 0.4
+    has_acceleration_limits: true
+    max_acceleration: 0.2
   arm_2_joint:
     has_velocity_limits: true
     max_velocity: 0.4
@@ -96,11 +96,11 @@ joint_limits:
     max_acceleration: 0
   torso_upper_neck_tilt_joint:
     has_velocity_limits: true
-    max_velocity: 0.5
-    has_acceleration_limits: false
-    max_acceleration: 0
+    max_velocity: 0.4
+    has_acceleration_limits: true
+    max_acceleration: 0.2
   torso_upper_neck_pan_joint:
     has_velocity_limits: true
-    max_velocity: 0.5
-    has_acceleration_limits: false
-    max_acceleration: 0
+    max_velocity: 0.4
+    has_acceleration_limits: true
+    max_acceleration: 0.2
