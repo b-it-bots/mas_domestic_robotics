@@ -1,9 +1,46 @@
 # /bin/bash
 
-### install debian packages
+# create list of packages to install
+packagelist=(
+  liblog4cpp5-dev
+  python-rosinstall
+  python-vcstools
+  ros-hydro-amcl
+  ros-hydro-cob-common
+  ros-hydro-control-msgs
+  ros-hydro-costmap-2d
+  ros-hydro-diagnostic-updater
+  ros-hydro-gazebo-ros
+  ros-hydro-hokuyo-node
+  ros-hydro-interactive-markers
+  ros-hydro-joy
+  ros-hydro-laser-geometry
+  ros-hydro-manipulation-msgs
+  ros-hydro-map-server
+  ros-hydro-move-base
+  ros-hydro-move-base-msgs
+  ros-hydro-moveit-core
+  ros-hydro-moveit-planners-ompl
+  ros-hydro-openni2-launch
+  ros-hydro-pr2-computer-monitor
+  ros-hydro-pr2-dashboard-aggregator
+  ros-hydro-pr2-msgs
+  ros-hydro-robot-state-publisher
+  ros-hydro-ros
+  ros-hydro-rqt-gui
+  ros-hydro-rqt-pr2-dashboard
+  ros-hydro-rqt-reconfigure
+  ros-hydro-rqt-robot-dashboard
+  ros-hydro-rviz 
+  ros-hydro-smach
+  ros-hydro-smach-ros
+  ros-hydro-wifi-ddwrt
+  ros-hydro-xacro 
+  python-setuptools
+)
 
-sudo apt-get install -y  python-setuptools ros-hydro-ros python-rosinstall python-vcstools ros-hydro-moveit-planners-ompl liblog4cpp5-dev ros-hydro-cob-common ros-hydro-pr2-msgs ros-hydro-laser-geometry ros-hydro-control-msgs ros-hydro-diagnostic-updater ros-hydro-xacro ros-hydro-interactive-markers ros-hydro-rviz ros-hydro-openni2-launch ros-hydro-pr2-computer-monitor ros-hydro-wifi-ddwrt ros-hydro-robot-state-publisher ros-hydro-hokuyo-node ros-hydro-pr2-dashboard-aggregator ros-hydro-costmap-2d ros-hydro-joy ros-hydro-move-base-msgs ros-hydro-rqt-reconfigure ros-hydro-rqt-gui ros-hydro-rqt-robot-dashboard ros-hydro-rqt-pr2-dashboard ros-hydro-amcl ros-hydro-map-server ros-hydro-move-base ros-hydro-smach ros-hydro-smach-ros ros-hydro-gazebo-ros ros-hydro-manipulation-msgs
-
+### install debian packages listed in array above
+sudo apt-get install -y ${packagelist[@]}
 
 ### install further repositories
 rosinstall .. /opt/ros/hydro repository.rosinstall
