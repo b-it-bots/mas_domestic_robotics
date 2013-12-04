@@ -204,7 +204,7 @@ class grasp_object(smach.State):
 class pickup_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'], input_keys=['grasp_position'])
-		self.grasp_object_srv = rospy.ServiceProxy('pickup', mdr_behavior_msgs.srv.Pickup)
+		self.grasp_object_srv = rospy.ServiceProxy('/pickup', mdr_behavior_msgs.srv.Pickup)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 	
 	def execute(self, userdata):
@@ -230,7 +230,7 @@ class pickup_object(smach.State):
 class place_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'], input_keys=['place_position'])
-		self.grasp_object_srv = rospy.ServiceProxy('place', mdr_behavior_msgs.srv.Place)
+		self.grasp_object_srv = rospy.ServiceProxy('/place', mdr_behavior_msgs.srv.Place)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 	
 	def execute(self, userdata):
