@@ -1,0 +1,7 @@
+# Point of the object to be picked up
+std_msgs/PointStamped position
+
+---
+
+# Success of the pickup action
+std_msgs/Bool success
