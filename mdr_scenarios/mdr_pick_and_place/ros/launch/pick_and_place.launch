@@ -14,7 +14,7 @@
 
     <include file="$(find mdr_lwr)/ros/launch/lwr.launch" />
     <include file="$(find mdr_moveit_cob)/launch/move_group.launch" />
-    <include file="$(find mdr_simple_pick)/ros/launch/simple_pick.launch" />
+    <include file="$(find mdr_simple_pickup)/ros/launch/simple_pickup.launch" />
     <include file="$(find mdr_simple_place)/ros/launch/simple_place.launch" />
   </group>
 
