@@ -21,6 +21,7 @@ packagelist=(
   ros-hydro-move-base-msgs
   ros-hydro-moveit-core
   ros-hydro-moveit-planners-ompl
+  ros-hydro-moveit-commander
   ros-hydro-openni2-launch
   ros-hydro-pr2-computer-monitor
   ros-hydro-pr2-dashboard-aggregator
