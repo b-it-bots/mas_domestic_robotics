@@ -204,7 +204,7 @@ class grasp_object(smach.State):
 class pickup_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'], input_keys=['grasp_position'])
-		self.grasp_object_srv = rospy.ServiceProxy('/pickup', mdr_behavior_msgs.srv.Pickup)
+		self.grasp_object_srv = rospy.ServiceProxy('/pickup', mdr_behaviors_msgs.srv.Pickup)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 	
 	def execute(self, userdata):
@@ -213,6 +213,7 @@ class pickup_object(smach.State):
 		req = mdr_behaviors_msgs.srv.PickupRequest()
 		req.position.header.frame_id = "/base_link"
 		req.position.point = userdata.grasp_position
+		print req.position
 		
 		rospy.wait_for_service('/pickup')
 		pickup = rospy.ServiceProxy('/pickup', mdr_behaviors_msgs.srv.Pickup)
@@ -221,7 +222,7 @@ class pickup_object(smach.State):
 		except rospy.ServiceException, e:
 			print "Service did not process request: %s"%str(e)
 		
-		self.arm.plan("hold")
+		self.arm.set_named_target("hold")
 		self.arm.go()
 		
 		return 'success'
@@ -230,15 +231,14 @@ class pickup_object(smach.State):
 class place_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'], input_keys=['place_position'])
-		self.grasp_object_srv = rospy.ServiceProxy('/place', mdr_behavior_msgs.srv.Place)
+		self.grasp_object_srv = rospy.ServiceProxy('/place', mdr_behaviors_msgs.srv.Place)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 	
 	def execute(self, userdata):
 		sss.move("torso", "home")
 		
 		req = mdr_behaviors_msgs.srv.PlaceRequest()
-		req.position.header.frame_id = "/base_link"
-		req.position.point = userdata.place_position
+		req.position = userdata.place_position
 		
 		rospy.wait_for_service('/place')
 		place = rospy.ServiceProxy('/place', mdr_behaviors_msgs.srv.Place)
@@ -247,7 +247,7 @@ class place_object(smach.State):
 		except rospy.ServiceException, e:
 			print "Service did not process request: %s"%str(e)
 		
-		self.arm.plan("folded")
+		self.arm.set_named_target("folded")
 		self.arm.go()
 		
 		return 'success'

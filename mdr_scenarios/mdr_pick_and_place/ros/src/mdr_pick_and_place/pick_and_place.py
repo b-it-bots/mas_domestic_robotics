@@ -4,7 +4,7 @@ import rospy
 import smach
 import smach_ros
 
-import mdr_pick_and_place.pick_and_place_states as pps
+import pick_and_place_states as pps
 import mdr_common_states.common_states as cs
 import geometry_msgs.msg
 	
@@ -20,8 +20,6 @@ def main():
 	# - table_2
 	
 	sm.userdata.pose = 'home'
-	sm.userdata.robot_state = pps.Robot_state()
-	sm.userdata.robot_state.actual_location = sm.userdata.pose
 	
 	sm.userdata.action_list = []
 	sm.userdata.action_object = None
@@ -44,14 +42,9 @@ def main():
 		
 		# init base
 		smach.StateMachine.add('init_base', cs.init_base(),
-				transitions={'success':'init_tray',
-							'failed':'overall_failed'})
-		
-		# init tray
-		smach.StateMachine.add('init_tray', cs.init_tray(),
 				transitions={'success':'init_torso',
 							'failed':'overall_failed'})
-
+		
 		# init torso
 		smach.StateMachine.add('init_torso', cs.init_torso(),
 				transitions={'success':'init_manipulator',
@@ -59,14 +52,8 @@ def main():
 	
 		# init manipulator
 		smach.StateMachine.add('init_manipulator', pps.init_manipulator(),
-				transitions={'success':'announce_read',
-							'failed':'overall_failed'})
+				transitions={'success':'wait_for_start'})
 	
-		# announce ready
-		smach.StateMachine.add('announce_ready', cs.announce_ready(),
-				transitions={'success':'wait_for_start',
-							'failed':'overall_failed'})
-
 		# wait for start
 		smach.StateMachine.add('wait_for_start', cs.wait_for_start(),
 				transitions={'success':'goto_home',
@@ -90,7 +77,7 @@ def main():
 		
 		#grasp
 		smach.StateMachine.add('identify_object', pps.find_any_known_object_height_based(),
-				transitions={'success':'grasp_object', # grasp if found
+				transitions={'success':'pickup_object', # grasp if found
 							'failed':'goto_table_1'}, # otherwise search again
 				remapping={'grasp_position':'grasp_pose',
 						'object_name':'action_object'})
@@ -126,3 +113,8 @@ def main():
 	# Wait for ctrl-c to stop the application
 	rospy.spin()
 	sis.stop()
+
+
+
+if __name__ == '__main__':
+	main()

@@ -9,7 +9,9 @@ import std_srvs.srv
 import mcr_perception_msgs.msg
 
 from mdr_common_states.common_states import *
+from simple_script_server import *
 
+sss = simple_script_server()
 
 class init_manipulator(smach.State):
 	def __init__(self):
@@ -17,6 +19,8 @@ class init_manipulator(smach.State):
 		self.recover_srv = rospy.ServiceProxy('/arm_controller/lwr_node/recover', std_srvs.srv.Empty)
 
 	def execute(self, userdata):
+		sss.init("sdh")
+		sss.recover("sdh")
 		rospy.wait_for_service('/arm_controller/lwr_node/recover')
 		recover = rospy.ServiceProxy('/arm_controller/lwr_node/recover', std_srvs.srv.Empty)
 		try:
@@ -40,35 +44,29 @@ class find_any_known_object_height_based(smach.State):
 		self.object_recognition_start()
 		
 		sss.move("head", "back_table", False)
-		self.arm.plan("look_at_table")
+		self.arm.set_named_target("look_at_table")
 		self.arm.go()
 		sss.move("torso", "extrem_back")
 		
-		rospy.wait_for_service('/mcr_perception/object_recognition/get_recognized_objects', 30)
+		rospy.wait_for_service('/mcr_perception/object_recognition_height_based/get_recognized_objects', 30)
 		for i in range(20): 
-			print "calling /mcr_perception/object_recognition/get_recognized_objects service"
+			print "calling /mcr_perception/object_recognition_height_based/get_recognized_objects service"
 			resp = self.find_object_srv()
 
-			if (len(resp.object_position_list) <= 0):
+			if (len(resp.objects) <= 0):
 				print "no graspable objects found"
 				rospy.sleep(1)
 			else:
 				break
 				
-		if (len(resp.object_position_list) <= 0):
+		if (len(resp.objects) <= 0):
 			SAY("I could not find any object.")
-			self.arm.plan("folded")
+			self.arm.set_named_target("folded")
 			self.arm.go()
 			sss.move("head","front_face",False)
 			self.object_recognition_stop()
 			return 'failed'
 
-		SAY("I see ")
-		for recObject in resp.object_position_list:
-			SAY(recObject.name + ", ")
-
-		object_to_grasp = resp.object_position_list.pop()
-		userdata.grasp_position = object_to_grasp.position.point
-		SAY("I will now grasp the " + object_to_grasp.name)
+		userdata.grasp_position = resp.objects[0].pose.pose.position
 		self.object_recognition_stop()
 		return 'success'
