@@ -17,6 +17,7 @@ add_message_files(
 add_service_files(
   FILES
     Pickup.srv
+    Place.srv
 )
 
 generate_messages(
