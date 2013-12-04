@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node pkg="mdr_simple_place" type="simple_place_node" name="place" respawn="false" output="screen">
+		<remap from="joint_states" to="/joint_states" />
+		<remap from="get_ik" to="/compute_ik" />
+		<!--
+		<remap from="joint_trajectory_action" to="/arm_controller/joint_trajectory_action" />
+		<remap from="is_cylindric_grasped" to="/sdh_controller/is_cylindric_grasped" />
+		<remap from="grasp_posture_control" to="/mdr_manipulation/grasp_posture_control" />
+		-->
+		
+		<!-- the distance of the pre-grasp position to the object position (value given in meters) -->
+		<param name="pre_grasp_distance" value="0.35" />
+
+		<!-- how far to stop grasping before the object position (value given in meters) -->
+		<param name="grasp_distance" value="0.15" />
+
+		<!-- the distance over the object after the grasp (value given in meters) -->
+		<param name="post_grasp_height" value="0.1" />
+	</node>
+
+</launch>
