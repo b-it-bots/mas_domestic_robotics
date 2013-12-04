@@ -89,7 +89,7 @@ def main():
 							'failed':'goto_table_1'})
 		
 		#grasp
-		smach.StateMachine.add('identify_object', cs.find_object_moped(),
+		smach.StateMachine.add('identify_object', pps.find_any_known_object_height_based(),
 				transitions={'success':'grasp_object', # grasp if found
 							'failed':'goto_table_1'}, # otherwise search again
 				remapping={'grasp_position':'grasp_pose',
