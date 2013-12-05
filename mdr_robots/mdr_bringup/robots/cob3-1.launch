@@ -35,8 +35,8 @@
 		<machine name="hbrs_pc2" address="cob3-1-pc2" env-loader="$(find mdr_bringup)/env.sh" default="true" />
 
 		<!-- brsu specific packages -->
-		<include file="$(find mdr_bringup)/components/openni2.launch" />
-		<include file="$(find mdr_bringup)/components/stemmer_cam.launch" />
+		<!--include file="$(find mdr_bringup)/components/openni2.launch" /-->
+		<!--include file="$(find mdr_bringup)/components/stemmer_cam.launch" /-->
 	</group>
 
 
