@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+import mdr_simple_place.simple_place
+
+if __name__ == '__main__':
+    mdr_simple_place.simple_place.main()

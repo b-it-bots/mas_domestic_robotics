@@ -1,0 +1,7 @@
+# Point where to place the object
+geometry_msgs/PointStamped position
+
+---
+
+# Success of the place action
+bool success

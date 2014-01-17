@@ -17,15 +17,14 @@ void emergency_stop_state_cb(const cob_relayboard::EmergencyStopState &state)
 }
 
 
-
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "talker");
+    ros::init(argc, argv, "emergency_stop_mapper");
     ros::NodeHandle nh("~");
 
     ros::Rate rate(20); // 20 Hz
 
-    nh.subscribe("/emergency_stop_state", 1, emergency_stop_state_cb);
+    ros::Subscriber sub = nh.subscribe("/emergency_stop_state", 1, emergency_stop_state_cb);
     ros::Publisher pub = nh.advertise<std_msgs::Bool>("emergency_stop_active", 1);
 
     while (ros::ok()) {
@@ -34,7 +33,6 @@ int main(int argc, char **argv)
 
         pub.publish(em_active_msg);
 
-        // rate.sleep();
         ros::spinOnce();
         rate.sleep();
     }

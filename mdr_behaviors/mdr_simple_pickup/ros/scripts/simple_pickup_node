@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+import mdr_simple_pickup.simple_pickup
+
+if __name__ == '__main__':
+    mdr_simple_pickup.simple_pickup.main()

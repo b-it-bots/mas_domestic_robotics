@@ -1,7 +1,0 @@
-<launch>
-
-  <!-- Set the file describing which sensor(s) to use to build the octomap  -->
-  <rosparam command="load" file="$(find mdr_moveit)/config/sensors_rgbd.yaml" />
-  <rosparam command="load" file="$(find mdr_moveit)/config/octomap.yaml" />
-
-</launch>

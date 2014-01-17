@@ -28,6 +28,7 @@
 		</group>
 		<!--node pkg="tf" type="static_transform_publisher" name="kinect_base_link" args="0 0 0 0 0 0  /head_cam3d_link /openni_camera 100" /-->
 
+		<include file="$(find mdr_emergency_stop_mapper)/ros/launch/emergency_stop_mapper.launch" />
 	</group>
 
 	<group>
