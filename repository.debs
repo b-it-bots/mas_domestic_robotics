@@ -11,6 +11,7 @@ packagelist=(
   ros-hydro-costmap-2d
   ros-hydro-diagnostic-updater
   ros-hydro-gazebo-ros
+  ros-hydro-gazebo-ros-control
   ros-hydro-hokuyo-node
   ros-hydro-interactive-markers
   ros-hydro-joy
@@ -32,11 +33,11 @@ packagelist=(
   ros-hydro-rqt-pr2-dashboard
   ros-hydro-rqt-reconfigure
   ros-hydro-rqt-robot-dashboard
-  ros-hydro-rviz 
+  ros-hydro-rviz
   ros-hydro-smach
   ros-hydro-smach-ros
   ros-hydro-wifi-ddwrt
-  ros-hydro-xacro 
+  ros-hydro-xacro
   python-setuptools
 )
 
