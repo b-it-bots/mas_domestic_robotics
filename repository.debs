@@ -29,6 +29,7 @@ packagelist=(
   ros-hydro-pr2-msgs
   ros-hydro-robot-state-publisher
   ros-hydro-ros
+  ros-hydro-ros-controllers
   ros-hydro-rqt-gui
   ros-hydro-rqt-pr2-dashboard
   ros-hydro-rqt-reconfigure
