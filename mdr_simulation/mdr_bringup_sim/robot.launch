@@ -1,12 +1,14 @@
 <?xml version="1.0"?>
 <launch>
 
-    <param name="/use_sim_time" value="true"/>
-
     <arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
     <arg name="pkg_robot_config" default="$(find mdr_default_robot_config)"/>
     <arg name="pkg_env_config" default="$(find mcr_default_env_config)"/>
+
+    <arg name="paused" default="false"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="gui" default="true"/>
 
     <!-- default parameter -->
     <include file="$(arg pkg_robot_config)/upload_param.launch">
@@ -17,7 +19,11 @@
     </include>
 
     <!-- world -->
-    <include file="$(find mcr_gazebo_worlds)/ros/launch/$(arg robot_env).launch" />
+    <include file="$(find mcr_gazebo_worlds)/ros/launch/$(arg robot_env).launch">
+        <arg name="paused" value="$(arg paused)" />
+        <arg name="use_sim_time" value="$(arg use_sim_time)" />
+        <arg name="gui" value="$(arg gui)" />
+    </include>
 
     <!-- robot -->
     <include file="$(find mdr_bringup_sim)/robots/$(arg robot).launch" >
