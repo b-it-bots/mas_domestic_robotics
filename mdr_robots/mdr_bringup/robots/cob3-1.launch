@@ -37,7 +37,7 @@
 		<!-- brsu specific packages -->
 		<include file="$(find mdr_bringup)/components/openni2.launch" >
 			<arg name="machine" value="hbrs_pc2" />
-      <arg name="publish_tf" value="false" />
+			<arg name="publish_tf" value="false" />
 		</include>
 
 		<include file="$(find mdr_bringup)/components/stemmer_cam.launch" />
