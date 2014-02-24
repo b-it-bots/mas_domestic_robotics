@@ -12,4 +12,12 @@
   <author email="jose.sanchez.loza@gmail.com">Jose Sanchez</author>   
 
   <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+
+  <test_depend>unittest</test_depend>  
+
+  <run_depend>rospy</run_depend>
+  <run_depend>control_msgs</run_depend>
+  <run_depend>schunk_sdh</run_depend>
 </package>
