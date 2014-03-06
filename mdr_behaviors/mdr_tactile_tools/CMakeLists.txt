@@ -23,3 +23,5 @@ install(PROGRAMS
   ros/scripts/grasp_evaluators_node
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+catkin_add_nosetests(ros/test/grasp_evaluators_test.py)
