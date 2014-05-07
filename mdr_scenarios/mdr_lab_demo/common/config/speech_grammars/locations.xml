@@ -5,6 +5,7 @@
       <P VALSTR="kitchen">kitchen</P>
       <P VALSTR="dinner_table">dinner table</P>
 			<P VALSTR="charge">charge</P>
+			<P VALSTR="couch">couch</P>
     </L>
   </RULE>
  </grammar>

@@ -6,7 +6,12 @@ packagelist=(
   python-rosinstall
   python-vcstools
   ros-hydro-amcl
+  ros-hydro-cob-command-tools
   ros-hydro-cob-common
+  ros-hydro-cob-environments
+  ros-hydro-cob-extern
+  ros-hydro-cob-driver
+  ros-hydro-cob-simulation
   ros-hydro-control-msgs
   ros-hydro-costmap-2d
   ros-hydro-diagnostic-updater
@@ -35,6 +40,7 @@ packagelist=(
   ros-hydro-rqt-reconfigure
   ros-hydro-rqt-robot-dashboard
   ros-hydro-rviz
+  ros-hydro-schunk-modular-robotics
   ros-hydro-smach
   ros-hydro-smach-ros
   ros-hydro-wifi-ddwrt

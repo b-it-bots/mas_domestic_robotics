@@ -132,21 +132,21 @@ def calculate_grasp_status(grasp, contacts):
     grasp_status = 'e_failed'
 
     if grasp == 'cylindrical':
-        rospy.loginfo('[%s] grasp evaluator started.' % grasp)
+        rospy.logdebug('[%s] grasp evaluator started.' % grasp)
         if evaluate_cylindrical_grasp(contacts):
             grasp_status = 'e_grasped'
         else:
             grasp_status = 'e_not_grasped'
 
     elif grasp == 'spherical':
-        rospy.loginfo('[%s] grasp evaluator started.' % grasp)
+        rospy.logdebug('[%s] grasp evaluator started.' % grasp)
         if evaluate_spherical_grasp(contacts):
             grasp_status = 'e_grasped'
         else:
             grasp_status = 'e_not_grasped'
 
     elif grasp == 'precision':
-        rospy.loginfo('[%s] grasp evaluator started.' % grasp)
+        rospy.logdebug('[%s] grasp evaluator started.' % grasp)
         if evaluate_precision_grasp(contacts):
             grasp_status = 'e_grasped'
         else:
