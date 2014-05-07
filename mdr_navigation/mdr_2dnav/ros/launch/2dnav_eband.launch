@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+
+	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
+
+	<arg name="map" value="$(find mcr_default_env_config)/$(env ROBOT_ENV)/map.yaml" />
+
+	<!--- Run map_server -->
+	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map)"/>
+
+	<!--- Run AMCL -->
+	<include file="$(find cob_navigation_global)/launch/amcl_node.xml" />
+	
+	<!--- Run move base -->
+	<include file="$(find cob_navigation_global)/launch/2dnav_ros_eband.xml" >
+		<arg name="robot" value="$(arg robot)" />
+	</include>
+	
+  <!-- show navigation goals as markers -->
+	<include file="$(find mcr_navigation_tools)/ros/launch/navigation_goals_as_marker.launch" />
+
+</launch>
+
