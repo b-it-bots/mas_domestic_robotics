@@ -20,7 +20,7 @@ from mdr_common_states.common_states import *
 ######################### GLOBAL SAY TO AVOID SCRIPT SERVER #########################
 def SAY(text, blocking=True, timeout=60):
 		
-	speak_pub = rospy.Publisher('/say', mcr_speech_msgs.msg.Say)
+	speak_pub = rospy.Publisher('/say', mcr_speech_msgs.msg.Say, latch=True)
 
 	speak_pub.publish(mcr_speech_msgs.msg.Say(text))
 	
