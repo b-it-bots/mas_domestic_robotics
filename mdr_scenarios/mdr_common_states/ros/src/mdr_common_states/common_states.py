@@ -45,6 +45,7 @@ class init_manipulator(smach.State):
 		smach.State.__init__(self, outcomes=['success','failed'])
 		self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 		
+		self.arm = moveit_commander.MoveGroupCommander('arm')
 	def execute(self, userdata):
 		#sss.init("arm")
 		sss.init("sdh")
@@ -53,9 +54,9 @@ class init_manipulator(smach.State):
 		sss.recover("sdh")
 
 		# move to initial positions
-		handle_arm = sss.move("arm","folded",False)
 		handle_sdh = sss.move("sdh","cylclosed",False)
-		handle_arm.wait()
+		self.arm.set_named_target("folded")
+		self.arm.go()
 		handle_sdh.wait()
 		
 		rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
@@ -69,7 +70,7 @@ class init_manipulator(smach.State):
 
 		# check, if all components are working
 		retval_list = []
-		retval_list.append(handle_arm.get_error_code())
+		#retval_list.append(handle_arm.get_error_code())
 		retval_list.append(handle_sdh.get_error_code())
 		for retval in retval_list:
 			if retval != 0:
@@ -135,6 +136,7 @@ class init_torso(smach.State):
 class init_all(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
+		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 		raw_input("\nTURN HEAD MANUALLY UP!\n")
@@ -157,12 +159,13 @@ class init_all(smach.State):
 		raw_input("\nMOVE BASE WITH JOYSTICK!\n")
 
 		# move to initial positions
-		handle_arm = sss.move("arm","folded",False)
 		handle_torso = sss.move("torso","home",False)
 		handle_sdh = sss.move("sdh","cylclosed",False)
 		handle_tray = sss.move("tray","down",False)
 		handle_head = sss.move("head","front",False)
-		handle_arm.wait()
+		self.arm.set_named_target("folded")
+		self.arm.go()
+
 		handle_torso.wait()
 		handle_sdh.wait()
 		handle_tray.wait()
@@ -170,7 +173,6 @@ class init_all(smach.State):
 
 		# check, if all components are working
 		retval_list = []
-		retval_list.append(handle_arm.get_error_code())
 		retval_list.append(handle_torso.get_error_code())
 		retval_list.append(handle_sdh.get_error_code())
 		retval_list.append(handle_tray.get_error_code())

@@ -195,7 +195,8 @@ class filter_from_string(smach.State):
 class introduce(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'])
-	
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
 	def execute(self, userdata):
 		handle_base = sss.move("base", "living_room", False)
 		SAY("Hello ladies and gentlemen. My name is Jenny. I am a Care O bot 3 robot.")
@@ -203,12 +204,13 @@ class introduce(smach.State):
 		SAY("I live at the bonn rhein sieg university in sankt augustin. I have my own appartment in the RoboCup lab. I am a member of the b i t bots team.")
 		handle_base.wait()
 		
-		handle_arm = sss.move("arm", "folded-to-look_at_table" ,False)
+		self.arm.set_named_target("look_at_table")
+		self.arm.go()
 		SAY("I am designed to be an autonomous domestic service robot. This means that I can help you with your household chores.")
 		
 		sss.sleep(1)
 		SAY("I am equipped with an omnidirectional base, a 7 degree of freedom arm and a gripper.")
-		handle_arm.wait()
+
 		handle_base = sss.move("base", "second_intro", False)
 		SAY("My base is omnidirectional which allows me to move forwards, backwards, sideways and even turn at the same time.")
 		sss.sleep(3)
@@ -225,11 +227,11 @@ class introduce(smach.State):
 		
 		
 		#sss.move("sdh","cylopen")
-		handle_arm = sss.move("arm", "look_at_table-to-folded", False)
+		self.arm.set_named_target("folded")
+		self.arm.go()
 		SAY("I'm able to reach positions on my front and backside with my arm. If you need a hand carrying things, I can lift up to 7 kilos.")
 		sss.sleep(2)
 		#sss.move("sdh","cylclosed")
-		handle_arm.wait()
 		
 		handle_tray = sss.move("tray","down",False)
 		

@@ -47,15 +47,18 @@ class detect_object(smach.State):
 	def __init__(self):	
 		smach.State.__init__(self, outcomes=['success','failed','retry'], output_keys=['grasp_position'])
 		self.find_object_srv = rospy.ServiceProxy('/mcr_perception/tabletop_segmentation/get_detected_objects', mcr_perception_msgs.srv.GetObjectList)
-		
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
 	def execute(self, userdata):
 		
 		sss.move("head", "back_table", False)
 		sss.move("torso", "extrem_back")
 	
-		handle_arm = sss.move("arm","folded-to-look_at_table", False)
+		self.arm.set_named_target("look_at_table")
+		self.arm.go()
+
 		rospy.sleep(0.8)
-		handle_arm.wait()
+
 		if not sss.parse:
 			if(handle_arm.get_state() != 3):
 				print "Arm movement failed"
@@ -80,7 +83,8 @@ class detect_object(smach.State):
 				userdata.grasp_position = resp.pointCloudCentroids[resp.bestPointCloudCentroidIndex]
 				return 'success'
 		SAY("The table is empty.")
-		sss.move("arm","look_at_table-to-folded")
+		self.arm.set_named_target("folded")
+		self.arm.go()
 		sss.move("head","front_face",False)
 		return 'failed'
 
@@ -90,6 +94,7 @@ class find_object_moped(smach.State):
 		self.find_object_srv = rospy.ServiceProxy('/mcr_perception/object_recognition/get_object_list', mcr_perception_msgs.srv.GetObjectList)
 		self.object_recognition_start = rospy.ServiceProxy('/mcr_perception/object_recognition_height_based/start', std_srvs.srv.Empty)
 		self.object_recognition_stop = rospy.ServiceProxy('/mcr_perception/object_recognition_height_based/stop', std_srvs.srv.Empty)
+		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 		rospy.wait_for_service('/mcr_perception/object_recognition_height_based/start', 30)
@@ -97,10 +102,13 @@ class find_object_moped(smach.State):
 		self.object_recognition_start()
 		
 		sss.move("head", "back_table", False)
-		handle_arm = sss.move("arm","folded-to-look_at_table", False)
+
+		self.arm.set_named_target("look_at_table")
+		self.arm.go()
+
 		sss.move("torso", "extrem_back")
 		rospy.sleep(5)
-		handle_arm.wait()
+
 		if not sss.parse:
 			if(handle_arm.get_state() != 3):
 				print "Arm movement failed"
@@ -130,8 +138,8 @@ class find_object_moped(smach.State):
 				
 		if (len(resp.object_position_list) <= 0):
 			SAY("I could not find the " + userdata.object_name + ".")
-			handle_arm = sss.move("arm","look_at_table-to-folded", False)
-			handle_arm.wait()
+			self.arm.set_named_target("folded")
+			self.arm.go()
 			if not sss.parse:
 				if(handle_arm.get_state() != 3):
 					print "Arm movement failed"
@@ -154,8 +162,8 @@ class find_object_moped(smach.State):
 				return 'success'
 
 		SAY("I could not find the " + userdata.object_name + ".")
-		handle_arm = sss.move("arm","look_at_table-to-folded", False)
-		handle_arm.wait()
+		self.arm.set_named_target("folded")
+		self.arm.go()
 		if not sss.parse:
 			if(handle_arm.get_state() != 3):
 				print "Arm movement failed"
@@ -171,6 +179,7 @@ class find_one_known_object(smach.State):
 		self.find_object_srv = rospy.ServiceProxy('/mcr_perception/object_recognition/get_object_list', mcr_perception_msgs.srv.GetObjectList)
 		self.object_recognition_start = rospy.ServiceProxy('/mcr_perception/object_recognition_height_based/start', std_srvs.srv.Empty)
 		self.object_recognition_stop = rospy.ServiceProxy('/mcr_perception/object_recognition_height_based/stop', std_srvs.srv.Empty)
+		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 		rospy.wait_for_service('/mcr_perception/object_recognition_height_based/start', 30)
@@ -178,10 +187,11 @@ class find_one_known_object(smach.State):
 		self.object_recognition_start()
 		
 		sss.move("head", "back_table", False)
-		handle_arm = sss.move("arm","folded-to-look_at_table", False)
+		self.arm.set_named_target("look_at_table")
+		self.arm.go()
 		sss.move("torso", "extrem_back")
 		rospy.sleep(5)
-		handle_arm.wait()
+
 		if not sss.parse:
 			if(handle_arm.get_state() != 3):
 				print "Arm movement failed"
@@ -211,8 +221,8 @@ class find_one_known_object(smach.State):
 				
 		if (len(resp.objects) <= 0):
 			SAY("I could not find the " + userdata.object_name + ".")
-			handle_arm = sss.move("arm","look_at_table-to-folded", False)
-			handle_arm.wait()
+			self.arm.set_named_target("folded")
+			self.arm.go()
 			if not sss.parse:
 				if(handle_arm.get_state() != 3):
 					print "Arm movement failed"
@@ -235,8 +245,8 @@ class find_one_known_object(smach.State):
 				return 'success'
 
 		SAY("I could not find the " + userdata.object_name + ".")
-		handle_arm = sss.move("arm","look_at_table-to-folded", False)
-		handle_arm.wait()
+		self.arm.set_named_target("folded")
+		self.arm.go()
 		if not sss.parse:
 			if(handle_arm.get_state() != 3):
 				print "Arm movement failed"
@@ -251,6 +261,7 @@ class find_any_known_object(smach.State):
 		self.find_object_srv = rospy.ServiceProxy('/mcr_perception/object_recognition/get_object_list', mcr_perception_msgs.srv.GetObjects)
 		self.object_recognition_start = rospy.ServiceProxy('/mcr_perception/object_recognition_height_based/start', std_srvs.srv.Empty)
 		self.object_recognition_stop = rospy.ServiceProxy('/mcr_perception/object_recognition_height_based/stop', std_srvs.srv.Empty)
+		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 		rospy.wait_for_service('/mcr_perception/object_recognition_height_based/start', 30)
@@ -261,12 +272,11 @@ class find_any_known_object(smach.State):
 		
 		
 		sss.move("head", "back_table", False)
-		handle_arm = sss.move("arm","folded-to-look_at_table", False)
+		self.arm.set_named_target("look_at_table")
+		self.arm.go()
 		sss.move("torso", "extrem_back")
 
 		rospy.sleep(5)
-
-		handle_arm.wait()
 
 		if not sss.parse:
 			if(handle_arm.get_state() != 3):
@@ -294,8 +304,8 @@ class find_any_known_object(smach.State):
 				
 		if (len(resp.objects) <= 0):
 			SAY("I could not find any object.")
-			handle_arm = sss.move("arm","look_at_table-to-folded", False)
-			handle_arm.wait()
+			self.arm.set_named_target("folded")
+			self.arm.go()
 			if not sss.parse:
 				if(handle_arm.get_state() != 3):
 					print "Arm movement failed"
@@ -351,6 +361,7 @@ class find_any_known_object_height_based(smach.State):
 		self.find_object_srv = rospy.ServiceProxy('/mcr_perception/object_recognition/get_object_list', mcr_perception_msgs.srv.GetObjectList)
 		self.object_recognition_start = rospy.ServiceProxy('/mcr_perception/object_recognition_height_based/start', std_srvs.srv.Empty)
 		self.object_recognition_stop = rospy.ServiceProxy('/mcr_perception/object_recognition_height_based/stop', std_srvs.srv.Empty)
+		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 		rospy.wait_for_service('/mcr_perception/object_recognition_height_based/start', 30)
@@ -358,12 +369,11 @@ class find_any_known_object_height_based(smach.State):
 		self.object_recognition_start()
 		
 		sss.move("head", "back_table", False)
-		handle_arm = sss.move("arm","folded-to-look_at_table", False)
+		self.arm.set_named_target("look_at_table")
+		self.arm.go()
 		sss.move("torso", "extrem_back")
 
 		rospy.sleep(5)
-
-		handle_arm.wait()
 
 		if not sss.parse:
 			if(handle_arm.get_state() != 3):
@@ -385,8 +395,8 @@ class find_any_known_object_height_based(smach.State):
 				
 		if (len(resp.object_position_list) <= 0):
 			SAY("I could not find any object.")
-			handle_arm = sss.move("arm","look_at_table-to-folded", False)
-			handle_arm.wait()
+			self.arm.set_named_target("folded")
+			self.arm.go()
 			if not sss.parse:
 				if(handle_arm.get_state() != 3):
 					print "Arm movement failed"
@@ -414,6 +424,7 @@ class categorize_objects(smach.State):
 		self.object_categorization_stop = rospy.ServiceProxy('/mcr_perception/object_categorization/stop', std_srvs.srv.Empty)
 		self.object_recognition_height_based_start = rospy.ServiceProxy('/mcr_perception/object_recognition_height_based/start', std_srvs.srv.Empty)
 		self.object_recognition_height_based_stop = rospy.ServiceProxy('/mcr_perception/object_recognition_height_based/stop', std_srvs.srv.Empty)
+		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 		rospy.wait_for_service('/mcr_perception/object_recognition_height_based/start', 30)
@@ -425,10 +436,11 @@ class categorize_objects(smach.State):
 		self.get_categorized_objects()
 		
 		sss.move("head", "back_table", False)
-		handle_arm = sss.move("arm","folded-to-look_at_table", False)
+		self.arm.set_named_target("look_at_table")
+		self.arm.go()
 		sss.move("torso", "extrem_back")
 		rospy.sleep(5)
-		handle_arm.wait()
+
 		if not sss.parse:
 			if(handle_arm.get_state() != 3):
 				print "Arm movement failed"
@@ -456,10 +468,11 @@ class categorize_objects(smach.State):
 				
 			#move everything to default positions
 			sss.move("torso","home")
-			handle_arm = sss.move("arm","look_at_table-to-folded", False)
+			self.arm.set_named_target("folded")
+			self.arm.go()
 			#self.object_categorization_stop()
 			self.object_recognition_height_based_stop()
-			handle_arm.wait()
+
 			if not sss.parse:
 				if(handle_arm.get_state() != 3):
 					print "Arm movement failed"
@@ -471,10 +484,11 @@ class categorize_objects(smach.State):
 		
 		#move everything to default positions
 		sss.move("torso","home")
-		handle_arm = sss.move("arm","look_at_table-to-folded", False)
+		self.arm.set_named_target("folded")
+		self.arm.go()
 		#self.object_categorization_stop()
 		self.object_recognition_height_based_stop()
-		handle_arm.wait()
+
 		if not sss.parse:
 			if(handle_arm.get_state() != 3):
 				print "Arm movement failed"
