@@ -206,7 +206,7 @@ class introduce(smach.State):
 		sss.sleep(1)
 		SAY("I am designed to be an autonomous domestic service robot. This means that I can help you with your household chores.")
 		
-		SAY("I am equipped with a 7 degree of freedom light weight armnd a three finger gripper.")
+		SAY("I am equipped with a 7 degree of freedom light weight arm and a three finger gripper.")
 		self.arm.set_named_target("look_at_table")
 		self.arm.go()
 
