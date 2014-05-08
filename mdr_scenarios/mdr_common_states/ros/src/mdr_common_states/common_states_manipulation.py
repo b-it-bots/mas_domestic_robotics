@@ -65,6 +65,7 @@ class stop_guiding(smach.State):
 		
 		self.arm.set_named_target("folded")
 		self.arm.go()
+
 		return result
 		
 class point_to_object(smach.State):
@@ -209,7 +210,9 @@ class grasp_object(smach.State):
 
 				self.arm.set_named_target("folded")
 				self.arm.go()
+
 				return 'failed'
+
 			SAY("I could not grasp the object, but I will try again.")
 			self.retry_count = self.retry_count + 1
 			return 'retry'
@@ -310,8 +313,6 @@ class put_object_in_hand(smach.State):
 		self.memorize_current_force = rospy.ServiceProxy('/memorize_current_force', std_srvs.srv.Empty)
 		self.get_bottle_state = rospy.ServiceProxy('/get_bottle_state', mdr_manipulation_msgs.srv.GetBottleState)
 		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
-		self.set_operation_mode = rospy.ServiceProxy('/arm_controller/set_operation_mode', SetOperationMode)
-		self.pub_arm_vel = rospy.Publisher('/arm_controller/command', JointTrajectory)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
