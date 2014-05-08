@@ -43,9 +43,9 @@ def set_light_color(color):
 class init_manipulator(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
-		self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
-		
+		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
+
 	def execute(self, userdata):
 		#sss.init("arm")
 		sss.init("sdh")
@@ -59,14 +59,14 @@ class init_manipulator(smach.State):
 		self.arm.go()
 		handle_sdh.wait()
 		
-		rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
-		try:
-			req = SetJointStiffnessRequest()
-			req.joint_stiffness = [300,300,300,300,300,300,300]
-			self.set_joint_stiffness(req)
-		except rospy.ServiceException,e:
-			print "Service call failed: %s"%e
-			return 'failed'
+		#rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
+		#try:
+		#	req = SetJointStiffnessRequest()
+		#	req.joint_stiffness = [300,300,300,300,300,300,300]
+		#	self.set_joint_stiffness(req)
+		#except rospy.ServiceException,e:
+		#	print "Service call failed: %s"%e
+		#	return 'failed'
 
 		# check, if all components are working
 		retval_list = []

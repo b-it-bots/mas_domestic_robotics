@@ -166,20 +166,20 @@ class grasp_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed','retry'], input_keys=['grasp_position'])
 		self.grasp_object_srv = rospy.ServiceProxy('grasp', mdr_manipulation_msgs.srv.Grasp)
-		self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
+		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 		self.retry_count = 0
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 		sss.move("torso","home")
-		rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
-		try:
-			req = SetJointStiffnessRequest()
-			req.joint_stiffness = [150,150,150,150,150,150,150]
-			self.set_joint_stiffness(req)
-		except rospy.ServiceException,e:
-			print "Service call failed: %s"%e
-			return 'failed'
+		#rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
+		#try:
+		#	req = SetJointStiffnessRequest()
+		#	req.joint_stiffness = [150,150,150,150,150,150,150]
+		#	self.set_joint_stiffness(req)
+		#except rospy.ServiceException,e:
+		#	print "Service call failed: %s"%e
+		#	return 'failed'
 
 		grasp = mdr_manipulation_msgs.srv.GraspRequest()
 		grasp.position.header.frame_id = "/base_link"
@@ -311,7 +311,7 @@ class put_object_in_hand(smach.State):
 		self.get_force_request = rospy.ServiceProxy('/is_external_force_applied', Trigger)
 		self.memorize_current_force = rospy.ServiceProxy('/memorize_current_force', std_srvs.srv.Empty)
 		self.get_bottle_state = rospy.ServiceProxy('/get_bottle_state', mdr_manipulation_msgs.srv.GetBottleState)
-		self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
+		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 		self.set_operation_mode = rospy.ServiceProxy('/arm_controller/set_operation_mode', SetOperationMode)
 		self.pub_arm_vel = rospy.Publisher('/arm_controller/command', JointTrajectory)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
@@ -324,14 +324,14 @@ class put_object_in_hand(smach.State):
 		self.arm.go()
 			
 		#  set arm to stiffness mode
-		rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
-		try:
-			req = SetJointStiffnessRequest()
-			req.joint_stiffness = [200,200,200,200,200,200,200]
-			self.set_joint_stiffness(req)
-		except rospy.ServiceException,e:
-			print "Service call failed: %s"%e
-			return 'failed'
+		#rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
+		#try:
+		#	req = SetJointStiffnessRequest()
+		#	req.joint_stiffness = [200,200,200,200,200,200,200]
+		#	self.set_joint_stiffness(req)
+		#except rospy.ServiceException,e:
+		#	print "Service call failed: %s"%e
+		#	return 'failed'
 			
 		self.arm.set_named_target("pregrasp")
 		self.arm.go()
@@ -445,7 +445,7 @@ class release_object(smach.State):
 		smach.State.__init__(self, outcomes=['success','failed'])
 		self.get_release_request = rospy.ServiceProxy('/is_external_force_applied', Trigger)
 		self.memorize_current_force = rospy.ServiceProxy('/memorize_current_force', std_srvs.srv.Empty)
-		self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
+		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
@@ -493,14 +493,14 @@ class release_object(smach.State):
 		handle_sdh.wait()
 		
 		#  set arm to stiffness mode
-		rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
-		try:
-			req = SetJointStiffnessRequest()
-			req.joint_stiffness = [300,300,300,300,300,300,300]
-			self.set_joint_stiffness(req)
-		except rospy.ServiceException,e:
-			print "Service call failed: %s"%e
-			return 'failed'
+		#rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
+		#try:
+		#	req = SetJointStiffnessRequest()
+		#	req.joint_stiffness = [300,300,300,300,300,300,300]
+		#	self.set_joint_stiffness(req)
+		#except rospy.ServiceException,e:
+		#	print "Service call failed: %s"%e
+		#	return 'failed'
 		
 		sss.move("sdh","cylclosed",False)
 		sss.move("torso","home",False)
