@@ -44,11 +44,21 @@ class init_manipulator(smach.State):
 		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 
+		self.arm_recover_srv_name = "/arm_controller/lwr_node/recover"
+		self.arm_recover_srv = rospy.ServiceProxy(self.arm_recover_srv_name, std_srvs.srv.Empty)
+
 	def execute(self, userdata):
 		#sss.init("arm")
 		sss.init("sdh")
 
-		sss.recover("arm")
+		rospy.wait_for_service(self.arm_recover_srv_name, 5)
+                try:
+                        self.arm_recover_srv()
+                except rospy.ServiceException, e:
+                        print("Service call to {0} failed: {1}".format(self.arm_recover_srv_name, e))
+                        return 'failed'
+
+		
 		sss.recover("sdh")
 
 		# move to initial positions
@@ -136,6 +146,9 @@ class init_all(smach.State):
 		smach.State.__init__(self, outcomes=['success','failed'])
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 
+		self.arm_recover_srv_name = "/arm_controller/lwr_node/recover"
+		self.arm_recover_srv = rospy.ServiceProxy(self.arm_recover_srv_name, std_srvs.srv.Empty)
+
 	def execute(self, userdata):
 		raw_input("\nTURN HEAD MANUALLY UP!\n")
 		# init all components
@@ -149,7 +162,15 @@ class init_all(smach.State):
 		# \todo check for init hardware errors
 
 		sss.recover("base")
-		sss.recover("arm")
+		
+		rospy.wait_for_service(self.arm_recover_srv_name, 5) 
+		try:
+			self.arm_recover_srv()
+		except rospy.ServiceException, e:
+			print("Service call to {0} failed: {1}".format(self.arm_recover_srv_name, e))
+			return 'failed'
+		
+
 		sss.recover("sdh")
 		sss.recover("tray")
 		sss.recover("torso")

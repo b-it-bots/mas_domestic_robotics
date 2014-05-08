@@ -237,7 +237,7 @@ class introduce(smach.State):
 		self.arm.go()
 		
 		handle_sdh.wait()
-		handle_try.wait()
+		handle_tray.wait()
 		
 		SAY("Thank you for your attention.")
 
