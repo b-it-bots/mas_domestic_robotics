@@ -199,8 +199,6 @@ class grasp_object(smach.State):
 		if (resp.result == 0):
 			#SAY("I grasp the object successfully!")
 			self.retry_count = 0
-
-			#sss.move("arm", "pregrasp")
 			
 			self.retry_count = 0
 			return 'success'
@@ -403,7 +401,7 @@ class weight_bottle(smach.State):
 		self.get_wrench = rospy.ServiceProxy('/get_wrench', mdr_manipulation_msgs.srv.GetWrench)
 
 	def execute(self, userdata):
-		#sss.move("arm","pregrasp")
+
 		sss.sleep(1)
 	
 		# do the weighting
@@ -534,6 +532,7 @@ class place_object_on_tray(smach.State):
 			
 			rospy.sleep(2)
 			sss.move("sdh","cylclosed")
+
 			return 'success'
 		if userdata.position_on_tray != '':
 			self.trayPosition = userdata.position_on_tray
