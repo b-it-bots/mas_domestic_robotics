@@ -202,11 +202,11 @@ class introduce(smach.State):
 
 		SAY("Hello ladies and gentlemen. My name is Jenny. I am a Care O bot 3 robot.")
 		sss.sleep(1)	
-		SAY("I live at the bonn rhein sieg university in sankt augustin. I have my own appartment in the RoboCup lab and I am a member of the b i t bots team.")
+		SAY("I live at the bonn rhein sieg university in sankt augustin. I have my own appartment in the RoboCup lab. And I am a member of the b i t bots team.")
 		sss.sleep(1)
 		SAY("I am designed to be an autonomous domestic service robot. This means that I can help you with your household chores.")
 		
-		SAY("I am equipped with a KUKA light weight arm with 7 degrees of freedom and a three finger gripper.")
+		SAY("I am equipped with a 7 degree of freedom light weight armnd a three finger gripper.")
 		self.arm.set_named_target("look_at_table")
 		self.arm.go()
 
@@ -239,7 +239,7 @@ class introduce(smach.State):
 		handle_sdh.wait()
 		handle_tray.wait()
 		
-		SAY("Thank you for your attention.")
+		SAY("Thank you for your attention. I hope you enjoy the rest of the show.")
 
 		handle_torso = sss.move("torso","nod",False)		
 		handle_torso.wait()
