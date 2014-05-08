@@ -1,12 +1,10 @@
 #!/usr/bin/python
 
 ######################### IMPORTS #########################
-
-import roslib
-roslib.load_manifest('mdr_common_states')
 import rospy
 import smach
 import smach_ros
+import moveit_commander
 
 from simple_script_server import *
 sss = simple_script_server()
