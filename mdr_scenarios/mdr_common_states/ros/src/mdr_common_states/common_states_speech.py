@@ -18,13 +18,20 @@ import mcr_speech_msgs.msg
 from mdr_common_states.common_states import *
 
 ######################### GLOBAL SAY TO AVOID SCRIPT SERVER #########################
-def SAY(text):
+def SAY(text, blocking=true, timeout=60):
+		
 	speak_pub = rospy.Publisher('/say', mcr_speech_msgs.msg.Say)
 
 	speak_pub.publish(mcr_speech_msgs.msg.Say(text))
 	
-	rospy.sleep(0.2)
-	
+	time_start = rospy.Time.now()
+	if(blocking == true):
+		while(True):
+			event_msg = rospy.wait_for_message('/mcr_speech_synthesis/event_out', std_msgs.msg.String, timeout=timeout)
+			
+			if((event_msg.data == 'e_done') or ((rospy.Time.now() - time_start) > timeout):
+				break;
+
 	clear_last_command_name = '/mcr_speech_recognition/clear_last_recognized_speech'
 	clear_last_command_proxy = rospy.ServiceProxy(clear_last_command_name, std_srvs.srv.Empty)
 	rospy.wait_for_service(clear_last_command_name, 3)
