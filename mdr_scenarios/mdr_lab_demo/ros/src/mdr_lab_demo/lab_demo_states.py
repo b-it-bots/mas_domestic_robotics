@@ -230,7 +230,7 @@ class introduce(smach.State):
 		sss.move("sdh","cylopen")
 		SAY("I'm able to reach positions on my front and backside with my arm. If you need a hand carrying things, I can lift up to 7 kilos.")
 
-		handle_sdh = sss.move("sdh","cylopen")
+		handle_sdh = sss.move("sdh","cylclosed")
 		handle_tray = sss.move("tray","down",False)
 
 		self.arm.set_named_target("folded")
