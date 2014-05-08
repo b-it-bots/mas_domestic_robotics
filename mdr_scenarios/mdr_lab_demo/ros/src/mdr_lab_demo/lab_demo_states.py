@@ -248,12 +248,14 @@ class wait_for_arbitrary_phrase(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','not_understood'], 
 									output_keys=['keyword_list_out', 'confidence_list_out'])
-		self.get_last_recognized_speech = rospy.ServiceProxy('/mcr_speech_speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetRecognizedSpeech) # TODO this was a topic from topic-to-service. need to solve this
+
+		self.get_last_recognized_speech_srv_name = '/mcr_speech_recognition/get_last_recognized_speech'
+		self.get_last_recognized_speech = rospy.ServiceProxy(self.get_last_recognized_speech_srv_name, mcr_speech_msgs.srv.GetRecognizedSpeech) # TODO this was a topic from topic-to-service. need to solve this
 	
 	def execute(self, userdata):
 		# wait for the command
 		set_light_color(COLOR_GREEN)
-		rospy.wait_for_service('/mcr_speech_speech_recognition/get_last_recognized_speech', 3) # TODO this was a topic from topic-to-service. need to solve this
+		rospy.wait_for_service(self.get_last_recognized_speech_srv_name, 3) # TODO this was a topic from topic-to-service. need to solve this
 		res = self.get_last_recognized_speech()
 		
 		if res.keyword.strip() != "no_speech" and res.keyword.strip() != "not_understood":

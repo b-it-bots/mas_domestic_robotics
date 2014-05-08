@@ -231,9 +231,9 @@ int main(int argc, char **argv)
  	
   ros::ServiceServer service_clear = n.advertiseService("clear_stored_infos", clearStoredInfosCallback); 	
  	
-  ros::Subscriber sub1 = n.subscribe("/mcr_speech_speech_recognition/recognized_speech", 1000, GetRecognizedSpeechCallback);
-  ros::ServiceServer service1 = n.advertiseService("/mcr_speech_speech_recognition/get_last_recognized_speech", lastSpeechCommandCallback);
-  ros::ServiceServer service2 = n.advertiseService("/mcr_speech_speech_recognition/clear_last_recognized_speech", clearLastGetRecognizedSpeechCallback);
+  ros::Subscriber sub1 = n.subscribe("/mcr_speech_recognition/recognized_speech", 1000, GetRecognizedSpeechCallback);
+  ros::ServiceServer service1 = n.advertiseService("/mcr_speech_recognition/get_last_recognized_speech", lastSpeechCommandCallback);
+  ros::ServiceServer service2 = n.advertiseService("/mcr_speech_recognition/clear_last_recognized_speech", clearLastGetRecognizedSpeechCallback);
   
   ros::Subscriber sub2 = n.subscribe("/mcr_perception/face_recognition/is_person_in_front", 1, isPersonInFrontCallback);
   ros::ServiceServer service3 = n.advertiseService("/mcr_perception/face_recognition/is_person_in_front", isPersonInFront);
