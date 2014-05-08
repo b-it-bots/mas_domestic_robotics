@@ -5,6 +5,7 @@ import rospy
 import smach
 import smach_ros
 import tf
+import moveit_commander
 
 import std_msgs.msg
 import std_srvs.srv

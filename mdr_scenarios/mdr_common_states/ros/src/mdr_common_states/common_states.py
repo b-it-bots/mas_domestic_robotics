@@ -4,6 +4,7 @@
 import rospy
 import smach
 import smach_ros
+import moveit_commander
 
 from simple_script_server import *
 sss = simple_script_server()
