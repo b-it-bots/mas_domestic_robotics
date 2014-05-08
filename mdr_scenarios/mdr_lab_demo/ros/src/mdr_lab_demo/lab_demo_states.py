@@ -9,6 +9,7 @@ import mcr_speech_msgs.msg
 import mcr_perception_msgs.msg
 
 from mdr_common_states.common_states import *
+from mdr_common_states.common_states_speech import *
 
 INTRODUCE = 'introduce'
 LEARN_PERSON = 'learn_person'
