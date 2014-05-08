@@ -29,7 +29,7 @@ def SAY(text, blocking=True, timeout=60):
 		while(True):
 			event_msg = rospy.wait_for_message('/mcr_speech_synthesis/event_out', std_msgs.msg.String, timeout=timeout)
 			
-			if((event_msg.data == 'e_done') or ((rospy.Time.now() - time_start) > timeout):
+			if((event_msg.data == 'e_done') or ((rospy.Time.now() - time_start) > timeout)):
 				break;
 
 	clear_last_command_name = '/mcr_speech_recognition/clear_last_recognized_speech'
