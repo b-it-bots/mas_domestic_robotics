@@ -1,9 +1,6 @@
 #!/usr/bin/python
 
 ######################### IMPORTS #########################
-
-import roslib
-roslib.load_manifest('mdr_common_states')
 import rospy
 import smach
 import smach_ros
@@ -21,15 +18,23 @@ import mcr_speech_msgs.msg
 from mdr_common_states.common_states import *
 
 ######################### GLOBAL SAY TO AVOID SCRIPT SERVER #########################
-def SAY(text):
+def SAY(text, blocking=true, timeout=60):
+		
 	speak_pub = rospy.Publisher('/say', mcr_speech_msgs.msg.Say)
 
 	speak_pub.publish(mcr_speech_msgs.msg.Say(text))
 	
-	rospy.sleep(0.2)
+	time_start = rospy.Time.now()
+	if(blocking == true):
+		while(True):
+			event_msg = rospy.wait_for_message('/mcr_speech_synthesis/event_out', std_msgs.msg.String, timeout=timeout)
+			
+			if((event_msg.data == 'e_done') or ((rospy.Time.now() - time_start) > timeout):
+				break;
 
-	clear_last_command_proxy = rospy.ServiceProxy("/mcr_speech_speech_recognition/clear_last_recognized_speech", std_srvs.srv.Empty)
-	rospy.wait_for_service("/mcr_speech_speech_recognition/clear_last_recognized_speech",3)
+	clear_last_command_name = '/mcr_speech_recognition/clear_last_recognized_speech'
+	clear_last_command_proxy = rospy.ServiceProxy(clear_last_command_name, std_srvs.srv.Empty)
+	rospy.wait_for_service(clear_last_command_name, 3)
 	clear_last_command_proxy()
 
 
@@ -39,11 +44,14 @@ class init_speech(smach.State):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
 		self.grammar = grammarfile
 
+		self.change_grammar_srv_name = '/mcr_speech_recognition/change_grammar'
+		self.change_grammar = rospy.ServiceProxy(self.change_grammar_srv_name, mcr_speech_msgs.srv.ChangeGrammar)
+
 	def execute(self, userdata):
-		speech_recognition_change_grammar = rospy.ServiceProxy('/mcr_speech_speech_recognition/change_grammar', mcr_speech_msgs.srv.ChangeGrammar)
-		rospy.wait_for_service('/mcr_speech_speech_recognition/change_grammar', 5)
+
+		rospy.wait_for_service(self.change_grammar_srv_name, 5)
 		try:
-			speech_recognition_change_grammar(self.grammar)
+			self.change_grammar(self.grammar)
 			return 'success'
 		except rospy.ServiceException, e:
 			print "Service called failed: %s"%e
@@ -56,12 +64,15 @@ class wait_for_command(smach.State):
 		smach.State.__init__(self, outcomes=['success'], 
 									output_keys=['understood_command'], 
 									input_keys=['commands_to_wait_for'])
-		self.get_last_recognized_speech = rospy.ServiceProxy('/mcr_speech_speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetRecognizedSpeech)
+
+
+		self.get_last_recognized_speech_srv_name = '/mcr_speech_recognition/get_last_recognized_speech'
+		self.get_last_recognized_speech = rospy.ServiceProxy(self.get_last_recognized_speech_srv_name, mcr_speech_msgs.srv.GetRecognizedSpeech)
 
 	def execute(self, userdata):
 		# wait for the command
 		set_light_color(COLOR_GREEN)
-		rospy.wait_for_service('/mcr_speech_speech_recognition/get_last_recognized_speech', 3)
+		rospy.wait_for_service(self.get_last_recognized_speech_srv_name, 3)
 		
 		while(True):
 			res = self.get_last_recognized_speech()
@@ -84,14 +95,18 @@ class acknowledge_command(smach.State):
 
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['yes','no'], input_keys=['understood_command'])
-		self.getLastRecognizedSpeech = rospy.ServiceProxy('/mcr_speech_speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetRecognizedSpeech)
-		self.clear_last_command_proxy = rospy.ServiceProxy("/mcr_speech_speech_recognition/clear_last_recognized_speech", std_srvs.srv.Empty)
+
+		self.get_last_recognized_speech_srv_name = '/mcr_speech_recognition/get_last_recognized_speech'
+		self.get_last_recognized_speech_srv = rospy.ServiceProxy(self.get_last_recognized_speech_srv_name, mcr_speech_msgs.srv.GetRecognizedSpeech)
+
+		self.clear_last_command_proxy_srv_name = '/mcr_speech_recognition/clear_last_recognized_speech'
+		self.clear_last_command_proxy = rospy.ServiceProxy(self.clear_last_command_proxy_srv_name, std_srvs.srv.Empty)
 
 	def execute(self, userdata):
-		rospy.wait_for_service('/mcr_speech_speech_recognition/get_last_recognized_speech', 3)
+		rospy.wait_for_service(self.get_last_recognized_speech_srv_name, 3)
 		rospy.sleep(0.2)
 	
-		rospy.wait_for_service("/mcr_speech_speech_recognition/clear_last_recognized_speech",3)
+		rospy.wait_for_service(self.clear_last_command_proxy_srv_name, 3)
 		
 
 		SAY('Did you say: ' + userdata.understood_command + ', is this correct?')
@@ -102,7 +117,7 @@ class acknowledge_command(smach.State):
 		set_light_color(COLOR_GREEN)
 
 		while(True):
-			res = self.getLastRecognizedSpeech()
+			res = self.get_last_recognized_speech_srv()
 			if res.keyword == 'yes' or res.keyword == 'no':
 				break
 			else:
@@ -123,16 +138,24 @@ class acknowledge_command_with_loading_grammar(smach.State):
 
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['yes','no'], input_keys=['understood_command'])
-		self.getLastRecognizedSpeech = rospy.ServiceProxy('/mcr_speech_speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetRecognizedSpeech)
-		self.clear_last_command_proxy = rospy.ServiceProxy("/mcr_speech_speech_recognition/clear_last_recognized_speech", std_srvs.srv.Empty)
+
+		self.get_last_recognized_speech_srv_name = '/mcr_speech_recognition/get_last_recognized_speech'
+		self.get_last_recognized_speech_srv = rospy.ServiceProxy(self.get_last_recognized_speech_srv_name, mcr_speech_msgs.srv.GetRecognizedSpeech)
+
+		self.clear_last_command_proxy_srv_name = '/mcr_speech_recognition/clear_last_recognized_speech'
+		self.clear_last_command_proxy = rospy.ServiceProxy(self.clear_last_command_proxy_srv_name, std_srvs.srv.Empty)
+
+		self.change_grammar_srv_name = '/mcr_speech_recognition/change_grammar'
+		self.change_grammar = rospy.ServiceProxy(self.change_grammar_srv_name, mcr_speech_msgs.srv.ChangeGrammar)
+
 
 	def execute(self, userdata):
 		#change the grammar
-		speech_recognition_change_grammar = rospy.ServiceProxy('/mcr_speech_speech_recognition/change_grammar', mcr_speech_msgs.srv.ChangeGrammar)
-		rospy.wait_for_service('/mcr_speech_speech_recognition/change_grammar', 5)
-		rospy.wait_for_service("/mcr_speech_speech_recognition/clear_last_recognized_speech",3)
+
+		rospy.wait_for_service(self.change_grammar_srv_name, 5)
+		rospy.wait_for_service(self.clear_last_command_proxy_srv_name, 3)
 		try:
-			speech_recognition_change_grammar("acknowledge_top_level.xml")
+			self.change_grammar("acknowledge_top_level.xml")
 		except rospy.ServiceException, e:
 			print "Service called failed: %s"%e
 				
@@ -144,9 +167,9 @@ class acknowledge_command_with_loading_grammar(smach.State):
 		#set_light_color(COLOR_GREEN)
 		
 
-		rospy.wait_for_service('/mcr_speech_speech_recognition/get_last_recognized_speech', 3)
+		rospy.wait_for_service(self.get_last_recognized_speech_srv_name, 3)
 		while(True):
-			res = self.getLastRecognizedSpeech()
+			res = self.get_last_recognized_speech_srv()
 			if res.keyword == 'yes' or res.keyword == 'no':
 				break
 			else:

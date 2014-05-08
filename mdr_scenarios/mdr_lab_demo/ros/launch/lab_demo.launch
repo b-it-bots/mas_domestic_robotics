@@ -12,6 +12,10 @@
   <group>
     <machine name="brsu-pc1" address="cob3-1-pc1" env-loader="$(find mdr_bringup)/env.sh" default="true" />
 
+    <!-- manipulation -->
+    <include file="$(find mdr_lwr)/ros/launch/lwr.launch" />
+    <include file="$(find mdr_moveit_cob)/launch/move_group.launch" />
+
     <include file="$(find mdr_topic_to_service)/ros/launch/topic_to_service.launch" />
 
     <include file="$(find mdr_2dnav)/ros/launch/2dnav_eband.launch" />
