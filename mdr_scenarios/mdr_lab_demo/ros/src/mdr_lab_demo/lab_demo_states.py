@@ -37,7 +37,7 @@ IT = "it"
 class load_faces(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
-		self.load_person_face = rospy.ServiceProxy('/mcr_speech/face_recognition/load_person_face', mcr_perception_msgs.srv.SetFaceName)
+		self.load_person_face = rospy.ServiceProxy('/mcr_perception/face_recognition/load_person_face', mcr_perception_msgs.srv.SetFaceName)
 
 	def execute(self, userdata):
 		#rospy.wait_for_service('/mcr_perception/face_recognition/load_person_face', 3)
