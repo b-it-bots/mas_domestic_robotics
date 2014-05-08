@@ -46,6 +46,7 @@ packagelist=(
   ros-hydro-smach-ros
   ros-hydro-wifi-ddwrt
   ros-hydro-xacro
+  ros-hydro-eband-local-planner
   python-setuptools
 )
 

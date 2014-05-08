@@ -26,11 +26,14 @@ from mdr_common_states.common_states_speech import *
 class init_guiding(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
-
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+	
 	def execute(self, userdata):
 		# command the operator
 		SAY("Please wait a moment")
-		sss.move("arm","pregrasp", True)
+
+		self.arm.set_named_target("pregrasp")
+		self.arm.go()	
 		
 		guiding_client = rospy.ServiceProxy('/mcr_behaviors/haptic/start', std_srvs.srv.Empty)
 		rospy.wait_for_service('/mcr_behaviors/haptic/start', 3)
@@ -45,11 +48,13 @@ class init_guiding(smach.State):
 class stop_guiding(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
-	
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
 	def execute(self,userdata):
 		guiding_client_pause = rospy.ServiceProxy('/mcr_behaviors/haptic/stop', std_srvs.srv.Empty)
 		rospy.wait_for_service('/mcr_behaviors/haptic/stop', 3)
 		
+
 		try:
 			guiding_client_pause()
 			SAY("Thank you!")
@@ -58,13 +63,16 @@ class stop_guiding(smach.State):
 			print "Service call failed: %s"%e
 			result = 'failed'
 		
-		sss.move("arm", "folded")
+		self.arm.set_named_target("folded")
+		self.arm.go()
+
 		return result
 		
 class point_to_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'], input_keys=['grasp_position'])
-	
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
 	def execute(self, userdata):
 		sss.move("torso","home")
 		req = mdr_manipulation_msgs.srv.PointToLocationRequest()
@@ -87,7 +95,8 @@ class point_to_object(smach.State):
 			result = 'failed'
 		
 		rospy.sleep(5)
-		sss.move("arm", "folded")
+		self.arm.set_named_target("folded")
+		self.arm.go()
 		
 		return result
 
@@ -96,7 +105,8 @@ class point_to_object(smach.State):
 class clean_table(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'], input_keys=['grasp_position'])
-	
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
 	def execute(self, userdata):
 		sss.move("torso","home")
 		sss.move("sdh","fist")
@@ -141,9 +151,14 @@ class clean_table(smach.State):
 			print "Service did not process request: %s"%str(e)
 			result = 'failed'
 		
-		sss.move("arm", "clean_table")
-		sss.move("arm", "look_at_table")
-		sss.move("arm", "look_at_table-to-folded")
+		self.arm.set_named_target("clean_table")
+		self.arm.go()
+
+		self.arm.set_named_target("look_at_table")
+		self.arm.go()
+
+		self.arm.set_named_target("folded")
+		self.arm.go()
 		return result
 
 		
@@ -152,19 +167,20 @@ class grasp_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed','retry'], input_keys=['grasp_position'])
 		self.grasp_object_srv = rospy.ServiceProxy('grasp', mdr_manipulation_msgs.srv.Grasp)
-		self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
+		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 		self.retry_count = 0
-	
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
 	def execute(self, userdata):
 		sss.move("torso","home")
-		rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
-		try:
-			req = SetJointStiffnessRequest()
-			req.joint_stiffness = [150,150,150,150,150,150,150]
-			self.set_joint_stiffness(req)
-		except rospy.ServiceException,e:
-			print "Service call failed: %s"%e
-			return 'failed'
+		#rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
+		#try:
+		#	req = SetJointStiffnessRequest()
+		#	req.joint_stiffness = [150,150,150,150,150,150,150]
+		#	self.set_joint_stiffness(req)
+		#except rospy.ServiceException,e:
+		#	print "Service call failed: %s"%e
+		#	return 'failed'
 
 		grasp = mdr_manipulation_msgs.srv.GraspRequest()
 		grasp.position.header.frame_id = "/base_link"
@@ -184,8 +200,6 @@ class grasp_object(smach.State):
 		if (resp.result == 0):
 			#SAY("I grasp the object successfully!")
 			self.retry_count = 0
-
-			#sss.move("arm", "pregrasp")
 			
 			self.retry_count = 0
 			return 'success'
@@ -193,8 +207,12 @@ class grasp_object(smach.State):
 			if (self.retry_count > 3):
 				SAY("I give up grasping the object")
 				sss.move("torso","home")
-				sss.move("arm", "look_at_table-to-folded")
+
+				self.arm.set_named_target("folded")
+				self.arm.go()
+
 				return 'failed'
+
 			SAY("I could not grasp the object, but I will try again.")
 			self.retry_count = self.retry_count + 1
 			return 'retry'
@@ -256,23 +274,27 @@ class place_object(smach.State):
 class hand_over_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
-	
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
 	def execute(self, userdata):
 		sss.move("head","front_face",False)
-		handle_arm = sss.move("arm",["intermediateback", "intermediatefront","brsu_overtray"],False)
+
+		self.arm.set_named_target("overtray_top")
+		self.arm.go()
 
 		handle_tray = sss.move("tray","up",False)
 		handle_tray.wait()
 
-		handle_arm.wait()
-		sss.move("arm","tray_front")
+		self.arm.set_named_target("overtray")
+		self.arm.go()
 
 		sss.move("sdh","cylopen")
-		handle_arm = sss.move("arm","tray-to-folded",False)
+		self.arm.set_named_target("folded")
+		self.arm.go()
 
 		sss.sleep(2)
 		sss.move("sdh","cylclosed")
-		handle_arm.wait()
+
 		
 		handle_torso = sss.move("torso","nod",False)		
 	
@@ -290,26 +312,28 @@ class put_object_in_hand(smach.State):
 		self.get_force_request = rospy.ServiceProxy('/is_external_force_applied', Trigger)
 		self.memorize_current_force = rospy.ServiceProxy('/memorize_current_force', std_srvs.srv.Empty)
 		self.get_bottle_state = rospy.ServiceProxy('/get_bottle_state', mdr_manipulation_msgs.srv.GetBottleState)
-		self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
-		self.set_operation_mode = rospy.ServiceProxy('/arm_controller/set_operation_mode', SetOperationMode)
-		self.pub_arm_vel = rospy.Publisher('/arm_controller/command', JointTrajectory)
+		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
+		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 
 		sss.move("head","back",False)
-		sss.move("arm","pregrasp")
+		
+		self.arm.set_named_target("pregrasp")
+		self.arm.go()
 			
 		#  set arm to stiffness mode
-		rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
-		try:
-			req = SetJointStiffnessRequest()
-			req.joint_stiffness = [200,200,200,200,200,200,200]
-			self.set_joint_stiffness(req)
-		except rospy.ServiceException,e:
-			print "Service call failed: %s"%e
-			return 'failed'
+		#rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
+		#try:
+		#	req = SetJointStiffnessRequest()
+		#	req.joint_stiffness = [200,200,200,200,200,200,200]
+		#	self.set_joint_stiffness(req)
+		#except rospy.ServiceException,e:
+		#	print "Service call failed: %s"%e
+		#	return 'failed'
 			
-		sss.move("arm","pregrasp")
+		self.arm.set_named_target("pregrasp")
+		self.arm.go()
 	
 		handle_sdh = sss.move("sdh","cylopen",False)
 		SAY("Please press a bottle into my hand")
@@ -362,7 +386,8 @@ class put_object_in_hand(smach.State):
 			return 'failed'
 		if bottle_state == 1:
 			SAY("There is nothing in my hand.")
-			sss.move("arm","folded")
+			self.arm.set_named_target("folded")
+			self.arm.go()
 			return 'failed'
 		else:
 			SAY("Please step aside.")
@@ -377,7 +402,7 @@ class weight_bottle(smach.State):
 		self.get_wrench = rospy.ServiceProxy('/get_wrench', mdr_manipulation_msgs.srv.GetWrench)
 
 	def execute(self, userdata):
-		#sss.move("arm","pregrasp")
+
 		sss.sleep(1)
 	
 		# do the weighting
@@ -419,7 +444,8 @@ class release_object(smach.State):
 		smach.State.__init__(self, outcomes=['success','failed'])
 		self.get_release_request = rospy.ServiceProxy('/is_external_force_applied', Trigger)
 		self.memorize_current_force = rospy.ServiceProxy('/memorize_current_force', std_srvs.srv.Empty)
-		self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
+		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
+		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 		SAY("Please pull it out of my hand.")
@@ -466,19 +492,20 @@ class release_object(smach.State):
 		handle_sdh.wait()
 		
 		#  set arm to stiffness mode
-		rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
-		try:
-			req = SetJointStiffnessRequest()
-			req.joint_stiffness = [300,300,300,300,300,300,300]
-			self.set_joint_stiffness(req)
-		except rospy.ServiceException,e:
-			print "Service call failed: %s"%e
-			return 'failed'
+		#rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
+		#try:
+		#	req = SetJointStiffnessRequest()
+		#	req.joint_stiffness = [300,300,300,300,300,300,300]
+		#	self.set_joint_stiffness(req)
+		#except rospy.ServiceException,e:
+		#	print "Service call failed: %s"%e
+		#	return 'failed'
 		
 		sss.move("sdh","cylclosed",False)
 		sss.move("torso","home",False)
 		sss.move("head","front_face",False)
-		sss.move("arm","folded")
+		self.arm.set_named_target("folded")
+		self.arm.go()
 		return 'success'		
 
 
@@ -486,52 +513,72 @@ class place_object_on_tray(smach.State):
 	def __init__(self, trayPosition = ''):
 		smach.State.__init__(self, outcomes=['success', 'failed'],input_keys=['position_on_tray'])
 		self.trayPosition = trayPosition
-		
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
 	def execute(self, userdata):
 		if self.trayPosition == '' and userdata.position_on_tray == '':
-			handle_arm = sss.move("arm",["brsu_intermediateback", "intermediatefront","brsu_overtray","tray"],False)
 			handle_tray = sss.move("tray","up")
+
+			self.arm.set_named_target("overtray_top")
+			self.arm.go()
+
 			handle_tray.wait()
-			handle_arm.wait()
-			
+
+			self.arm.set_named_target("overtray")
+			self.arm.go()
+					
 			sss.move("sdh","cylopen")
-			handle_arm = sss.move("arm", ["overtray", "intermediatefront", "brsu_intermediateback", "folded"],False)
+			self.arm.set_named_target("folded")
+			self.arm.go()
 			
 			rospy.sleep(2)
 			sss.move("sdh","cylclosed")
-			handle_arm.wait()
+
 			return 'success'
 		if userdata.position_on_tray != '':
 			self.trayPosition = userdata.position_on_tray
 
 		if self.trayPosition == 'TRAY_1':
 			# LINKE
-			handle_arm = sss.move("arm",["brsu_intermediateback", "intermediatefront","brsu_overtray","tray_left"],False)
 			handle_tray = sss.move("tray","up",False)
+
+			self.arm.set_named_target("overtray_top")
+			self.arm.go()
+
 			handle_tray.wait()
-			handle_arm.wait()
+
+			self.arm.set_named_target("tray_left")
+			self.arm.go()
 
 			sss.move("sdh","cylopen")
-			handle_arm = sss.move("arm", ["overtray", "intermediatefront", "brsu_intermediateback", "folded"],False)
+			self.arm.set_named_target("folded")
+			self.arm.go()
 
 			sss.sleep(2)
 			sss.move("sdh","cylclosed")
-			handle_arm.wait()
+
 			return 'success'
 
 		elif self.trayPosition == 'TRAY_2':
 			# RECHTE
-			handle_arm = sss.move("arm",["brsu_intermediateback", "intermediatefront","tray_right"],False)
 			handle_tray = sss.move("tray","up",False)
+
+			self.arm.set_named_target("overtray_top")
+			self.arm.go()
+
 			handle_tray.wait()
-			handle_arm.wait()
+
+			self.arm.set_named_target("tray_right")
+			self.arm.go()
 			
 			sss.move("sdh","cylopen")
-			handle_arm = sss.move("arm", ["intermediatefront", "brsu_intermediateback", "folded"],False)
+
+			self.arm.set_named_target("folded")
+			self.arm.go()
 
 			sss.sleep(2)
 			sss.move("sdh","cylclosed")
-			handle_arm.wait()
+
 			return 'success'
 		else:
 			# Should not happen
@@ -541,8 +588,10 @@ class place_object_on_tray(smach.State):
 class move_arm_to_folded(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'])
-		
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
 	def execute(self, userdata):
-		handle_arm = sss.move("arm","folded",False)
-		handle_arm.wait()
+		self.arm.set_named_target("folded")
+		self.arm.go()
+
 		return 'success'
