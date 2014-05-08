@@ -1,16 +1,15 @@
 #!/usr/bin/python
 
 ######################### IMPORTS #########################
-
-import roslib
-roslib.load_manifest('mdr_common_states')
 import rospy
 import smach
 import smach_ros
+import moveit_commander
 
 import std_msgs.msg
 import std_srvs.srv
 import actionlib_msgs.msg
+
 
 import mcr_perception_msgs.srv
 

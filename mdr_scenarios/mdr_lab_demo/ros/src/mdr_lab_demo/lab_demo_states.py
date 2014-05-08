@@ -1,11 +1,9 @@
 #!/usr/bin/python
 
-import roslib
-roslib.load_manifest('mdr_lab_demo')
-
 import rospy
 import smach
 import smach_ros
+import moveit_commander
 
 import mcr_speech_msgs.msg
 import mcr_perception_msgs.msg
