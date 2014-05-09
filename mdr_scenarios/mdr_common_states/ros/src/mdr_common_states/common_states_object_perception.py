@@ -34,9 +34,9 @@ class search_for_object(smach.State):
 
 		resp = self.object_list_srv()
 		 
-		if (len(resp.object_position_list) > 0):
-			print resp.object_position_list[0].name
-			userdata.grasp_position = resp.object_position_list[0].position
+		if (len(resp.objects) > 0):
+			print resp.objects[0].name
+			userdata.grasp_position = resp.objects[0].position
 			print userdata.grasp_position
 			return 'success'			
 		else:
@@ -109,12 +109,12 @@ class find_object_moped(smach.State):
 			print "calling /mcr_perception/object_recognition/get_object_list service"
 			resp = self.find_object_srv()
 
-			if (len(resp.object_position_list) <= 0):
+			if (len(resp.objects) <= 0):
 				print "no graspable objects found"
 				rospy.sleep(1)
 			else:
 				seenObjectName = ''
-				for recObject in resp.object_position_list:
+				for recObject in resp.objects:
 					print "object name: " + recObject.name
 					seenObjectName = recObject.name
 					if userdata.object_name == seenObjectName:
@@ -122,7 +122,7 @@ class find_object_moped(smach.State):
 				if userdata.object_name == seenObjectName:
 					break
 				
-		if (len(resp.object_position_list) <= 0):
+		if (len(resp.objects) <= 0):
 			SAY("I could not find the " + userdata.object_name + ".")
 			self.arm.set_named_target("folded")
 			self.arm.go()
@@ -132,10 +132,10 @@ class find_object_moped(smach.State):
 			return 'failed'
 
 		SAY("I see ")
-		for recObject in resp.object_position_list:
+		for recObject in resp.objects:
 			SAY(recObject.name + ", ")
 
-		for recObject in resp.object_position_list:
+		for recObject in resp.objects:
 			print "object name: " + recObject.name
 		#	print "object position: " + recObject.position.point
 			if userdata.object_name == recObject.name:
@@ -338,13 +338,13 @@ class find_any_known_object_height_based(smach.State):
 			print "calling /mcr_perception/object_recognition/get_object_list service"
 			resp = self.find_object_srv()
 
-			if (len(resp.object_position_list) <= 0):
+			if (len(resp.objects) <= 0):
 				print "no graspable objects found"
 				rospy.sleep(1)
 			else:
 				break
 				
-		if (len(resp.object_position_list) <= 0):
+		if (len(resp.objects) <= 0):
 			SAY("I could not find any object.")
 			self.arm.set_named_target("folded")
 			self.arm.go()
@@ -354,10 +354,10 @@ class find_any_known_object_height_based(smach.State):
 			return 'failed'
 
 		SAY("I see ")
-		for recObject in resp.object_position_list:
+		for recObject in resp.objects:
 			SAY(recObject.name + ", ")
 
-		object_to_grasp = resp.object_position_list.pop()
+		object_to_grasp = resp.objects.pop()
 		userdata.grasp_position = object_to_grasp.position.point
 		SAY("I will now grasp the " + object_to_grasp.name)
 		self.object_recognition_stop()
@@ -397,16 +397,16 @@ class categorize_objects(smach.State):
 			print "calling /mcr_perception/object_categorization/categorized_objects service"
 			resp = self.get_categorized_objects()
 
-			if (len(resp.object_position_list) <= 0):
+			if (len(resp.objects) <= 0):
 				print "no objects found"
 				rospy.sleep(1)
 			else:
 				break
 		
 		
-		if(len(resp.object_position_list) > 0):
+		if(len(resp.objects) > 0):
 			SAY("I see")
-			for object in resp.object_position_list:
+			for object in resp.objects:
 				SAY(object.name + ", ")
 				
 			#move everything to default positions
