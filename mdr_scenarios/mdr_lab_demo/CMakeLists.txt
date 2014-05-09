@@ -17,6 +17,7 @@ catkin_package(
     #mdr_arm_pointing
     #mdr_bottle_weight
     mdr_bringup
+	mdr_common_states
     mdr_haptic
     mdr_mockup_nodes
     mdr_node_monitor

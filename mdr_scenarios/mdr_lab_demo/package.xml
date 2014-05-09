@@ -29,6 +29,7 @@
   <!--run_depend>mdr_arm_pointing</run_depend-->
   <!--run_depend>mdr_bottle_weight</run_depend-->
   <run_depend>mdr_bringup</run_depend>
+  <run_depend>mdr_common_states</run_depend>
   <run_depend>mdr_haptic</run_depend>
   <run_depend>mdr_mockup_nodes</run_depend>
   <run_depend>mdr_node_monitor</run_depend>
