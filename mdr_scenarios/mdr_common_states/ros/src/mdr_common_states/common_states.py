@@ -30,7 +30,7 @@ COLOR_GREEN = ColorRGBA(0.0, 1.0, 0.0, 0.1)
 
 
 def set_light_color(color):
-	light_pub = rospy.Publisher('light_controller/command', ColorRGBA)
+	light_pub = rospy.Publisher('light_controller/command', ColorRGBA, latch=True)
 
 	light_pub.publish(color)
 
