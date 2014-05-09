@@ -158,8 +158,8 @@ class init_carry_box(smach.State):
 		sss.move("head", "back", False)
 		SAY("Please wait a moment")
 		
-		guiding_client = rospy.ServiceProxy('/mdr_behaviors/haptic/start', std_srvs.srv.Empty)
-		rospy.wait_for_service('/mdr_behaviors/haptic/start', 3)
+		guiding_client = rospy.ServiceProxy('/mdr_behaviors/haptic_guidance/start', std_srvs.srv.Empty)
+		rospy.wait_for_service('/mdr_behaviors/haptic_guidance/start', 3)
 		try:
 			guiding_client()
 			SAY("We can carry the box now!")
@@ -174,8 +174,8 @@ class stop_carry_box(smach.State):
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self,userdata):
-		guiding_client_pause = rospy.ServiceProxy('/mdr_behaviors/haptic/stop', std_srvs.srv.Empty)
-		rospy.wait_for_service('/mdr_behaviors/haptic/stop', 3)
+		guiding_client_pause = rospy.ServiceProxy('/mdr_behaviors/haptic_guidance/stop', std_srvs.srv.Empty)
+		rospy.wait_for_service('/mdr_behaviors/haptic_guidance/stop', 3)
 		sss.move("sdh","cylopen",True)
 		rospy.sleep(1)
 		

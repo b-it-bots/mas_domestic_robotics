@@ -32,8 +32,8 @@ class init_guiding(smach.State):
 		self.arm.set_named_target("pregrasp")
 		self.arm.go()	
 		
-		guiding_client = rospy.ServiceProxy('/mcr_behaviors/haptic/start', std_srvs.srv.Empty)
-		rospy.wait_for_service('/mcr_behaviors/haptic/start', 3)
+		guiding_client = rospy.ServiceProxy('/mdr_behaviors/haptic_guidance/start', std_srvs.srv.Empty)
+		rospy.wait_for_service('/mdr_behaviors/haptic_guidance/start', 3)
 		try:
 			guiding_client()
 			SAY("You can guide me now!")
@@ -48,8 +48,8 @@ class stop_guiding(smach.State):
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self,userdata):
-		guiding_client_pause = rospy.ServiceProxy('/mcr_behaviors/haptic/stop', std_srvs.srv.Empty)
-		rospy.wait_for_service('/mcr_behaviors/haptic/stop', 3)
+		guiding_client_pause = rospy.ServiceProxy('/mdr_behaviors/haptic_guidance/stop', std_srvs.srv.Empty)
+		rospy.wait_for_service('/mdr_behaviors/haptic_guidance/stop', 3)
 		
 
 		try:
