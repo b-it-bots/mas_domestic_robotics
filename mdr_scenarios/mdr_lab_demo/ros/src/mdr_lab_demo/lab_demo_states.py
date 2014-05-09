@@ -11,6 +11,8 @@ import mcr_perception_msgs.msg
 from mdr_common_states.common_states import *
 from mdr_common_states.common_states_speech import *
 
+import mdr_common_states as cs
+
 INTRODUCE = 'introduce'
 LEARN_PERSON = 'learn_person'
 FIND_PERSON = 'find_person'
@@ -42,7 +44,7 @@ class load_faces(smach.State):
 
 	def execute(self, userdata):
 		#rospy.wait_for_service('/mcr_perception/face_recognition/load_person_face', 3)
-		set_light_color(COLOR_RED)
+		cs.common_states.set_light_color(cs.common_states.COLOR_RED)
 		try:
 			#self.load_person_face("nico")
 			#self.load_person_face("fred")
@@ -263,14 +265,14 @@ class wait_for_arbitrary_phrase(smach.State):
 	
 	def execute(self, userdata):
 		# wait for the command
-		set_light_color(COLOR_GREEN)
+		cs.common_states.set_light_color(cs.common_states.COLOR_GREEN)
 		rospy.wait_for_service(self.get_last_recognized_speech_srv_name, 3) # TODO this was a topic from topic-to-service. need to solve this
 		res = self.get_last_recognized_speech()
 		
 		if res.keyword.strip() != "no_speech" and res.keyword.strip() != "not_understood":
 			userdata.keyword_list_out = res.keyword_list
 			userdata.confidence_list_out = list(res.confidence_list)
-			set_light_color(COLOR_RED)
+			cs.common_states.set_light_color(cs.common_states.COLOR_RED)
 			return 'success'
 		else:
 			rospy.sleep(0.2)

@@ -17,6 +17,8 @@ import mcr_speech_msgs.msg
 
 from mdr_common_states.common_states import *
 
+import mdr_common_states as cs
+
 ######################### GLOBAL SAY TO AVOID SCRIPT SERVER #########################
 def SAY(text, blocking=True, timeout=60):
 		
@@ -71,7 +73,7 @@ class wait_for_command(smach.State):
 
 	def execute(self, userdata):
 		# wait for the command
-		set_light_color(COLOR_GREEN)
+		cs.common_states.set_light_color(cs.common_states.COLOR_GREEN)
 		rospy.wait_for_service(self.get_last_recognized_speech_srv_name, 3)
 		
 		while(True):
@@ -85,7 +87,7 @@ class wait_for_command(smach.State):
 		print self.last_command
 
 		userdata.understood_command = self.last_command 
-		set_light_color(COLOR_RED)	
+		cs.common_states.set_light_color(cs.common_states.COLOR_RED)	
 		return 'success'
 
 
@@ -114,7 +116,7 @@ class acknowledge_command(smach.State):
 		rospy.sleep(0.2)
 		self.clear_last_command_proxy()
 		# wait for the command
-		set_light_color(COLOR_GREEN)
+		cs.common_states.set_light_color(cs.common_states.COLOR_GREEN)
 
 		while(True):
 			res = self.get_last_recognized_speech_srv()
@@ -125,10 +127,10 @@ class acknowledge_command(smach.State):
 
 		print "Last recognized commmand (ACK) ", res.keyword
 		if res.keyword == 'yes':
-			set_light_color(COLOR_RED)
+			cs.common_states.set_light_color(cs.common_states.COLOR_RED)
 			return 'yes'
 		elif res.keyword == 'no':
-			set_light_color(COLOR_RED)
+			cs.common_states.set_light_color(cs.common_states.COLOR_RED)
 			return 'no'	
 
 
@@ -164,7 +166,7 @@ class acknowledge_command_with_loading_grammar(smach.State):
 	
 		self.clear_last_command_proxy()
 		# wait for the command
-		#set_light_color(COLOR_GREEN)
+		#cs.common_states.set_light_color(cs.common_states.COLOR_GREEN)
 		
 
 		rospy.wait_for_service(self.get_last_recognized_speech_srv_name, 3)
@@ -177,10 +179,10 @@ class acknowledge_command_with_loading_grammar(smach.State):
 
 		print "Last recognized commmand (ACK) ", res.keyword
 		if res.keyword == 'yes':
-			set_light_color(COLOR_RED)
+			cs.common_states.set_light_color(cs.common_states.COLOR_RED)
 			return 'yes'
 		elif res.keyword == 'no':
-			set_light_color(COLOR_RED)
+			cs.common_states.set_light_color(cs.common_states.COLOR_RED)
 			return 'no'	
 
 
