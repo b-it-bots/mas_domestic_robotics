@@ -276,13 +276,13 @@ class hand_over_object(smach.State):
 	def execute(self, userdata):
 		sss.move("head","front_face",False)
 
-		self.arm.set_named_target("overtray_top")
+		self.arm.set_named_target("overtray")
 		self.arm.go()
 
 		handle_tray = sss.move("tray","up",False)
 		handle_tray.wait()
 
-		self.arm.set_named_target("overtray")
+		self.arm.set_named_target("tray_center")
 		self.arm.go()
 
 		sss.move("sdh","cylopen")
@@ -516,12 +516,12 @@ class place_object_on_tray(smach.State):
 		if self.trayPosition == '' and userdata.position_on_tray == '':
 			handle_tray = sss.move("tray","up")
 
-			self.arm.set_named_target("overtray_top")
+			self.arm.set_named_target("overtray")
 			self.arm.go()
 
 			handle_tray.wait()
 
-			self.arm.set_named_target("overtray")
+			self.arm.set_named_target("tray")
 			self.arm.go()
 					
 			sss.move("sdh","cylopen")
@@ -539,7 +539,7 @@ class place_object_on_tray(smach.State):
 			# LINKE
 			handle_tray = sss.move("tray","up",False)
 
-			self.arm.set_named_target("overtray_top")
+			self.arm.set_named_target("overtray")
 			self.arm.go()
 
 			handle_tray.wait()
@@ -560,7 +560,7 @@ class place_object_on_tray(smach.State):
 			# RECHTE
 			handle_tray = sss.move("tray","up",False)
 
-			self.arm.set_named_target("overtray_top")
+			self.arm.set_named_target("overtray")
 			self.arm.go()
 
 			handle_tray.wait()
