@@ -207,10 +207,10 @@ class introduce(smach.State):
 		SAY("I live at the bonn rhein sieg university in sankt augustin. I have my own appartment in the RoboCup lab. And I am a member of the b i t bots team.")
 		sss.sleep(1)
 		SAY("I am designed to be an autonomous domestic service robot. This means that I can help you with your household chores.")
-		
+
+		self.arm.set_named_target("look_at_table")	
+		self.arm.go(wait=False)
 		SAY("I am equipped with a 7 degree of freedom light weight arm and a three finger gripper.")
-		self.arm.set_named_target("look_at_table")
-		self.arm.go()
 
 		handle_base = sss.move("base", "second_intro", False)
 		SAY("My base is omnidirectional which allows me to move forwards, backwards, sideways and even turn at the same time.")
@@ -232,7 +232,7 @@ class introduce(smach.State):
 		sss.move("sdh","cylopen")
 		SAY("I'm able to reach positions on my front and backside with my arm. If you need a hand carrying things, I can lift up to 7 kilos.")
 
-		handle_sdh = sss.move("sdh","cylclosed")
+		handle_sdh = sss.move("sdh","cylclosed",False)
 		handle_tray = sss.move("tray","down",False)
 
 		self.arm.set_named_target("folded")
