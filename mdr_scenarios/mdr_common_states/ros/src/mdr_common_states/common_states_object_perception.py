@@ -137,9 +137,9 @@ class find_object_moped(smach.State):
 
 		for recObject in resp.objects:
 			print "object name: " + recObject.name
-		#	print "object position: " + recObject.position.point
+		#	print "object position: " + recObject.pose.pose.position
 			if userdata.object_name == recObject.name:
-				userdata.grasp_position = recObject.position.point
+				userdata.grasp_position = recObject.pose.pose.position
 				#SAY("I will now grasp the " + userdata.object_name)
 				self.object_recognition_stop()
 				return 'success'
@@ -208,7 +208,7 @@ class find_one_known_object(smach.State):
 
 		for recObject in resp.objects:
 			print "object name: " + recObject.name
-		#	print "object position: " + recObject.position.point
+		#	print "object position: " + recObject.pose.pose.position
 			if userdata.object_name == recObject.name:
 				userdata.grasp_position = recObject.pose.pose.position
 				#SAY("I will now grasp the " + userdata.object_name)
@@ -358,7 +358,7 @@ class find_any_known_object_height_based(smach.State):
 			SAY(recObject.name + ", ")
 
 		object_to_grasp = resp.objects.pop()
-		userdata.grasp_position = object_to_grasp.position.point
+		userdata.grasp_position = object_to_grasp.pose.pose.position
 		SAY("I will now grasp the " + object_to_grasp.name)
 		self.object_recognition_stop()
 		return 'success'
