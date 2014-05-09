@@ -217,7 +217,7 @@ class introduce(smach.State):
 		handle_base.wait()
 
 		handle_head = sss.move("head", "back", False)
-		SAY("I can see with my color cameras and 3 d sensor. I can use them to detect objects and people. Currently I'm also learning to read.")
+		SAY("I can see with my color cameras and 3 d sensor. I can use them to detect objects and people.")
 		handle_head = sss.move("head", "front", False)
 		handle_head.wait()
 		
