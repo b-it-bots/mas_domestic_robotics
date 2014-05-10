@@ -13,7 +13,6 @@ import std_srvs.srv
 import actionlib_msgs.msg
 
 import mcr_speech_msgs.srv
-import mcr_speech_msgs.msg
 
 from mdr_common_states.common_states import *
 
@@ -22,9 +21,9 @@ import mdr_common_states as cs
 ######################### GLOBAL SAY TO AVOID SCRIPT SERVER #########################
 def SAY(text, blocking=True, timeout=60):
 		
-	speak_pub = rospy.Publisher('/say', mcr_speech_msgs.msg.Say, latch=True)
+	speak_pub = rospy.Publisher('/say', std_msgs.msg.String, latch=True)
 
-	speak_pub.publish(mcr_speech_msgs.msg.Say(text))
+	speak_pub.publish(std_msgs.msg.String(text))
 	
 	time_start = rospy.Time.now()
 	if(blocking == True):

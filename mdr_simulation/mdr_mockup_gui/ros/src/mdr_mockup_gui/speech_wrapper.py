@@ -4,15 +4,14 @@ import rospy
 
 from std_msgs.msg import String
 from mcr_speech_msgs.msg import RecognizedSpeech
-from mcr_speech_msgs.msg import Say
 
 class MockupSpeechWrapper:
 
 
     def request_cb(self, string_msgs):
         rospy.loginfo("request: " + str(string_msgs))
-        say_msgs = Say()
-        say_msgs.phrase = str(string_msgs)
+        say_msgs = String()
+        say_msgs.data = str(string_msgs)
 
         self.new_speech_arrived = False
         
@@ -42,7 +41,7 @@ class MockupSpeechWrapper:
         self.reply = rospy.Publisher('~reply', String)
         self.callback = rospy.Subscriber("~request", String, self.request_cb)
 
-        self.say_publisher = rospy.Publisher('~say', Say)
+        self.say_publisher = rospy.Publisher('~say', String)
 
         self.glrs_cb = rospy.Subscriber('~recognize_speech', RecognizedSpeech, self.glrs_cb)
  
