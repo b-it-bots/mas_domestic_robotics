@@ -32,17 +32,20 @@ class activate_people_detection(smach.State):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
 		
 		self.activate_people_detection = rospy.ServiceProxy('/mcr_perception/body_detection_3d/start', std_srvs.srv.Empty)
-		self.activate_leg_detection = rospy.ServiceProxy('/mcr_perception/leg_detection/start', std_srvs.srv.Empty)
+
+		self.activate_leg_detection_srv_name = '/mcr_perception/leg_detection/start'
+		self.activate_leg_detection_srv = rospy.ServiceProxy(self.activate_leg_detection_srv_name, std_srvs.srv.Empty)
 		
 	def execute(self, userdata):
 		print "activate people detection"
 		rospy.wait_for_service('/mcr_perception/body_detection_3d/start', 3)
-		rospy.wait_for_service('/mcr_perception/leg_detection/start', 3)
 		sss.move("torso", "home")
 		sss.move("head", "front")
+		print "wait for service: ", self.activate_leg_detection_srv_name
+		rospy.wait_for_service(self.activate_leg_detection_srv_name, 3)
 		try:
-			self.activate_leg_detection()
 			self.activate_people_detection()
+			self.activate_leg_detection_srv()
 			rospy.sleep(1)
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
@@ -54,14 +57,18 @@ class deactivate_people_detection(smach.State):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
 		
 		self.deactivate_people_detection = rospy.ServiceProxy('/mcr_perception/body_detection_3d/stop', std_srvs.srv.Empty)
-		self.deactivate_leg_detection = rospy.ServiceProxy('/mcr_perception/leg_detection/stop', std_srvs.srv.Empty)
+
+		self.deactivate_leg_detection_srv_name = '/mcr_perception/leg_detection/stop'
+		self.deactivate_leg_detection_srv = rospy.ServiceProxy(self.deactivate_leg_detection_srv_name, std_srvs.srv.Empty)
 	def execute(self, userdata):
+		print "wait for service: ", self.deactivate_leg_detection_srv_name
+		rospy.wait_for_service(self.deactivate_leg_detection_srv_name, 3)
+
 		print "DEactivate people detection"
 		rospy.wait_for_service('/mcr_perception/body_detection_3d/stop', 3)
-		rospy.wait_for_service('/mcr_perception/leg_detection/stop', 3)
 		try:
-			self.deactivate_leg_detection()
 			self.deactivate_people_detection()
+			self.deactivate_leg_detection_srv()
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
 			return 'failed'
@@ -71,14 +78,15 @@ class activate_leg_detection(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
 		
-		self.activate_leg_detection = rospy.ServiceProxy('/mcr_perception/leg_detection/start', std_srvs.srv.Empty)
+		self.activate_leg_detection_srv_name = '/mcr_perception/leg_detection/start'
+		self.activate_leg_detection_srv = rospy.ServiceProxy(self.activate_leg_detection_srv_name, std_srvs.srv.Empty)
 		
 	def execute(self, userdata):
 		print "activate leg detection"
 
-		rospy.wait_for_service('/mcr_perception/leg_detection/start', 3)
+		rospy.wait_for_service(self.activate_leg_detection_srv_name, 3)
 		try:
-			self.activate_leg_detection()
+			self.activate_leg_detection_srv()
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
 			return 'failed'
@@ -87,13 +95,14 @@ class activate_leg_detection(smach.State):
 class deactivate_leg_detection(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
-		
-		self.deactivate_leg_detection = rospy.ServiceProxy('/mcr_perception/leg_detection/stop', std_srvs.srv.Empty)
+
+		self.deactivate_leg_detection_srv_name = '/mcr_perception/leg_detection/stop'
+		self.deactivate_leg_detection_srv = rospy.ServiceProxy(self.deactivate_leg_detection_srv_name, std_srvs.srv.Empty)
 	def execute(self, userdata):
 		print "DEactivate leg detection"
-		rospy.wait_for_service('/mcr_perception/leg_detection/stop', 3)
+		rospy.wait_for_service(self.deactivate_leg_detection_srv_name, 3)
 		try:
-			self.deactivate_leg_detection()
+			self.deactivate_leg_detection_srv()
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
 			return 'failed'
