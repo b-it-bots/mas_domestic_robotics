@@ -31,18 +31,22 @@ class activate_people_detection(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
 		
-		self.activate_people_detection = rospy.ServiceProxy('/mcr_perception/body_detection_3d/start', std_srvs.srv.Empty)
-		self.activate_leg_detection = rospy.ServiceProxy('/mcr_perception/leg_detection/start', std_srvs.srv.Empty)
+		self.pub_body_detection_event = rospy.Publisher('/mcr_perception/body_detection_3d/event_in', std_msgs.msg.String)
+
+		self.activate_leg_detection_srv_name = '/mcr_perception/leg_detection/start'
+		self.activate_leg_detection_srv = rospy.ServiceProxy(self.activate_leg_detection_srv_name, std_srvs.srv.Empty)
 		
 	def execute(self, userdata):
-		print "activate people detection"
-		rospy.wait_for_service('/mcr_perception/body_detection_3d/start', 3)
-		rospy.wait_for_service('/mcr_perception/leg_detection/start', 3)
 		sss.move("torso", "home")
 		sss.move("head", "front")
+
+		print "wait for service: ", self.activate_leg_detection_srv_name
+		rospy.wait_for_service(self.activate_leg_detection_srv_name, 3)
+
+		print "activate people detection"
 		try:
-			self.activate_leg_detection()
-			self.activate_people_detection()
+			self.pub_body_detection_event.publish(std_msgs.msg.String('e_start'))
+			self.activate_leg_detection_srv()
 			rospy.sleep(1)
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
@@ -53,15 +57,18 @@ class deactivate_people_detection(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
 		
-		self.deactivate_people_detection = rospy.ServiceProxy('/mcr_perception/body_detection_3d/stop', std_srvs.srv.Empty)
-		self.deactivate_leg_detection = rospy.ServiceProxy('/mcr_perception/leg_detection/stop', std_srvs.srv.Empty)
+		self.pub_body_detection_event = rospy.Publisher('/mcr_perception/body_detection_3d/event_in', std_msgs.msg.String)
+
+		self.deactivate_leg_detection_srv_name = '/mcr_perception/leg_detection/stop'
+		self.deactivate_leg_detection_srv = rospy.ServiceProxy(self.deactivate_leg_detection_srv_name, std_srvs.srv.Empty)
 	def execute(self, userdata):
+		print "wait for service: ", self.deactivate_leg_detection_srv_name
+		rospy.wait_for_service(self.deactivate_leg_detection_srv_name, 3)
+
 		print "DEactivate people detection"
-		rospy.wait_for_service('/mcr_perception/body_detection_3d/stop', 3)
-		rospy.wait_for_service('/mcr_perception/leg_detection/stop', 3)
 		try:
-			self.deactivate_leg_detection()
-			self.deactivate_people_detection()
+			self.pub_body_detection_event.publish(std_msgs.msg.String('e_stop'))
+			self.deactivate_leg_detection_srv()
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
 			return 'failed'
@@ -71,14 +78,15 @@ class activate_leg_detection(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
 		
-		self.activate_leg_detection = rospy.ServiceProxy('/mcr_perception/leg_detection/start', std_srvs.srv.Empty)
+		self.activate_leg_detection_srv_name = '/mcr_perception/leg_detection/start'
+		self.activate_leg_detection_srv = rospy.ServiceProxy(self.activate_leg_detection_srv_name, std_srvs.srv.Empty)
 		
 	def execute(self, userdata):
 		print "activate leg detection"
 
-		rospy.wait_for_service('/mcr_perception/leg_detection/start', 3)
+		rospy.wait_for_service(self.activate_leg_detection_srv_name, 3)
 		try:
-			self.activate_leg_detection()
+			self.activate_leg_detection_srv()
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
 			return 'failed'
@@ -87,13 +95,14 @@ class activate_leg_detection(smach.State):
 class deactivate_leg_detection(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
-		
-		self.deactivate_leg_detection = rospy.ServiceProxy('/mcr_perception/leg_detection/stop', std_srvs.srv.Empty)
+
+		self.deactivate_leg_detection_srv_name = '/mcr_perception/leg_detection/stop'
+		self.deactivate_leg_detection_srv = rospy.ServiceProxy(self.deactivate_leg_detection_srv_name, std_srvs.srv.Empty)
 	def execute(self, userdata):
 		print "DEactivate leg detection"
-		rospy.wait_for_service('/mcr_perception/leg_detection/stop', 3)
+		rospy.wait_for_service(self.deactivate_leg_detection_srv_name, 3)
 		try:
-			self.deactivate_leg_detection()
+			self.deactivate_leg_detection_srv()
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
 			return 'failed'
@@ -154,20 +163,18 @@ class check_if_persons_are_present(smach.State):
 		smach.State.__init__(self, outcomes=['person_found', 'no_person_found', 'failed'], 
 									input_keys=['visited_person_poses'],
 									output_keys=['person_poses_to_approach', 'approach_state'])
-		self.get_person_list = rospy.ServiceProxy('/mcr_perception/body_detection_3d/get_person_list', mcr_perception_msgs.srv.GetPersonList) 
 
 	def execute(self, userdata):
-		rospy.wait_for_service('/mcr_perception/body_detection_3d/get_person_list', 3)
 
 		try:
-			person_list = self.get_person_list().person_list.persons
-		except rospy.ServiceException,e:
-			print "Service call failed: %s"%e
-			return 'failed'
+			body_detections = rospy.wait_for_message('/mcr_perception/body_detection_3d/people_positions', mcr_perception_msgs.msg.PersonList, 1)
+		except rospy.ROSException, e:
+			print "timeout during wait for message: %s"%e
+			return 'no_person_found'
 
-		if len(person_list) > 0: 
+		if len(body_detections.persons) > 0: 
 			#check if person(s) already visited
-			for found_person in person_list	:
+			for found_person in body_detections.persons	:
 				for visited_person in userdata.visited_person_poses:
 					global person_distance_threshold
 					if sqrt(pow(visited_person[0] - found_person.pose.pose.position.x, 2.0) + pow(visited_person[1] - found_person.pose.pose.position.y, 2.0)) < person_distance_threshold:
@@ -184,9 +191,9 @@ class check_if_persons_are_present(smach.State):
 				rospy.logerr("calling <<%s>> service not successfull, error: %s", 'base_controller/stop', error_message)
 
 			#write found person(s) to world model
-			userdata.person_poses_to_approach = person_list
+			userdata.person_poses_to_approach = body_detections.persons
 			userdata.approach_state = 0
-			print "found %d persons(s)" %len(person_list)
+			print "found %d persons(s)" %len(body_detections.persons)
 			return 'person_found'
 		else:
 			print "no person found"

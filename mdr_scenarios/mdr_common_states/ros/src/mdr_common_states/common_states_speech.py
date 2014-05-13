@@ -28,11 +28,14 @@ def SAY(text, blocking=True, timeout=60):
 	time_start = rospy.Time.now()
 	if(blocking == True):
 		while(True):
-			event_msg = rospy.wait_for_message('/mcr_speech_synthesis/event_out', std_msgs.msg.String, timeout=timeout)
-			
-			if((event_msg.data == 'e_done') or ((rospy.Time.now() - time_start) > timeout)):
-				break;
+			try:
+				event_msg = rospy.wait_for_message('/mcr_speech_synthesis/event_out', std_msgs.msg.String, timeout=timeout)
 
+				if((event_msg.data == 'e_done') or ((rospy.Time.now() - time_start) > timeout)):
+					break;
+			except rospy.ROSException, e:
+				print "timeout during wait for message: %s"%e
+		
 	clear_last_command_name = '/mcr_speech_recognition/clear_last_recognized_speech'
 	clear_last_command_proxy = rospy.ServiceProxy(clear_last_command_name, std_srvs.srv.Empty)
 	rospy.wait_for_service(clear_last_command_name, 3)

@@ -17,15 +17,10 @@
 #include <mcr_perception_msgs/ObjectList.h>
 #include <mcr_perception_msgs/PersonList.h>
 
-
-
-
-
 #include <string>
 
 geometry_msgs::PoseWithCovariance lastBasePoseInMap;
 mcr_speech_msgs::RecognizedSpeech lastSpeechCommand;
-mcr_perception_msgs::PersonList last_observed_persons;
 mcr_perception_msgs::PersonList last_observed_legs;
 bool isPlattformMoving = false;
 std::string lastFaceName;
@@ -65,27 +60,6 @@ bool lastSpeechCommandCallback(mcr_speech_msgs::GetRecognizedSpeech::Request  &r
   clearLastGetRecognizedSpeech();
   
   return true;
-}
-
-//notification handler on new messages
-void bodyDetectionCallback(const mcr_perception_msgs::PersonList& data)
-{
-	if (data.persons.size() > 0) {
-		last_observed_persons = data;
-	}
-}
-
-bool clearPersonList(std_srvs::Empty::Request  &req, std_srvs::Empty::Response &res)
-{
-	last_observed_persons.persons.clear();
-	return true;
-}
-
-bool getBodyDetectionList(mcr_perception_msgs::GetPersonList::Request& request, mcr_perception_msgs::GetPersonList::Response& response)
-{
-	response.person_list = last_observed_persons;
-
-	return true;
 }
 
 void legDetectionCallback(const mcr_perception_msgs::PersonList& data)
@@ -200,9 +174,6 @@ bool clearStoredInfosCallback(std_srvs::Empty::Request &req, std_srvs::Empty::Re
 	mcr_speech_msgs::RecognizedSpeech dummy2;
 	lastSpeechCommand = dummy2;
 
-	mcr_perception_msgs::PersonList dummy3;
-	last_observed_persons = dummy3;
-	
 	isPlattformMoving = false;
 
 	lastFaceName="";
@@ -246,10 +217,6 @@ int main(int argc, char **argv)
   
   ros::Subscriber subObjectRecognitionResponse = n.subscribe("/mcr_perception/object_recognition_height_based/recognized_objects", 1, objectRecognitionResponseCallback);
   ros::ServiceServer srvObjectRecognition = n.advertiseService("/mcr_perception/object_recognition/get_object_list", getObjectPoseListSrv);
-
-  ros::Subscriber sub_body_detections = n.subscribe("/mcr_perception/body_detection_3d/people_positions", 1, bodyDetectionCallback);
-  ros::ServiceServer srv_clear_person_list = n.advertiseService("/mcr_perception/body_detection_3d/clear_person_list", clearPersonList);
-  ros::ServiceServer srv_body_list = n.advertiseService("/mcr_perception/body_detection_3d/get_person_list", getBodyDetectionList);
 
   ros::Subscriber sub_leg_detections = n.subscribe("/mcr_perception/leg_detection/leg_positions", 1, legDetectionCallback);
   ros::ServiceServer srv_leg_list = n.advertiseService("/mcr_perception/leg_detection/get_person_list", getLegDetectionList);
