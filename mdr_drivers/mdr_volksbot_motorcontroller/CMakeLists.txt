@@ -20,6 +20,7 @@ catkin_package(
 )
 
 include_directories(
+  ${catkin_INCLUDE_DIRS}
   common/include
   common/include/${PROJECT_NAME} 
 )
