@@ -14,7 +14,6 @@ catkin_package(
 )
 
 include_directories(
-  ros/include
   ${catkin_INCLUDE_DIRS}
 )
 
