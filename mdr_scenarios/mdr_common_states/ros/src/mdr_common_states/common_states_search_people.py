@@ -163,20 +163,18 @@ class check_if_persons_are_present(smach.State):
 		smach.State.__init__(self, outcomes=['person_found', 'no_person_found', 'failed'], 
 									input_keys=['visited_person_poses'],
 									output_keys=['person_poses_to_approach', 'approach_state'])
-		self.get_person_list = rospy.ServiceProxy('/mcr_perception/body_detection_3d/get_person_list', mcr_perception_msgs.srv.GetPersonList) 
 
 	def execute(self, userdata):
-		rospy.wait_for_service('/mcr_perception/body_detection_3d/get_person_list', 3)
 
 		try:
-			person_list = self.get_person_list().person_list.persons
-		except rospy.ServiceException,e:
-			print "Service call failed: %s"%e
-			return 'failed'
+			body_detections = rospy.wait_for_message('/mcr_perception/body_detection_3d/people_positions', mcr_perception_msgs.msg.PersonList, 1)
+		except rospy.ROSException, e:
+			print "timeout during wait for message: %s"%e
+			return 'no_person_found'
 
-		if len(person_list) > 0: 
+		if len(body_detections.persons) > 0: 
 			#check if person(s) already visited
-			for found_person in person_list	:
+			for found_person in body_detections.persons	:
 				for visited_person in userdata.visited_person_poses:
 					global person_distance_threshold
 					if sqrt(pow(visited_person[0] - found_person.pose.pose.position.x, 2.0) + pow(visited_person[1] - found_person.pose.pose.position.y, 2.0)) < person_distance_threshold:
@@ -193,9 +191,9 @@ class check_if_persons_are_present(smach.State):
 				rospy.logerr("calling <<%s>> service not successfull, error: %s", 'base_controller/stop', error_message)
 
 			#write found person(s) to world model
-			userdata.person_poses_to_approach = person_list
+			userdata.person_poses_to_approach = body_detections.persons
 			userdata.approach_state = 0
-			print "found %d persons(s)" %len(person_list)
+			print "found %d persons(s)" %len(body_detections.persons)
 			return 'person_found'
 		else:
 			print "no person found"
