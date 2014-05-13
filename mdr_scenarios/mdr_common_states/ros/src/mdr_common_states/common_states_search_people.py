@@ -31,20 +31,21 @@ class activate_people_detection(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
 		
-		self.activate_people_detection = rospy.ServiceProxy('/mcr_perception/body_detection_3d/start', std_srvs.srv.Empty)
+		self.pub_body_detection_event = rospy.Publisher('/mcr_perception/body_detection_3d/event_in', std_msgs.msg.String)
 
 		self.activate_leg_detection_srv_name = '/mcr_perception/leg_detection/start'
 		self.activate_leg_detection_srv = rospy.ServiceProxy(self.activate_leg_detection_srv_name, std_srvs.srv.Empty)
 		
 	def execute(self, userdata):
-		print "activate people detection"
-		rospy.wait_for_service('/mcr_perception/body_detection_3d/start', 3)
 		sss.move("torso", "home")
 		sss.move("head", "front")
+
 		print "wait for service: ", self.activate_leg_detection_srv_name
 		rospy.wait_for_service(self.activate_leg_detection_srv_name, 3)
+
+		print "activate people detection"
 		try:
-			self.activate_people_detection()
+			self.pub_body_detection_event.publish(std_msgs.msg.String('e_start'))
 			self.activate_leg_detection_srv()
 			rospy.sleep(1)
 		except rospy.ServiceException,e:
@@ -56,7 +57,7 @@ class deactivate_people_detection(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
 		
-		self.deactivate_people_detection = rospy.ServiceProxy('/mcr_perception/body_detection_3d/stop', std_srvs.srv.Empty)
+		self.pub_body_detection_event = rospy.Publisher('/mcr_perception/body_detection_3d/event_in', std_msgs.msg.String)
 
 		self.deactivate_leg_detection_srv_name = '/mcr_perception/leg_detection/stop'
 		self.deactivate_leg_detection_srv = rospy.ServiceProxy(self.deactivate_leg_detection_srv_name, std_srvs.srv.Empty)
@@ -65,9 +66,8 @@ class deactivate_people_detection(smach.State):
 		rospy.wait_for_service(self.deactivate_leg_detection_srv_name, 3)
 
 		print "DEactivate people detection"
-		rospy.wait_for_service('/mcr_perception/body_detection_3d/stop', 3)
 		try:
-			self.deactivate_people_detection()
+			self.pub_body_detection_event.publish(std_msgs.msg.String('e_stop'))
 			self.deactivate_leg_detection_srv()
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
