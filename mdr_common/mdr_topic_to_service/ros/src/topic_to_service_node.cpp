@@ -17,10 +17,6 @@
 #include <mcr_perception_msgs/ObjectList.h>
 #include <mcr_perception_msgs/PersonList.h>
 
-
-
-
-
 #include <string>
 
 geometry_msgs::PoseWithCovariance lastBasePoseInMap;
