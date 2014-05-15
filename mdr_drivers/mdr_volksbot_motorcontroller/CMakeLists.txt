@@ -12,10 +12,15 @@ find_package(catkin REQUIRED
 )
 
 catkin_package(
-  CATKIN_DEPENDS geometry_msgs nav_msgs pr2_msgs sensor_msgs
+  CATKIN_DEPENDS
+    geometry_msgs
+    nav_msgs
+    pr2_msgs
+    sensor_msgs
 )
 
 include_directories(
+  ${catkin_INCLUDE_DIRS}
   common/include
   common/include/${PROJECT_NAME} 
 )
@@ -38,7 +43,7 @@ add_library(volksbot_motorcontroller
   common/src/support/multisend.cpp
   common/src/support/request.cpp
   common/src/support/send_two.cpp
-  common/src/support/timestamp.cpp	
+  common/src/support/timestamp.cpp
 )
 
 add_executable(volksbot_motorcontroller_node 

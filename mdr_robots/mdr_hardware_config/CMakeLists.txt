@@ -8,7 +8,7 @@ set(ROBOTS
 )
 
 catkin_package(
-  DEPENDS mdr_calibration_data mdr_description
+  CATKIN_DEPENDS mdr_calibration_data mdr_description
 )
 
 foreach(robot ${ROBOTS})
