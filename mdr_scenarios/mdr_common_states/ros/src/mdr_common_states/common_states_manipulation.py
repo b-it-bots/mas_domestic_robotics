@@ -165,7 +165,7 @@ class grasp_object(smach.State):
 		smach.State.__init__(self, outcomes=['success','failed','retry'], input_keys=['grasp_position'])
 		
 		self.pick_srv_name = '/pickup'
-		self.pick_srv = rospy.ServiceProxy(self.pick_srv_name, mdr_manipulation_msgs.srv.Grasp)
+		self.pick_srv = rospy.ServiceProxy(self.pick_srv_name, mdr_behaviors_msgs.srv.Pickup)
 		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 		self.retry_count = 0
 		self.arm = moveit_commander.MoveGroupCommander('arm')
@@ -181,7 +181,7 @@ class grasp_object(smach.State):
 		#	print "Service call failed: %s"%e
 		#	return 'failed'
 
-		grasp = mdr_manipulation_msgs.srv.GraspRequest()
+		grasp = mdr_behaviors_msgs.srv.PickupRequest()
 		grasp.position.header.frame_id = "/base_link"
 		grasp.position.point = userdata.grasp_position
 		#try to get table hight
@@ -196,7 +196,7 @@ class grasp_object(smach.State):
 		except rospy.ServiceException, e:
 			print "Service did not process request: %s"%str(e)
 		
-		if (resp.result == 0):
+		if (resp.success):
 			#SAY("I grasp the object successfully!")
 			self.retry_count = 0
 			
