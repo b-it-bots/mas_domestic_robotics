@@ -163,7 +163,9 @@ class clean_table(smach.State):
 class grasp_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed','retry'], input_keys=['grasp_position'])
-		self.grasp_object_srv = rospy.ServiceProxy('grasp', mdr_manipulation_msgs.srv.Grasp)
+		
+		self.pick_srv_name = '/pickup'
+		self.pick_srv = rospy.ServiceProxy(self.pick_srv_name, mdr_manipulation_msgs.srv.Grasp)
 		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 		self.retry_count = 0
 		self.arm = moveit_commander.MoveGroupCommander('arm')
@@ -186,11 +188,11 @@ class grasp_object(smach.State):
 	#	if rospy.has_param('/table_hight'):
 	#		grasp.position.point.z = rospy.get_param('/table_hight') + 0.11
 				
-		print "Now waiting for service"
-		rospy.wait_for_service('/mcr_manipulation/pick')
-		picking = rospy.ServiceProxy('/mcr_manipulation/pick', mdr_manipulation_msgs.srv.Grasp)
+		print "Now waiting for service: ", self.pick_srv_name
+		rospy.wait_for_service(self.pick_srv_name)
+
 		try:
-			resp = picking(grasp)
+			resp = self.pick_srv(grasp)
 		except rospy.ServiceException, e:
 			print "Service did not process request: %s"%str(e)
 		
