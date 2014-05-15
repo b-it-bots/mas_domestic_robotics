@@ -40,7 +40,7 @@
 			<arg name="publish_tf" value="false" />
 		</include>
 
-		<include file="$(find mdr_bringup)/components/stemmer_cam.launch" />
+		<!--include file="$(find mdr_bringup)/components/stemmer_cam.launch" /-->
 
 	</group>
 
