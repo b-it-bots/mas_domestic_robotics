@@ -20,7 +20,7 @@
 
     <include file="$(find mdr_2dnav)/ros/launch/2dnav_eband.launch" />
 
-    <!--include file="$(find mdr_simple_pick)/launch/simple_pick.launch" /-->
+    <include file="$(find mdr_simple_pick)/launch/simple_pick.launch" />
     <include file="$(find mcr_leg_detection)/ros/launch/leg_detection.launch" />
     <!--include file="$(find mdr_bottle_weight)/launch/bottle_weight.launch" /-->
     <!--include file="$(find mdr_table_cleaning)/ros/launch/table_cleaning.launch" /-->
