@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mdr_controller_configuration_gazebo)
 
+find_package(catkin)
+
 catkin_package(
-  DEPENDS
+  CATKIN_DEPENDS
     rostopic
     joint_trajectory_action
     pr2_controller_manager
