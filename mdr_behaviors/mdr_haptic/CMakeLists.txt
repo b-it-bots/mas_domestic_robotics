@@ -16,6 +16,6 @@ catkin_package(
 catkin_python_setup()
 
 install(PROGRAMS
-  ros/scripts/mdr_haptic_guidance_node
+  ros/scripts/haptic_guidance
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
