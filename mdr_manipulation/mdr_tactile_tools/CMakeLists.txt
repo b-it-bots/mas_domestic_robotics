@@ -19,7 +19,6 @@ catkin_package(
 )
 
 install(PROGRAMS
-  ros/scripts/tactile_filters_node
   ros/scripts/grasp_evaluators_node
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
