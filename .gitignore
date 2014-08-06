@@ -3,4 +3,5 @@
 .project
 .pydevproject
 *.pyc
+.idea/
 *.*~
