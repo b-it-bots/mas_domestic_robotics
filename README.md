@@ -49,6 +49,7 @@ In order to understand at least the different core components of ROS, you have t
 
 ## Set up a catkin workspace
 
+    source /opt/ros/hydro/setup.bash
     mkdir -p ~/catkin_ws/src; cd ~/catkin_ws/src
     catkin_init_workspace
     cd ..
