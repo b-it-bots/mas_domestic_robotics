@@ -397,6 +397,42 @@
         <joint name="torso_upper_neck_pan_joint" value="0.1" />
         <joint name="torso_upper_neck_tilt_joint" value="-0.25" />
     </group_state>
+    <group_state name="pregrasp_precision" group="arm">
+        <joint name="arm_1_joint" value="-1.3813" />
+        <joint name="arm_2_joint" value="-1.9312" />
+        <joint name="arm_3_joint" value="-1.7251" />
+        <joint name="arm_4_joint" value="-1.4565" />
+        <joint name="arm_5_joint" value="0.7169" />
+        <joint name="arm_6_joint" value="1.056" />
+        <joint name="arm_7_joint" value="-0.5774" />
+    </group_state>
+    <group_state name="grasp_precision" group="arm">
+        <joint name="arm_1_joint" value="-0.9433" />
+        <joint name="arm_2_joint" value="-1.9871" />
+        <joint name="arm_3_joint" value="-1.6757" />
+        <joint name="arm_4_joint" value="-1.2319" />
+        <joint name="arm_5_joint" value="0.9269" />
+        <joint name="arm_6_joint" value="0.7957" />
+        <joint name="arm_7_joint" value="-0.7874" />
+    </group_state>
+    <group_state name="hold_precision" group="arm">
+        <joint name="arm_1_joint" value="-1.4622" />
+        <joint name="arm_2_joint" value="-1.4834" />
+        <joint name="arm_3_joint" value="-2.5722" />
+        <joint name="arm_4_joint" value="-2.0406" />
+        <joint name="arm_5_joint" value="0.4077" />
+        <joint name="arm_6_joint" value="1.8094" />
+        <joint name="arm_7_joint" value="-1.2773" />
+    </group_state>
+    <group_state name="overtray_precision" group="arm">
+        <joint name="arm_1_joint" value="2.95" />
+        <joint name="arm_2_joint" value="-1.085" />
+        <joint name="arm_3_joint" value="-2.8517" />
+        <joint name="arm_4_joint" value="-1.4909" />
+        <joint name="arm_5_joint" value="0.699" />
+        <joint name="arm_6_joint" value="1.0647" />
+        <joint name="arm_7_joint" value="-0.5074" />
+    </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
     <end_effector name="sdh" parent_link="arm_7_link" group="sdh" parent_group="arm" />
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
