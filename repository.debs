@@ -12,6 +12,7 @@ packagelist=(
   ros-hydro-cob-environments
   ros-hydro-cob-extern
   ros-hydro-cob-driver
+  ros-hydro-cob-lbr
   ros-hydro-cob-simulation
   ros-hydro-control-msgs
   ros-hydro-costmap-2d
