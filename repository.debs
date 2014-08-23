@@ -17,6 +17,7 @@ packagelist=(
   ros-hydro-control-msgs
   ros-hydro-costmap-2d
   ros-hydro-diagnostic-updater
+  ros-hydro-frida-description
   ros-hydro-gazebo-ros
   ros-hydro-gazebo-ros-control
   ros-hydro-hokuyo-node
