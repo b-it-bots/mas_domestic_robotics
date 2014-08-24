@@ -12,16 +12,19 @@ packagelist=(
   ros-hydro-cob-environments
   ros-hydro-cob-extern
   ros-hydro-cob-driver
+  ros-hydro-cob-lbr
   ros-hydro-cob-simulation
   ros-hydro-control-msgs
   ros-hydro-costmap-2d
   ros-hydro-diagnostic-updater
+  ros-hydro-frida-description
   ros-hydro-gazebo-ros
   ros-hydro-gazebo-ros-control
   ros-hydro-hokuyo-node
   ros-hydro-interactive-markers
   ros-hydro-joy
   ros-hydro-laser-geometry
+  ros-hydro-lms1xx
   ros-hydro-manipulation-msgs
   ros-hydro-map-server
   ros-hydro-move-base
