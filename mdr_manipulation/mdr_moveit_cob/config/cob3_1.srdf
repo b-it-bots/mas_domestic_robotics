@@ -397,7 +397,7 @@
         <joint name="torso_upper_neck_pan_joint" value="0.1" />
         <joint name="torso_upper_neck_tilt_joint" value="-0.25" />
     </group_state>
-    <group_state name="pregrasp_precision" group="arm">
+    <group_state name="rear/pregrasp/side/parallel" group="arm">
         <joint name="arm_1_joint" value="-1.3813" />
         <joint name="arm_2_joint" value="-1.9312" />
         <joint name="arm_3_joint" value="-1.7251" />
@@ -406,7 +406,7 @@
         <joint name="arm_6_joint" value="1.056" />
         <joint name="arm_7_joint" value="-0.5774" />
     </group_state>
-    <group_state name="grasp_precision" group="arm">
+    <group_state name="rear/grasp/side/parallel" group="arm">
         <joint name="arm_1_joint" value="-0.9433" />
         <joint name="arm_2_joint" value="-1.9871" />
         <joint name="arm_3_joint" value="-1.6757" />
@@ -415,7 +415,7 @@
         <joint name="arm_6_joint" value="0.7957" />
         <joint name="arm_7_joint" value="-0.7874" />
     </group_state>
-    <group_state name="hold_precision" group="arm">
+    <group_state name="rear/hold/side/parallel" group="arm">
         <joint name="arm_1_joint" value="-1.4622" />
         <joint name="arm_2_joint" value="-1.4834" />
         <joint name="arm_3_joint" value="-2.5722" />
@@ -424,7 +424,7 @@
         <joint name="arm_6_joint" value="1.8094" />
         <joint name="arm_7_joint" value="-1.2773" />
     </group_state>
-    <group_state name="overtray_precision" group="arm">
+    <group_state name="front/overtray/side/parallel" group="arm">
         <joint name="arm_1_joint" value="2.95" />
         <joint name="arm_2_joint" value="-1.085" />
         <joint name="arm_3_joint" value="-2.8517" />
