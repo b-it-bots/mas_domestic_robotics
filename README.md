@@ -34,7 +34,7 @@ If you have never worked with git before, we recommend to go through the followi
 The repository has been tested successfully with the following ROS distributions. Use the link behind a ROS distribution to get to the particular ROS installation instructions.
 
 
-- ROS Hydro - http://www.ros.org/wiki/Hydro/Installation/Ubuntu
+- ROS Hydro - http://wiki.ros.org/hydro/Installation/Ubuntu
 
 NOTE: Do not forget to update your .bashrc!
   
