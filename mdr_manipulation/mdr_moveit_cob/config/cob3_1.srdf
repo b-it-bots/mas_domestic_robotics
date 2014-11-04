@@ -439,6 +439,10 @@
     <virtual_joint name="world_joint" type="fixed" parent_frame="map" child_link="base_footprint" />
     <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
     <passive_joint name="sdh_finger_21_joint" />
+    <passive_joint name="lookat_x_joint" />
+    <passive_joint name="lookat_y_joint" />
+    <passive_joint name="lookat_z_joint" />
+    <passive_joint name="lookat_lin_joint" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="arm_0_link" link2="arm_1_link" reason="Adjacent" />
     <disable_collisions link1="arm_0_link" link2="arm_2_link" reason="Never" />
