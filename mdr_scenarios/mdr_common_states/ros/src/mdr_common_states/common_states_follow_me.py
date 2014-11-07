@@ -1,13 +1,11 @@
 #!/usr/bin/python
 
 ######################### IMPORTS #########################
-
-import roslib
-roslib.load_manifest('mdr_common_states')
-
 import rospy
 import smach
 import smach_ros
+
+from mdr_common_states.common_states_speech import *
 
 from simple_script_server import *
 sss = simple_script_server()

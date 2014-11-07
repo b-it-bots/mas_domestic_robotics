@@ -1,16 +1,17 @@
 #!/usr/bin/python
 
-import roslib
-roslib.load_manifest('mdr_lab_demo')
-
 import rospy
 import smach
 import smach_ros
+import moveit_commander
 
 import mcr_speech_msgs.msg
 import mcr_perception_msgs.msg
 
 from mdr_common_states.common_states import *
+from mdr_common_states.common_states_speech import *
+
+import mdr_common_states as cs
 
 INTRODUCE = 'introduce'
 LEARN_PERSON = 'learn_person'
@@ -39,11 +40,11 @@ IT = "it"
 class load_faces(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
-		self.load_person_face = rospy.ServiceProxy('/mcr_speech/face_recognition/load_person_face', mcr_perception_msgs.srv.SetFaceName)
+		self.load_person_face = rospy.ServiceProxy('/mcr_perception/face_recognition/load_person_face', mcr_perception_msgs.srv.SetFaceName)
 
 	def execute(self, userdata):
 		#rospy.wait_for_service('/mcr_perception/face_recognition/load_person_face', 3)
-		set_light_color(COLOR_RED)
+		cs.common_states.set_light_color(cs.common_states.COLOR_RED)
 		try:
 			#self.load_person_face("nico")
 			#self.load_person_face("fred")
@@ -195,50 +196,60 @@ class filter_from_string(smach.State):
 class introduce(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'])
-	
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
 	def execute(self, userdata):
 		handle_base = sss.move("base", "living_room", False)
-		SAY("Hello ladies and gentlemen. My name is Jenny. I am a Care O bot 3 robot.")
-		sss.sleep(1)
-		SAY("I live at the bonn rhein sieg university in sankt augustin. I have my own appartment in the RoboCup lab. I am a member of the b i t bots team.")
 		handle_base.wait()
-		
-		handle_arm = sss.move("arm", "folded-to-look_at_table" ,False)
-		SAY("I am designed to be an autonomous domestic service robot. This means that I can help you with your household chores.")
-		
+
+		SAY("Hello ladies and gentlemen. My name is Jenny. I am a Care O bot 3 robot.")
+		sss.sleep(1)	
+		SAY("I live at the bonn rhein sieg university in sankt augustin. I have my own appartment in the RoboCup lab. And I am a member of the b i t bots team.")
 		sss.sleep(1)
-		SAY("I am equipped with an omnidirectional base, a 7 degree of freedom arm and a gripper.")
-		handle_arm.wait()
+		SAY("I am designed to be an autonomous domestic service robot. This means that I can help you with your household chores.")
+
+		self.arm.set_named_target("look_at_table")	
+		self.arm.go(wait=False)
+		SAY("I am equipped with a 7 degree of freedom light weight arm and a three finger gripper.")
+
 		handle_base = sss.move("base", "second_intro", False)
 		SAY("My base is omnidirectional which allows me to move forwards, backwards, sideways and even turn at the same time.")
-		sss.sleep(3)
+		handle_base.wait()
+
 		handle_head = sss.move("head", "back", False)
-		SAY("I can see with my color cameras and 3 d sensor. I can use them to detect objects and people. Currently I'm also learning to read.")
-		handle_head.wait()
+		SAY("I can see with my color cameras and 3 d sensor. I can use them to detect objects and people.")
 		handle_head = sss.move("head", "front", False)
 		handle_head.wait()
 		
 		handle_tray = sss.move("tray","up",False)
 		sss.sleep(2)
-		SAY("With my tray I can hand over objects.")
+		SAY("With my tray I can carry multiple objects at the same time and hand them over to my guests.")
 		handle_tray.wait()
 		
-		
-		#sss.move("sdh","cylopen")
-		handle_arm = sss.move("arm", "look_at_table-to-folded", False)
+		self.arm.set_named_target("overtray_top")
+		self.arm.go()
+
+		sss.move("sdh","cylopen")
 		SAY("I'm able to reach positions on my front and backside with my arm. If you need a hand carrying things, I can lift up to 7 kilos.")
-		sss.sleep(2)
-		#sss.move("sdh","cylclosed")
-		handle_arm.wait()
-		
+
+		handle_sdh = sss.move("sdh","cylclosed",False)
 		handle_tray = sss.move("tray","down",False)
+
+		self.arm.set_named_target("folded")
+		self.arm.go()
 		
+		handle_sdh.wait()
+		handle_tray.wait()
+		
+		SAY("Thank you for your attention. I hope you enjoy the rest of the show.")
+
 		handle_torso = sss.move("torso","nod",False)		
 		handle_torso.wait()
 		
-		handle_base.wait()
 		#SAY("Guys, do you need anything now or shall I return to my room?")
-		handle_tray.wait()
+		
+		sss.sleep(2)
+
 		return 'success'
 
 
@@ -248,18 +259,20 @@ class wait_for_arbitrary_phrase(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','not_understood'], 
 									output_keys=['keyword_list_out', 'confidence_list_out'])
-		self.get_last_recognized_speech = rospy.ServiceProxy('/mcr_speech_speech_recognition/get_last_recognized_speech', mcr_speech_msgs.srv.GetRecognizedSpeech) # TODO this was a topic from topic-to-service. need to solve this
+
+		self.get_last_recognized_speech_srv_name = '/mcr_speech_recognition/get_last_recognized_speech'
+		self.get_last_recognized_speech = rospy.ServiceProxy(self.get_last_recognized_speech_srv_name, mcr_speech_msgs.srv.GetRecognizedSpeech) # TODO this was a topic from topic-to-service. need to solve this
 	
 	def execute(self, userdata):
 		# wait for the command
-		set_light_color(COLOR_GREEN)
-		rospy.wait_for_service('/mcr_speech_speech_recognition/get_last_recognized_speech', 3) # TODO this was a topic from topic-to-service. need to solve this
+		cs.common_states.set_light_color(cs.common_states.COLOR_GREEN)
+		rospy.wait_for_service(self.get_last_recognized_speech_srv_name, 3) # TODO this was a topic from topic-to-service. need to solve this
 		res = self.get_last_recognized_speech()
 		
 		if res.keyword.strip() != "no_speech" and res.keyword.strip() != "not_understood":
 			userdata.keyword_list_out = res.keyword_list
 			userdata.confidence_list_out = list(res.confidence_list)
-			set_light_color(COLOR_RED)
+			cs.common_states.set_light_color(cs.common_states.COLOR_RED)
 			return 'success'
 		else:
 			rospy.sleep(0.2)

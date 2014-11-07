@@ -12,11 +12,15 @@
   <group>
     <machine name="brsu-pc1" address="cob3-1-pc1" env-loader="$(find mdr_bringup)/env.sh" default="true" />
 
+    <!-- manipulation -->
+    <include file="$(find mdr_lwr)/ros/launch/lwr.launch" />
+    <include file="$(find mdr_moveit_cob)/launch/move_group.launch" />
+
     <include file="$(find mdr_topic_to_service)/ros/launch/topic_to_service.launch" />
 
-    <include file="$(find mdr_2dnav)/ros/launch/2dnav_tr.launch" />
+    <include file="$(find mdr_2dnav)/ros/launch/2dnav_eband.launch" />
 
-    <!--include file="$(find mdr_simple_pick)/launch/simple_pick.launch" /-->
+    <include file="$(find mdr_simple_pickup)ros//launch/simple_pickup.launch" />
     <include file="$(find mcr_leg_detection)/ros/launch/leg_detection.launch" />
     <!--include file="$(find mdr_bottle_weight)/launch/bottle_weight.launch" /-->
     <!--include file="$(find mdr_table_cleaning)/ros/launch/table_cleaning.launch" /-->

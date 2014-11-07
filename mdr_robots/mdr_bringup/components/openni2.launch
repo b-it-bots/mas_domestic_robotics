@@ -8,6 +8,7 @@
     <arg name="machine"                        value="$(arg machine)" />
     <arg name="camera"                         value="head_cam3d" />
     <arg name="publish_tf"                     value="$(arg publish_tf)" />
+    <arg name="depth_registration"             value="true" />
   </include>
 
 </launch>

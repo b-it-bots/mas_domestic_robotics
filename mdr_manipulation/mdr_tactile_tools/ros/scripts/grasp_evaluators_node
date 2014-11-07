@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+import mdr_tactile_tools.grasp_evaluators
+
+if __name__ == '__main__':
+    mdr_tactile_tools.grasp_evaluators.main()

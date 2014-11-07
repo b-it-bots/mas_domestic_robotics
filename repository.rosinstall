@@ -9,24 +9,9 @@
     version: hydro
 
 - git:
-    local-name: cob_environments
-    uri: git@github.com:ipa320/cob_environments.git
+    local-name: cob_common
+    uri: git@github.com:mas-group/cob_common.git
     version: hydro_dev
-
-- git:
-    local-name: cob_simulation
-    uri: git@github.com:mas-group/cob_simulation.git
-    version: hydro_dev
-
-- git:
-    local-name: cob_command_tools
-    uri: git@github.com:mas-group/cob_command_tools.git
-    version: hydro_dev
-
-#- git:
-#    local-name: cob_substitute
-#    uri: git@github.com:ipa320/cob_substitute.git
-#    version: groovy_catkin
 
 - git:
     local-name: cob_calibration_data
@@ -39,51 +24,6 @@
     version: hydro_dev
 
 - git:
-    local-name: schunk_modular_robotics
-    uri: git@github.com:mas-group/schunk_modular_robotics.git
-    version: hydro_dev
-
-#- git:
-#    local-name: universal_robot
-#    uri: git@github.com:ros-industrial/universal_robot.git
-#    version: groovy-dev
-
-
-###
-# TODO: merge from upstream!!!
-# debian packages not ready for catkin
-# can be deleted later
-- git:
-    local-name: cob_common
-    uri: git@github.com:mas-group/cob_common.git
-    version: hydro_dev
-
-- git:
-    local-name: cob_driver
-    uri: git@github.com:mas-group/cob_driver.git
-    version: hydro_dev
-
-- git:
-    local-name: cob_extern
-    uri: git@github.com:mas-group/cob_extern.git
-    version: hydro_dev
-
-#- git:
-#    local-name: pr2_common
-#    uri: git@github.com:b-it-bots/pr2_common.git
-#    version: hydro-devel
-
-### end
-
-
-- git:
     local-name: cob_navigation
     uri: git@github.com:mas-group/cob_navigation.git
     version: hydro_dev
-
-#- git:
-#    local-name: cob_manipulation
-#    uri: git@github.com:ipa320/cob_manipulation.git
-#    version: groovy_catkin
-
-### end

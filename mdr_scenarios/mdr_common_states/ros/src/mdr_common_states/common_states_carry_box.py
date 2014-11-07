@@ -1,14 +1,11 @@
 #!/usr/bin/python
 
 ######################### IMPORTS #########################
-
-import roslib
-roslib.load_manifest('mdr_common_states')
-
 import rospy
 import smach
 import smach_ros
 import tf
+import moveit_commander
 
 import std_msgs.msg
 import std_srvs.srv
@@ -102,9 +99,11 @@ class wait_for_box_in_hand(smach.State):
 		smach.State.__init__(self, outcomes=['success','failed'])
 		self.get_release_request = rospy.ServiceProxy('/is_external_force_applied', Trigger)
 		self.memorize_current_force = rospy.ServiceProxy('/memorize_current_force', std_srvs.srv.Empty)
+		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
-		sss.move("arm","guide_beerbox", True)
+		self.arm.set_named_target("guide_beerbox")
+		self.arm.go()
 		sss.move("sdh","cylopen",False)
 		SAY("Please give me the box")
 		
@@ -159,8 +158,8 @@ class init_carry_box(smach.State):
 		sss.move("head", "back", False)
 		SAY("Please wait a moment")
 		
-		guiding_client = rospy.ServiceProxy('/mdr_behaviors/haptic/start', std_srvs.srv.Empty)
-		rospy.wait_for_service('/mdr_behaviors/haptic/start', 3)
+		guiding_client = rospy.ServiceProxy('/mdr_behaviors/haptic_guidance/start', std_srvs.srv.Empty)
+		rospy.wait_for_service('/mdr_behaviors/haptic_guidance/start', 3)
 		try:
 			guiding_client()
 			SAY("We can carry the box now!")
@@ -172,10 +171,11 @@ class init_carry_box(smach.State):
 class stop_carry_box(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
-	
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
 	def execute(self,userdata):
-		guiding_client_pause = rospy.ServiceProxy('/mdr_behaviors/haptic/stop', std_srvs.srv.Empty)
-		rospy.wait_for_service('/mdr_behaviors/haptic/stop', 3)
+		guiding_client_pause = rospy.ServiceProxy('/mdr_behaviors/haptic_guidance/stop', std_srvs.srv.Empty)
+		rospy.wait_for_service('/mdr_behaviors/haptic_guidance/stop', 3)
 		sss.move("sdh","cylopen",True)
 		rospy.sleep(1)
 		
@@ -187,7 +187,8 @@ class stop_carry_box(smach.State):
 			print "Service call failed: %s"%e
 			result = 'failed'
 		sss.move("sdh","cylclosed")
-		sss.move("arm", "folded",True)
+		self.arm.set_named_target("folded")
+		self.arm.go()
 		sss.move("head", "front", False)
 		return result
 		

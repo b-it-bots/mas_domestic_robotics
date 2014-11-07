@@ -20,6 +20,7 @@
   <run_depend>mcr_default_env_config</run_depend>
   <run_depend>mcr_follow_person</run_depend>
   <run_depend>mcr_leg_detection</run_depend>
+  <run_depend>mcr_node_monitor</run_depend>
   <run_depend>mcr_object_categorization</run_depend>
   <run_depend>mcr_object_recognition_height_based</run_depend>
   <run_depend>mcr_people_tracking</run_depend>
@@ -29,9 +30,8 @@
   <!--run_depend>mdr_arm_pointing</run_depend-->
   <!--run_depend>mdr_bottle_weight</run_depend-->
   <run_depend>mdr_bringup</run_depend>
+  <run_depend>mdr_common_states</run_depend>
   <run_depend>mdr_haptic</run_depend>
-  <run_depend>mdr_mockup_nodes</run_depend>
-  <run_depend>mdr_node_monitor</run_depend>
   <!--run_depend>mdr_simple_pick</run_depend-->
   <run_depend>mdr_table_cleaning</run_depend>
 

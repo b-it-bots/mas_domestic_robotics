@@ -1,0 +1,14 @@
+<launch>
+    <node name="grasp_evaluators" pkg="mdr_tactile_tools" type="grasp_evaluators_node" output="screen">
+        <remap from="~tactile_data" to="/dsa_controller/tactile_data"/>
+
+        <!-- the time interval to acquire data (in seconds) -->
+        <param name="wait_for_data" value="0.2"/>
+
+        <!-- the time interval to publish data (in seconds) -->
+        <param name="publish_rate" value="0.1"/>
+
+        <!-- the mean value to detect a contact in a tactile sensor (in pressure units: Weiss scale) -->
+        <param name="contact_threshold" value="10"/>
+    </node>
+</launch>

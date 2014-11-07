@@ -91,9 +91,6 @@ class haptic_guidance():
 		rospy.Subscriber(self.velocity_input, nav_msgs.msg.Odometry, self.odometry_callback)
 		rospy.Subscriber(self.wrench_input, geometry_msgs.msg.WrenchStamped, self.wrench_callback)
 		
-		# publisher
-		self.haptic_base_publisher = rospy.Publisher(self.velocity_output, geometry_msgs.msg.Twist)
-
 		# logging
 		self.log = False
 
@@ -201,9 +198,6 @@ class haptic_guidance():
 				self.base_velocity_publisher.publish(self.base_velocity)
 				self.time_loop = rospy.Time.now()
 
-		
-		# publish topic for others
-		self.haptic_base_publisher.publish(self.base_velocity)
 		
 		# logging	
 		if self.log == True:

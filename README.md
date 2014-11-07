@@ -34,7 +34,7 @@ If you have never worked with git before, we recommend to go through the followi
 The repository has been tested successfully with the following ROS distributions. Use the link behind a ROS distribution to get to the particular ROS installation instructions.
 
 
-- ROS Hydro - http://www.ros.org/wiki/Hydro/Installation/Ubuntu
+- ROS Hydro - http://wiki.ros.org/hydro/Installation/Ubuntu
 
 NOTE: Do not forget to update your .bashrc!
   
@@ -49,6 +49,7 @@ In order to understand at least the different core components of ROS, you have t
 
 ## Set up a catkin workspace
 
+    source /opt/ros/hydro/setup.bash
     mkdir -p ~/catkin_ws/src; cd ~/catkin_ws/src
     catkin_init_workspace
     cd ..
@@ -66,9 +67,8 @@ Then go on with installing further external dependencies:
     ./repository.debs
     
     source ~/catkin_ws/devel/setup.bash
-    export ROS_PACKAGE_PATH=~/catkin_ws/devel:$ROS_PACKAGE_PATH
-    
-The last two commands, should be added to the ~/.bashrc file, so that they do not need to be executed everytime you open a new terminal.
+
+The last command should be added to the ~/.bashrc file so that they do not need to be executed everytime you open a new terminal.
 
 
 And finally compile the repository:

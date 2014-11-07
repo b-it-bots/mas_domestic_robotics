@@ -9,6 +9,7 @@ catkin_package(
     mcr_default_env_config
     mcr_follow_person
     mcr_leg_detection
+    mcr_node_monitor
     mcr_object_categorization
     mcr_object_recognition_height_based
     mcr_people_tracking
@@ -17,9 +18,8 @@ catkin_package(
     #mdr_arm_pointing
     #mdr_bottle_weight
     mdr_bringup
+    mdr_common_states
     mdr_haptic
-    mdr_mockup_nodes
-    mdr_node_monitor
     #mdr_simple_pick
     mdr_table_cleaning
 )

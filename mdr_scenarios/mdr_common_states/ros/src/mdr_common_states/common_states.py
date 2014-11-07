@@ -1,12 +1,10 @@
 #!/usr/bin/python
 
 ######################### IMPORTS #########################
-
-import roslib
-roslib.load_manifest('mdr_common_states')
 import rospy
 import smach
 import smach_ros
+import moveit_commander
 
 from simple_script_server import *
 sss = simple_script_server()
@@ -32,7 +30,7 @@ COLOR_GREEN = ColorRGBA(0.0, 1.0, 0.0, 0.1)
 
 
 def set_light_color(color):
-	light_pub = rospy.Publisher('light_controller/command', ColorRGBA)
+	light_pub = rospy.Publisher('light_controller/command', ColorRGBA, latch=True)
 
 	light_pub.publish(color)
 
@@ -43,33 +41,44 @@ def set_light_color(color):
 class init_manipulator(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
-		self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
-		
+		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
+		self.arm_recover_srv_name = "/arm_controller/lwr_node/recover"
+		self.arm_recover_srv = rospy.ServiceProxy(self.arm_recover_srv_name, std_srvs.srv.Empty)
+
 	def execute(self, userdata):
 		#sss.init("arm")
 		sss.init("sdh")
 
-		sss.recover("arm")
+		rospy.wait_for_service(self.arm_recover_srv_name, 5)
+                try:
+                        self.arm_recover_srv()
+                except rospy.ServiceException, e:
+                        print("Service call to {0} failed: {1}".format(self.arm_recover_srv_name, e))
+                        return 'failed'
+
+		
 		sss.recover("sdh")
 
 		# move to initial positions
-		handle_arm = sss.move("arm","folded",False)
 		handle_sdh = sss.move("sdh","cylclosed",False)
-		handle_arm.wait()
+		self.arm.set_named_target("folded")
+		self.arm.go()
 		handle_sdh.wait()
 		
-		rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
-		try:
-			req = SetJointStiffnessRequest()
-			req.joint_stiffness = [300,300,300,300,300,300,300]
-			self.set_joint_stiffness(req)
-		except rospy.ServiceException,e:
-			print "Service call failed: %s"%e
-			return 'failed'
+		#rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
+		#try:
+		#	req = SetJointStiffnessRequest()
+		#	req.joint_stiffness = [300,300,300,300,300,300,300]
+		#	self.set_joint_stiffness(req)
+		#except rospy.ServiceException,e:
+		#	print "Service call failed: %s"%e
+		#	return 'failed'
 
 		# check, if all components are working
 		retval_list = []
-		retval_list.append(handle_arm.get_error_code())
+		#retval_list.append(handle_arm.get_error_code())
 		retval_list.append(handle_sdh.get_error_code())
 		for retval in retval_list:
 			if retval != 0:
@@ -135,6 +144,10 @@ class init_torso(smach.State):
 class init_all(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
+		self.arm = moveit_commander.MoveGroupCommander('arm')
+
+		self.arm_recover_srv_name = "/arm_controller/lwr_node/recover"
+		self.arm_recover_srv = rospy.ServiceProxy(self.arm_recover_srv_name, std_srvs.srv.Empty)
 
 	def execute(self, userdata):
 		raw_input("\nTURN HEAD MANUALLY UP!\n")
@@ -149,7 +162,15 @@ class init_all(smach.State):
 		# \todo check for init hardware errors
 
 		sss.recover("base")
-		sss.recover("arm")
+		
+		rospy.wait_for_service(self.arm_recover_srv_name, 5) 
+		try:
+			self.arm_recover_srv()
+		except rospy.ServiceException, e:
+			print("Service call to {0} failed: {1}".format(self.arm_recover_srv_name, e))
+			return 'failed'
+		
+
 		sss.recover("sdh")
 		sss.recover("tray")
 		sss.recover("torso")
@@ -157,12 +178,13 @@ class init_all(smach.State):
 		raw_input("\nMOVE BASE WITH JOYSTICK!\n")
 
 		# move to initial positions
-		handle_arm = sss.move("arm","folded",False)
 		handle_torso = sss.move("torso","home",False)
 		handle_sdh = sss.move("sdh","cylclosed",False)
 		handle_tray = sss.move("tray","down",False)
 		handle_head = sss.move("head","front",False)
-		handle_arm.wait()
+		self.arm.set_named_target("folded")
+		self.arm.go()
+
 		handle_torso.wait()
 		handle_sdh.wait()
 		handle_tray.wait()
@@ -170,7 +192,6 @@ class init_all(smach.State):
 
 		# check, if all components are working
 		retval_list = []
-		retval_list.append(handle_arm.get_error_code())
 		retval_list.append(handle_torso.get_error_code())
 		retval_list.append(handle_sdh.get_error_code())
 		retval_list.append(handle_tray.get_error_code())

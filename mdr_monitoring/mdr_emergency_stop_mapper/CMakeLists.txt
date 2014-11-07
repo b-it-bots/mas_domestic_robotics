@@ -3,6 +3,7 @@ project(mdr_emergency_stop_mapper)
 
 find_package(catkin REQUIRED
   COMPONENTS
+    roscpp
     std_msgs
     cob_relayboard
 )
@@ -14,7 +15,6 @@ catkin_package(
 )
 
 include_directories(
-  ros/include
   ${catkin_INCLUDE_DIRS}
 )
 
