@@ -1,0 +1,16 @@
+<launch>
+ 
+  <node pkg="usb_cam" type="usb_cam_node" name="usb_cam" output="screen" respawn="false">
+    <param name="video_device" type="string" value="/dev/microsoft_life_cam" />
+    <param name="autofocus" type="bool" value="true" />
+    <param name="pixel_format" type="string" value="yuyv" />
+    <param name="saturation" type="int" value="103" />
+    <param name="brightness" type="int" value="133" />
+    <param name="contrast" type="int" value="5" />
+    <param name="image_width" type="int" value="1920" />
+    <param name="image_height" type="int" value="1080" />
+    <param name="sharpness" type="int" value="25" />
+  </node>
+
+</launch>
+
