@@ -27,3 +27,8 @@
     local-name: cob_navigation
     uri: git@github.com:mas-group/cob_navigation.git
     version: hydro_dev
+    
+- git:
+    local-name: schunk_modular_robotics
+    uri: git@github.com:mas-group/schunk_modular_robotics.git
+    version: powercube_chain_offset_fix
