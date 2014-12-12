@@ -124,6 +124,9 @@ class find_object_moped(smach.State):
 				
 		if (len(resp.objects) <= 0):
 			SAY("I could not find the " + userdata.object_name + ".")
+
+	                sss.move("torso", "home")
+
 			self.arm.set_named_target("folded")
 			self.arm.go()
 					
