@@ -233,7 +233,7 @@ class haptic_guidance():
 		rospy.sleep(0.5)
 		self.time_loop = rospy.Time.now()
 		# change mode to default movement
-		self.movement_mode = 'SHIFT'
+		self.movement_mode = 'DRIVE'
 		
 		self.set_y_normalization()
 		self.haptic_base = True
