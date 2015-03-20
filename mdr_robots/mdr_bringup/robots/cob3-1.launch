@@ -38,6 +38,8 @@
 		<include file="$(find mdr_bringup)/components/openni.launch" >
 			<arg name="machine" value="hbrs_pc2" />
 			<arg name="publish_tf" value="false" />
+    			<arg name="camera" value="head_cam3d" />
+    			<arg name="depth_registration" value="true" />
 		</include>
 
 		<!--include file="$(find mdr_bringup)/components/stemmer_cam.launch" /-->
