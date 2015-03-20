@@ -37,7 +37,7 @@
 		<!-- brsu specific packages -->
 		<include file="$(find mdr_bringup)/components/openni.launch" >
 			<arg name="machine" value="hbrs_pc2" />
-			<arg name="publish_tf" value="false" />
+			<arg name="publish_tf" value="true" />
     			<arg name="camera" value="head_cam3d" />
     			<arg name="depth_registration" value="true" />
 		</include>
