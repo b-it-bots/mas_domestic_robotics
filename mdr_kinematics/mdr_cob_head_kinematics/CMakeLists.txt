@@ -31,11 +31,10 @@ add_library(mdr_cob_head_kinematics
 
 add_library(mdr_cob_head_kinematics_plugin
   ros/src/head_kinematics_plugin.cpp
-  ${catkin_LIBRARIES}
 )
-
 target_link_libraries(mdr_cob_head_kinematics_plugin
   mdr_cob_head_kinematics
+  ${catkin_LIBRARIES}
 )
 
 # install
