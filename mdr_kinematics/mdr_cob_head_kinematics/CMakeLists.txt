@@ -38,16 +38,15 @@ target_link_libraries(mdr_cob_head_kinematics_plugin
 )
 
 # install
-install(TARGETS mdr_cob_head_kinematics_plugin
+install(
+  TARGETS
+    mdr_cob_head_kinematics
+    mdr_cob_head_kinematics_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(TARGETS mdr_cob_head_kinematics
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 # test
