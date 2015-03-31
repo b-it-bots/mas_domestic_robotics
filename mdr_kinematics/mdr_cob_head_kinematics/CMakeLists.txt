@@ -23,6 +23,7 @@ catkin_package(
 include_directories(
   common/include
   ros/include
+  ${catkin_INCLUDE_DIRS}
 )
 
 add_library(mdr_cob_head_kinematics
