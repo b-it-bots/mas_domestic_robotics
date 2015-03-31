@@ -10,7 +10,8 @@ find_package(catkin REQUIRED
 )
 
 catkin_package(
-  LIBRARIES head_kinematics_plugin
+  LIBRARIES
+    head_kinematics_plugin
   CATKIN_DEPENDS
     roscpp
     rosunit
