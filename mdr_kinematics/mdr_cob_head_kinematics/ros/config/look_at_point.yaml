@@ -1,0 +1,11 @@
+# pan parameter
+min_pan_angle: -1.5  # in rad
+max_pan_angle: 1.5   # in rad
+min_pan_velocity: 0.05  # in rad/sec
+max_pan_velocity: 1.0  # in rad/sec
+
+# tilt parameter
+min_tilt_angle: -0.6  # in rad
+max_tilt_angle: 0.9   # in rad
+min_tilt_velocity: 0.05   # in rad/sec
+max_tilt_velocity: 0.5   # in rad/sec
