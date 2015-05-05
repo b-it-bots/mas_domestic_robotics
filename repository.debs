@@ -57,7 +57,7 @@ packagelist=(
 sudo apt-get install -y ${packagelist[@]}
 
 ### install further repositories
-rosinstall --delete-changed-uris .. /opt/ros/hydro repository.rosinstall
+rosinstall .. /opt/ros/hydro repository.rosinstall
 
 ### install dependencies of BRSU repositories
 dependent_repositories=('mas_common_robotics' 'mas_third_party_software')
