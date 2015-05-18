@@ -10,25 +10,25 @@
 
 - git:
     local-name: cob_common
-    uri: git@github.com:mas-group/cob_common.git
+    uri: https://github.com/mas-group/cob_common.git
     version: hydro_dev
 
 - git:
     local-name: cob_calibration_data
-    uri: git@github.com:mas-group/cob_calibration_data.git
+    uri: https://github.com/mas-group/cob_calibration_data.git
     version: hydro_dev
 
 - git:
     local-name: cob_robots
-    uri: git@github.com:mas-group/cob_robots.git
+    uri: https://github.com/mas-group/cob_robots.git
     version: hydro_dev
 
 - git:
     local-name: cob_navigation
-    uri: git@github.com:mas-group/cob_navigation.git
+    uri: https://github.com/mas-group/cob_navigation.git
     version: hydro_dev
     
 - git:
     local-name: schunk_modular_robotics
-    uri: git@github.com:mas-group/schunk_modular_robotics.git
+    uri: https://github.com/mas-group/schunk_modular_robotics.git
     version: powercube_chain_offset_fix
