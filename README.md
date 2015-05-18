@@ -42,7 +42,7 @@ NOTE: Do not forget to update your .bashrc!
 ### ROS Tutorials
 If you have never worked with ROS before, we recommend to go through the beginner tutorials provided by ROS:
 
-     http://www.ros.org/wiki/ROS/Tutorials
+     http://wiki.ros.org/ROS/Tutorials
 
 In order to understand at least the different core components of ROS, you have to start from tutorial 1 ("Installing and Configuring Your ROS Environment") till tutorial 7 ("Understanding ROS Services and Parameters"). 
 
