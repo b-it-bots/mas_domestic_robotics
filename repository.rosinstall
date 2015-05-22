@@ -32,3 +32,9 @@
     local-name: schunk_modular_robotics
     uri: https://github.com/mas-group/schunk_modular_robotics.git
     version: powercube_chain_offset_fix
+
+### Only the prace_common package is needed from this repository, in order to run the tests on Jenkins successfully
+- git:
+    local-name: cob_substitute
+    uri: https://github.com/ipa320/cob_substitute.git
+    version: hydro_dev
