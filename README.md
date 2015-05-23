@@ -18,7 +18,7 @@ Now it's time to configure your settings. To do this you need to open a new Term
 
      git config --global user.name "Your Name Here"
 
-Git also saves your email address into the commits you make. We use the email address to associate your commits with your GitHub account:
+Git also saves your email address into the commits you make.
 
      git config --global user.email "your-email@youremail.com"
 
@@ -42,7 +42,7 @@ NOTE: Do not forget to update your .bashrc!
 ### ROS Tutorials
 If you have never worked with ROS before, we recommend to go through the beginner tutorials provided by ROS:
 
-     http://www.ros.org/wiki/ROS/Tutorials
+     http://wiki.ros.org/ROS/Tutorials
 
 In order to understand at least the different core components of ROS, you have to start from tutorial 1 ("Installing and Configuring Your ROS Environment") till tutorial 7 ("Understanding ROS Services and Parameters"). 
 
@@ -59,7 +59,7 @@ In order to understand at least the different core components of ROS, you have t
 First of all you have to clone the repository.
 
     cd ~/catkin_ws/src;
-    git clone git@github.com:mas-group/mas_domestic_robotics.git
+    git clone gitgate@mas.b-it-center.de:mas-group/mas_domestic_robotics.git
 
 Then go on with installing further external dependencies:
        

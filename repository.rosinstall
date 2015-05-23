@@ -1,34 +1,40 @@
 - git:
     local-name: mas_third_party_software
-    uri: git@github.com:mas-group/mas_third_party_software.git
+    uri: gitgate@mas.b-it-center.de:mas-group/mas_third_party_software.git
     version: hydro
 
 - git:
     local-name: mas_common_robotics
-    uri: git@github.com:mas-group/mas_common_robotics.git
+    uri: gitgate@mas.b-it-center.de:mas-group/mas_common_robotics.git
     version: hydro
 
 - git:
     local-name: cob_common
-    uri: git@github.com:mas-group/cob_common.git
+    uri: https://github.com/mas-group/cob_common.git
     version: hydro_dev
 
 - git:
     local-name: cob_calibration_data
-    uri: git@github.com:mas-group/cob_calibration_data.git
+    uri: https://github.com/mas-group/cob_calibration_data.git
     version: hydro_dev
 
 - git:
     local-name: cob_robots
-    uri: git@github.com:mas-group/cob_robots.git
+    uri: https://github.com/mas-group/cob_robots.git
     version: hydro_dev
 
 - git:
     local-name: cob_navigation
-    uri: git@github.com:mas-group/cob_navigation.git
+    uri: https://github.com/mas-group/cob_navigation.git
     version: hydro_dev
     
 - git:
     local-name: schunk_modular_robotics
-    uri: git@github.com:mas-group/schunk_modular_robotics.git
+    uri: https://github.com/mas-group/schunk_modular_robotics.git
     version: powercube_chain_offset_fix
+
+### Only the prace_common package is needed from this repository, in order to run the tests on Jenkins successfully
+- git:
+    local-name: cob_substitute
+    uri: https://github.com/ipa320/cob_substitute.git
+    version: hydro_dev
