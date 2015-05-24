@@ -16,10 +16,12 @@ install(PROGRAMS
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-if (CATKIN_ENABLE_TESTING)
-  find_package(catkin REQUIRED
-    COMPONENTS
-      rostest
-  )
-  add_rostest(ros/launch/grasp_planner.test)
+### TEST
+if(CATKIN_ENABLE_TESTING)
+    find_package(catkin REQUIRED
+        COMPONENTS
+            roslaunch
+    )
+
+    roslaunch_add_file_check(ros/launch)
 endif()
