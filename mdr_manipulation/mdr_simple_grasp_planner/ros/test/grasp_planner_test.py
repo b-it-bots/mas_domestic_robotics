@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
 import rospy
-import moveit_msgs.msg
-import trajectory_msgs.msg
-import geometry_msgs.msg
 import mdr_simple_grasp_planner.grasp_planner
 import unittest
 import rostest
