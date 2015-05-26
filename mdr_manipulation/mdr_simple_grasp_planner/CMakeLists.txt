@@ -18,10 +18,12 @@ install(PROGRAMS
 
 ### TEST
 if(CATKIN_ENABLE_TESTING)
-    find_package(catkin REQUIRED
-        COMPONENTS
-            roslaunch
-    )
+  find_package(catkin REQUIRED
+    COMPONENTS
+      roslaunch
+      rostest
+  )
 
-    roslaunch_add_file_check(ros/launch)
+  roslaunch_add_file_check(ros/launch)
+  add_rostest(ros/launch/grasp_planner.test)
 endif()
