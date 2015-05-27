@@ -38,3 +38,9 @@
     local-name: cob_substitute
     uri: https://github.com/mas-group/cob_substitute.git
     version: hydro_dev
+- git:
+    local-name: cob_control
+    uri: https://github.com/mas-group/cob_control.git
+    version: hydro_dev
+
+
