@@ -36,5 +36,5 @@
 ### Only the prace_common package is needed from this repository, in order to run the tests on Jenkins successfully
 - git:
     local-name: cob_substitute
-    uri: https://github.com/ipa320/cob_substitute.git
+    uri: https://github.com/mas-group/cob_substitute.git
     version: hydro_dev
