@@ -79,15 +79,6 @@ install(DIRECTORY ros/config
 )
 
 # test
-catkin_add_gtest(head_kinematics_test
-  common/test/head_kinematics_test.cpp
-)
-
-target_link_libraries(head_kinematics_test
-  mdr_cob_head_kinematics
-  ${catkin_LIBRARIES}
-)
-
 catkin_add_gtest(head_kinematics_plugin_test
   ros/test/head_kinematics_plugin_test.cpp
 )
