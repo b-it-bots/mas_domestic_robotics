@@ -17,7 +17,6 @@ catkin_package(
     head_kinematics_plugin
   CATKIN_DEPENDS
     roscpp
-    rosunit
     pluginlib
     moveit_core
 )
@@ -79,10 +78,14 @@ install(DIRECTORY ros/config
 )
 
 # test
-catkin_add_gtest(head_kinematics_plugin_test
-  ros/test/head_kinematics_plugin_test.cpp
-)
+if(CATKIN_ENABLE_TESTING)
+  find_package(rosunit REQUIRED)
 
-target_link_libraries(head_kinematics_plugin_test
-  ${catkin_LIBRARIES}
-)
+  catkin_add_gtest(head_kinematics_plugin_test
+    ros/test/head_kinematics_plugin_test.cpp
+  )
+
+  target_link_libraries(head_kinematics_plugin_test
+    ${catkin_LIBRARIES}
+  )
+endif()
