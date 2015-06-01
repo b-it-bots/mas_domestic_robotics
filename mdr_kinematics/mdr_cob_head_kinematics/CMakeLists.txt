@@ -79,7 +79,10 @@ install(DIRECTORY ros/config
 
 # test
 if(CATKIN_ENABLE_TESTING)
+  find_package(roslaunch REQUIRED)
   find_package(rosunit REQUIRED)
+
+  roslaunch_add_file_check(ros/launch)
 
   catkin_add_gtest(head_kinematics_plugin_test
     ros/test/head_kinematics_plugin_test.cpp
