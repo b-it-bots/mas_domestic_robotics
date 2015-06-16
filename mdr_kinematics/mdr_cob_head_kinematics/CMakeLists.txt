@@ -7,6 +7,7 @@ find_package(catkin REQUIRED
     roscpp
     rosunit
     sensor_msgs
+    std_msgs
     tf
     pluginlib
     moveit_core
