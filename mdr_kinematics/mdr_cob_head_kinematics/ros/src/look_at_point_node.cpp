@@ -16,9 +16,6 @@ LookAtPointNode::LookAtPointNode(): current_pan_angle_(0.0), current_tilt_angle_
 
     pub_torso_velocities_ = nh.advertise < brics_actuator::JointVelocities > ("output/joint_velocities", 1);
 
-    pub_tmp_ = nh.advertise < geometry_msgs::PoseStamped > ("output/pan", 1);    //TODO delete
-    pub_tmp2_ = nh.advertise < geometry_msgs::PoseStamped > ("output/tilt", 1); //TODO delete
-
     tf_listener_ = new tf::TransformListener();
 
     // set joint names and link names
@@ -64,16 +61,6 @@ void LookAtPointNode::pointCallback(const geometry_msgs::PointStampedPtr &msg)
 
         // get pan angle (in rad) using polar coordinate
         tilt_angle_ = atan2(set_point_in_tilt_frame_.point.y, sqrt((pow(set_point_in_tilt_frame_.point.x, 2) + pow(set_point_in_tilt_frame_.point.z, 2))));
-
-        // TODO delete
-        geometry_msgs::PoseStamped pose;
-        pose.header = set_point_in_pan_frame_.header;
-        pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, pan_angle_);
-        pub_tmp_.publish(pose);
-
-        pose.header = set_point_in_tilt_frame_.header;
-        pose.pose.orientation = tf::createQuaternionMsgFromRollPitchYaw(0.0, 0.0, tilt_angle_);
-        pub_tmp2_.publish(pose);
 
         // calculate the new joint position for pan and tilt
         pan_angle_ += current_pan_angle_;

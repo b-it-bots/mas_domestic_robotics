@@ -43,9 +43,6 @@ private:
     ros::Subscriber sub_joint_states_;
     ros::Publisher pub_torso_velocities_;
 
-    ros::Publisher pub_tmp_; //TODO delete later on
-    ros::Publisher pub_tmp2_; //TODO delete later on
-
     geometry_msgs::PointStamped set_point_in_pan_frame_;
     geometry_msgs::PointStamped set_point_in_tilt_frame_;
     double pan_angle_;
