@@ -212,6 +212,9 @@ void LookAtPointNode::LookAtPointNode::idleState()
 
 void LookAtPointNode::LookAtPointNode::runState()
 {
+    if (point_msg_received_)
+        calculatePanAndTiltAngle();
+
     // only work on "recent" joint state msgs
     ros::Duration age_of_last_joint_state = ros::Time::now() - last_joint_states_timestamp;
     if (age_of_last_joint_state.toSec() > 1.0)
