@@ -19,22 +19,22 @@ LookAtPointNode::LookAtPointNode(): current_pan_angle_(0.0), current_tilt_angle_
     tf_listener_ = new tf::TransformListener();
 
     // set joint names and link names
-	pan_frame_ = "torso_upper_neck_pan_link";
-	pan_joint_name_ = "torso_upper_neck_pan_joint";
-	tilt_frame_ = "torso_upper_neck_tilt_link";
-	tilt_joint_name_ = "torso_upper_neck_tilt_joint";
+    pan_frame_ = "torso_upper_neck_pan_link";
+    pan_joint_name_ = "torso_upper_neck_pan_joint";
+    tilt_frame_ = "torso_upper_neck_tilt_link";
+    tilt_joint_name_ = "torso_upper_neck_tilt_joint";
 
-	// read pan parameter
-	nh.param<double>("min_pan_angle", min_pan_angle_, -1.0);
-	nh.param<double>("max_pan_angle", max_pan_angle_, 1.0);
-	nh.param<double>("min_pan_velocity", min_pan_velocity_, 0.05);
-	nh.param<double>("max_pan_velocity", max_pan_velocity_, 0.15);
+    // read pan parameter
+    nh.param<double>("min_pan_angle", min_pan_angle_, -1.0);
+    nh.param<double>("max_pan_angle", max_pan_angle_, 1.0);
+    nh.param<double>("min_pan_velocity", min_pan_velocity_, 0.05);
+    nh.param<double>("max_pan_velocity", max_pan_velocity_, 0.15);
 
-	// read tilt parameter
-	nh.param<double>("min_tilt_angle", min_tilt_angle_, -0.5);
-	nh.param<double>("max_tilt_angle", max_tilt_angle_, 0.5);
-	nh.param<double>("min_tilt_velocity", min_tilt_velocity_, 0.05);
-	nh.param<double>("max_tilt_velocity", max_tilt_velocity_, 0.15);
+    // read tilt parameter
+    nh.param<double>("min_tilt_angle", min_tilt_angle_, -0.5);
+    nh.param<double>("max_tilt_angle", max_tilt_angle_, 0.5);
+    nh.param<double>("min_tilt_velocity", min_tilt_velocity_, 0.05);
+    nh.param<double>("max_tilt_velocity", max_tilt_velocity_, 0.15);
 
     current_state_ = IDLE;
 }
