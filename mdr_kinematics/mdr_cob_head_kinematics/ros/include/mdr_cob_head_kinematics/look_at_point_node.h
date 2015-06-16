@@ -31,7 +31,6 @@ public:
 
 
 private:
-    static void mySigintHandler(int sig);
 
     void pointCallback(const geometry_msgs::PointStampedPtr &msg);
     void jointStatesCallback(const sensor_msgs::JointStatePtr &msg);
