@@ -14,15 +14,13 @@
 #include <geometry_msgs/PointStamped.h>
 #include <ros/ros.h>
 #include <sensor_msgs/JointState.h>
+#include <std_msgs/String.h>
 #include <tf/transform_listener.h>
 
 class LookAtPointNode
 {
 public:
-    enum State
-    {
-        SET_POINT_NOT_REACHED, IDLE
-    };
+    enum State {INIT, IDLE, RUN};
 
     LookAtPointNode();
     ~LookAtPointNode();
@@ -31,20 +29,30 @@ public:
 
 
 private:
-    static void mySigintHandler(int sig);
 
     void pointCallback(const geometry_msgs::PointStampedPtr &msg);
     void jointStatesCallback(const sensor_msgs::JointStatePtr &msg);
+    void eventCallback(const std_msgs::StringPtr &msg);
 
+    void idleState();
+    void runState();
+
+
+    bool calculatePanAndTiltAngle();
     void publishTorsoJointvelocities(const double &lower_pan, const double &lower_tilt, const double &upper_pan, const double &upper_tilt);
     void publishZeroTorsoJointvelocities();
 
     ros::Subscriber sub_point_;
     ros::Subscriber sub_joint_states_;
+    ros::Subscriber sub_event_;
+
     ros::Publisher pub_torso_velocities_;
 
-    ros::Publisher pub_tmp_; //TODO delete later on
-    ros::Publisher pub_tmp2_; //TODO delete later on
+    std_msgs::String event_msg_;
+    bool event_msg_received_;
+
+    geometry_msgs::PointStamped point_msg_;
+    bool point_msg_received_;
 
     geometry_msgs::PointStamped set_point_in_pan_frame_;
     geometry_msgs::PointStamped set_point_in_tilt_frame_;
