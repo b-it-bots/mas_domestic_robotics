@@ -4,7 +4,6 @@ project(mdr_topic_to_service)
 find_package(catkin REQUIRED
   COMPONENTS
     geometry_msgs
-    mcr_navigation_msgs
     mcr_perception_msgs
     mcr_speech_msgs
     roscpp
@@ -14,7 +13,6 @@ find_package(catkin REQUIRED
 catkin_package(
   CATKIN_DEPENDS
     geometry_msgs
-    mcr_navigation_msgs
     mcr_perception_msgs
     mcr_speech_msgs
     std_srvs

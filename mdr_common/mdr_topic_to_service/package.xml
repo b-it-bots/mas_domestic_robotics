@@ -13,7 +13,6 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>geometry_msgs</build_depend>
-  <build_depend>mcr_navigation_msgs</build_depend>
   <build_depend>mcr_perception_msgs</build_depend>
   <build_depend>mcr_speech_msgs</build_depend>
   <build_depend>roscpp</build_depend>

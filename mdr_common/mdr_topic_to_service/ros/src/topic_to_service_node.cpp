@@ -5,9 +5,6 @@
 #include <mcr_speech_msgs/GetRecognizedSpeech.h>
 #include <mcr_speech_msgs/RecognizedSpeech.h>
 
-
-#include <mcr_navigation_msgs/GetBasePose.h>
-
 #include <mcr_perception_msgs/GetFaceName.h>
 #include <mcr_perception_msgs/GetObjectList.h>
 #include <mcr_perception_msgs/GetPersonList.h>
@@ -19,7 +16,6 @@
 
 #include <string>
 
-geometry_msgs::PoseWithCovariance lastBasePoseInMap;
 mcr_speech_msgs::RecognizedSpeech lastSpeechCommand;
 mcr_perception_msgs::PersonList last_observed_legs;
 bool isPlattformMoving = false;
@@ -115,30 +111,12 @@ bool getLastFaceName(mcr_perception_msgs::GetFaceName::Request& request, mcr_per
 	return true;
 }
 
-void basePoseCallback(const geometry_msgs::PoseWithCovariance& data)
-{
-	lastBasePoseInMap = data;
-}
-
-bool getBasePose(mcr_navigation_msgs::GetBasePose::Request& request, mcr_navigation_msgs::GetBasePose::Response& response)
-{
-	geometry_msgs::Pose pose;
-
-	pose.position = lastBasePoseInMap.pose.position;
-	pose.orientation = lastBasePoseInMap.pose.orientation;
-
-	response.pose = pose;
-	return true; 
-}
-
-
 void objectRecognitionResponseCallback(const mcr_perception_msgs::ObjectListPtr& objectPoseList)
 {
 
 	objectList = *objectPoseList;
 	
 }
-
 
 bool getObjectPoseListSrv(mcr_perception_msgs::GetObjectList::Request &req, mcr_perception_msgs::GetObjectList::Response &res)
 {
@@ -167,9 +145,6 @@ bool get_object_categorization(mcr_perception_msgs::GetObjectList::Request &req,
 bool clearStoredInfosCallback(std_srvs::Empty::Request &req, std_srvs::Empty::Response &res)
 {
 	ROS_INFO("clearing stored information");
-
-	geometry_msgs::PoseWithCovariance dummy1;
-	lastBasePoseInMap = dummy1;
 	
 	mcr_speech_msgs::RecognizedSpeech dummy2;
 	lastSpeechCommand = dummy2;
@@ -211,9 +186,6 @@ int main(int argc, char **argv)
 
   ros::Subscriber facerecsub2 = n.subscribe("/mcr_perception/face_recognition/recognized_faces", 1, lastRecognizedFaces);
   ros::ServiceServer getLastFaceNameService = n.advertiseService("/mcr_perception/face_recognition/get_last_face_name", getLastFaceName);
-  
-  ros::Subscriber map_pose_sub = n.subscribe("/base_pose", 1000, basePoseCallback);
-  ros::ServiceServer service6 = n.advertiseService("/base_controller/get_base_pose", getBasePose);
   
   ros::Subscriber subObjectRecognitionResponse = n.subscribe("/mcr_perception/object_recognition_height_based/recognized_objects", 1, objectRecognitionResponseCallback);
   ros::ServiceServer srvObjectRecognition = n.advertiseService("/mcr_perception/object_recognition/get_object_list", getObjectPoseListSrv);
