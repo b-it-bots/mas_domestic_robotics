@@ -16,4 +16,14 @@ install(PROGRAMS
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-catkin_add_nosetests(ros/test)
+### TEST
+if(CATKIN_ENABLE_TESTING)
+  find_package(catkin REQUIRED
+    COMPONENTS
+      roslaunch
+      rostest
+  )
+
+  roslaunch_add_file_check(ros/launch)
+  add_rostest(ros/launch/grasp_planner.test)
+endif()

@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+
+<launch>
+    <node pkg="mdr_simple_grasp_planner" type="grasp_planner_node" ns="mdr_manipulation" name="grasp_planner" output="screen" respawn="false" />
+
+    <test pkg="mdr_simple_grasp_planner" type="grasp_planner_test.py"
+        test-name="test_grasp_planner">
+    </test>
+</launch>

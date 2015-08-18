@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<library path="lib/libmdr_cob_head_kinematics">
+<library path="lib/libmdr_cob_head_kinematics_plugin">
   <class type="mdr_cob_head_kinematics::head_kinematics_plugin"
          base_class_type="kinematics::KinematicsBase">
     <description>

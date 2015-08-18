@@ -7,6 +7,7 @@ find_package(catkin REQUIRED
     roscpp
     rosunit
     sensor_msgs
+    std_msgs
     tf
     pluginlib
     moveit_core
@@ -17,7 +18,6 @@ catkin_package(
     head_kinematics_plugin
   CATKIN_DEPENDS
     roscpp
-    rosunit
     pluginlib
     moveit_core
 )
@@ -79,19 +79,17 @@ install(DIRECTORY ros/config
 )
 
 # test
-catkin_add_gtest(head_kinematics_test
-  common/test/head_kinematics_test.cpp
-)
+if(CATKIN_ENABLE_TESTING)
+  find_package(roslaunch REQUIRED)
+  find_package(rosunit REQUIRED)
 
-target_link_libraries(head_kinematics_test
-  mdr_cob_head_kinematics
-  ${catkin_LIBRARIES}
-)
+  roslaunch_add_file_check(ros/launch)
 
-catkin_add_gtest(head_kinematics_plugin_test
-  ros/test/head_kinematics_plugin_test.cpp
-)
+  catkin_add_gtest(head_kinematics_plugin_test
+    ros/test/head_kinematics_plugin_test.cpp
+  )
 
-target_link_libraries(head_kinematics_plugin_test
-  ${catkin_LIBRARIES}
-)
+  target_link_libraries(head_kinematics_plugin_test
+    ${catkin_LIBRARIES}
+  )
+endif()
