@@ -5,7 +5,7 @@
 ///  @date 16.10.2006
 //////////////////////////////////////////////////////////////////////////////
 
-#include "support/channel.h"
+#include <mdr_volksbot_motorcontroller/support/channel.h>
 
 namespace VMC
 {

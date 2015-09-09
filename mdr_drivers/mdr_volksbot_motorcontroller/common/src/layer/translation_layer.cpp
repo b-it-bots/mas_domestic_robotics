@@ -5,7 +5,7 @@
 ///  @date 23.10.2006
 //////////////////////////////////////////////////////////////////////////////
 
-#include "layer/translation_layer.h"
+#include <mdr_volksbot_motorcontroller/layer/translation_layer.h>
 
 namespace VMC
 {

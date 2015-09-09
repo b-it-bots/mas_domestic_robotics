@@ -1,6 +1,6 @@
 
-#include "support/error.h"
-#include "support/commands.h"
+#include <mdr_volksbot_motorcontroller/support/error.h>
+#include <mdr_volksbot_motorcontroller/support/commands.h>
 
 namespace VMC
 {

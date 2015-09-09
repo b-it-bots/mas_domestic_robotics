@@ -5,7 +5,7 @@
  *      Author: Frederik Hegger
  */
 
-#include "robot_factory.h"
+#include <mdr_volksbot_motorcontroller/robot_factory.h>
 
 CRobotFactory::CRobotFactory()
 {

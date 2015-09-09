@@ -15,14 +15,14 @@
 #include <iostream>
 #include <sstream>
 
-#include "translation_layer.h"
-#include "communication_layer.h"
-#include "support/enums.h"
-#include "support/message.h"
-#include "support/request.h"
-#include "support/error.h"
-#include "storage/storage.h"
-#include "support/commands.h"
+#include <mdr_volksbot_motorcontroller/layer/translation_layer.h>
+#include <mdr_volksbot_motorcontroller/layer/communication_layer.h>
+#include <mdr_volksbot_motorcontroller/support/enums.h>
+#include <mdr_volksbot_motorcontroller/support/message.h>
+#include <mdr_volksbot_motorcontroller/support/request.h>
+#include <mdr_volksbot_motorcontroller/support/error.h>
+#include <mdr_volksbot_motorcontroller/storage/storage.h>
+#include <mdr_volksbot_motorcontroller/support/commands.h>
 
 namespace VMC
 {

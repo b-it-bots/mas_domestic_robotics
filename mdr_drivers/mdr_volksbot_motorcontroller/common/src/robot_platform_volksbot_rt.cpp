@@ -1,4 +1,4 @@
-#include "robot_platform_volksbot_rt.h"
+#include <mdr_volksbot_motorcontroller/robot_platform_volksbot_rt.h>
 
 CRobotPlatformVolksbotRT::CRobotPlatformVolksbotRT(unsigned int unMotorNumberLeft, unsigned int unMotorNumberRight)
 {

@@ -12,14 +12,14 @@
 
 #include <vector>
 
-#include "motor.h"
-#include "support/data.h"
-#include "support/multisend.h"
-#include "support/send_two.h"
-#include "support/enums.h"
-#include "support/channel.h"
-#include "support/message.h"
-#include "support/commands.h"
+#include <mdr_volksbot_motorcontroller/storage/motor.h>
+#include <mdr_volksbot_motorcontroller/support/data.h>
+#include <mdr_volksbot_motorcontroller/support/multisend.h>
+#include <mdr_volksbot_motorcontroller/support/send_two.h>
+#include <mdr_volksbot_motorcontroller/support/enums.h>
+#include <mdr_volksbot_motorcontroller/support/channel.h>
+#include <mdr_volksbot_motorcontroller/support/message.h>
+#include <mdr_volksbot_motorcontroller/support/commands.h>
 
 namespace VMC
 {

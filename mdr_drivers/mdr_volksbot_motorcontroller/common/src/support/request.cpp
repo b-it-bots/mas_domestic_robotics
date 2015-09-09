@@ -5,7 +5,7 @@
 ///  @date 23.10.2006
 //////////////////////////////////////////////////////////////////////////////
 
-#include "support/request.h"
+#include <mdr_volksbot_motorcontroller/support/request.h>
 
 namespace VMC
 {

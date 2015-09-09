@@ -10,10 +10,10 @@
 #ifndef _CMotor_H_
 #define _CMotor_H_
 
-#include "support/enums.h"
-#include "support/data.h"
-#include "support/channel.h"
-#include "support/commands.h"
+#include <mdr_volksbot_motorcontroller/support/enums.h>
+#include <mdr_volksbot_motorcontroller/support/data.h>
+#include <mdr_volksbot_motorcontroller/support/channel.h>
+#include <mdr_volksbot_motorcontroller/support/commands.h>
 
 namespace VMC
 {

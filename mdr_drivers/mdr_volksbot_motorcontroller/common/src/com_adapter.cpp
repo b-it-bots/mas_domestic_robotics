@@ -1,4 +1,4 @@
-#include "com_adapter.h"
+#include <mdr_volksbot_motorcontroller/com_adapter.h>
 #include <iostream>
 
 using namespace std;

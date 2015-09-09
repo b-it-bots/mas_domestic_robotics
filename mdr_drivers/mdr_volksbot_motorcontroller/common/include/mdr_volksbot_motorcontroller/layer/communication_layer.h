@@ -14,11 +14,11 @@
 #include <string>
 #include <list>
 
-#include "support/enums.h"
-#include "support/error.h"
+#include <mdr_volksbot_motorcontroller/support/enums.h>
+#include <mdr_volksbot_motorcontroller/support/error.h>
 
-#include "interface_device_adapter.h"
-#include "com_adapter.h"
+#include <mdr_volksbot_motorcontroller/interface_device_adapter.h>
+#include <mdr_volksbot_motorcontroller/com_adapter.h>
 
 namespace VMC
 {

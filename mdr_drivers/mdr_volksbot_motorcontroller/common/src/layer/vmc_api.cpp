@@ -5,7 +5,7 @@
 ///  @date 23.10.2006
 //////////////////////////////////////////////////////////////////////////////
 
-#include "layer/vmc_api.h"
+#include <mdr_volksbot_motorcontroller/layer/vmc_api.h>
 
 namespace VMC
 {

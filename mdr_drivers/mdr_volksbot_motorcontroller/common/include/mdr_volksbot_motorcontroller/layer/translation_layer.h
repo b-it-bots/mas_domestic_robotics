@@ -9,10 +9,10 @@
 #ifndef _CTranslationLayer_H_
 #define _CTranslationLayer_H_
 
-#include "communication_layer.h"
-#include "support/message.h"
-#include "support/enums.h"
-#include "support/error.h"
+#include <mdr_volksbot_motorcontroller/layer/communication_layer.h>
+#include <mdr_volksbot_motorcontroller/support/message.h>
+#include <mdr_volksbot_motorcontroller/support/enums.h>
+#include <mdr_volksbot_motorcontroller/support/error.h>
 
 #include <string>
 #include <list>

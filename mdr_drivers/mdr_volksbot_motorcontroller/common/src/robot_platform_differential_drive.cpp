@@ -1,4 +1,4 @@
-#include "robot_platform_differential_drive.h"
+#include <mdr_volksbot_motorcontroller/robot_platform_differential_drive.h>
 
 CRobotPlatformDifferentialDrive::CRobotPlatformDifferentialDrive()
 {

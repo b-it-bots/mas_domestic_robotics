@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-#include "timer.h"
+#include <mdr_volksbot_motorcontroller/timer.h>
 
 namespace VMC
 {

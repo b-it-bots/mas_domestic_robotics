@@ -6,7 +6,7 @@
 //////////////////////////////////////////////////////////////////////////////
 
 #include <cstdio>
-#include "support/data.h"
+#include <mdr_volksbot_motorcontroller/support/data.h>
 
 namespace VMC
 {

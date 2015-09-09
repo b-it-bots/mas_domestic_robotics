@@ -11,12 +11,12 @@
 #ifndef _CData_H_
 #define _CData_H_
 
-#include "channel.h"
-#include "message.h"
-#include "enums.h"
-#include "timestamp.h"
-#include "layer/translation_layer.h"
-#include "error.h"
+#include <mdr_volksbot_motorcontroller/support/channel.h>
+#include <mdr_volksbot_motorcontroller/support/message.h>
+#include <mdr_volksbot_motorcontroller/support/enums.h>
+#include <mdr_volksbot_motorcontroller/support/timestamp.h>
+#include <mdr_volksbot_motorcontroller/layer/translation_layer.h>
+#include <mdr_volksbot_motorcontroller/support/error.h>
 #include <string>
 #include <list>
 #include <sstream>

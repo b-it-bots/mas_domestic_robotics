@@ -5,7 +5,7 @@
 ///  @date 16.10.2006
 //////////////////////////////////////////////////////////////////////////////
 
-#include "support/send_two.h"
+#include <mdr_volksbot_motorcontroller/support/send_two.h>
 
 namespace VMC
 {

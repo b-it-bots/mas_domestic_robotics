@@ -16,7 +16,7 @@
 #include <tf/transform_broadcaster.h>
 #include <geometry_msgs/TransformStamped.h>
 
-#include "robot_factory.h"
+#include <mdr_volksbot_motorcontroller/robot_factory.h>
 
 #define COVARIANCE_SIZE		36
 
