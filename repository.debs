@@ -23,6 +23,7 @@ packagelist=(
   ros-hydro-hokuyo-node
   ros-hydro-interactive-markers
   ros-hydro-joy
+  ros-hydro-katana-arm-gazebo
   ros-hydro-laser-geometry
   ros-hydro-lms1xx
   ros-hydro-manipulation-msgs
@@ -45,6 +46,7 @@ packagelist=(
   ros-hydro-rqt-robot-dashboard
   ros-hydro-rviz
   ros-hydro-schunk-modular-robotics
+  ros-hydro-sicktoolbox-wrapper
   ros-hydro-smach
   ros-hydro-smach-ros
   ros-hydro-wifi-ddwrt
