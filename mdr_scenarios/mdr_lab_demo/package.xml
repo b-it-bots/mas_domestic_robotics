@@ -33,6 +33,5 @@
   <run_depend>mdr_common_states</run_depend>
   <run_depend>mdr_haptic</run_depend>
   <!--run_depend>mdr_simple_pick</run_depend-->
-  <run_depend>mdr_table_cleaning</run_depend>
 
 </package>

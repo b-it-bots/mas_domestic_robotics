@@ -3,4 +3,7 @@ project(mdr_pick_and_place)
 
 find_package(catkin REQUIRED)
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS
+    rospy
+)

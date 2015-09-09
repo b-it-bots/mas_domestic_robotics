@@ -20,5 +20,5 @@
   <run_depend>sensor_msgs</run_depend>
   <run_depend>tf</run_depend>
   <run_depend>actionlib</run_depend>
-  <run_depend>simple_script_server</run_depend>
+  <run_depend>cob_script_server</run_depend>
 </package>

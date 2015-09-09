@@ -21,7 +21,6 @@ catkin_package(
     mdr_common_states
     mdr_haptic
     #mdr_simple_pick
-    mdr_table_cleaning
 )
 
 catkin_python_setup()

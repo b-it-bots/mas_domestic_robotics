@@ -16,8 +16,6 @@
   <build_depend>roscpp</build_depend>
   <build_depend>moveit_core</build_depend>
   <build_depend>pluginlib</build_depend>
-  <build_depend>roslaunch</build_depend>
-  <build_depend>rosunit</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
@@ -26,7 +24,9 @@
   <run_depend>roscpp</run_depend>
   <run_depend>moveit_core</run_depend>
   <run_depend>pluginlib</run_depend>
-  <run_depend>rosunit</run_depend>
+
+  <test_depend>roslaunch</test_depend>
+  <test_depend>rosunit</test_depend>
 
   <export>
     <moveit_core plugin="${prefix}/kinematics_plugins.xml"/>

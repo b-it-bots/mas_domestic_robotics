@@ -15,8 +15,6 @@
 
   <build_depend>rospy</build_depend>
 
-  <test_depend>unittest</test_depend>  
-
   <run_depend>rospy</run_depend>
   <run_depend>control_msgs</run_depend>
   <run_depend>schunk_sdh</run_depend>

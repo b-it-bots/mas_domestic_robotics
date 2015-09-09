@@ -15,12 +15,6 @@ include_directories(${catkin_INCLUDE_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
 
 catkin_package(
-  LIBRARIES
-  DEPENDS
-  moveit_core
-  pluginlib
-  roscpp
-  tf_conversions
 )
 
 include_directories(include)
