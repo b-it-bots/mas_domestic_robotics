@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mdr_lwr_kinematics)
 
+find_package(cmake_modules REQUIRED)
 find_package(Eigen REQUIRED)
 
 find_package(catkin REQUIRED COMPONENTS
