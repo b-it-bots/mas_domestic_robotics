@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions
 )
 
-link_directories(${catkin_LIBRARY_DIRS})
 catkin_package(
 include_directories(
   include
