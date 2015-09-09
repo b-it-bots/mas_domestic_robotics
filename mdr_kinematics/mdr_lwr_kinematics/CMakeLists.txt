@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mdr_lwr_kinematics)
 
 find_package(Eigen REQUIRED)
-include_directories(SYSTEM ${EIGEN_INCLUDE_DIRS})
 
 find_package(catkin REQUIRED COMPONENTS
   moveit_core
@@ -11,13 +10,15 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions
 )
 
-include_directories(${catkin_INCLUDE_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
-
 catkin_package(
+include_directories(
+  include
+  #SYSTEM
+  ${catkin_INCLUDE_DIRS}
+  ${EIGEN_INCLUDE_DIRS}
 )
 
-include_directories(include)
 
 set(IKFAST_LIBRARY_NAME lwr_moveit_ikfast_plugin)
 
