@@ -77,6 +77,10 @@ install(DIRECTORY ros/config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/config
 )
 
+install(FILES kinematics_plugins.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
 # test
 if(CATKIN_ENABLE_TESTING)
   find_package(roslaunch REQUIRED)
