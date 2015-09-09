@@ -11,7 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions
 )
 
-catkin_package(
 include_directories(
   include
   #SYSTEM
@@ -19,6 +18,7 @@ include_directories(
   ${EIGEN_INCLUDE_DIRS}
 )
 
+catkin_package()
 
 set(IKFAST_LIBRARY_NAME lwr_moveit_ikfast_plugin)
 
