@@ -6,52 +6,52 @@ packagelist=(
   python-pygraphviz
   python-rosinstall
   python-vcstools
-  ros-hydro-amcl
-  ros-hydro-cob-command-tools
-  ros-hydro-cob-common
-  ros-hydro-cob-environments
-  ros-hydro-cob-extern
-  ros-hydro-cob-driver
-  ros-hydro-cob-lbr
-  ros-hydro-cob-simulation
-  ros-hydro-control-msgs
-  ros-hydro-costmap-2d
-  ros-hydro-diagnostic-updater
-  ros-hydro-frida-description
-  ros-hydro-gazebo-ros
-  ros-hydro-gazebo-ros-control
-  ros-hydro-hokuyo-node
-  ros-hydro-interactive-markers
-  ros-hydro-joy
-  ros-hydro-katana-arm-gazebo
-  ros-hydro-laser-geometry
-  ros-hydro-lms1xx
-  ros-hydro-manipulation-msgs
-  ros-hydro-map-server
-  ros-hydro-move-base
-  ros-hydro-move-base-msgs
-  ros-hydro-moveit-core
-  ros-hydro-moveit-planners-ompl
-  ros-hydro-moveit-commander
-  ros-hydro-openni2-launch
-  ros-hydro-pr2-computer-monitor
-  ros-hydro-pr2-dashboard-aggregator
-  ros-hydro-pr2-msgs
-  ros-hydro-robot-state-publisher
-  ros-hydro-ros
-  ros-hydro-ros-controllers
-  ros-hydro-rqt-gui
-  ros-hydro-rqt-pr2-dashboard
-  ros-hydro-rqt-reconfigure
-  ros-hydro-rqt-robot-dashboard
-  ros-hydro-rviz
-  ros-hydro-schunk-modular-robotics
-  ros-hydro-sicktoolbox-wrapper
-  ros-hydro-smach
-  ros-hydro-smach-ros
-  ros-hydro-wifi-ddwrt
-  ros-hydro-xacro
-  ros-hydro-eband-local-planner
+  ros-indigo-amcl
+  ros-indigo-cob-command-tools
+  ros-indigo-cob-common
+  ros-indigo-cob-environments
+  ros-indigo-cob-extern
+  ros-indigo-cob-driver
+  ros-indigo-cob-lbr
+  ros-indigo-cob-simulation
+  ros-indigo-control-msgs
+  ros-indigo-costmap-2d
+  ros-indigo-diagnostic-updater
+  ros-indigo-frida-driver
+  ros-indigo-gazebo-ros
+  ros-indigo-gazebo-ros-control
+  ros-indigo-hokuyo-node
+  ros-indigo-interactive-markers
+  ros-indigo-joy
+  ros-indigo-katana-arm-gazebo
+  ros-indigo-laser-geometry
+  ros-indigo-lms1xx
+  ros-indigo-manipulation-msgs
+  ros-indigo-map-server
+  ros-indigo-move-base
+  ros-indigo-move-base-msgs
+  ros-indigo-moveit-core
+  ros-indigo-moveit-planners-ompl
+  ros-indigo-moveit-commander
+  ros-indigo-openni2-launch
+  ros-indigo-pr2-computer-monitor
+  ros-indigo-pr2-dashboard-aggregator
+  ros-indigo-pr2-msgs
+  ros-indigo-robot-state-publisher
+  ros-indigo-ros
+  ros-indigo-ros-controllers
+  ros-indigo-rqt-gui
+  ros-indigo-rqt-pr2-dashboard
+  ros-indigo-rqt-reconfigure
+  ros-indigo-rqt-robot-dashboard
+  ros-indigo-rviz
+  ros-indigo-schunk-modular-robotics
+  ros-indigo-sicktoolbox-wrapper
+  ros-indigo-smach
+  ros-indigo-smach-ros
+  ros-indigo-wifi-ddwrt
+  ros-indigo-xacro
+  ros-indigo-eband-local-planner
   python-setuptools
 )
 
@@ -59,7 +59,7 @@ packagelist=(
 sudo apt-get install -y ${packagelist[@]}
 
 ### install further repositories
-rosinstall .. /opt/ros/hydro repository.rosinstall
+rosinstall .. /opt/ros/indigo repository.rosinstall
 
 ### install dependencies of BRSU repositories
 dependent_repositories=('mas_common_robotics' 'mas_third_party_software')
