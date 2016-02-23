@@ -1,7 +1,7 @@
 ## Install Ubuntu
 The repository and its related components have been tested under the following Ubuntu distributions:
 
-- ROS Hydro: Ubuntu 12.04
+- ROS Indigo: Ubuntu 14.04
 
 If you do not have a Ubuntu distribution on your computer you can download it here
 
@@ -34,7 +34,7 @@ If you have never worked with git before, we recommend to go through the followi
 The repository has been tested successfully with the following ROS distributions. Use the link behind a ROS distribution to get to the particular ROS installation instructions.
 
 
-- ROS Hydro - http://wiki.ros.org/hydro/Installation/Ubuntu
+- ROS Indigo - http://wiki.ros.org/indigo/Installation/Ubuntu
 
 NOTE: Do not forget to update your .bashrc!
   
@@ -49,11 +49,10 @@ In order to understand at least the different core components of ROS, you have t
 
 ## Set up a catkin workspace
 
-    source /opt/ros/hydro/setup.bash
+    source /opt/ros/indigo/setup.bash
     mkdir -p ~/catkin_ws/src; cd ~/catkin_ws/src
     catkin_init_workspace
-    cd ..
-    catkin_make
+    catkin build
     
 ## Clone and compile the MAS domestic robotics software
 First of all you have to clone the repository.
@@ -74,7 +73,7 @@ The last command should be added to the ~/.bashrc file so that they do not need 
 And finally compile the repository:
 
     cd ~/catkin_ws
-    catkin_make
+    catkin build
 
 
 If no errors appear everything is ready to use. Great job!
