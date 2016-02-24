@@ -6,10 +6,7 @@
 	<arg name="pkg_env_config" default="$(find mcr_default_env_config)"/>
 
 	<!-- startup hardware -->
-	<include file="$(find cob_bringup)/robots/$(arg robot).launch" >
-		<arg name="robot_env" default="$(arg robot_env)"/>
-		<arg name="pkg_env_config" default="$(arg pkg_env_config)"/>
-	</include>
+	<include file="$(find cob_bringup)/robots/$(arg robot).launch" />
 
 	<group>
 		<machine name="hbrs_pc1" address="cob3-1-pc1" env-loader="$(find mdr_bringup)/env.sh" default="true" />
