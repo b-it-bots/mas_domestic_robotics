@@ -1,15 +1,15 @@
 #include <ros/ros.h>
 
 #include <std_msgs/Bool.h>
-#include <cob_relayboard/EmergencyStopState.h>
+#include <cob_msgs/EmergencyStopState.h>
 
 
 bool g_is_em_active = true;
 
 
-void emergency_stop_state_cb(const cob_relayboard::EmergencyStopState &state)
+void emergency_stop_state_cb(const cob_msgs::EmergencyStopState &state)
 {
-    if (state.emergency_state == cob_relayboard::EmergencyStopState::EMFREE) {
+    if (state.emergency_state == cob_msgs::EmergencyStopState::EMFREE) {
         g_is_em_active = false;
     } else {
         g_is_em_active = true;

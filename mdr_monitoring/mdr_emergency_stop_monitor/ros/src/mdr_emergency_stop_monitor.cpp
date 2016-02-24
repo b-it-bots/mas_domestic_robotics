@@ -1,13 +1,13 @@
 #include <ros/ros.h>
 #include <std_msgs/String.h>
-#include <cob_relayboard/EmergencyStopState.h>
+#include <cob_msgs/EmergencyStopState.h>
 #include <string>
 #include <std_msgs/String.h>
 
-cob_relayboard::EmergencyStopState last_emergency_stop_state;
+cob_msgs::EmergencyStopState last_emergency_stop_state;
 ros::Publisher say_client;
 
-void emergencyCallback(const cob_relayboard::EmergencyStopState& data)
+void emergencyCallback(const cob_msgs::EmergencyStopState& data)
 {
 	std_msgs::String message;
 

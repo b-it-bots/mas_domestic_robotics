@@ -5,7 +5,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup(
    packages=['mdr_mockup_gui'],
-   package_dir={'': 'ros/src'}
+   package_dir={'mdr_mockup_gui': 'ros/src/mdr_mockup_gui'}
 )
 
 setup(**d)

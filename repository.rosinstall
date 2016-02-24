@@ -1,46 +1,50 @@
 - git:
     local-name: mas_third_party_software
     uri: gitgate@mas.b-it-center.de:mas-group/mas_third_party_software.git
-    version: hydro
+    version: indigo
 
 - git:
     local-name: mas_common_robotics
     uri: gitgate@mas.b-it-center.de:mas-group/mas_common_robotics.git
-    version: hydro
+    version: indigo
 
 - git:
     local-name: cob_common
-    uri: https://github.com/mas-group/cob_common.git
-    version: hydro_dev
+    uri: https://github.com/ipa320/cob_common.git
+    version: indigo_dev
 
 - git:
     local-name: cob_calibration_data
-    uri: https://github.com/mas-group/cob_calibration_data.git
-    version: hydro_dev
+    uri: https://github.com/ipa320/cob_calibration_data.git
+    version: indigo_dev
 
 - git:
     local-name: cob_robots
-    uri: https://github.com/mas-group/cob_robots.git
-    version: hydro_dev
+    uri: https://github.com/ipa320/cob_robots.git
+    version: indigo_dev
 
 - git:
     local-name: cob_navigation
-    uri: https://github.com/mas-group/cob_navigation.git
-    version: hydro_dev
+    uri: https://github.com/ipa320/cob_navigation.git
+    version: indigo_dev
     
 - git:
     local-name: schunk_modular_robotics
-    uri: https://github.com/mas-group/schunk_modular_robotics.git
-    version: powercube_chain_offset_fix
+    uri: https://github.com/ipa320/schunk_modular_robotics.git
+    version: indigo_dev
+
+- git:
+    local-name: cob_driver
+    uri: https://github.com/ipa320/cob_driver.git
+    version: indigo_dev
 
 ### Only the prace_common package is needed from this repository, in order to run the tests on Jenkins successfully
 - git:
     local-name: cob_substitute
-    uri: https://github.com/mas-group/cob_substitute.git
-    version: hydro_dev
+    uri: https://github.com/ipa320/cob_substitute.git
+    version: indigo_dev
 - git:
     local-name: cob_control
-    uri: https://github.com/mas-group/cob_control.git
-    version: hydro_dev
-
+    uri: https://github.com/ipa320/cob_control.git
+    version: indigo_dev
 
