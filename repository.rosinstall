@@ -10,17 +10,17 @@
 
 - git:
     local-name: cob_common
-    uri: https://github.com/ipa320/cob_common.git
+    uri: https://github.com/mas-group/cob_common.git
     version: indigo_dev
 
 - git:
     local-name: cob_calibration_data
-    uri: https://github.com/ipa320/cob_calibration_data.git
+    uri: https://github.com/mas-group/cob_calibration_data.git
     version: indigo_dev
 
 - git:
     local-name: cob_robots
-    uri: https://github.com/ipa320/cob_robots.git
+    uri: https://github.com/mas-group/cob_robots.git
     version: indigo_dev
 
 - git:
@@ -30,12 +30,12 @@
     
 - git:
     local-name: schunk_modular_robotics
-    uri: https://github.com/ipa320/schunk_modular_robotics.git
+    uri: https://github.com/mas-group/schunk_modular_robotics.git
     version: indigo_dev
 
 - git:
     local-name: cob_driver
-    uri: https://github.com/ipa320/cob_driver.git
+    uri: https://github.com/mas-group/cob_driver.git
     version: indigo_dev
 
 ### Only the prace_common package is needed from this repository, in order to run the tests on Jenkins successfully
@@ -45,6 +45,6 @@
     version: indigo_dev
 - git:
     local-name: cob_control
-    uri: https://github.com/ipa320/cob_control.git
+    uri: https://github.com/mas-group/cob_control.git
     version: indigo_dev
 
