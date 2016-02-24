@@ -22,12 +22,7 @@
     local-name: cob_robots
     uri: https://github.com/mas-group/cob_robots.git
     version: indigo_dev
-
-- git:
-    local-name: cob_navigation
-    uri: https://github.com/ipa320/cob_navigation.git
-    version: indigo_dev
-    
+  
 - git:
     local-name: schunk_modular_robotics
     uri: https://github.com/mas-group/schunk_modular_robotics.git
@@ -38,11 +33,6 @@
     uri: https://github.com/mas-group/cob_driver.git
     version: indigo_dev
 
-### Only the prace_common package is needed from this repository, in order to run the tests on Jenkins successfully
-- git:
-    local-name: cob_substitute
-    uri: https://github.com/ipa320/cob_substitute.git
-    version: indigo_dev
 - git:
     local-name: cob_control
     uri: https://github.com/mas-group/cob_control.git
