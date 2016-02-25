@@ -26,6 +26,6 @@ controller_list:
       - sdh_finger_13_joint
       - sdh_thumb_2_joint
       - sdh_thumb_3_joint
-  - name: tray_controller
+  - name: fake_tray_controller
     joints:
       - tray_joint
