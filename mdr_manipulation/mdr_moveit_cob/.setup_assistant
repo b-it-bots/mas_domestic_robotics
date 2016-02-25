@@ -1,8 +1,8 @@
 moveit_setup_assistant_config:
   URDF:
-    package: mdr_moveit_cob
-    relative_path: config/cob3_1.urdf
+    package: cob_hardware_config
+    relative_path: cob3-1/urdf/cob3-1.urdf.xacro
   SRDF:
-    relative_path: config/cob3_1.srdf
+    relative_path: config/cob3-1.srdf
   CONFIG:
-    generated_timestamp: 1456415348
+    generated_timestamp: 1456417672
