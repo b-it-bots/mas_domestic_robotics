@@ -21,7 +21,7 @@
 			<include file="$(find mcr_default_env_config)/upload_param.launch" />
 
 			<!-- start script_server -->
-			<include file="$(find cob_script_server)/launch/script_server.launch" />
+			<!--include file="$(find cob_script_server)/launch/script_server.launch" /-->
 		</group>
 		<!--node pkg="tf" type="static_transform_publisher" name="kinect_base_link" args="0 0 0 0 0 0  /head_cam3d_link /openni_camera 100" /-->
 
@@ -32,12 +32,12 @@
 		<machine name="hbrs_pc2" address="cob3-1-pc2" env-loader="$(find mdr_bringup)/env.sh" default="true" />
 
 		<!-- brsu specific packages -->
-		<include file="$(find mdr_bringup)/components/openni.launch" >
+		<!--include file="$(find mdr_bringup)/components/openni.launch" >
 			<arg name="machine" value="hbrs_pc2" />
 			<arg name="publish_tf" value="true" />
     			<arg name="camera" value="head_cam3d" />
     			<arg name="depth_registration" value="true" />
-		</include>
+		</include-->
 
 		<!--include file="$(find mdr_bringup)/components/stemmer_cam.launch" /-->
 
