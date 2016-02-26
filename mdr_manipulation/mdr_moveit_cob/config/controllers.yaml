@@ -11,14 +11,14 @@ controller_list:
       - arm_5_joint
       - arm_6_joint
       - arm_7_joint
-  - name: head_controller
-    action_ns: follow_joint_trajectory
+  - name: head
+    action_ns: joint_trajectory_controller/follow_joint_trajectory
     type: FollowJointTrajectory
     default: true
     joints:
       - head_axis_joint
-  - name: torso_controller
-    action_ns: follow_joint_trajectory
+  - name: torso
+    action_ns: joint_trajectory_controller/follow_joint_trajectory
     type: FollowJointTrajectory
     default: true
     joints:
@@ -26,8 +26,8 @@ controller_list:
       - torso_lower_neck_tilt_joint
       - torso_upper_neck_pan_joint
       - torso_upper_neck_tilt_joint
-  - name: sdh_controller
-    action_ns: follow_joint_trajectory
+  - name: gripper
+    action_ns: joint_trajectory_controller/follow_joint_trajectory
     type: FollowJointTrajectory
     default: true
     joints:
@@ -38,8 +38,8 @@ controller_list:
       - sdh_finger_13_joint
       - sdh_thumb_2_joint
       - sdh_thumb_3_joint
-  - name: tray_controller
-    action_ns: follow_joint_trajectory
+  - name: tray
+    action_ns: joint_trajectory_controller/follow_joint_trajectory
     type: FollowJointTrajectory
     default: true
     joints:
