@@ -1,3 +1,4 @@
-#joint_names: ["head_axis_joint"]
-extrem_back: [[0,-0.15,0,-0.25]]
-
+joint_names: ["torso_lower_neck_pan_joint","torso_lower_neck_tilt_joint","torso_upper_neck_pan_joint","torso_upper_neck_tilt_joint"]
+action_name: /torso/joint_trajectory_controller/follow_joint_trajectory
+service_ns: /torso/driver
+default_vel: 0.1
