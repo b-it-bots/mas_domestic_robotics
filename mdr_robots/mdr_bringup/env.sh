@@ -1,5 +1,5 @@
 #!/bin/bash
-source ~/hydro/devel/setup.bash
+source ~/indigo/devel/setup.bash
 
 export ROSCONSOLE_FORMAT='[${severity}] [${node}]: ${message}'
 
