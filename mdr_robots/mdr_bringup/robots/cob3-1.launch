@@ -39,7 +39,7 @@
     			<arg name="depth_registration" value="true" />
 		</include-->
 
-		<!--include file="$(find mdr_bringup)/components/stemmer_cam.launch" /-->
+		<include file="$(find mdr_bringup)/components/microsoft_life_cam.launch" />
 
 	</group>
 
