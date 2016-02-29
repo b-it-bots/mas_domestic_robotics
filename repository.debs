@@ -18,9 +18,11 @@ packagelist=(
   ros-indigo-control-msgs
   ros-indigo-costmap-2d
   ros-indigo-diagnostic-updater
+  ros-indigo-dwa-local-planner
   ros-indigo-frida-driver
   ros-indigo-gazebo-ros
   ros-indigo-gazebo-ros-control
+  ros-indigo-gmapping
   ros-indigo-hokuyo-node
   ros-indigo-interactive-markers
   ros-indigo-joy
