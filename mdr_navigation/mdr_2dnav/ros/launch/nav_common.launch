@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- set robot environment -->
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
+
+    <!-- map server -->
+    <arg name="map" default="$(find mcr_default_env_config)/$(arg robot_env)/map.yaml" />
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map)"/>
+
+    <!-- visualize navigation goals -->
+    <include file="$(find mcr_navigation_tools)/ros/launch/navigation_goals_as_marker.launch" />
+    
+    <!-- particle filter localization -->
+    <include file="$(find mdr_2dnav)/ros/launch/amcl.launch" />
+
+</launch>
