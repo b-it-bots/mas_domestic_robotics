@@ -50,6 +50,7 @@ packagelist=(
   ros-indigo-sicktoolbox-wrapper
   ros-indigo-smach
   ros-indigo-smach-ros
+  ros-indigo-usb-cam
   ros-indigo-wifi-ddwrt
   ros-indigo-xacro
   ros-indigo-eband-local-planner
