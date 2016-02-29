@@ -21,9 +21,9 @@
     <!-- move base -->
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
         <!-- Remap from cmd_vel to care-o-bot 3 base controller topics -->
-        <remap from="cmd_vel" to="base_controller/command"/>
+        <remap from="cmd_vel" to="/base/twist_mux/command_navigation"/>
         <remap from="odom" to="base_controller/odometry"/>
-        <remap from="~force_field_recovery/cmd_vel" to="/base_controller/command"/>
+        <remap from="~force_field_recovery/cmd_vel" to="/base/twist_mux/command_navigation"/>
         
         <!-- planner selection parameter -->
         <param name="base_local_planner" value="eband_local_planner/EBandPlannerROS" />
