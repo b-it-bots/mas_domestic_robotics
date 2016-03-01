@@ -8,7 +8,7 @@
 	<!-- startup hardware -->
 	<include file="$(find cob_bringup)/robots/$(arg robot).launch">
 		<arg name="env_script" value="$(find mdr_bringup)/env.sh" />
-	</inculude>
+	</include>
 
 	<group>
 		<machine name="hbrs_pc1" address="cob3-1-pc1" env-loader="$(find mdr_bringup)/env.sh" default="true" />
