@@ -127,6 +127,19 @@ In a new terminal you can open the Gazebo GUI to see the environment and the rob
      rosrun rviz rviz
      
 
-Click on the menu bar "File -> Open Config", navigate to "~/catkin_ws/src/mas_domestic_robotics" and select the "cob.rviz" file.
+## Build a map for base navigation
 
+     roslaunch mdr_2dslam 2dslam.launch
      
+
+## Use autonomous navigation
+### Omni-directional navigation
+
+     roslaunch mdr_2dnav 2dnav.launch nav_mode:=dwa
+     
+or
+
+     roslaunch mdr_2dnav 2dnav.launch nav_mode:=eband
+
+
+Click on the menu bar "File -> Open Config", navigate to "~/catkin_ws/src/mas_domestic_robotics" and select the "cob.rviz" file.
