@@ -6,6 +6,7 @@ packagelist=(
   python-catkin-tools
   python-pygraphviz
   python-rosinstall
+  python-unicodecsv
   python-vcstools
   ros-indigo-amcl
   ros-indigo-cob-command-tools
