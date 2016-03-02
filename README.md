@@ -104,7 +104,7 @@ The ROBOT_ENV variable can be used to switch between different environments. The
      
 In a new terminal you can open the Gazebo GUI to see the environment and the robot
 
-     rosrun gazebo_ros gzclient
+     gzclient
 
 
 ### At the Real Robot
@@ -119,7 +119,7 @@ In a new terminal you can open the Gazebo GUI to see the environment and the rob
 
 ## Test the base
 
-     roslaunch mdr_bringup teleop_keyboard.launch
+     roslaunch cob_teleop teleop_keyboard.launch
 
 
 ## Visualize the robot state and sensor data
