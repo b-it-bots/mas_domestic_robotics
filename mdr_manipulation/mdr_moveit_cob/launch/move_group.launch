@@ -33,9 +33,9 @@
   </include>
 
   <!-- Sensors Functionality -->
-  <include ns="move_group" file="$(find mdr_moveit_cob)/launch/sensor_manager.launch.xml" if="$(arg allow_trajectory_execution)">
+  <!--include ns="move_group" file="$(find mdr_moveit_cob)/launch/sensor_manager.launch.xml" if="$(arg allow_trajectory_execution)">
     <arg name="moveit_sensor_manager" value="cob3-1" />
-  </include>
+  </include-->
 
   <!-- Start the actual move_group node/action server -->
   <node name="move_group" launch-prefix="$(arg launch_prefix)" pkg="moveit_ros_move_group" type="move_group" respawn="false" output="screen" args="$(arg command_args)">
