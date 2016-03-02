@@ -71,5 +71,6 @@ rosinstall .. /opt/ros/indigo repository.rosinstall
 dependent_repositories=('mas_common_robotics' 'mas_third_party_software')
 for i in $dependent_repositories
 do
-    ../$i/repository.debs
+    cd ../$i
+    ./repository.debs
 done
