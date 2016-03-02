@@ -1,23 +1,53 @@
 <?xml version="1.0"?>
 <launch>
+  
+    <arg name="robot" default="$(optenv ROBOT !!ROBOT NOT SET!!)" />
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!ROBOT_ENV NOT SET!!)" />
 
-	<arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)"/>
+    <!-- eband planner set to omni by default -->
+    <arg name="diff" default="false"/>
 
-	<arg name="map" value="$(find mcr_default_env_config)/$(env ROBOT_ENV)/map.yaml" />
+    <!-- delete old parameters -->
+    <rosparam command="delete" param="/move_base"/>
 
-	<!--- Run map_server -->
-	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map)"/>
+    <!-- common navigation launch files -->
+    <include file="$(find mdr_2dnav)/ros/launch/nav_common.launch">
+      <arg name="robot_env" value="$(arg robot_env)" />
+    </include>
+    
+    <!--- setting omni or differential mode -->
+    <param name="move_base/EBandPlannerROS/differential_drive" value="$(arg diff)" />
 
-	<!--- Run AMCL -->
-	<include file="$(find cob_navigation_global)/launch/amcl_node.xml" />
-	
-	<!--- Run move base -->
-	<include file="$(find cob_navigation_global)/launch/2dnav_ros_eband.xml" >
-		<arg name="robot" value="$(arg robot)" />
-	</include>
-	
-  <!-- show navigation goals as markers -->
-	<include file="$(find mcr_navigation_tools)/ros/launch/navigation_goals_as_marker.launch" />
+    <!-- move base -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <!-- Remap from cmd_vel to care-o-bot 3 base controller topics -->
+        <remap from="cmd_vel" to="/base/twist_mux/command_navigation"/>
+        <remap from="odom" to="base_controller/odometry"/>
+        <remap from="~force_field_recovery/cmd_vel" to="/base/twist_mux/command_navigation"/>
+        
+        <!-- planner selection parameter -->
+        <param name="base_local_planner" value="eband_local_planner/EBandPlannerROS" />
+
+        <!-- move_base parameters -->
+        <rosparam file="$(find mdr_2dnav)/ros/config/eband/move_base_params.yaml" command="load" />
+        <rosparam file="$(find mdr_2dnav)/ros/config/common/robot_footprint.yaml" command="load" />
+        
+        <!-- local planner parameters (Elastic Band) -->
+        <rosparam file="$(find mdr_2dnav)/ros/config/eband/eband_local_planner_params.yaml" command="load" ns="EBandPlannerROS"/>
+        
+        <!-- global costmap parameters -->
+        <rosparam file="$(find mdr_2dnav)/ros/config/common/robot_footprint.yaml" command="load" ns="global_costmap"/>
+        <rosparam file="$(find mdr_2dnav)/ros/config/eband/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find mdr_2dnav)/ros/config/eband/global_costmap_params.yaml" command="load" />
+
+        <!-- local costmap parameters -->
+        <rosparam file="$(find mdr_2dnav)/ros/config/common/robot_footprint.yaml" command="load" ns="local_costmap"/>
+        <rosparam file="$(find mdr_2dnav)/ros/config/eband/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find mdr_2dnav)/ros/config/eband/local_costmap_params.yaml" command="load" />
+        
+        <!-- recovery behavior parameters-->    
+        <rosparam file="$(find mdr_2dnav)/ros/config/recovery_behaviors/force_field_parameters.yaml" command="load" ns="force_field_recovery"/>    
+        <rosparam file="$(find mdr_2dnav)/ros/config/recovery_behaviors/clear_costmap_parameters.yaml" command="load" ns="clear_costmap_recovery"/>    
+    </node>
 
 </launch>
-

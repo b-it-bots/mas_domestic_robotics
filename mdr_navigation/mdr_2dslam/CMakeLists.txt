@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_2dnav)
+project(mdr_2dslam)
 
 find_package(catkin REQUIRED COMPONENTS)
 
@@ -14,8 +14,4 @@ endif()
 ### INSTALLS
 install(DIRECTORY ros/launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/launch
-)
-
-install(DIRECTORY ros/config
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/config
 )

@@ -1,20 +1,28 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_2dnav</name>
-  <version>0.0.1</version>
-  <description>launch files for base navigation</description>
+  <version>1.0.0</version>
+  <description>2d base navigation using ros move_base for Care-O-bot 3, Fraunhofer IPA</description>
 
-  <maintainer email="rhama.dwiputra@h-brs.de">Frederik Hegger</maintainer>
+  <maintainer email="olima_84@yahoo.com">Oscar Lima</maintainer>
 
   <license>GPLv3</license>
 
-  <author email="jan.paulus@h-brs.de">Jan Paulus</author> -->
+  <author email="olima_84@yahoo.com">Oscar Lima</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>cob_navigation_global</run_depend>
+  <run_depend>actionlib</run_depend>
+  <run_depend>amcl</run_depend>
   <run_depend>map_server</run_depend>
   <run_depend>mcr_default_env_config</run_depend>
   <run_depend>mcr_navigation_tools</run_depend>
+  <run_depend>move_base</run_depend>
+  <run_depend>move_base_msgs</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_srvs</run_depend>
+  <run_depend>topic_tools</run_depend>
+
+  <test_depend>roslaunch</test_depend>  
 
 </package>

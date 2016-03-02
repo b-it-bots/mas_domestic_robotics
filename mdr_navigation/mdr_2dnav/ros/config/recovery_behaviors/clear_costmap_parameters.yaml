@@ -1,0 +1,4 @@
+reset_distance: 0.6
+layer_names:
+  - "obstacle_layer"
+  #- "further_layers"
