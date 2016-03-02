@@ -8,7 +8,7 @@
 
     <arg name="paused" default="false"/>
     <arg name="use_sim_time" default="true"/>
-    <arg name="gui" default="true"/>
+    <arg name="gui" default="false"/>
 
     <!-- default parameter -->
     <include file="$(arg pkg_robot_config)/upload_param.launch">
