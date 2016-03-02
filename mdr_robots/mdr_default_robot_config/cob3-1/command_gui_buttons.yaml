@@ -19,7 +19,7 @@ group2:
     [home,move,home],
     [front,move,front],
     [back,move,back],
-    [extrem-back,move,extrem_back],
+    [back-extreme,move,back_extreme],
     [left,move,left],
     [right,move,right],
     [shake,move,shake],
@@ -53,5 +53,6 @@ group5:
     [recover,recover],
     [front,move,front],
     [front-face,move,front_face],
+    [front-face-sit,move,front_face_sit],
     [back,move,back],
     [back-table,move,back_table]]
