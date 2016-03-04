@@ -25,7 +25,13 @@ add_executable(emergency_stop_mapper
 target_link_libraries(emergency_stop_mapper
   ${catkin_LIBRARIES}
 )
-
 add_dependencies(emergency_stop_mapper
   ${catkin_EXPORTED_TARGETS}
+)
+
+### INSTALL ###
+install(TARGETS emergency_stop_mapper
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

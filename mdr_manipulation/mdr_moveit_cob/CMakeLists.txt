@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mdr_moveit_cob)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED
+  COMPONENTS
+    cob_hardware_config
+)
 
 catkin_package()
 

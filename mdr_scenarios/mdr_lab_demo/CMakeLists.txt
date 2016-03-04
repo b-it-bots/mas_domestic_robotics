@@ -11,7 +11,7 @@ catkin_package(
     mcr_leg_detection
     mcr_node_monitor
     mcr_object_categorization
-    mcr_object_recognition_height_based
+    mcr_object_recognition_bounding_box
     mcr_people_tracking
     mcr_virtual_laser_scanner
     mdr_2dnav
