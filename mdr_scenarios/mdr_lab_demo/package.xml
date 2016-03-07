@@ -22,7 +22,7 @@
   <run_depend>mcr_leg_detection</run_depend>
   <run_depend>mcr_node_monitor</run_depend>
   <run_depend>mcr_object_categorization</run_depend>
-  <run_depend>mcr_object_recognition_height_based</run_depend>
+  <run_depend>mcr_object_recognition_bounding_box</run_depend>
   <run_depend>mcr_people_tracking</run_depend>
   <run_depend>mcr_virtual_laser_scanner</run_depend>
 
