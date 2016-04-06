@@ -1,0 +1,34 @@
+variables:
+  ROS_RELEASE: indigo
+  REPOSITORY_NAME: mas_domestic_robotics
+
+before_script:
+  - source /opt/ros/$ROS_RELEASE/setup.bash
+
+stages:
+  - build
+
+build:
+  stage: build
+  script:
+    - git pull gitgate@mas.b-it-center.de:mas-group/$REPOSITORY_NAME.git $ROS_RELEASE
+    - rm -rf src build devel install
+    - mkdir -p $CI_PROJECT_DIR/../src
+    - cd $CI_PROJECT_DIR/..
+    - cp -r $REPOSITORY_NAME src
+    - mv src $REPOSITORY_NAME
+    - cd $CI_PROJECT_DIR/src/$REPOSITORY_NAME
+    - if [ -f repository.debs ]; then ./repository.debs false ; fi
+    - cd $CI_PROJECT_DIR/src
+    - git clone -b $ROS_RELEASE gitgate@mas.b-it-center.de:mas-group/mas_datasets.git
+    - cd $CI_PROJECT_DIR
+    - catkin_make
+    - source $CI_PROJECT_DIR/devel/setup.bash
+    - catkin_make tests
+    - touch $CI_PROJECT_DIR/src/cob_robots/CATKIN_IGNORE
+    - catkin_make run_tests
+    - catkin_test_results
+    - catkin_make roslint
+    - catkin_lint --strict --ignore CRITICAL_VAR_APPEND,LINK_DIRECTORY src/
+    - catkin_make install
+    - rm -rf src build devel install
