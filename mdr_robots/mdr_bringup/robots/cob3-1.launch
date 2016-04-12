@@ -33,7 +33,7 @@
 	<group>
 		<machine name="hbrs_pc2" address="cob3-1-pc2" env-loader="$(find mdr_bringup)/env.sh" default="true" />
 
-		<include file="$(find mdr_bringup)/components/microsoft_life_cam.launch" />
+		<!--include file="$(find mdr_bringup)/components/microsoft_life_cam.launch" /-->
 
 	</group>
 
