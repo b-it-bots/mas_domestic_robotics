@@ -1,9 +1,10 @@
 <?xml version="1.0"?>
 <package>
-  <name>mdr_scene_segmentation</name>
+  <name>mdr_object_recognition_mean_circle</name>
   <version>0.0.1</version>
   <description>This package provides launcher for 
-		mcr_scene_segmentation package.
+      mcr_object_recognition_mean_circle.
+
   </description>
 
   <author email="shehzi001@gmail.com">Shehzad Ahmed</author>
@@ -13,5 +14,5 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>mcr_scene_segmentation</run_depend>
+  <run_depend>mcr_object_recognition_mean_circle</run_depend>
 </package>
