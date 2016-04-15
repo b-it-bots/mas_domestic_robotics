@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+
+  <arg name="workspace_finder_config_file" default="PASS THE CONFIGFILE NAME AS ARGUMENT" />
+  <arg name="input_pointcloud_topic" default="/cam3d/depth/points" />
+
+  <!-- This launch file brings up the nodes from mcr_scene_segmentation that are needed for object detection and the object detector itself.
+       The parameters have been adjusted to work well with @Work scenarios. -->
+
+  <include file="$(find mdr_scene_segmentation)/ros/launch/scene_segmentation.launch" >
+    <arg name="workspace_finder_config_file" value="$(arg workspace_finder_config_file)" />
+    <arg name="input_pointcloud_topic" value="$(arg input_pointcloud_topic)" />
+     <arg name="camera_frame" value="cam3d_rgb_optical_frame" />
+  </include>
+
+
+  <group ns="mcr_perception">
+
+    <node pkg="mcr_object_detection" type="object_detector" name="object_detector" output="screen">
+      <param name="target_frame" type="string" value="/base_link" />
+      <param name="input_pointcloud_topic" type="string" value="$(arg input_pointcloud_topic)" />
+    </node>
+
+  </group>
+
+</launch>

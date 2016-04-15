@@ -1,0 +1,102 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="manager" default="workspace_finder_manager" />
+  <arg name="input_pointcloud_topic" default="/cam3d/depth_registered/points" />
+
+  <group ns="mcr_perception">
+
+    <node pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager"/>
+
+    <node pkg="nodelet" type="nodelet" name="mux_pointcloud"
+        args="load mcr_topic_tools/TopicMux $(arg manager) mux:=mux_pointcloud /mcr_perception/depth_registered/points /empty_topic $(arg input_pointcloud_topic)" output="screen">
+      <param name="lazy" type="bool" value="true" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="voxel_filter"
+          args="load pcl/VoxelGrid $(arg manager)">
+      <param name="leaf_size" type="double" value="0.01" />
+      <param name="input_frame" type="string" value="/base_link" />
+      <param name="output_frame" type="string" value="/base_link" />
+
+      <remap from="~input" to="/mcr_perception/depth_registered/output" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="passthrough_z"
+          args="load pcl/PassThrough $(arg manager)">
+      <param name="filter_field_name" type="string" value="z" />
+      <param name="filter_limit_min" type="double" value="0.6" />
+      <param name="filter_limit_max" type="double" value="1.5" />
+
+      <remap from="~input" to="/mcr_perception/voxel_filter/output" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="passthrough_x"
+          args="load pcl/PassThrough $(arg manager)">
+      <param name="filter_field_name" type="string" value="x" />
+      <param name="filter_limit_min" type="double" value="-1.0" />
+      <param name="filter_limit_max" type="double" value="1.0" />
+
+      <remap from="~input" to="/mcr_perception/passthrough_z/output" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="planar_segmentation"
+          args="load pcl/SACSegmentation $(arg manager)" output="screen">
+      <rosparam>
+        # -[ Mandatory parameters
+        # model_type:
+        # 0: SACMODEL_PLANE
+        # 1: SACMODEL_LINE
+        # 2: SACMODEL_CIRCLE2D
+        # 3: SACMODEL_CIRCLE3D
+        # 4: SACMODEL_SPHERE
+        # 5: SACMODEL_CYLINDER
+        # 6: SACMODEL_CONE
+        # 7: SACMODEL_TORUS
+        # 8: SACMODEL_PARALLEL_LINE
+        # 9: SACMODEL_PERPENDICULAR_PLANE
+        # 10: SACMODEL_PARALLEL_LINES
+        # 11: SACMODEL_NORMAL_PLANE
+        # 12: SACMODEL_NORMAL_SPHERE
+        # 13: SACMODEL_REGISTRATION
+        # 14: SACMODEL_REGISTRATION_2D
+        # 15: SACMODEL_PARALLEL_PLANE
+        # 16: SACMODEL_NORMAL_PARALLEL_PLANE
+        # 17: SACMODEL_STICK
+        model_type: 0
+        distance_threshold: 0.03
+        max_iterations: 1000
+        method_type: 0
+        eps_angle: 0.5
+        optimize_coefficients: true
+        axis: [0.0, 0.0, 1.0]
+        normal_distance_weight: 0.05
+      </rosparam>
+
+      <remap from="~input"   to="/mcr_perception/passthrough_x/output" />
+      <!--remap from="~normals" to="/mcr_perception/normal_estimation/output" /-->
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="project_plane_inliers" args="load pcl/ProjectInliers $(arg manager)" output="screen">
+       <rosparam>
+         model_type: 16
+         copy_all_data: false
+         copy_all_fields: true
+       </rosparam>
+       <remap from="~input"   to="/mcr_perception/passthrough_x/output" />
+       <remap from="~indices" to="/mcr_perception/planar_segmentation/inliers" />
+       <remap from="~model"   to="/mcr_perception/planar_segmentation/model" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="statistical_outlier_removal" args="load pcl/StatisticalOutlierRemoval $(arg manager)" output="screen">
+      <param name="stddev" type="double" value="2.5" />
+      <param name="mean_k" type="int" value="30" />
+
+      <remap from="~input"   to="/mcr_perception/project_plane_inliers/output" />
+    </node>
+
+    <node pkg="nodelet" type="nodelet" name="convex_hull" args="load pcl/ConvexHull2D $(arg manager)" output="screen">
+      <remap from="~input"   to="/mcr_perception/statistical_outlier_removal/output" />
+    </node>
+
+  </group>
+</launch>

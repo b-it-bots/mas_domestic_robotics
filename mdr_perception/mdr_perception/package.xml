@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_perception</name>
+  <version>0.0.1</version>
+  <description>Perception packages for domestic service robots.</description>
+  <license>GPLv3</license>
+
+  <author email="shehzi001@gmail.com">Shehzad Ahmed</author>
+  <maintainer email="shehzi001@gmail.com">Shehzad Ahmed</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
