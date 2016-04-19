@@ -208,7 +208,12 @@ class introduce(smach.State):
 		sss.sleep(1)
 		SAY("I am designed to be an autonomous domestic service robot. This means that I can help you with your household chores.")
 
-		self.arm.set_named_target("look_at_table")	
+		handle_tray = sss.move("tray","up",False)
+                sss.sleep(2)
+                SAY("With my tray I can carry multiple objects at the same time and hand them over to my guests.")
+                handle_tray.wait()
+
+		self.arm.set_named_target("look_at_table")
 		self.arm.go(wait=False)
 		SAY("I am equipped with a 7 degree of freedom light weight arm and a three finger gripper.")
 
@@ -221,29 +226,24 @@ class introduce(smach.State):
 		handle_head = sss.move("head", "front", False)
 		handle_head.wait()
 		
-		handle_tray = sss.move("tray","up",False)
-		sss.sleep(2)
-		SAY("With my tray I can carry multiple objects at the same time and hand them over to my guests.")
-		handle_tray.wait()
-		
-		self.arm.set_named_target("overtray_top")
-		self.arm.go()
+		#self.arm.set_named_target("overtray_top")
+		#self.arm.go()
 
-		sss.move("sdh","cylopen")
+		sss.move("gripper","cylopen")
 		SAY("I'm able to reach positions on my front and backside with my arm. If you need a hand carrying things, I can lift up to 7 kilos.")
 
-		handle_sdh = sss.move("sdh","cylclosed",False)
-		handle_tray = sss.move("tray","down",False)
+		handle_sdh = sss.move("gripper","cylclosed",False)
+		handle_sdh.wait()
 
 		self.arm.set_named_target("folded")
 		self.arm.go()
-		
-		handle_sdh.wait()
+
+		handle_tray = sss.move("tray","down",False)
 		handle_tray.wait()
-		
+
 		SAY("Thank you for your attention. I hope you enjoy the rest of the show.")
 
-		handle_torso = sss.move("torso","nod",False)		
+		handle_torso = sss.move("torso","nod",False)
 		handle_torso.wait()
 		
 		#SAY("Guys, do you need anything now or shall I return to my room?")
