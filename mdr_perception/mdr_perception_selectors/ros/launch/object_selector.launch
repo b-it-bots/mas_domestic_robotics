@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+  <group ns="mcr_perception">
+
+    <node pkg="mcr_perception_selectors" type="object_selector" name="object_selector" output="screen" respawn="false">
+      <remap from="~input/object_list" to="/mcr_perception/object_detector/object_list" />
+
+      <param name="frame_rate" type="int" value="5" />
+      <param name="selection_type" type="int" value="2" />	<!-- object by name = 0; random object = 1; closest object = 2 -->
+
+    </node>
+
+  </group>
+</launch>
