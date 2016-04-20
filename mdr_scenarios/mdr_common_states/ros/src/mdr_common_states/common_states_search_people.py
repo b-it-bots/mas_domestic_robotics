@@ -15,7 +15,6 @@ import std_srvs.srv
 import actionlib_msgs.msg
 
 import mcr_perception_msgs.srv
-import mcr_navigation_msgs.srv
 
 from mdr_common_states.common_states_speech import *
 
@@ -111,18 +110,24 @@ class deactivate_leg_detection(smach.State):
 class approach_pose_selection(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['take_next_pose', 'continue_old_pose'], input_keys=['room_pose_to_approach'])
-		self.get_current_pose = rospy.ServiceProxy('/base_controller/get_base_pose', mcr_navigation_msgs.srv.GetBasePose) 
-	
-	def execute(self, userdata):		
+
+		# TODO: replace this using tf
+		#self.get_current_pose = rospy.ServiceProxy('/base_controller/get_base_pose', mcr_navigation_msgs.srv.GetBasePose) 
+
+	def execute(self, userdata):
+		current_pose = None
+
 		# if not pose is selected, take the first one
 		if (len(userdata.room_pose_to_approach) == 0):
 			print "room pose is emty -> take next pose"
 			return 'take_next_pose'
 		else:
-			# get current pose position in map
-			rospy.wait_for_service('/base_controller/get_base_pose', 3)
+			# TODO: replace this using tf
+			#rospy.wait_for_service('/base_controller/get_base_pose', 3)
 			try:
-				current_pose = self.get_current_pose()
+			    # TODO: replace this using tf
+				#current_pose = self.get_current_pose()
+				rospy.logerr("THIS NEEDS TO BE IMPLEMENTED, IT'S JUST A DUMMY CURRENTLY ! ! !")
 			except rospy.ServiceException,e:
 				print "Service call failed: %s"%e
 				return 'failed'
@@ -254,13 +259,18 @@ class store_person_position(smach.State):
 class set_head_angle(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'], input_keys=['selected_person_height', 'selected_person_pose'])
-		self.get_current_pose = rospy.ServiceProxy('/base_controller/get_base_pose', mcr_navigation_msgs.srv.GetBasePose)
-		
+		# TODO: replace this using tf
+		#self.get_current_pose = rospy.ServiceProxy('/base_controller/get_base_pose', mcr_navigation_msgs.srv.GetBasePose)
+
 	def execute(self, userdata):
-		# get current pose position in map
-		rospy.wait_for_service('/base_controller/get_base_pose', 3)
+		current_pose = None
+
+		# TODO: replace this using tf
+		#rospy.wait_for_service('/base_controller/get_base_pose', 3)
 		try:
-			current_pose = self.get_current_pose()
+       		# TODO: replace this using tf
+			#current_pose = self.get_current_pose()
+			rospy.logerr("THIS NEEDS TO BE IMPLEMENTED, IT'S JUST A DUMMY CURRENTLY ! ! !")
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
 			return 'failed'
