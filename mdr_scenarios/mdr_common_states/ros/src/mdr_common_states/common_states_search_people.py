@@ -29,12 +29,12 @@ camera_height = 1.40
 class activate_people_detection(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
-		
+
 		self.pub_body_detection_event = rospy.Publisher('/mcr_perception/body_detection_3d/event_in', std_msgs.msg.String)
 
 		self.activate_leg_detection_srv_name = '/mcr_perception/leg_detection/start'
 		self.activate_leg_detection_srv = rospy.ServiceProxy(self.activate_leg_detection_srv_name, std_srvs.srv.Empty)
-		
+
 	def execute(self, userdata):
 		sss.move("torso", "home")
 		sss.move("head", "front")
@@ -52,10 +52,11 @@ class activate_people_detection(smach.State):
 			return 'failed'
 		return 'success'
 
+
 class deactivate_people_detection(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
-		
+
 		self.pub_body_detection_event = rospy.Publisher('/mcr_perception/body_detection_3d/event_in', std_msgs.msg.String)
 
 		self.deactivate_leg_detection_srv_name = '/mcr_perception/leg_detection/stop'
@@ -72,14 +73,15 @@ class deactivate_people_detection(smach.State):
 			print "Service call failed: %s"%e
 			return 'failed'
 		return 'success'
-		
+
+
 class activate_leg_detection(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'failed'])
-		
+
 		self.activate_leg_detection_srv_name = '/mcr_perception/leg_detection/start'
 		self.activate_leg_detection_srv = rospy.ServiceProxy(self.activate_leg_detection_srv_name, std_srvs.srv.Empty)
-		
+
 	def execute(self, userdata):
 		print "activate leg detection"
 
@@ -90,6 +92,7 @@ class activate_leg_detection(smach.State):
 			print "Service call failed: %s"%e
 			return 'failed'
 		return 'success'
+
 
 class deactivate_leg_detection(smach.State):
 	def __init__(self):
@@ -106,6 +109,7 @@ class deactivate_leg_detection(smach.State):
 			print "Service call failed: %s"%e
 			return 'failed'
 		return 'success'
+
 
 class approach_pose_selection(smach.State):
 	def __init__(self):
@@ -134,7 +138,7 @@ class approach_pose_selection(smach.State):
 
 			# get desired target position
 			target_pose = rospy.get_param('/script_server/base/' + userdata.room_pose_to_approach)
-		
+
 			# get distance between target and current position
 			eucl_dist = sqrt(pow(target_pose[0] - current_pose.pose.position.x, 2.0) + pow(target_pose[1] - current_pose.pose.position.y, 2.0))
 
@@ -151,17 +155,17 @@ class approach_pose_selection(smach.State):
 class get_next_pose(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'empty_pose_list'], input_keys=['room_poses', 'room_pose_to_approach'], output_keys=['room_pose_to_approach', 'approach_state'])
-	
-	def execute(self, userdata):		
+
+	def execute(self, userdata):
 		if(len(userdata.room_poses) > 0):
 			userdata.room_pose_to_approach = userdata.room_poses.pop()
 			userdata.approach_state = 0;
-			print 'take next pose: ' + userdata.room_pose_to_approach			
+			print 'take next pose: ' + userdata.room_pose_to_approach
 			return 'success'
-		else:		
+		else:
 			print 'all poses done'
 			return 'empty_pose_list'
-			
+
 
 class check_if_persons_are_present(smach.State):
 	def __init__(self):
@@ -179,13 +183,13 @@ class check_if_persons_are_present(smach.State):
 
 		if len(body_detections.persons) > 0: 
 			#check if person(s) already visited
-			for found_person in body_detections.persons	:
+			for found_person in body_detections.persons:
 				for visited_person in userdata.visited_person_poses:
 					global person_distance_threshold
 					if sqrt(pow(visited_person[0] - found_person.pose.pose.position.x, 2.0) + pow(visited_person[1] - found_person.pose.pose.position.y, 2.0)) < person_distance_threshold:
 						print "person alreay exists in visited list"
-						return 'no_person_found'			
-						
+						return 'no_person_found'
+
 			#stop base
 			rospy.wait_for_service('base_controller/stop', 10)
 			try:
@@ -203,30 +207,31 @@ class check_if_persons_are_present(smach.State):
 		else:
 			print "no person found"
 			return 'no_person_found'
-		
+
+
 class select_person_to_approach(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['all_persons_approached', 'person_pose_selected', 'person_already_visited'], 
 					input_keys=['person_poses_to_approach', 'visited_person_poses'], 
 					output_keys=['person_poses_to_approach', 'selected_person_pose', 'selected_person_safe_pose', 'visited_person_poses', 'selected_person_height'])
-	
+
 	def execute(self, userdata):
 		if len(userdata.person_poses_to_approach) == 0: 
-			print 'all persons position used'			
+			print 'all persons position used'
 			return 'all_persons_approached';
 		else:
 			print 'found personsssss %d' %len(userdata.person_poses_to_approach)
 			person = userdata.person_poses_to_approach.pop()
-			
-			print 'person:'		
+
+			print 'person:'
 			print person.pose.pose.position
 
 			print "persons in visited lists: %d" %len(userdata.visited_person_poses)
 			#check if person already visited
 			for item in userdata.visited_person_poses:
 				print 'item:'
-				print item		
-				
+				print item
+
 				print 'dist:'
 				print sqrt(pow(item[0] - person.pose.pose.position.x, 2.0) + pow(item[1] - person.pose.pose.position.y, 2.0))
 				global person_distance_threshold
@@ -235,27 +240,29 @@ class select_person_to_approach(smach.State):
 					return 'person_already_visited'
 
 			(roll, pitch, yaw) = tf.transformations.euler_from_quaternion([person.safe_pose.pose.orientation.x,
-                                                              person.safe_pose.pose.orientation.y,
-                                                              person.safe_pose.pose.orientation.z,
-                                                              person.safe_pose.pose.orientation.w])
+																		person.safe_pose.pose.orientation.y,
+																		person.safe_pose.pose.orientation.z,
+																		person.safe_pose.pose.orientation.w])
 
 
 			userdata.selected_person_height = person.pose.pose.position.z + (person.height / 2)
 			userdata.selected_person_pose = [person.pose.pose.position.x, person.pose.pose.position.y, yaw] 
 			userdata.selected_person_safe_pose = [person.safe_pose.pose.position.x, person.safe_pose.pose.position.y, yaw] 
-			
+
 			print "person not yet in visited list"
 			return 'person_pose_selected'
+
 
 class store_person_position(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['stored'], input_keys=['selected_person_pose', 'visited_person_poses'], output_keys=['visited_person_poses'])
-	
-	def execute(self, userdata):		
+
+	def execute(self, userdata):
 		userdata.visited_person_poses.append(userdata.selected_person_pose)
 		print "person stored in vitied list"
 		return 'stored'
-		
+
+
 class set_head_angle(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'], input_keys=['selected_person_height', 'selected_person_pose'])
@@ -274,40 +281,40 @@ class set_head_angle(smach.State):
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
 			return 'failed'
-	
+
 		#get distance between target and current position
 		eucl_dist = sqrt(pow(userdata.selected_person_pose[0] - current_pose.pose.position.x, 2.0) + pow(userdata.selected_person_pose[1] - current_pose.pose.position.y, 2.0))
-		
+
 		#if(userdata.selected_person_height <= camera_height):
 		#	angle = -math.pi
 		#else:
 		#	angle = -math.pi + atan( (userdata.selected_person_height - camera_height) / eucl_dist)
-			
+
 		#rospy.set_param('/script_server/head/dummy', [[angle]])
-				
+
 		#handle_head = sss.move("head", "dummy", False)
 		#handle_head.wait()
-		
+
 		if userdata.selected_person_height <= 1.40:
 			handle_head = sss.move("head", "front")
 			handle_torso = sss.move("torso", "front")
 		else:
 			handle_head = sss.move("head", "front_face")
-		
-		
+
+
 		SAY("Hey. I found you")
-		
-		
+
+
 		#handle_head = sss.move("head", "front", False)
 		#handle_head.wait()
-		
-		return 'success'	
-		
-		
-		
+
+		return 'success'
+
+
 class check_if_person_is_in_front(smach.State):
 	init_tfl = False
 	transform_listener = None
+
 	def __init__(self, distance_threshold = 1.0, angle_threshold = 0.7):
 		smach.State.__init__(self, outcomes=['person_found', 'failed'])
 
@@ -315,11 +322,9 @@ class check_if_person_is_in_front(smach.State):
 
 		self.distance_threshold = distance_threshold
 		self.angle_threshold = angle_threshold
-		
-		
-		
+
 	def execute(self, userdata):
-		rospy.wait_for_service('/mcr_perception/leg_detection/leg_positions', 3)	
+		rospy.wait_for_service('/mcr_perception/leg_detection/leg_positions', 3)
 		
 		if check_if_person_is_in_front.init_tfl == False:
 			check_if_person_is_in_front.transform_listener = tf.TransformListener()
@@ -343,6 +348,3 @@ class check_if_person_is_in_front(smach.State):
 					print "tf exception"
 
 			rospy.sleep(0.5)
-
-
-	
