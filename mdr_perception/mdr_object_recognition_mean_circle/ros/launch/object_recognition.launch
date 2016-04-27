@@ -2,6 +2,7 @@
 <launch>
 
   <arg name="workspace_finder_config_file" default="$(find mdr_object_recognition_mean_circle)/ros/config/tabletop_constraints.yaml" />
+  <arg name="object_constraints_config_file" default="$(find mdr_object_recognition_mean_circle)/ros/config/object_constraints.yaml" />
   <arg name="input_pointcloud_topic" default="/cam3d/depth_registered/points" />
   <arg name="camera_frame" default="cam3d_link" />
   <arg name="target_frame" default="base_link" />
@@ -9,6 +10,7 @@
 
   <include file="$(find mcr_object_recognition_mean_circle)/ros/launch/object_recognition.launch" >
     <arg name="workspace_finder_config_file" value="$(arg workspace_finder_config_file)" />
+    <arg name="object_constraints_config_file" value="$(arg object_constraints_config_file)" />
     <arg name="input_pointcloud_topic" value="$(arg input_pointcloud_topic)" />
     <arg name="camera_frame" value="$(arg camera_frame)" />
     <arg name="target_frame" value="$(arg target_frame)" />
