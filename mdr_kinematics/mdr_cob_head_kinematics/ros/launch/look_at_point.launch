@@ -4,7 +4,7 @@
   <node pkg="mdr_cob_head_kinematics" type="look_at_point_node" name="look_at_point" ns="mdr_kinematics" output="screen">
     <remap from="~input/point" to="/mcr_common/twist_to_motion_direction_conversion/output/point" />
     <remap from="~input/joint_states" to="/joint_states" />
-    <remap from="~output/joint_velocities" to="/torso_controller/command_vel" />
+    <remap from="~output/joint_velocities" to="/torso/joint_group_velocity_controller/command" />
 
 
     <rosparam command="load" file="$(find mdr_cob_head_kinematics)/ros/config/look_at_point.yaml" />
