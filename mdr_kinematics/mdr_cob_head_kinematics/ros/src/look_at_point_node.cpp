@@ -15,7 +15,7 @@ LookAtPointNode::LookAtPointNode(): current_state_(INIT), current_pan_angle_(0.0
     sub_joint_states_ = nh.subscribe("input/joint_states", 1, &LookAtPointNode::jointStatesCallback, this);
     sub_event_ = nh.subscribe("event_in", 1, &LookAtPointNode::eventCallback, this);
 
-    pub_torso_velocities_ = nh.advertise < brics_actuator::JointVelocities > ("output/joint_velocities", 1);
+    pub_torso_velocities_ = nh.advertise < std_msgs::Float64MultiArray > ("output/joint_velocities", 1);
 
     tf_listener_ = new tf::TransformListener();
 
@@ -133,32 +133,12 @@ void LookAtPointNode::publishZeroTorsoJointvelocities()
 
 void LookAtPointNode::publishTorsoJointvelocities(const double &lower_pan, const double &lower_tilt, const double &upper_pan, const double &upper_tilt)
 {
-    brics_actuator::JointVelocities list;
-    brics_actuator::JointValue pos;
+    std_msgs::Float64MultiArray list;
 
-    pos.timeStamp = ros::Time::now();
-    pos.joint_uri = "torso_lower_neck_pan_joint";
-    pos.unit = "rad";
-    pos.value = lower_pan;
-    list.velocities.push_back(pos);
-
-    pos.timeStamp = ros::Time::now();
-    pos.joint_uri = "torso_lower_neck_tilt_joint";
-    pos.unit = "rad";
-    pos.value = lower_tilt;
-    list.velocities.push_back(pos);
-
-    pos.timeStamp = ros::Time::now();
-    pos.joint_uri = pan_joint_name_;
-    pos.unit = "rad";
-    pos.value = upper_pan;
-    list.velocities.push_back(pos);
-
-    pos.timeStamp = ros::Time::now();
-    pos.joint_uri = tilt_joint_name_;
-    pos.unit = "rad";
-    pos.value = upper_tilt;
-    list.velocities.push_back(pos);
+    list.data.push_back(lower_pan);
+    list.data.push_back(lower_tilt);
+    list.data.push_back(upper_pan);
+    list.data.push_back(upper_tilt);
 
     pub_torso_velocities_.publish(list);
 }
