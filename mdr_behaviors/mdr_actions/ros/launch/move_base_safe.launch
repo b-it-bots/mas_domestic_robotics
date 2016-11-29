@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- move base safe action server -->
+    <node pkg="mdr_actions" type="move_base_safe" name="move_base_safe_server" output="screen" ns="mdr_actions" />
+</launch>

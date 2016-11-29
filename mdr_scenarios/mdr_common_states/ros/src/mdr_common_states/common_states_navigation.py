@@ -2,8 +2,6 @@
 
 ######################### IMPORTS #########################
 
-import roslib
-roslib.load_manifest('mdr_common_states')
 import rospy
 import smach
 import smach_ros
@@ -15,7 +13,7 @@ import std_msgs.msg
 import std_srvs.srv
 import actionlib_msgs.msg
 
-from mdr_common_states.common_states_speech import *
+from smach_ros import ServiceState
 
 handle_base_non_blocking = 0
 
@@ -31,6 +29,7 @@ class approach_pose(smach.State):
 
 		self.pose = pose
 		self.mode = mode
+	        self.speak_pub = rospy.Publisher('/sound/say', std_msgs.msg.String, latch=True)
 
 		# This state moves the robot to the given pose.
 
@@ -72,7 +71,7 @@ class approach_pose(smach.State):
 				return 'success'
 			elif move_base_state == actionlib_msgs.msg.GoalStatus.REJECTED or move_base_state == actionlib_msgs.msg.GoalStatus.PREEMPTED or move_base_state == actionlib_msgs.msg.GoalStatus.ABORTED or move_base_state == actionlib_msgs.msg.GoalStatus.LOST:
 				 
-				SAY("I can not reach my target position.")
+                                self.speak_pub.publish("I can not reach my target position.")
 				rospy.logerr("base movement failed with state: %d", move_base_state)
 				return 'failed'
 				
@@ -124,6 +123,7 @@ class approach_pose_without_retry(smach.State):
 
 
 		sub_move_base = rospy.Subscriber("/move_base/status", actionlib_msgs.msg.GoalStatusArray, self.cb_move_base)
+	        self.speak_pub = rospy.Publisher('/sound/say', std_msgs.msg.String, latch=True)
 		self.pose = pose
 		self.mode = mode
 
@@ -185,7 +185,7 @@ class approach_pose_without_retry(smach.State):
 			# evaluate sevice response
 			if not resp.success.data: # robot stands still
 				if timeout > 15:
-					SAY("I can not reach my target position because my path or target is blocked, I will abort.")
+                                        self.speak_pub.publish("I can not reach my target position because my path or target is blocked, I will abort.")
 					rospy.wait_for_service('base_controller/stop',10)
 					try:
 						stop = rospy.ServiceProxy('base_controller/stop',Trigger)
@@ -268,7 +268,7 @@ class approach_pose_without_retry_non_blocking(smach.State):
 			# evaluate sevice response
 			if not resp.success.data: # robot stands still 
 				if userdata.timer > 15: 
-					SAY("I can not get there, I will abort.") 
+                                        self.speak_pub.publish("I can not get there, I will abort.")
 					print 'COULD NOT GET TO POS'
 					rospy.wait_for_service('base_controller/stop',10)
 					try:
@@ -298,32 +298,15 @@ class approach_pose_without_retry_non_blocking(smach.State):
 
 ###############!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! MODIFY FOR RoboCup !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-class goodbye(smach.State):
-	def __init__(self):
-		smach.State.__init__(self, outcomes=['success','failed'])
-
-	def execute(self, userdata):
-		goodbye_phrase = "Goodbye"
-		SAY(goodbye_phrase)
-		sss.move("base","exit")
-		#sss.move("base","entrance_post_out",mode="diff")
-		move_base_direct_brsu([0.2, 0.0, 0.0, 7])
-
-		return 'success'
-
 
 ## Deals with direct movements of the base (without planning and collision checking).
 #
 # A target will be sent directly to the base_controller node.
 #
-# \param component_name Name of the component.
-# \param parameter_name Name of the parameter on the ROS parameter server.
-# \param blocking Bool value to specify blocking behaviour.
-def move_base_direct_brsu(parameter_name):
-	pub_base = rospy.Publisher('base_controller/command', Twist)	
+def move_base_direct_robocup():
+	pub_base = rospy.Publisher('/base/twist_mux/command_navigation', Twist)	
 	
 	rospy.loginfo("Move base to <<%s>>", parameter_name)
-	param = parameter_name
 	
 	# check trajectory parameters
 	if not type(param) is list: # check outer list
@@ -370,3 +353,22 @@ def move_base_direct_brsu(parameter_name):
 
 	return
 
+class direct_base_timed(smach.State):
+	def __init__(self, timeout):
+		smach.State.__init__(self, outcomes=['success'])
+                self.pub_vel = rospy.Publisher('/base/twist_mux/command_navigation', Twist)
+                self.timeout = timeout
+
+	def execute(self, userdata):
+            timeout = rospy.Duration.from_sec(self.timeout)
+            rate = rospy.Rate(5)
+            start_time = rospy.Time.now()
+            t = Twist()
+            t.linear.x = 0.1
+            while (rospy.Time.now() - start_time) < timeout:
+                self.pub_vel.publish(t)
+                rate.sleep()
+            stop_t = Twist()
+            self.pub_vel.publish(stop_t)
+
+            return 'success'

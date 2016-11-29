@@ -3,6 +3,7 @@
 # create list of packages to install
 packagelist=(
   liblog4cpp5-dev
+  libzbar-dev
   python-catkin-tools
   python-pygraphviz
   python-rosinstall
