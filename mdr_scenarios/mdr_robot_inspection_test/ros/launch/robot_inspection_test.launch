@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+  
+    <arg name="pc1" default="cob3-1-pc1" />
+    <arg name="pc2" default="cob3-1-pc2" />
+    <group>
+      <machine name="hbrs_pc1" address="$(arg pc1)" env-loader="$(find mdr_bringup)/env.sh" default="true" />
+      <include file="$(find mcr_door_status)/ros/launch/door_status.launch" />
+      <include file="$(find mdr_2dnav)/ros/launch/2dnav.launch" />
+      <node pkg="mdr_actions" type="move_base_safe" name="move_base_safe_server" output="screen"/>
+    </group>
+    <group>
+      <machine name="hbrs_pc2" address="$(arg pc2)" env-loader="$(find mdr_bringup)/env.sh" default="true" />
+    <node pkg="zbar_ros" type="barcode_reader_node" name="barcode_reader" output="screen">
+        <remap from="image" to="/cam3d/rgb/image_raw"/>
+        <remap from="barcode" to="/mcr_perception/qr_reader/output"/>
+        <param name="throttle_repeated_barcodes" type="double" value="2.0"/>
+    </node>
+    </group>
+</launch>

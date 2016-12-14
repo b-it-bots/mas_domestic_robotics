@@ -42,8 +42,12 @@
     local-name: cob_command_tools
     uri: https://github.com/mas-group/cob_command_tools.git
     version: indigo_dev
-    
+
 - git:
     local-name: cob_simulation
     uri: https://github.com/mas-group/cob_simulation.git
-    version: indigo_dev    
+    version: indigo_dev
+- git:
+    local-name: zbar_ros
+    uri: https://github.com/sthoduka/zbar_ros.git
+    version: hydro-devel
