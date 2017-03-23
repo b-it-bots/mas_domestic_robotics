@@ -1,0 +1,9 @@
+# goal definition
+string location
+---
+# result definition
+bool success
+---
+# feedback
+string current_state
+string text
