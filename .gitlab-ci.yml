@@ -22,7 +22,7 @@ build:
     - cd $CI_PROJECT_DIR/src/$REPOSITORY_NAME
     - if [ -f repository.debs ]; then ./repository.debs false ; fi
     - cd $CI_PROJECT_DIR/src
-    - git clone -b $ROS_RELEASE gitgate@mas.b-it-center.de:mas-group/mas_datasets.git
+    - git lfs clone -b $ROS_RELEASE gitgate@mas.b-it-center.de:mas-group/mas_datasets.git
     - cd $CI_PROJECT_DIR
     - catkin_make
     - source $CI_PROJECT_DIR/devel/setup.bash
