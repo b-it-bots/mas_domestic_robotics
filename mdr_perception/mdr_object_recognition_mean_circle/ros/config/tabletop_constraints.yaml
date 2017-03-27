@@ -25,7 +25,7 @@ planar_segmentation:
     eps_angle: 0.09
     optimize_coefficients: true
     axis: [0.0, 0.0, 1.0]
-    normal_distance_weight: 0.05
+    normal_distance_weight: 0.07
 project_plane_inliers:
     model_type: 16
     copy_all_data: false
