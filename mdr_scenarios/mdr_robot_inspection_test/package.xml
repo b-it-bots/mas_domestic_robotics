@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_robot_inspection_test</name>
+  <version>0.1.0</version>
+  <description>State machine and launch files for performing  robot inspection test</description>
+  <license>GPLv3</license>
+
+  <maintainer email="daniel.vazquez@inf.h-brs.de">Daniel Vazquez</maintainer>
+  <maintainer email="santosh.thoduka@inf.h-brs.de">Santosh Thoduka</maintainer>
+  <maintainer email="alex.moriarty@inf.h-brs.de">Alex Moriarty</maintainer>
+
+  <author email="daniel.vazquez@inf.h-brs.de">Daniel Vazquez</author>
+  <author email="santosh.thoduka@inf.h-brs.de">Santosh Thoduka</author>
+  <author email="alex.moriarty@inf.h-brs.de">Alex Moriarty</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>mcr_door_status</run_depend>
+  <run_depend>mdr_2dnav</run_depend>
+  <run_depend>mdr_actions</run_depend>
+  <run_depend>mdr_bringup</run_depend>
+  <run_depend>mdr_common_states</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>smach</run_depend>
+  <run_depend>smach_ros</run_depend>
+  <run_depend>zbar_ros</run_depend>
+
+  <test_depend>roslaunch</test_depend>
+
+</package>

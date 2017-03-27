@@ -3,6 +3,7 @@
 # create list of packages to install
 packagelist=(
   liblog4cpp5-dev
+  libzbar-dev
   python-catkin-tools
   python-pygraphviz
   python-rosinstall
@@ -62,6 +63,7 @@ packagelist=(
 )
 
 ### install debian packages listed in array above
+sudo apt-get update
 sudo apt-get install -y ${packagelist[@]}
 
 ### install further repositories

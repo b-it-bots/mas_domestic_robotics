@@ -16,6 +16,7 @@ add_action_files(
     ros/action
   FILES
     PerceiveTable.action
+    MoveBaseSafe.action
 )
 
 
@@ -46,5 +47,6 @@ endif()
 ### INSTALLS
 install(PROGRAMS
   ros/scripts/perceive_table
+  ros/scripts/move_base_safe
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

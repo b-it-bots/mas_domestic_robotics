@@ -58,7 +58,7 @@ class init_manipulator(smach.State):
                         print("Service call to {0} failed: {1}".format(self.arm_recover_srv_name, e))
                         return 'failed'
 
-		
+
 		sss.recover("sdh")
 
 		# move to initial positions
@@ -66,7 +66,7 @@ class init_manipulator(smach.State):
 		self.arm.set_named_target("folded")
 		self.arm.go()
 		handle_sdh.wait()
-		
+
 		#rospy.wait_for_service('/arm_controller/set_joint_stiffness', 5)
 		#try:
 		#	req = SetJointStiffnessRequest()
@@ -99,9 +99,9 @@ class init_base(smach.State):
 		# \todo check for init hardware errors
 
 		sss.recover("base")
-		
+
 		raw_input("\nMOVE BASE WITH JOYSTICK!\n")
-		
+
 		return 'success'
 
 class init_torso(smach.State):
@@ -162,14 +162,14 @@ class init_all(smach.State):
 		# \todo check for init hardware errors
 
 		sss.recover("base")
-		
-		rospy.wait_for_service(self.arm_recover_srv_name, 5) 
+
+		rospy.wait_for_service(self.arm_recover_srv_name, 5)
 		try:
 			self.arm_recover_srv()
 		except rospy.ServiceException, e:
 			print("Service call to {0} failed: {1}".format(self.arm_recover_srv_name, e))
 			return 'failed'
-		
+
 
 		sss.recover("sdh")
 		sss.recover("tray")
@@ -224,7 +224,7 @@ class init_head_for_recognition(smach.State):
 class wait_for_start(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success', 'pending'])
-		
+
 	def execute(self, userdata):
 		print "Type -- S -- to start the scenario"
 		ret = sss.wait_for_input()
@@ -232,17 +232,79 @@ class wait_for_start(smach.State):
 			return 'success'
 		else:
 			print "Wrong input key"
-			return 'pending'	
+			return 'pending'
+
+class wait_for_door(smach.State):
+	def __init__(self, timeout):
+		smach.State.__init__(self, outcomes=['succeeded','timeout'])
+                self.sub_door_status = rospy.Subscriber("/mcr_perception/door_status/door_status", std_msgs.msg.Bool, self.cb_door_status)
+                self.status = None
+                self.timeout = timeout
+
+        def cb_door_status(self, msg):
+            self.status = msg.data
+
+	def execute(self, userdata):
+            timeout = rospy.Duration.from_sec(self.timeout)
+            rate = rospy.Rate(10)
+            start_time = rospy.Time.now()
+            while (rospy.Time.now() - start_time) < timeout:
+                if self.status:
+                    return 'succeeded'
+                rate.sleep()
+            return 'timeout'
+
+class wait_for_qr(smach.State):
+	def __init__(self, message, timeout):
+		smach.State.__init__(self,
+			outcomes=['succeeded', 'timeout'])
+                self.message = message
+                self.timeout = timeout
+                self.sub_qr = rospy.Subscriber('/mcr_perception/qr_reader/output', std_msgs.msg.String, self.qr_cb)
+                self.qr_message = None
+
+        def qr_cb(self, txt):
+            self.qr_message = txt.data
+
+	def execute(self, userdata):
+            self.qr_message = None
+            timeout = rospy.Duration.from_sec(self.timeout)
+            rate = rospy.Rate(10)
+            start_time = rospy.Time.now()
+            while (rospy.Time.now() - start_time) < timeout:
+                if self.qr_message:
+                    if self.qr_message.lower().find('continue') != -1:
+                        return 'succeeded'
+                    rospy.loginfo("QR message: %s" % self.qr_message)
+                rate.sleep()
+            return 'timeout'
+
+class clear_costmaps(smach.State):
+	def __init__(self):
+		smach.State.__init__(self, outcomes=['success','failed'])
+
+		self.clear_costmaps_srv_name = "/move_base/clear_costmaps"
+		self.clear_costmaps_srv = rospy.ServiceProxy(self.clear_costmaps_srv_name, std_srvs.srv.Empty)
+
+	def execute(self, userdata):
+		rospy.wait_for_service(self.clear_costmaps_srv_name, 5)
+		try:
+			self.clear_costmaps_srv()
+		except rospy.ServiceException, e:
+			print("Service call to {0} failed: {1}".format(self.clear_costmaps_srv_name, e))
+			return 'failed'
+                return 'success'
+
 
 class announce_ready(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
 		self.clear_tts = rospy.ServiceProxy('/mcr_common/topic_to_service/clear_stored_infos', std_srvs.srv.Empty) # TODO: topic-to-serice does not exist anymore
-		
+
 	def execute(self, userdata):
-		rospy.wait_for_service('/mcr_common/topic_to_service/clear_stored_infos',5) 
+		rospy.wait_for_service('/mcr_common/topic_to_service/clear_stored_infos',5)
 		self.clear_tts()
-	
+
 		announce_ready_phrase = "I am ready now"
 		SAY(announce_ready_phrase)
 		return 'success'
@@ -299,13 +361,13 @@ class compare(smach.State):
 			return 'equal'
 		else:
 			return 'not_equal'
-			
+
 class pop_item_from_list(smach.State):
 	def __init__(self):
-		smach.State.__init__(self, outcomes=['success', 'no_item'], 
-									input_keys=['list_in'], 
+		smach.State.__init__(self, outcomes=['success', 'no_item'],
+									input_keys=['list_in'],
 									output_keys=['popped_element_out'])
-	
+
 	def execute(self, userdata):
 			if len(userdata.list_in) == 0:
 				return 'no_item'
@@ -316,14 +378,14 @@ class pop_item_from_list(smach.State):
 
 class load_search_poses_in_room(smach.State):
 	def __init__(self):
-		smach.State.__init__(self, 
-			outcomes=['success'], 
+		smach.State.__init__(self,
+			outcomes=['success'],
 			input_keys=['room_name_in', 'room_prefix_in', 'room_suffix_in'],
 			output_keys=['room_poses_out'])
-		
+
 	def execute(self, userdata):
 		room_poses_result =  []
-		
+
 		param_available = True
 		i = 1
 		while param_available:
@@ -333,27 +395,27 @@ class load_search_poses_in_room(smach.State):
 			print param_available
 			if param_available:
 				room_poses_result.append(pose_string)
-				
+
 		room_poses_result.reverse()
-		print room_poses_result	
-		print pose_string	
-		userdata.room_poses_out = room_poses_result		
+		print room_poses_result
+		print pose_string
+		userdata.room_poses_out = room_poses_result
 		return 'success'
 
 
 class is_array_empty(smach.State):
 	def __init__(self):
-		smach.State.__init__(self, 
-			outcomes=['yes', 'no'], 
+		smach.State.__init__(self,
+			outcomes=['yes', 'no'],
 			input_keys=['array_in'])
-		
+
 	def execute(self, userdata):
 		if userdata.array_in:
 			return 'no'
 		else:
 			return 'yes'
 
-		
+
 class general_checklist(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'])
@@ -369,6 +431,6 @@ class general_checklist(smach.State):
 		raw_input("\nMOVE HEAD AT FRONT_FACE\n")
 		raw_input("\nTEST SPEECH RECOGNITION (JENNY YES)\n")
 		raw_input("\nWAIT FOR: I'M, READY NOW!\n")
-		return 'success'		
-	
+		return 'success'
+
 

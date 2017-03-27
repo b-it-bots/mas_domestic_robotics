@@ -1,0 +1,22 @@
+#BNF+EMV1.1;
+!grammar navigation;
+!start <commands>;
+
+<commands> : <single_command> | yes | no;
+
+<single_command>: <start_command> | <follow_command> | <memorize_command> | <ask_person_for_name_command> | <follow_command>;
+
+<start_command>: start [the] [navigation] test;
+
+<follow_command>: follow | wait here | stop now | follow me | follow me to the <locations> | follow the person in the <locations> | follow her to the <locations> | stop following me;
+
+<memorize_command>: memorize the person [in the <locations>] | memorize the person [as <names>] | memorize (her|him) as <names>;
+
+<ask_person_for_name_command>: ask the person [there] for (his|her) name | my name is <names>;
+
+<locations>: <rooms> | <deposit> | <notdeposit>;
+<deposit>:  SHALVE | BOOKCASE | KITCHEN COUNTER | KITCHEN TRASHBIN | SINK | BED | NIGHTSTAND | CLOSET | TV_STAND | SIDEBOARD | COUCH | HALLWAY TRASHBIN | YOU | ME;
+<notdeposit>: FRIDGE;
+<rooms>: KITCHEN | BEDROOM | LIVINGROOM | HALLWAY | INITIAL | EXIT;
+
+<names>: EMMA | OLIVIA | SOPHIA | ISABELLA | AVA | MIA | EMILY | ABIGAIL | MADISON | CHARLOTTE | NOAH | LIAM | MASON | JACOB | WILLIAM | ETHAN | MICHAEL | ALEXANDER | JAMES | DANIEL | IRYNA | ALEX | IVAN | SANTOSH;

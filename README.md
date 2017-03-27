@@ -99,6 +99,8 @@ The ROBOT_ENV variable can be used to switch between different environments. The
 ## Bring up the robot and it's basic components
 ### In Simulation
 
+The first time you start the simulation, Gazebo tries to download objects from the internet. Thus, make sure that you have established an internet connection before running the following command.
+
      roslaunch mdr_bringup_sim robot.launch
      
      
