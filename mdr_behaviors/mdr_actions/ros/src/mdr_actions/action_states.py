@@ -37,6 +37,7 @@ class perceive_table(smach.State):
         self.action_server = action_server
         self.client = actionlib.SimpleActionClient(action_server, mdr_actions.msg.PerceiveTableAction)
         self.client.wait_for_server()
+
     def execute(self, userdata):
         goal = mdr_actions.msg.PerceiveTableGoal()
         goal.location = 'anywhere'
