@@ -34,6 +34,7 @@
   <run_depend>mcr_states</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>mcr_dynamic_reconfigure_client</run_depend>
 
   <test_depend>roslaunch</test_depend>
 
