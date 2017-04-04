@@ -13,4 +13,5 @@ tabletop_cloud_clusterer:
     min_distance_to_polygon: 0.03
     min_cluster_size: 100
     max_cluster_size: 10000
+    max_size: 0.3
 

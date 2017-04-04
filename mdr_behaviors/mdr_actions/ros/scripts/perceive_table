@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+import mdr_actions.perceive_table_server
+
+if __name__ == '__main__':
+    mdr_actions.perceive_table_server.main()
