@@ -50,29 +50,29 @@ In order to understand at least the different core components of ROS, you have t
 ## Set up a catkin workspace
 
     source /opt/ros/indigo/setup.bash
-    mkdir -p ~/catkin_ws/src; cd ~/catkin_ws/src
+    mkdir -p ~/indigo/src; cd ~/indigo/src
     catkin_init_workspace
     catkin build
     
 ## Clone and compile the MAS domestic robotics software
 First of all you have to clone the repository.
 
-    cd ~/catkin_ws/src;
+    cd ~/indigo/src;
     git clone gitgate@mas.b-it-center.de:mas-group/mas_domestic_robotics.git
 
 Then go on with installing further external dependencies:
-       
-    cd ~/catkin_ws/src/mas_domestic_robotics
+
+    cd ~/indigo/src/mas_domestic_robotics
     ./repository.debs
-    
-    source ~/catkin_ws/devel/setup.bash
+
+    source ~/indigo/devel/setup.bash
 
 The last command should be added to the ~/.bashrc file so that they do not need to be executed everytime you open a new terminal.
 
 
 And finally compile the repository:
 
-    cd ~/catkin_ws
+    cd ~/indigo
     catkin build
 
 
@@ -144,4 +144,4 @@ or
      roslaunch mdr_2dnav 2dnav.launch nav_mode:=eband
 
 
-Click on the menu bar "File -> Open Config", navigate to "~/catkin_ws/src/mas_domestic_robotics" and select the "cob.rviz" file.
+Click on the menu bar "File -> Open Config", navigate to "~/indigo/src/mas_domestic_robotics" and select the "cob.rviz" file.
