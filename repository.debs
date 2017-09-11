@@ -43,6 +43,8 @@ packagelist=(
   ros-indigo-moveit-core
   ros-indigo-moveit-planners-ompl
   ros-indigo-moveit-commander
+  ros-indigo-moveit-ros-warehouse
+  ros-indigo-moveit-ros-perception
   ros-indigo-openni2-launch
   ros-indigo-polled-camera
   ros-indigo-pr2-computer-monitor
