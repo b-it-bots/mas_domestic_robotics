@@ -22,6 +22,5 @@
   <run_depend>mcr_gazebo_worlds</run_depend>
   <run_depend>mdr_controller_configuration_gazebo</run_depend>
   <run_depend>mdr_default_robot_config</run_depend>
-  <run_depend>mdr_hardware_config</run_depend>
 
 </package>
