@@ -30,7 +30,6 @@ packagelist=(
   ros-indigo-hokuyo-node
   ros-indigo-interactive-markers
   ros-indigo-joy
-  ros-indigo-katana-arm-gazebo
   ros-indigo-laser-geometry
   ros-indigo-libphidgets
   ros-indigo-libntcan
@@ -60,7 +59,6 @@ packagelist=(
   ros-indigo-rqt-robot-dashboard
   ros-indigo-rviz
   ros-indigo-schunk-modular-robotics
-  ros-indigo-sicktoolbox-wrapper
   ros-indigo-smach
   ros-indigo-smach-ros
   ros-indigo-twist-mux

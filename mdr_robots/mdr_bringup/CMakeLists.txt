@@ -7,9 +7,7 @@ catkin_package(
     mcr_default_env_config
     mcr_teleop
     mdr_default_robot_config
-    mdr_hardware_config
     cob_bringup
-    sicktoolbox_wrapper
     hokuyo_node
     robot_state_publisher
     openni2_launch
