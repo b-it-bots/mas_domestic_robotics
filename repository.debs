@@ -59,7 +59,6 @@ packagelist=(
   ros-indigo-rqt-robot-dashboard
   ros-indigo-rviz
   ros-indigo-schunk-modular-robotics
-  ros-indigo-sicktoolbox-wrapper
   ros-indigo-smach
   ros-indigo-smach-ros
   ros-indigo-twist-mux
