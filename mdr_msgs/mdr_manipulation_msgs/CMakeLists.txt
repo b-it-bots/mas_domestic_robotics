@@ -8,7 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 add_service_files(FILES
   GetBottleState.srv
-  GetWrench.srv
   Grasp.srv
 )
 
