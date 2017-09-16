@@ -7,7 +7,7 @@ catkin_python_setup()
 
 catkin_package(
   CATKIN_DEPENDS
-    mdr_behaviors_msgs
+    mdr_behavior_msgs
     moveit_msgs
     sensor_msgs
 )

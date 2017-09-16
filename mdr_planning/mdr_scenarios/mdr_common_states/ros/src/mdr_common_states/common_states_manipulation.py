@@ -14,7 +14,7 @@ import actionlib_msgs.msg
 import moveit_msgs.msg
 
 import mdr_manipulation_msgs.srv
-import mdr_behaviors_msgs.srv
+import mdr_behavior_msgs.srv
 import moveit_commander
 
 from mdr_common_states.common_states_speech import *
@@ -103,7 +103,7 @@ class grasp_object(smach.State):
 		smach.State.__init__(self, outcomes=['success','failed','retry'], input_keys=['grasp_position'])
 
 		self.pick_srv_name = '/pickup'
-		self.pick_srv = rospy.ServiceProxy(self.pick_srv_name, mdr_behaviors_msgs.srv.Pickup)
+		self.pick_srv = rospy.ServiceProxy(self.pick_srv_name, mdr_behavior_msgs.srv.Pickup)
 		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 		self.retry_count = 0
 		self.arm = moveit_commander.MoveGroupCommander('arm')
@@ -119,7 +119,7 @@ class grasp_object(smach.State):
 		#	print "Service call failed: %s"%e
 		#	return 'failed'
 
-		grasp = mdr_behaviors_msgs.srv.PickupRequest()
+		grasp = mdr_behavior_msgs.srv.PickupRequest()
 		grasp.position.header.frame_id = "/base_link"
 		grasp.position.point = userdata.grasp_position
 		#try to get table hight
@@ -159,19 +159,19 @@ class grasp_object(smach.State):
 class pickup_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'], input_keys=['grasp_position'])
-		self.grasp_object_srv = rospy.ServiceProxy('/pickup', mdr_behaviors_msgs.srv.Pickup)
+		self.grasp_object_srv = rospy.ServiceProxy('/pickup', mdr_behavior_msgs.srv.Pickup)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 		sss.move("torso", "home")
 
-		req = mdr_behaviors_msgs.srv.PickupRequest()
+		req = mdr_behavior_msgs.srv.PickupRequest()
 		req.position.header.frame_id = "/base_link"
 		req.position.point = userdata.grasp_position
 		print req.position
 
 		rospy.wait_for_service('/pickup')
-		pickup = rospy.ServiceProxy('/pickup', mdr_behaviors_msgs.srv.Pickup)
+		pickup = rospy.ServiceProxy('/pickup', mdr_behavior_msgs.srv.Pickup)
 		try:
 			resp = pickup(req)
 		except rospy.ServiceException, e:
@@ -186,17 +186,17 @@ class pickup_object(smach.State):
 class place_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'], input_keys=['place_position'])
-		self.grasp_object_srv = rospy.ServiceProxy('/place', mdr_behaviors_msgs.srv.Place)
+		self.grasp_object_srv = rospy.ServiceProxy('/place', mdr_behavior_msgs.srv.Place)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 		sss.move("torso", "home")
 
-		req = mdr_behaviors_msgs.srv.PlaceRequest()
+		req = mdr_behavior_msgs.srv.PlaceRequest()
 		req.position = userdata.place_position
 
 		rospy.wait_for_service('/place')
-		place = rospy.ServiceProxy('/place', mdr_behaviors_msgs.srv.Place)
+		place = rospy.ServiceProxy('/place', mdr_behavior_msgs.srv.Place)
 		try:
 			resp = place(req)
 		except rospy.ServiceException, e:
@@ -576,7 +576,7 @@ class move_part(smach.State):
 class pick_selected_object(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['success', 'failure'])
-        self.pick_object_srv = rospy.ServiceProxy('/pickup', mdr_behaviors_msgs.srv.Pickup)
+        self.pick_object_srv = rospy.ServiceProxy('/pickup', mdr_behavior_msgs.srv.Pickup)
         self.sub_object_pose = rospy.Subscriber("/mcr_perception/object_selector/output/object_pose", geometry_msgs.msg.PoseStamped, self.object_pose_cb)
         self.object_pose_msg = None
 
@@ -587,7 +587,7 @@ class pick_selected_object(smach.State):
         if not self.object_pose_msg:
             rospy.logerr('Did not receive object pose')
             return 'failure'
-        req = mdr_behaviors_msgs.srv.PickupRequest()
+        req = mdr_behavior_msgs.srv.PickupRequest()
         req.position.header.frame_id = self.object_pose_msg.header.frame_id
         req.position.point.x = self.object_pose_msg.pose.position.x
         req.position.point.y = self.object_pose_msg.pose.position.y
@@ -608,7 +608,7 @@ class pick_selected_object(smach.State):
 class place_selected_object(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['success', 'failure'])
-        self.place_object_srv = rospy.ServiceProxy('/place', mdr_behaviors_msgs.srv.Place)
+        self.place_object_srv = rospy.ServiceProxy('/place', mdr_behavior_msgs.srv.Place)
         self.sub_object_pose = rospy.Subscriber("/mcr_perception/free_pose_calculator/pose", geometry_msgs.msg.PoseStamped, self.object_pose_cb)
         self.object_pose_msg = None
 
@@ -619,7 +619,7 @@ class place_selected_object(smach.State):
         if not self.object_pose_msg:
             rospy.logerr('Did not receive free pose');
             return 'failure'
-        req = mdr_behaviors_msgs.srv.PlaceRequest()
+        req = mdr_behavior_msgs.srv.PlaceRequest()
         req.position.header.frame_id = self.object_pose_msg.header.frame_id
         req.position.point.x = self.object_pose_msg.pose.position.x
         req.position.point.y = self.object_pose_msg.pose.position.y

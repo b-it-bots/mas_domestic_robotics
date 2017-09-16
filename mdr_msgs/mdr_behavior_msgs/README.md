@@ -1,4 +1,4 @@
-# mdr_behaviors_msgs
+# mdr_behavior_msgs
 
 ## Introduction
 
@@ -8,7 +8,7 @@ A package for behavior-related messages and services
 
 ## Services
 
-### mdr_behaviors_msgs/Pickup
+### mdr_behavior_msgs/Pickup
 
 Request:
 * ``geometry_msgs/PointStamped position``
@@ -16,7 +16,7 @@ Request:
 Response:
 * ``bool success``
 
-### mdr_behaviors_msgs/Place
+### mdr_behavior_msgs/Place
 
 Request:
 * ``geometry_msgs/PointStamped position``
