@@ -2,20 +2,21 @@
 <package>
   <name>mdr_manipulation_msgs</name>
   <version>0.0.1</version>
-  <description>
-    Messages and service for the interaction with manipulation nodes.
-  </description>
+  <description>Package for manipulation-related messages and services.</description>
   <license>GPLv3</license>
 
   <author email="sven.schneider@h-brs.de">Sven Schneider</author>
   <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
+  <maintainer email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</maintainer>
+  <maintainer email="santosh.thoduka@h-brs.de">Santosh Thoduka</maintainer>
+  <maintainer email="argentina.ortega@h-brs.de">Argentina Ortega</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>message_generation</build_depend>
   <build_depend>geometry_msgs</build_depend>
 
-  <run_depend>geometry_msgs</run_depend>
   <run_depend>message_runtime</run_depend>
-  
+  <run_depend>geometry_msgs</run_depend>
+
 </package>

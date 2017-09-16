@@ -14,7 +14,7 @@ import actionlib_msgs.msg
 import moveit_msgs.msg
 
 import mdr_manipulation_msgs.srv
-import mdr_behaviors_msgs.srv
+import mdr_behavior_msgs.srv
 import moveit_commander
 
 from mdr_common_states.common_states_speech import *
@@ -98,74 +98,12 @@ class point_to_object(smach.State):
 		return result
 
 
-
-class clean_table(smach.State):
-	def __init__(self):
-		smach.State.__init__(self, outcomes=['success','failed'], input_keys=['grasp_position'])
-		self.arm = moveit_commander.MoveGroupCommander('arm')
-
-	def execute(self, userdata):
-		sss.move("torso","home")
-		sss.move("sdh","fist")
-
-		req = mdr_manipulation_msgs.srv.CleanTableRequest()
-		req = mdr_manipulation_msgs.srv.CleanTableRequest()
-
-		req.area.type = arm_navigation_msgs.msg.Shape.BOX
-		req.area.dimensions.append(0.2)
-		req.area.dimensions.append(0.2)
-
-		req.sponge_position.header.frame_id = "/base_link"
-		req.sponge_position.header.stamp = rospy.Time.now() - rospy.Duration(0.5)
-		req.sponge_position.point = userdata.grasp_position
-		req.sponge_position.point.x -= 0.05
-		req.sponge_position.point.y += 0.03
-		hand = 0.2
-		if rospy.has_param('/table_hight'):
-			req.sponge_position.point.z = rospy.get_param('/table_hight') + 0.04
-		else:
-			req.sponge_position.point.z += 0.07
-		req.sponge_position.point.z += hand
-
-		req.area_center.header.frame_id = "/base_link"
-		req.area_center.header.stamp = rospy.Time.now() - rospy.Duration(0.5)
-		req.area_center.point.x = -0.6
-		req.area_center.point.y =  0.0
-		req.area_center.point.z =  req.sponge_position.point.z
-
-		print "Now waiting for service: /mcr_manipulation/clean_table"
-		rospy.wait_for_service('/mcr_manipulation/clean_table')
-		clean = rospy.ServiceProxy('/mcr_manipulation/clean_table', mdr_manipulation_msgs.srv.CleanTable)
-		try:
-			resp = clean(req)
-			if (resp.success):
-				SAY("The table is clean now")
-				result = 'success'
-			else:
-				SAY("Sorry, I could not clean the table")
-				result = 'failed'
-		except rospy.ServiceException, e:
-			print "Service did not process request: %s"%str(e)
-			result = 'failed'
-
-		self.arm.set_named_target("clean_table")
-		self.arm.go()
-
-		self.arm.set_named_target("look_at_table")
-		self.arm.go()
-
-		self.arm.set_named_target("folded")
-		self.arm.go()
-		return result
-
-
-
 class grasp_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed','retry'], input_keys=['grasp_position'])
 
 		self.pick_srv_name = '/pickup'
-		self.pick_srv = rospy.ServiceProxy(self.pick_srv_name, mdr_behaviors_msgs.srv.Pickup)
+		self.pick_srv = rospy.ServiceProxy(self.pick_srv_name, mdr_behavior_msgs.srv.Pickup)
 		#self.set_joint_stiffness = rospy.ServiceProxy('/arm_controller/set_joint_stiffness', SetJointStiffness)
 		self.retry_count = 0
 		self.arm = moveit_commander.MoveGroupCommander('arm')
@@ -181,7 +119,7 @@ class grasp_object(smach.State):
 		#	print "Service call failed: %s"%e
 		#	return 'failed'
 
-		grasp = mdr_behaviors_msgs.srv.PickupRequest()
+		grasp = mdr_behavior_msgs.srv.PickupRequest()
 		grasp.position.header.frame_id = "/base_link"
 		grasp.position.point = userdata.grasp_position
 		#try to get table hight
@@ -221,19 +159,19 @@ class grasp_object(smach.State):
 class pickup_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'], input_keys=['grasp_position'])
-		self.grasp_object_srv = rospy.ServiceProxy('/pickup', mdr_behaviors_msgs.srv.Pickup)
+		self.grasp_object_srv = rospy.ServiceProxy('/pickup', mdr_behavior_msgs.srv.Pickup)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 		sss.move("torso", "home")
 
-		req = mdr_behaviors_msgs.srv.PickupRequest()
+		req = mdr_behavior_msgs.srv.PickupRequest()
 		req.position.header.frame_id = "/base_link"
 		req.position.point = userdata.grasp_position
 		print req.position
 
 		rospy.wait_for_service('/pickup')
-		pickup = rospy.ServiceProxy('/pickup', mdr_behaviors_msgs.srv.Pickup)
+		pickup = rospy.ServiceProxy('/pickup', mdr_behavior_msgs.srv.Pickup)
 		try:
 			resp = pickup(req)
 		except rospy.ServiceException, e:
@@ -248,17 +186,17 @@ class pickup_object(smach.State):
 class place_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success'], input_keys=['place_position'])
-		self.grasp_object_srv = rospy.ServiceProxy('/place', mdr_behaviors_msgs.srv.Place)
+		self.grasp_object_srv = rospy.ServiceProxy('/place', mdr_behavior_msgs.srv.Place)
 		self.arm = moveit_commander.MoveGroupCommander('arm')
 
 	def execute(self, userdata):
 		sss.move("torso", "home")
 
-		req = mdr_behaviors_msgs.srv.PlaceRequest()
+		req = mdr_behavior_msgs.srv.PlaceRequest()
 		req.position = userdata.place_position
 
 		rospy.wait_for_service('/place')
-		place = rospy.ServiceProxy('/place', mdr_behaviors_msgs.srv.Place)
+		place = rospy.ServiceProxy('/place', mdr_behavior_msgs.srv.Place)
 		try:
 			resp = place(req)
 		except rospy.ServiceException, e:
@@ -398,7 +336,6 @@ class weight_bottle(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'],input_keys=['bottle_state','force_x_with_bottle'],output_keys=['bottle_state','force_x_with_bottle'])
 		self.get_bottle_state = rospy.ServiceProxy('/get_bottle_state', mdr_manipulation_msgs.srv.GetBottleState)
-		self.get_wrench = rospy.ServiceProxy('/get_wrench', mdr_manipulation_msgs.srv.GetWrench)
 
 	def execute(self, userdata):
 
@@ -411,15 +348,6 @@ class weight_bottle(smach.State):
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
 			return 'failed'
-
-		# store x axis force
-		#rospy.wait_for_service('/get_wrench', 5)
-		#try:
-		#	res = self.get_wrench()
-		#except rospy.ServiceException,e:
-		#	print "Service call failed: %s"%e
-		#	return 'failed'
-		#userdata.force_x_with_bottle = res.wrench.wrench.force.x
 
 		if bottle_state == 1:
 			SAY("There is nothing in my hand.")
@@ -470,18 +398,6 @@ class release_object(smach.State):
 				print "release object now"
 			rospy.loginfo("waiting for release request")
 			rospy.sleep(0.1)
-
-			# check for z axis
-			#rospy.wait_for_service('/get_wrench', 5)
-			#try:
-			#	res = self.get_wrench()
-			#except rospy.ServiceException,e:
-			#	print "Service call failed: %s"%e
-			#	return 'failed'
-			#if abs(res.wrench.wrench.force.z) > 10:
-			#	print "release z axis"
-			#	release_request = True
-
 
 		handle_sdh = sss.move("sdh","cylopen",False)
 		handle_torso = sss.move("torso","back",False)
@@ -660,7 +576,7 @@ class move_part(smach.State):
 class pick_selected_object(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['success', 'failure'])
-        self.pick_object_srv = rospy.ServiceProxy('/pickup', mdr_behaviors_msgs.srv.Pickup)
+        self.pick_object_srv = rospy.ServiceProxy('/pickup', mdr_behavior_msgs.srv.Pickup)
         self.sub_object_pose = rospy.Subscriber("/mcr_perception/object_selector/output/object_pose", geometry_msgs.msg.PoseStamped, self.object_pose_cb)
         self.object_pose_msg = None
 
@@ -671,7 +587,7 @@ class pick_selected_object(smach.State):
         if not self.object_pose_msg:
             rospy.logerr('Did not receive object pose')
             return 'failure'
-        req = mdr_behaviors_msgs.srv.PickupRequest()
+        req = mdr_behavior_msgs.srv.PickupRequest()
         req.position.header.frame_id = self.object_pose_msg.header.frame_id
         req.position.point.x = self.object_pose_msg.pose.position.x
         req.position.point.y = self.object_pose_msg.pose.position.y
@@ -692,7 +608,7 @@ class pick_selected_object(smach.State):
 class place_selected_object(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['success', 'failure'])
-        self.place_object_srv = rospy.ServiceProxy('/place', mdr_behaviors_msgs.srv.Place)
+        self.place_object_srv = rospy.ServiceProxy('/place', mdr_behavior_msgs.srv.Place)
         self.sub_object_pose = rospy.Subscriber("/mcr_perception/free_pose_calculator/pose", geometry_msgs.msg.PoseStamped, self.object_pose_cb)
         self.object_pose_msg = None
 
@@ -703,7 +619,7 @@ class place_selected_object(smach.State):
         if not self.object_pose_msg:
             rospy.logerr('Did not receive free pose');
             return 'failure'
-        req = mdr_behaviors_msgs.srv.PlaceRequest()
+        req = mdr_behavior_msgs.srv.PlaceRequest()
         req.position.header.frame_id = self.object_pose_msg.header.frame_id
         req.position.point.x = self.object_pose_msg.pose.position.x
         req.position.point.y = self.object_pose_msg.pose.position.y
