@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <node pkg="mdr_actions" type="perceive_table" name="perceive_table_server" output="screen" ns="mdr_actions" />
-    <include file="$(find mcr_dynamic_reconfigure_client)/ros/launch/dynamic_reconfigure_client.launch">
-        <arg name="config_file" default="$(find mdr_actions)/ros/config/perceive_plane_configurations.yaml" />
-    </include>
-</launch>
