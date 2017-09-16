@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <launch>
-  
+
     <arg name="pc1" default="cob3-1-pc1" />
     <arg name="pc2" default="cob3-1-pc2" />
     <group>
       <machine name="hbrs_pc1" address="$(arg pc1)" env-loader="$(find mdr_bringup)/env.sh" default="true" />
       <include file="$(find mcr_door_status)/ros/launch/door_status.launch" />
       <include file="$(find mdr_2dnav)/ros/launch/2dnav.launch" />
-      <node pkg="mdr_actions" type="move_base_safe" name="move_base_safe_server" output="screen"/>
+      <node pkg="mdr_move_base_safe" type="move_base_safe" name="move_base_safe_server" output="screen"/>
     </group>
     <group>
       <machine name="hbrs_pc2" address="$(arg pc2)" env-loader="$(find mdr_bringup)/env.sh" default="true" />

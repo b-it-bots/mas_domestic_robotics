@@ -5,7 +5,7 @@ import actionlib
 
 import sys
 
-from mdr_actions.msg import MoveBaseSafeAction, MoveBaseSafeGoal
+from mdr_move_base_safe.msg import MoveBaseSafeAction, MoveBaseSafeGoal
 
 if __name__ == '__main__':
     rospy.init_node('move_base_safe_client_tester')

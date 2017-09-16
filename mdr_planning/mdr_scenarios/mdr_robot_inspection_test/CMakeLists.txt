@@ -6,7 +6,7 @@ find_package(catkin REQUIRED)
 catkin_package(
   CATKIN_DEPENDS
     rospy
-    mdr_actions
+    mdr_move_base_safe
     mdr_bringup
     mdr_common_states
     rospy
@@ -28,4 +28,3 @@ install(PROGRAMS
 install(DIRECTORY ros/launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/launch
 )
-

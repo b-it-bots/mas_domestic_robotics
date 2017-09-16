@@ -8,9 +8,9 @@ import mcr_states.common.basic_states as gbs
 
 # action lib
 from smach_ros import ActionServerWrapper
-from mdr_actions.msg import PerceiveTableAction
-from mdr_actions.msg import PerceiveTableFeedback
-from mdr_actions.msg import PerceiveTableResult
+from mdr_perceive_table.msg import PerceiveTableAction
+from mdr_perceive_table.msg import PerceiveTableFeedback
+from mdr_perceive_table.msg import PerceiveTableResult
 
 
 class SetActionLibResult(smach.State):

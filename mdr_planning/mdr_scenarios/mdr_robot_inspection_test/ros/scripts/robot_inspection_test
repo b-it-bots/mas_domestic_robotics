@@ -7,7 +7,7 @@ import rospy
 import smach
 import smach_ros
 
-import mdr_actions.action_states as skills
+import mdr_move_base_safe.action_states as skills
 import mcr_states.common.basic_states as gbs
 import mdr_common_states.common_states_speech as gss
 import mdr_common_states.common_states_navigation as gns
@@ -24,7 +24,7 @@ def main():
                                gcs.wait_for_door(timeout=10.0),
                                transitions={'succeeded': 'CLEAR_COSTMAPS',
                                             'timeout': 'WAIT_FOR_DOOR'})
- 
+
         smach.StateMachine.add('CLEAR_COSTMAPS',
                                gcs.clear_costmaps(),
                                transitions={'success': 'MOVE_THROUGH_DOOR',
@@ -33,7 +33,7 @@ def main():
         smach.StateMachine.add('MOVE_THROUGH_DOOR',
                                gns.direct_base_timed(timeout=15.0),
                                transitions={'success': 'CLEAR_COSTMAPS_AGAIN'})
-        
+
         smach.StateMachine.add('CLEAR_COSTMAPS_AGAIN',
                                gcs.clear_costmaps(),
                                transitions={'success': 'MOVE_TO_WAYPOINT_1',
@@ -47,7 +47,7 @@ def main():
         smach.StateMachine.add('INTRODUCE_SELF',
                                gss.say_state("Hello, my name is Jenny. I am waiting for the QR code."),
                                transitions={'success': 'WAIT_FOR_CONTINUE_QR'})
-        
+
         # Waypoint 2:
         #    - Waypoint 2 will be blocked by an obstacle.
         #    - TODO: must determine type of obstacle

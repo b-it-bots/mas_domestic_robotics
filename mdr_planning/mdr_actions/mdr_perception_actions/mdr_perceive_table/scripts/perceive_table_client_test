@@ -5,7 +5,7 @@ import actionlib
 
 import sys
 
-from mdr_actions.msg import PerceiveTableAction, PerceiveTableGoal
+from mdr_perceive_table.msg import PerceiveTableAction, PerceiveTableGoal
 
 if __name__ == '__main__':
     rospy.init_node('perceive_table_client_tester')

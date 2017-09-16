@@ -6,9 +6,9 @@ import mdr_common_states.common_states_navigation as gns  # move the base
 
 # action lib
 from smach_ros import ActionServerWrapper
-from mdr_actions.msg import MoveBaseSafeAction
-from mdr_actions.msg import MoveBaseSafeFeedback
-from mdr_actions.msg import MoveBaseSafeResult
+from mdr_move_base_safe.msg import MoveBaseSafeAction
+from mdr_move_base_safe.msg import MoveBaseSafeFeedback
+from mdr_move_base_safe.msg import MoveBaseSafeResult
 
 
 class SetupMoveBase(smach.State):
