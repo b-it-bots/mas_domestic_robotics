@@ -398,7 +398,6 @@ class weight_bottle(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'],input_keys=['bottle_state','force_x_with_bottle'],output_keys=['bottle_state','force_x_with_bottle'])
 		self.get_bottle_state = rospy.ServiceProxy('/get_bottle_state', mdr_manipulation_msgs.srv.GetBottleState)
-		self.get_wrench = rospy.ServiceProxy('/get_wrench', mdr_manipulation_msgs.srv.GetWrench)
 
 	def execute(self, userdata):
 
@@ -411,15 +410,6 @@ class weight_bottle(smach.State):
 		except rospy.ServiceException,e:
 			print "Service call failed: %s"%e
 			return 'failed'
-
-		# store x axis force
-		#rospy.wait_for_service('/get_wrench', 5)
-		#try:
-		#	res = self.get_wrench()
-		#except rospy.ServiceException,e:
-		#	print "Service call failed: %s"%e
-		#	return 'failed'
-		#userdata.force_x_with_bottle = res.wrench.wrench.force.x
 
 		if bottle_state == 1:
 			SAY("There is nothing in my hand.")
@@ -470,18 +460,6 @@ class release_object(smach.State):
 				print "release object now"
 			rospy.loginfo("waiting for release request")
 			rospy.sleep(0.1)
-
-			# check for z axis
-			#rospy.wait_for_service('/get_wrench', 5)
-			#try:
-			#	res = self.get_wrench()
-			#except rospy.ServiceException,e:
-			#	print "Service call failed: %s"%e
-			#	return 'failed'
-			#if abs(res.wrench.wrench.force.z) > 10:
-			#	print "release z axis"
-			#	release_request = True
-
 
 		handle_sdh = sss.move("sdh","cylopen",False)
 		handle_torso = sss.move("torso","back",False)

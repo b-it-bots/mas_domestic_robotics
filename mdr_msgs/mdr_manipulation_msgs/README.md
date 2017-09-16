@@ -26,8 +26,3 @@ Possible values for ``state``:
 * ``int8 EMPTY = 2``
 * ``int8 HALF_FULL = 3``
 * ``int8 FULL = 4``
-
-### mdr_manipulation_msgs/GetWrench
-
-Response:
-* ``geometry_msgs/WrenchStamped wrench``
