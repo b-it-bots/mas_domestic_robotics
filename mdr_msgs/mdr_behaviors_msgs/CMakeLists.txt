@@ -5,13 +5,6 @@ find_package(catkin REQUIRED
   COMPONENTS
     message_generation
     geometry_msgs
-    #arm_navigation_msgs
-    #geometry_msgs
-)
-
-add_message_files(
-  FILES
-#   CleanTable.msg
 )
 
 add_service_files(

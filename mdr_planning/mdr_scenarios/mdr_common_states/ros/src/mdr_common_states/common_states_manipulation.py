@@ -98,68 +98,6 @@ class point_to_object(smach.State):
 		return result
 
 
-
-class clean_table(smach.State):
-	def __init__(self):
-		smach.State.__init__(self, outcomes=['success','failed'], input_keys=['grasp_position'])
-		self.arm = moveit_commander.MoveGroupCommander('arm')
-
-	def execute(self, userdata):
-		sss.move("torso","home")
-		sss.move("sdh","fist")
-
-		req = mdr_manipulation_msgs.srv.CleanTableRequest()
-		req = mdr_manipulation_msgs.srv.CleanTableRequest()
-
-		req.area.type = arm_navigation_msgs.msg.Shape.BOX
-		req.area.dimensions.append(0.2)
-		req.area.dimensions.append(0.2)
-
-		req.sponge_position.header.frame_id = "/base_link"
-		req.sponge_position.header.stamp = rospy.Time.now() - rospy.Duration(0.5)
-		req.sponge_position.point = userdata.grasp_position
-		req.sponge_position.point.x -= 0.05
-		req.sponge_position.point.y += 0.03
-		hand = 0.2
-		if rospy.has_param('/table_hight'):
-			req.sponge_position.point.z = rospy.get_param('/table_hight') + 0.04
-		else:
-			req.sponge_position.point.z += 0.07
-		req.sponge_position.point.z += hand
-
-		req.area_center.header.frame_id = "/base_link"
-		req.area_center.header.stamp = rospy.Time.now() - rospy.Duration(0.5)
-		req.area_center.point.x = -0.6
-		req.area_center.point.y =  0.0
-		req.area_center.point.z =  req.sponge_position.point.z
-
-		print "Now waiting for service: /mcr_manipulation/clean_table"
-		rospy.wait_for_service('/mcr_manipulation/clean_table')
-		clean = rospy.ServiceProxy('/mcr_manipulation/clean_table', mdr_manipulation_msgs.srv.CleanTable)
-		try:
-			resp = clean(req)
-			if (resp.success):
-				SAY("The table is clean now")
-				result = 'success'
-			else:
-				SAY("Sorry, I could not clean the table")
-				result = 'failed'
-		except rospy.ServiceException, e:
-			print "Service did not process request: %s"%str(e)
-			result = 'failed'
-
-		self.arm.set_named_target("clean_table")
-		self.arm.go()
-
-		self.arm.set_named_target("look_at_table")
-		self.arm.go()
-
-		self.arm.set_named_target("folded")
-		self.arm.go()
-		return result
-
-
-
 class grasp_object(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed','retry'], input_keys=['grasp_position'])

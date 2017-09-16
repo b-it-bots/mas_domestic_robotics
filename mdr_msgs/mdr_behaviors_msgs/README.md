@@ -23,13 +23,3 @@ Request:
 
 Response:
 * ``bool success``
-
-### mdr_behaviors_msgs/CleanTable
-
-Request:
-* ``arm_navigation_msgs/Shape area``
-* ``geometry_msgs/PointStamped area_center``
-* ``geometry_msgs/PointStamped sponge_position``
-
-Response:
-* ``bool success``
