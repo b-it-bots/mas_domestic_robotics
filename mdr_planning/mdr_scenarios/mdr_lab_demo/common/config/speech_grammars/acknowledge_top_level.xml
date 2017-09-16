@@ -1,6 +1,0 @@
- <grammar LANGID="409">
-  <RULE NAME="acknowledge_top_level_rule" TOPLEVEL="ACTIVE">
-    <P>Jenny</P>
-      <RULEREF name="confirmation_rule" url="confirmation.xml" />
-  </RULE>
-</grammar>
