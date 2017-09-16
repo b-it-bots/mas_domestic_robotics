@@ -295,20 +295,6 @@ class clear_costmaps(smach.State):
 			return 'failed'
                 return 'success'
 
-
-class announce_ready(smach.State):
-	def __init__(self):
-		smach.State.__init__(self, outcomes=['success','failed'])
-		self.clear_tts = rospy.ServiceProxy('/mcr_common/topic_to_service/clear_stored_infos', std_srvs.srv.Empty) # TODO: topic-to-serice does not exist anymore
-
-	def execute(self, userdata):
-		rospy.wait_for_service('/mcr_common/topic_to_service/clear_stored_infos',5)
-		self.clear_tts()
-
-		announce_ready_phrase = "I am ready now"
-		SAY(announce_ready_phrase)
-		return 'success'
-
 class enter_arena(smach.State):
 	def __init__(self):
 		smach.State.__init__(self, outcomes=['success','failed'])
@@ -432,5 +418,3 @@ class general_checklist(smach.State):
 		raw_input("\nTEST SPEECH RECOGNITION (JENNY YES)\n")
 		raw_input("\nWAIT FOR: I'M, READY NOW!\n")
 		return 'success'
-
-
