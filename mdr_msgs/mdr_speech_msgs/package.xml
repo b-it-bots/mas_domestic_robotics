@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>mcr_speech_msgs</name>
+  <name>mdr_speech_msgs</name>
   <version>0.1.0</version>
   <description>speech services and messages</description>
 
