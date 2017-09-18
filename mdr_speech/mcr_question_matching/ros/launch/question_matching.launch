@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mcr_question_matching" type="question_matcher" name="question_matcher" output="screen" ns="mcr_speech">
+        <param name="questions_file" value="$(find mcr_question_matching)/ros/config/questions.txt" />
+    </node>
+
+</launch>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>mcr_speech_synthesis</name>
+  <version>0.1.0</version>
+  <description>speech synthesis with IVONA TTS</description>
+
+  <maintainer email="matthias.fueller@h-brs.de">Matthias Fueller</maintainer>
+
+  <license>GPLv3</license>
+
+  <author email="michael.reckhaus@h-brs.de">Mike Reckhaus</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+ 
+  <build_depend>mcr_speech_msgs</build_depend>
+  <build_depend>mcr_speech_recognition_microsoft</build_depend>
+  
+
+  <run_depend>mcr_speech_msgs</run_depend>
+
+</package>
