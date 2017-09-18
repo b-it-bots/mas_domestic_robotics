@@ -4,8 +4,8 @@ from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup(
-   packages=['mdr_move_tray'],
-   package_dir={'mdr_move_tray': 'src/mdr_move_tray'}
+   packages=['mdr_move_tray_action'],
+   package_dir={'mdr_move_tray_action': 'src/mdr_move_tray_action'}
 )
 
 setup(**d)

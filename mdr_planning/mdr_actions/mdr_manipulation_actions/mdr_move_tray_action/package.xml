@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>mdr_move_tray</name>
+  <name>mdr_move_tray_action</name>
   <version>0.0.0</version>
   <description>An action for moving Jenny's tray up and down</description>
 

@@ -6,7 +6,7 @@ import smach_ros
 import actionlib
 
 from simple_script_server import ScriptAction, ScriptGoal
-from mdr_move_tray.msg import MoveTrayFeedback, MoveTrayResult
+from mdr_move_tray_action.msg import MoveTrayFeedback, MoveTrayResult
 
 class SetupMoveTray(smach.State):
     def __init__(self):

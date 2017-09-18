@@ -5,7 +5,7 @@ import rospy
 import roslib
 import actionlib
 
-from mdr_move_tray.msg import MoveTrayAction, MoveTrayGoal
+from mdr_move_tray_action.msg import MoveTrayAction, MoveTrayGoal
 
 def print_usage_info():
     rospy.loginfo('usage: move_tray <direction>')
