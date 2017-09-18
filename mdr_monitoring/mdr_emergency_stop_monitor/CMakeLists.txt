@@ -6,7 +6,7 @@ find_package(catkin REQUIRED
     roscpp
     std_msgs
     cob_relayboard
-    mcr_speech_msgs
+    mdr_speech_msgs
 )
 
 catkin_package(
@@ -14,7 +14,7 @@ catkin_package(
     message_runtime
     std_msgs
     cob_relayboard
-    mcr_speech_msgs
+    mdr_speech_msgs
 )
 
 include_directories(
