@@ -5,9 +5,7 @@
   <description>State machine and launch files for performing a robot inspection test</description>
   <license>GPLv3</license>
 
-  <maintainer email="argentina.ortega@h-brs.de">Argentina Ortega</maintainer>
-  <maintainer email="alex.mitrevski@h-brs.de">Alex Mitrevski</maintainer>
-  <maintainer email="santosh.thoduka@h-brs.de">Santosh Thoduka</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <author email="daniel.vazquez@inf.h-brs.de">Daniel Vazquez</author>
   <author email="santosh.thoduka@h-brs.de">Santosh Thoduka</author>

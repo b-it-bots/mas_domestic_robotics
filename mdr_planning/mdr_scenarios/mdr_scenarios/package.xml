@@ -7,11 +7,7 @@
 
   <author email="frederik.hegger@h-brs.de">Frederik Hegger</author>
 
-  <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
-  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
-  <maintainer email="matthias.fueller@h-brs.de">Matthias Füller</maintainer>
-  <maintainer email="rhama.dwiputra@h-brs.de">Rhama Dwiputra</maintainer>
-  <maintainer email="nico.hochgeschwender@h-brs.de">Nico Hochgeschwender</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <license>GPLv3</license>
 

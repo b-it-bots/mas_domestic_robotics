@@ -5,9 +5,7 @@
   <description>The mdr_simulation package</description>
 
   <author email="matthias.fueller@h-brs.de">Matthias Füller</author>
-  <maintainer email="matthias.fueller@h-brs.de">Matthias Füller</maintainer>
-  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
-  <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <license>BSD</license>
 

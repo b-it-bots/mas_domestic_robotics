@@ -4,10 +4,7 @@
   <version>1.1.0</version>
   <description>launch files to bring up BRSU robots in simulation</description>
 
-  <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
-  <maintainer email="matthias.fueller@h-brs.de">Matthias Füller</maintainer>
-  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
-  <maintainer email="rhama.dwiputra@h-brs.de">Rhama Dwiputra</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
   
   <license>GPLv3</license>
 
@@ -17,7 +14,7 @@
 
   <run_depend>cob_default_robot_config</run_depend>
   <run_depend>cob_gazebo</run_depend>
-  <run_depend>gazebo_ros</run_depend> 
+  <run_depend>gazebo_ros</run_depend>
   <run_depend>mcr_default_env_config</run_depend>
   <run_depend>mcr_gazebo_worlds</run_depend>
   <run_depend>mdr_default_robot_config</run_depend>

@@ -11,7 +11,7 @@
   </description>
   <license>GPLv3</license>
 
-  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
   <author email="sven.schneider@h-brs.de">Sven Schneider</author>
 
   <buildtool_depend>catkin</buildtool_depend>

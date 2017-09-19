@@ -4,7 +4,7 @@
   <version>1.1.0</version>
   <description>The mdr_arm_cartesian_control package</description>
 
-  <maintainer email="matthias.fueller@h-brs.de">Matthias Füller</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <license>GPLv3</license>
 

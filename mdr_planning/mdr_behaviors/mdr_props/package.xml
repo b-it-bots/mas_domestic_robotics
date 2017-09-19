@@ -10,7 +10,7 @@
   </description>
   <license>GPLv3</license>
 
-  <maintainer email="jose.sanchez.loza@gmail.com">Jose Sanchez</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
   <author email="jose.sanchez.loza@gmail.com">Jose Sanchez</author>
 
   <buildtool_depend>catkin</buildtool_depend>

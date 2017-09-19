@@ -10,7 +10,7 @@
 
   <author email="iryna.ivanovska@inf.h-brs.de">Iryna Ivanovska</author>
 
-  <maintainer email="iryna.ivanovska@inf.h-brs.de">Iryna Ivanovska</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
 

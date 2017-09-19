@@ -4,7 +4,7 @@
   <version>1.1.0</version>
   <description>The mdr_simple_grasp_planner package</description>
 
-  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <license>GPLv3</license>
 

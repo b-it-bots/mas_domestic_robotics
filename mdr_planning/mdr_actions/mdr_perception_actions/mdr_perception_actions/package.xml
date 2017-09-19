@@ -6,7 +6,7 @@
 
   <license>GPLv3</license>
 
-  <maintainer email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
 

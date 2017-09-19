@@ -7,8 +7,7 @@
   <license>GPLv3</license>
 
   <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
-  <maintainer email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</maintainer>
-  <maintainer email="argentina.ortega@h-brs.de">Argentina Ortega</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
 
