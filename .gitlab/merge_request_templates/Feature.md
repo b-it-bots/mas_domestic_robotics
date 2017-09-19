@@ -29,6 +29,7 @@
 <!--- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
 - [ ] I have updated the documentation accordingly.
 - [ ] I have updated the `package.xml` with the correct dependencies.
+- [ ] I have updated the CHANGELOG.rst file
 - [ ] My code follows the code style of this project.
 - [ ] I have added tests to cover my changes.
 - [ ] All new and existing tests passed.

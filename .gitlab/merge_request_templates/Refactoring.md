@@ -45,3 +45,6 @@
             └── some_package_node.cpp
 
 ```
+
+# Checklist
+- [ ] I have updated the CHANGELOG.rst file
