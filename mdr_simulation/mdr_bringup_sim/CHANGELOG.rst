@@ -5,9 +5,13 @@ Changelog for package mdr_bringup_sim
 Forthcoming
 -----------
 
+1.0.1 (2017-04-11 10:44:12 +0200)
+---------------------------------
+* [bringup sim] Add atHome parameter
+* Contributor: Jose Mayoraly
+
 1.0.0 (2017-04-11 10:44:12 +0200)
 ---------------------------------
-* [bringup sim] Add IPA arguments
 * [bringup sim] Do not start gui by default
 * Use arguments to configure the loaded world
 * Refactoring tabs to spaces

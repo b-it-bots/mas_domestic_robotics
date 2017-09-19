@@ -5,6 +5,11 @@ Changelog for package mdr_bringup
 Forthcoming
 -----------
 
+1.0.1 (2017-09-19 10:44:12 +0200)
+---------------------------------
+* Add atHome parameter to mdr_bringup launch file
+* Contributor: Jose Mayoral
+
 1.0.0 (2017-04-11 10:44:12 +0200)
 ---------------------------------
 * Fix openni2 launch file
