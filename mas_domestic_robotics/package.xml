@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mas_domestic_robotics</name>
-  <version>0.0.1</version>
+  <version>1.0.0</version>
   <description>ROS metapackages for domestic service robots.</description>
   <license>GPLv3</license>
 

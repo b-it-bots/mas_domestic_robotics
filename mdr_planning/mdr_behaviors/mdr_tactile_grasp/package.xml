@@ -1,15 +1,15 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_tactile_grasp</name>
-  <version>0.1.0</version>
+  <version>1.0.0</version>
   <description>
   A package that implements reactive grasping based on feedback from
   the tactile sensors of an SDH-2.
   </description>
   <license>GPLv3</license>
-  
+
   <maintainer email="jose.sanchez.loza@gmail.com">Jose Sanchez</maintainer>
-  <author email="jose.sanchez.loza@gmail.com">Jose Sanchez</author>   
+  <author email="jose.sanchez.loza@gmail.com">Jose Sanchez</author>
 
   <buildtool_depend>catkin</buildtool_depend>
 
