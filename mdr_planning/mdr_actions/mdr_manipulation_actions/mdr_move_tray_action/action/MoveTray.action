@@ -1,0 +1,12 @@
+string UP=up
+string DOWN=down
+
+# goal
+string direction
+---
+# result
+bool success
+---
+# feedback
+string current_state
+string message

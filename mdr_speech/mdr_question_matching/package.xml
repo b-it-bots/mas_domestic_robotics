@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package>
+  <name>mcr_question_matching</name>
+  <version>0.1.0</version>
+  <description>
+    Matches questions with answers
+  </description>
+
+  <license>GPLv3</license>
+
+  <author email="iryna.ivanovska@inf.h-brs.de">Iryna Ivanovska</author>
+
+  <maintainer email="iryna.ivanovska@inf.h-brs.de">Iryna Ivanovska</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>roslint</build_depend>
+
+  <run_depend>std_msgs</run_depend>
+
+  <test_depend>roslaunch</test_depend>
+
+</package>

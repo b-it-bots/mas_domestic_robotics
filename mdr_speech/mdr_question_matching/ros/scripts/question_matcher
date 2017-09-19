@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+import mdr_question_matching.question_matcher
+
+if __name__ == '__main__':
+    mdr_question_matching.question_matcher.main()

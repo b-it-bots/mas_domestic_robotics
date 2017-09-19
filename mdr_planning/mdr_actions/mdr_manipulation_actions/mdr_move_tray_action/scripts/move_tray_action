@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+import rospy
+import smach
+
+from smach_ros import ActionServerWrapper, IntrospectionServer
+
+from mdr_move_tray_action.msg import MoveTrayAction
+from mdr_move_tray_action.action_states import SetupMoveTray, MoveTray, SetActionLibResult
+
+class MoveTraySkill(smach.StateMachine):
+    def __init__(self, timeout=10):
+        smach.StateMachine.__init__(self,
+                outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
+                input_keys=['move_tray_goal'],
+                output_keys=['move_tray_feedback', 'move_tray_result'])
+
+        with self:
+            smach.StateMachine.add('SETUP_MOVE_TRAY', SetupMoveTray(),
+                                   transitions = {'succeeded': 'MOVE_TRAY',
+                                                'failed': 'SETUP_MOVE_TRAY'})
+
+            smach.StateMachine.add('MOVE_TRAY', MoveTray(),
+                                   transitions = {'succeeded': 'SET_ACTION_LIB_SUCCESS',
+                                                'failed': 'SET_ACTION_LIB_FAILED'})
+
+            smach.StateMachine.add('SET_ACTION_LIB_FAILED', SetActionLibResult(False),
+                                   transitions = {'succeeded': 'OVERALL_FAILED'})
+
+            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
+                                   transitions = {'succeeded': 'OVERALL_SUCCESS'})
+
+if __name__ == '__main__':
+    rospy.init_node('move_tray_server')
+
+    # construct state machine
+    sm = MoveTraySkill()
+
+    # smach viewer
+    sis = IntrospectionServer('move_tray_smach_viewer', sm, '/MOVE_TRAY_SMACH_VIEWER')
+    sis.start()
+
+    asw = ActionServerWrapper(
+        server_name = 'move_tray_server',
+        action_spec = MoveTrayAction,
+        wrapped_container = sm,
+        succeeded_outcomes = ['OVERALL_SUCCESS'],
+        aborted_outcomes = ['OVERALL_FAILED'],
+        preempted_outcomes = ['PREEMPTED'],
+        goal_key = 'move_tray_goal',
+        feedback_key = 'move_tray_feedback',
+        result_key = 'move_tray_result')
+
+    # Run the server in a background thread
+    asw.run_server()
+    rospy.spin()

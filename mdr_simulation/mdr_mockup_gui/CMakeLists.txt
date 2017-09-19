@@ -6,7 +6,7 @@ find_package(catkin REQUIRED
     roscpp
     rospy
     sensor_msgs
-    mcr_speech_msgs
+    mdr_speech_msgs
     std_msgs
 )
 
@@ -15,7 +15,7 @@ catkin_python_setup()
 catkin_package(
  CATKIN_DEPENDS
    sensor_msgs
-   mcr_speech_msgs
+   mdr_speech_msgs
    std_msgs
 )
 

@@ -15,9 +15,7 @@
   <run_depend>mcr_default_env_config</run_depend>
   <run_depend>mcr_teleop</run_depend>
   <run_depend>mdr_default_robot_config</run_depend>
-  <run_depend>mdr_hardware_config</run_depend>
   <run_depend>cob_bringup</run_depend>
-  <run_depend>sicktoolbox_wrapper</run_depend>
   <run_depend>hokuyo_node</run_depend>
   <run_depend>robot_state_publisher</run_depend>
   <run_depend>openni2_launch</run_depend>

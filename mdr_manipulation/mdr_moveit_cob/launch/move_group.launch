@@ -66,6 +66,6 @@
     <param name="planning_scene_monitor/publish_transforms_updates" value="$(arg publish_monitored_planning_scene)" />
   </node>
 
-  <include file="$(find mcr_moveit_client)/ros/launch/cob_moveit_client.launch"/>
+  <include file="$(find mdr_moveit_cob)/launch/moveit_client.launch"/>
 
 </launch>

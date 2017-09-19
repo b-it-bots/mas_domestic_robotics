@@ -1,6 +1,0 @@
-joint_names: ['katana_motor1_pan_joint', 'katana_motor2_lift_joint', 'katana_motor3_lift_joint', 'katana_motor4_lift_joint', 'katana_motor5_wrist_roll_joint']
-velocity: [0.001, 0.001, 0.001, 0.001, 0.001]
-
-# trajectories
-home_to_folded: [home, pre_folded, folded]
-folded_to_home: [folded, pre_folded, home]
