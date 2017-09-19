@@ -9,3 +9,21 @@ Forthcoming
   See merge request !25
 * Refactored mdr_actions (made mdr_actions a metapackage and created separate packages for the existing actions)
 * Contributors: Alex Mitrevski
+
+1.0.0 (2017-04-11 10:44:12 +0200)
+---------------------------------
+* Merge branch 'perceive_table' into 'indigo'
+  Merge Perceive Table Skill to indigo
+  See merge request !17
+* Fix run_tests problem
+* Fix roslint issue
+* Merge branch 'indigo' into 'perceive_table'
+  # Conflicts:
+  #   mdr_behaviors/mdr_actions/CMakeLists.txt
+  #   mdr_behaviors/mdr_actions/ros/src/mdr_actions/action_states.py
+* Add perceive_table skill from minh/go2017 branch
+* Merge branch 'inspection-test' into 'indigo'
+  [scenarios] actions and SM for robot inspection test
+  See merge request !15
+* [scenarios] actions and SM for robot inspection test
+* Contributors: Minh Nguyen, Santosh Thoduka

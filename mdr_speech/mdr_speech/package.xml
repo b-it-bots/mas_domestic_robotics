@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_speech</name>
-  <version>0.1.0</version>
+  <version>1.0.0</version>
   <description>Meta package for speech relevant packages</description>
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
   <license>BSD</license>

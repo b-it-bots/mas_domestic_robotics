@@ -4,7 +4,7 @@
   <description>
      monitor that observe the emergency state and publish a topic to the say service
   </description>
-  <version>0.1.0</version>
+  <version>1.0.0</version>
 
   <author email="matthias.fueller@h-brs.de">Matthias Füller</author>
   <maintainer email="matthias.fueller@h-brs.de">Matthias Füller</maintainer>
