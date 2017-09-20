@@ -10,15 +10,3 @@ Forthcoming
 * Refactored mdr_actions
 * Moved actions, behaviours, and scenarios to mdr_planning
 * Contributors: Alex Mitrevski
-
-1.0.0 (2017-04-11 10:44:12 +0200)
----------------------------------
-* Merge branch 'indigo' into 'perceive_table'
-  # Conflicts:
-  #   mdr_behaviors/mdr_actions/CMakeLists.txt
-  #   mdr_behaviors/mdr_actions/ros/src/mdr_actions/action_states.py
-* Merge branch 'inspection-test' into 'indigo'
-  [scenarios] actions and SM for robot inspection test
-  See merge request !15
-* [scenarios] actions and SM for robot inspection test
-* Contributors: Minh Nguyen, Santosh Thoduka

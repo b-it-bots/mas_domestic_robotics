@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_cob_head_kinematics</name>
-  <version>1.0.0</version>
+  <version>0.0.1</version>
   <description>
     Inverse kinematics for pointing the torso/head of the Care-O-bot at a
     specified position.
