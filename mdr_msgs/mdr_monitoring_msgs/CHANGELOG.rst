@@ -9,11 +9,3 @@ Forthcoming
   See merge request !27
 * mv mdr_monitoring/mdr_monitoring_msgs mdr_msgs/mdr_monitoring_msgs
 * Contributors: Alex Mitrevski
-
-1.0.0 (2017-04-11 10:44:12 +0200)
----------------------------------
-* Update dependencies of monitoring msgs pkg
-* Replace generate_messages by run_depends + CATKIN_DEPENDS
-* Clean up comments
-* Added package mdr_monitoring_msgs
-* Contributors: Frederik Hegger, Matthias Füller

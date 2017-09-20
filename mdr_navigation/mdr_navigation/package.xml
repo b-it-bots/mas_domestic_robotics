@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_navigation</name>
-  <version>1.0.0</version>
+  <version>0.0.1</version>
   <description>base navigation</description>
 
   <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>

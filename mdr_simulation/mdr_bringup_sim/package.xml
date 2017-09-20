@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_bringup_sim</name>
-  <version>1.0.0</version>
+  <version>0.0.1</version>
   <description>launch files to bring up BRSU robots in simulation</description>
 
   <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
