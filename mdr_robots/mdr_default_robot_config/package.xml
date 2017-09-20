@@ -1,6 +1,6 @@
 <package>
   <name>mdr_default_robot_config</name>
-  <version>0.1.0</version>
+  <version>1.1.0</version>
   <description>
      mdr_default_robot_config
   </description>
@@ -17,5 +17,3 @@
   <buildtool_depend>catkin</buildtool_depend>
 
 </package>
-
-
