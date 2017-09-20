@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_navigation</name>
-  <version>0.0.1</version>
+  <version>1.1.0</version>
   <description>base navigation</description>
 
   <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
@@ -9,7 +9,7 @@
   <maintainer email="matthias.fueller@h-brs.de">Matthias Füller</maintainer>
   <maintainer email="rhama.dwiputra@h-brs.de">Rhama Dwiputra</maintainer>
   <maintainer email="nico.hochgeschwender@h-brs.de">Nico Hochgeschwender</maintainer>
-  
+
   <license>GPLv3</license>
 
   <author email="frederik.hegger@h-brs.de">Frederik Hegger</author>
