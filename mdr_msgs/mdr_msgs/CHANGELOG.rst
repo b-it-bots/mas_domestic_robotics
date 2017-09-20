@@ -2,8 +2,11 @@
 Changelog for package mdr_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2017-09-20)
+------------------
+* Change maintainer tags to MAS Robotics
+* Update changelogs for mdr_msgs
+* Contributors: Argentina Ortega Sainz
 
 1.1.0 (2017-09-18 18:15)
 ------------------------

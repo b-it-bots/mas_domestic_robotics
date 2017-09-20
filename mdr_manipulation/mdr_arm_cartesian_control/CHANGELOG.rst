@@ -2,8 +2,11 @@
 Changelog for package mdr_arm_cartesian_control
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2017-09-20)
+------------------
+* Change maintainer tags to MAS Robotics
+* Generate changelogs for mdr_manipulation
+* Contributors: Argentina Ortega Sainz
 
 1.1.0 (2017-09-18 18:15)
 ------------------------

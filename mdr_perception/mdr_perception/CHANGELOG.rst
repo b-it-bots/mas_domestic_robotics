@@ -2,8 +2,11 @@
 Changelog for package mdr_perception
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.1 (2017-09-20)
+------------------
+* Change maintainer tags to MAS Robotics
+* Generate changelog for mdr_perception
+* Contributors: Argentina Ortega Sainz
 
 1.1.0 (2017-09-18 18:15)
 ------------------------
