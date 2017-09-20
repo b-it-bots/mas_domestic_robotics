@@ -4,8 +4,18 @@ Changelog for package mdr_perception_actions
 
 Forthcoming
 -----------
+
+1.1.0 (2017-09-18 18:15)
+------------------------
+
+1.0.1 (2017-09-18 18:04)
+------------------------
+* Added changelogs for mdr_planning and mdr_msgs
 * Merge branch 'refactor/mdr_planning' into 'indigo'
   Move actions, behaviors, and scenarios to a new mdr_planning metapackage
   See merge request !25
 * Refactored mdr_actions (created an mdr_perception_actions metapackage)
 * Contributors: Alex Mitrevski
+
+1.0.0 (2017-04-11)
+------------------

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_behaviors</name>
-  <version>0.0.1</version>
+  <version>1.1.0</version>
   <description>behaviors related package</description>
   <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
   <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>

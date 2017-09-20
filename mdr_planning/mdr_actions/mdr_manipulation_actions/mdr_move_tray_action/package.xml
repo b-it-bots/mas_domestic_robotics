@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_move_tray_action</name>
-  <version>0.0.0</version>
+  <version>1.1.0</version>
   <description>An action for moving Jenny's tray up and down</description>
 
   <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
