@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_perceive_table</name>
-  <version>0.0.0</version>
+  <version>1.1.0</version>
   <description>An action for perceiving a table</description>
 
   <author email="santosh.thoduka@h-brs.de">Santosh Thoduka</author>
@@ -10,7 +10,7 @@
   <author email="iryna.ivanovska@smail.inf.h-brs.de">Iryna Ivanovska</author>
   <author email="olima_84@yahoo.com">Oscar Lima</author>
 
-  <maintainer email="santosh.thoduka@h-brs.de">Santosh Thoduka</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <license>GPLv3</license>
 

@@ -1,17 +1,12 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_behavior_msgs</name>
-  <version>0.1.0</version>
+  <version>1.1.0</version>
   <description>A package for behavior-related messages and services.</description>
   <license>BSD</license>
 
   <author email="matthias.fueller@h-brs.de">Matthias Füller</author>
-  <maintainer email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</maintainer>
-  <maintainer email="argentina.ortega@h-brs.de">Argentina Ortega</maintainer>
-  <maintainer email="santosh.thoduka@h-brs.de">Santosh Thoduka</maintainer>
-  <maintainer email="matthias.fueller@h-brs.de">Matthias Füller</maintainer>
-  <maintainer email="sven.schneider@h-brs.de">Sven Schneider</maintainer>
-  <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
 

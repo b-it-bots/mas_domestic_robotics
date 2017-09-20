@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mcr_question_matching</name>
-  <version>0.1.0</version>
+  <version>1.1.0</version>
   <description>
     Matches questions with answers
   </description>
@@ -10,7 +10,7 @@
 
   <author email="iryna.ivanovska@inf.h-brs.de">Iryna Ivanovska</author>
 
-  <maintainer email="iryna.ivanovska@inf.h-brs.de">Iryna Ivanovska</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
 

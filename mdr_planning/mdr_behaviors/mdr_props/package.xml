@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_props</name>
-  <version>0.1.0</version>
+  <version>1.1.0</version>
   <description>
   A package that enables the robot to greet humans using physical interaction.
   Based on [1].
@@ -10,7 +10,7 @@
   </description>
   <license>GPLv3</license>
 
-  <maintainer email="jose.sanchez.loza@gmail.com">Jose Sanchez</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
   <author email="jose.sanchez.loza@gmail.com">Jose Sanchez</author>
 
   <buildtool_depend>catkin</buildtool_depend>
