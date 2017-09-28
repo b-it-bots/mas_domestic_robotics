@@ -15,7 +15,7 @@ import mdr_common_states.common_states as gcs
 
 # main
 def main():
-    rospy.init_node('robot_inspection_test')
+    rospy.init_node('robot_inspection')
 
     SM = smach.StateMachine(outcomes=['done'])
 
@@ -75,7 +75,7 @@ def main():
 
 
     # Start SMACH viewer
-    smach_viewer = smach_ros.IntrospectionServer('ROBOT_INSPECTION_TEST', SM, 'ROBOT_INSPECTION_TEST')
+    smach_viewer = smach_ros.IntrospectionServer('ROBOT_INSPECTION', SM, 'ROBOT_INSPECTION')
     smach_viewer.start()
 
     result = SM.execute()
