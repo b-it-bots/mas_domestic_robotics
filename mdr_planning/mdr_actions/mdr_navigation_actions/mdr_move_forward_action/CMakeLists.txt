@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 catkin_python_setup()
+roslint_python()
 
 add_action_files(
   FILES
