@@ -12,6 +12,7 @@
   <author email="alex.moriarty@inf.h-brs.de">Alex Moriarty</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roslint</build_depend>
 
   <run_depend>mcr_door_status</run_depend>
   <run_depend>mdr_2dnav</run_depend>
@@ -22,6 +23,7 @@
   <run_depend>smach</run_depend>
   <run_depend>smach_ros</run_depend>
   <run_depend>zbar_ros</run_depend>
+  <run_depend>roslint</run_depend>
 
   <test_depend>roslaunch</test_depend>
 

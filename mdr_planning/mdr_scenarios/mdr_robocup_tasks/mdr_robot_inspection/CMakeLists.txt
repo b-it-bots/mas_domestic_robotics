@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mdr_robot_inspection)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS roslint)
 
 catkin_package(
   CATKIN_DEPENDS
@@ -13,6 +13,8 @@ catkin_package(
     smach
     smach_ros
 )
+
+catkin_python_setup()
 
 # ROS Lint
 roslint_python()
