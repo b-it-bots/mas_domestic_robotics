@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_enter_door_action" type="enter_door_action" name="enter_door_server" output="screen" ns="mdr_actions" />
+</launch>
