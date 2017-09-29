@@ -9,3 +9,9 @@ catkin_package(
   CATKIN_DEPENDS
     rospy
 )
+
+### INSTALLS
+install(PROGRAMS
+  ros/scripts/pick_and_place_node
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/ros/scripts
+)
