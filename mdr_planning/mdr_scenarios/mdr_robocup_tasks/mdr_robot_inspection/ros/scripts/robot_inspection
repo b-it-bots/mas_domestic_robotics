@@ -1,18 +1,11 @@
 #!/usr/bin/python
-
 import sys
 
 import rospy
-
 import smach
 import smach_ros
 
-# import mdr_move_base_safe.action_states as skills
-# import mcr_states.common.basic_states as gbs
-# import mdr_common_states.common_states_speech as gss
-# import mdr_common_states.common_states_navigation as gns
-# import mdr_common_states.common_states as gcs
-
+from mdr_robot_inspection.action_states import Enter, MoveBase, MoveTray, WaitForQR
 
 class Dummy(smach.State):
     def __init__(self, msg="", timeout=5):
@@ -36,29 +29,15 @@ class RobotInspection(smach.StateMachine):
         self.userdata.last_command = ''
 
         with self:
-            # Add states here as normal
-            smach.StateMachine.add('WAIT_FOR_DOOR',
-                                   Dummy(msg="Wating for door",
-                                         timeout=10.0),
-                                   transitions={'succeeded': 'ENTER',
-                                                'failed': 'WAIT_FOR_DOOR'})
-
             smach.StateMachine.add('ENTER',
-                                   Dummy(msg="Moving through door",
-                                         timeout=15.0),
-                                   transitions={'succeeded': 'CLEAR_COSTMAPS',
+                                   Enter(),
+                                   transitions={'succeeded': 'GO_TO_INSPECTION_WAYPOINT',
                                                 'failed': 'ENTER'})
 
-            smach.StateMachine.add('CLEAR_COSTMAPS',
-                                   Dummy(msg="Clearing costmaps again"),
-                                   transitions={'succeeded': 'GO_TO_WP1',
-                                                'failed': 'GO_TO_WP1'})
-
-            smach.StateMachine.add('GO_TO_WP1',
-                                   Dummy(msg="Moving to inspection point",
-                                         timeout=60.0),
+            smach.StateMachine.add('GO_TO_INSPECTION_WAYPOINT',
+                                   MoveBase(['inside_arena']),
                                    transitions={'succeeded': 'INTRODUCE_SELF',
-                                                'failed': 'GO_TO_WP1'})
+                                                'failed': 'GO_TO_INSPECTION_WAYPOINT'})
 
             smach.StateMachine.add('INTRODUCE_SELF',
                                    Dummy("Hello, my name is Jenny."
@@ -79,34 +58,25 @@ class RobotInspection(smach.StateMachine):
 
             # Transitions were tray_up and tray_down
             smach.StateMachine.add('MOVE_TRAY',
-                                   Dummy("Moving tray"),
-                                   transitions={'failed': 'WAIT_FOR_CMD',
-                                                'succeeded': 'E-STOP_TEST'})
-
-            smach.StateMachine.add('E-STOP_TEST',
-                                   Dummy("Emergency stop test"),
-                                   transitions={'succeeded': 'WAIT_FOR_QR',
-                                                'failed': 'WAIT_FOR_QR'})
+                                   MoveTray("Moving tray"),
+                                   transitions={'up': 'WAIT_FOR_CMD',
+                                                'down': 'WAIT_FOR_QR',
+                                                'failed': 'WAIT_FOR_CMD'})
 
             # Original state was timeout instead of failed
             smach.StateMachine.add('WAIT_FOR_QR',
-                                   Dummy(msg='Waiting for QR code',
-                                         timeout=5.0),
+                                   WaitForQR(),
                                    transitions={'succeeded': 'CONFIRM_QR_CODE',
-                                                'failed': 'E-STOP_TEST'})
+                                                'waiting': 'WAIT_FOR_QR',
+                                                'failed': 'WAIT_FOR_QR'})
 
             smach.StateMachine.add('CONFIRM_QR_CODE',
                                    Dummy("Okay, I will go to the exit now"),
-                                   transitions={'succeeded': 'GO_TO_EXIT',
+                                   transitions={'succeeded': 'EXIT',
                                                 'failed': 'CONFIRM_QR_CODE'})
 
-            smach.StateMachine.add('GO_TO_EXIT',
-                                   Dummy(msg='Moving to exit pre'),
-                                   transitions={'succeeded': 'EXIT',
-                                                'failed': 'EXIT'})
-
             smach.StateMachine.add('EXIT',
-                                   Dummy(msg="Moving to exit"),
+                                   MoveBase(['exit_door', 'outside_arena']),
                                    transitions={'succeeded': 'DONE',
                                                 'failed': 'EXIT'})
 
@@ -116,18 +86,14 @@ def main():
 
     SM = RobotInspection()
 
-    # Start SMACH viewer
-    smach_viewer = smach_ros.IntrospectionServer('robot_inspection', SM,
-                                                 'ROBOT_INSPECTION')
+    smach_viewer = smach_ros.IntrospectionServer('robot_inspection', SM, 'ROBOT_INSPECTION')
     smach_viewer.start()
 
     result = SM.execute()
-    # stop SMACH viewer
     while (result is None):
         rospy.spin()
     rospy.loginfo('Robot inspection complete.')
     smach_viewer.stop()
-
 
 if __name__ == '__main__':
     main()
