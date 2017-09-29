@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_robot_inspection_test)
+project(mdr_robot_inspection)
 
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS roslint)
 
 catkin_package(
   CATKIN_DEPENDS
@@ -14,6 +14,11 @@ catkin_package(
     smach_ros
 )
 
+catkin_python_setup()
+
+# ROS Lint
+roslint_python()
+
 ### TESTS
 if(CATKIN_ENABLE_TESTING)
   find_package(roslaunch REQUIRED)
@@ -22,7 +27,7 @@ endif()
 
 ### INSTALLS
 install(PROGRAMS
-  ros/scripts/robot_inspection_test
+  ros/scripts/robot_inspection
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/ros/scripts
 )
 install(DIRECTORY ros/launch/
