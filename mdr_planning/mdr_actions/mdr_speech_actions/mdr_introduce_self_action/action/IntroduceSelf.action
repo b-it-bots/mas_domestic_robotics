@@ -1,0 +1,11 @@
+# goal
+bool profession
+bool residence
+bool date_of_birth
+---
+# result
+bool success
+---
+# feedback
+string current_state
+string message
