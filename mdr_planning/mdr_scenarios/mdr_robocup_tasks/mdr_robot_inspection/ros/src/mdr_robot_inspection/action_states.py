@@ -11,6 +11,7 @@ from mdr_enter_door_action.msg import EnterDoorAction, EnterDoorGoal
 from mdr_move_base_safe.msg import MoveBaseSafeAction, MoveBaseSafeGoal
 from mdr_move_tray_action.msg import MoveTrayAction, MoveTrayGoal
 
+
 class Enter(smach.State):
     def __init__(self, timeout=120., enter_action_server='/mdr_actions/enter_action_server'):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'],
@@ -28,6 +29,7 @@ class Enter(smach.State):
             return 'succeeded'
         else:
             return 'failed'
+
 
 class MoveBase(smach.State):
     def __init__(self, destination_locations, timeout=120.0, action_server='/mdr_actions/move_base_safe_server'):
@@ -57,6 +59,7 @@ class MoveBase(smach.State):
                 return 'failed'
         return 'succeeded'
 
+
 class MoveTray(smach.State):
     def __init__(self, direction, timeout=120.0, action_server='/mdr_actions/move_tray_server'):
         smach.State.__init__(self, outcomes=['up', 'down', 'failed'])
@@ -77,6 +80,7 @@ class MoveTray(smach.State):
             return self.direction
         else:
             return 'failed'
+
 
 class WaitForQR(smach.State):
     def __init__(self, timeout=120.0, qr_topic='/mcr_perception/qr_reader/output'):

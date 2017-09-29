@@ -9,6 +9,7 @@ from std_msgs.msg import Bool
 from mdr_enter_door_action.msg import EnterDoorFeedback, EnterDoorResult
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 
+
 class SetupEnterDoor(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'],
@@ -21,6 +22,7 @@ class SetupEnterDoor(smach.State):
         userdata.enter_door_feedback = feedback
 
         return 'succeeded'
+
 
 class WaitForDoor(smach.State):
     def __init__(self, sleep_duration=1., door_status_topic='/mcr_perception/door_status/door_status'):
@@ -46,8 +48,11 @@ class WaitForDoor(smach.State):
     def update_door_status(self, msg):
         self.door_open = msg.data
 
+
 class EnterDoor(smach.State):
-    def __init__(self, timeout=120.0, move_forward_server='/mdr_actions/move_forward_server', movement_duration=5., speed=0.1):
+    def __init__(self, timeout=120.0,
+                 move_forward_server='/mdr_actions/move_forward_server',
+                 movement_duration=5., speed=0.1):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'])
         self.timeout = timeout
         self.movement_duration = movement_duration
@@ -71,6 +76,7 @@ class EnterDoor(smach.State):
             return 'succeeded'
         else:
             return 'failed'
+
 
 class SetActionLibResult(smach.State):
     def __init__(self, result):
