@@ -8,12 +8,15 @@ import actionlib
 from std_msgs.msg import String
 
 from mdr_enter_door_action.msg import EnterDoorAction, EnterDoorGoal
-from mdr_introduce_self_action.msg import IntroduceSelfAction, IntroduceSelfGoal
+from mdr_introduce_self_action.msg import (IntroduceSelfAction,
+                                           IntroduceSelfGoal)
 from mdr_move_base_safe.msg import MoveBaseSafeAction, MoveBaseSafeGoal
 from mdr_move_tray_action.msg import MoveTrayAction, MoveTrayGoal
 
+
 class Enter(smach.State):
-    def __init__(self, timeout=120., enter_action_server='/mdr_actions/enter_action_server'):
+    def __init__(self, timeout=120.,
+                 enter_action_server='/mdr_actions/enter_action_server'):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'],
                              output_keys=['_feedback'])
         self.enter_action_client = actionlib.SimpleActionClient(enter_action_server, EnterDoorAction)
@@ -29,6 +32,7 @@ class Enter(smach.State):
             return 'succeeded'
         else:
             return 'failed'
+
 
 class MoveBase(smach.State):
     def __init__(self, destination_locations, timeout=120.0, action_server='/mdr_actions/move_base_safe_server'):
@@ -58,6 +62,7 @@ class MoveBase(smach.State):
                 return 'failed'
         return 'succeeded'
 
+
 class IntroduceSelf(smach.State):
     def __init__(self, profession=True, residence=True, date_of_birth=True,
                  timeout=120.0, action_server='/mdr_actions/introduce_self_action_server'):
@@ -83,6 +88,7 @@ class IntroduceSelf(smach.State):
             return 'succeeded'
         else:
             return 'failed'
+
 
 class Acknowledge(smach.State):
     def __init__(self, timeout=120.0, say_topic='/sound/say'):
@@ -114,6 +120,7 @@ class Acknowledge(smach.State):
         else:
             return 'failed'
 
+
 class MoveTray(smach.State):
     def __init__(self, direction, timeout=120.0, action_server='/mdr_actions/move_tray_server'):
         smach.State.__init__(self, outcomes=['up', 'down', 'failed'])
@@ -133,6 +140,7 @@ class MoveTray(smach.State):
             return self.direction
         else:
             return 'failed'
+
 
 class WaitForQR(smach.State):
     def __init__(self, timeout=120.0, qr_topic='/mcr_perception/qr_reader/output'):
@@ -159,3 +167,30 @@ class WaitForQR(smach.State):
 
     def register_qr_code(self, msg):
         self.qr_message = msg.data
+
+
+class WaitForCmd(smach.State):
+    def __init__(self, timeout=120.0, speech_topic='/recognized_speech'):
+        smach.State.__init__(self, outcomes=['succeeded', 'waiting', 'failed'])
+        self.timeout = rospy.Duration.from_sec(timeout)
+        self.state_check_rate = rospy.Rate(5)
+        self.speech_sub = rospy.Subscriber(speech_topic, String,
+                                           self.command_cb)
+        self.command = None
+        self.start_time = rospy.Time.now()
+
+    def execute(self, userdata):
+        if (rospy.Time.now() - self.start_time) < timeout:
+            if self.command:
+                rospy.loginfo('Received command: %s' % self.qr_message)
+                return 'succeeded'
+            else:
+                self.state_check_rate.sleep()
+                rospy.loginfo('Waiting for command')
+                return 'waiting'
+        else:
+            rospy.loginfo('wait_for_cmd timed out')
+            return 'failed'
+
+    def command_cb(self, msg):
+        self.command = msg.data

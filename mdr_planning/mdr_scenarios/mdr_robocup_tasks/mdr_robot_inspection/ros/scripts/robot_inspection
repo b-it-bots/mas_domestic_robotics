@@ -5,7 +5,10 @@ import rospy
 import smach
 import smach_ros
 
-from mdr_robot_inspection.action_states import Enter, MoveBase, MoveTray, IntroduceSelf, Acknowledge, WaitForQR
+from mdr_robot_inspection.action_states import (Enter, MoveBase, MoveTray,
+                                                IntroduceSelf, Acknowledge,
+                                                WaitForQR)
+
 
 class Dummy(smach.State):
     def __init__(self, msg="", timeout=5):
@@ -46,7 +49,7 @@ class RobotInspection(smach.StateMachine):
 
             # Instead of failed transition was timeout
             smach.StateMachine.add('WAIT_FOR_CMD',
-                                   Dummy(msg="Waiting for tray command"),
+                                   WaitForCmd(),
                                    transitions={'succeeded': 'ACKNOWLEDGE_CMD',
                                                 'failed': 'WAIT_FOR_CMD'})
 
@@ -85,7 +88,8 @@ def main():
 
     SM = RobotInspection()
 
-    smach_viewer = smach_ros.IntrospectionServer('robot_inspection', SM, 'ROBOT_INSPECTION')
+    smach_viewer = smach_ros.IntrospectionServer('robot_inspection', SM,
+                                                 'ROBOT_INSPECTION')
     smach_viewer.start()
 
     result = SM.execute()
@@ -93,6 +97,7 @@ def main():
         rospy.spin()
     rospy.loginfo('Robot inspection complete.')
     smach_viewer.stop()
+
 
 if __name__ == '__main__':
     main()
