@@ -5,7 +5,7 @@ import rospy
 import smach
 import smach_ros
 
-from mdr_robot_inspection.action_states import Enter, MoveBase, MoveTray, WaitForQR
+from mdr_robot_inspection.action_states import Enter, MoveBase, MoveTray, IntroduceSelf, Acknowledge, WaitForQR
 
 class Dummy(smach.State):
     def __init__(self, msg="", timeout=5):
@@ -40,8 +40,7 @@ class RobotInspection(smach.StateMachine):
                                                 'failed': 'GO_TO_INSPECTION_WAYPOINT'})
 
             smach.StateMachine.add('INTRODUCE_SELF',
-                                   Dummy("Hello, my name is Jenny."
-                                         "I am waiting for the QR code."),
+                                   IntroduceSelf(),
                                    transitions={'succeeded': 'WAIT_FOR_CMD',
                                                 'failed': 'WAIT_FOR_CMD'})
 
@@ -52,7 +51,7 @@ class RobotInspection(smach.StateMachine):
                                                 'failed': 'WAIT_FOR_CMD'})
 
             smach.StateMachine.add('ACKNOWLEDGE_CMD',
-                                   Dummy("Received tray command"),
+                                   Acknowledge(),
                                    transitions={'succeeded': 'MOVE_TRAY',
                                                 'failed': 'WAIT_FOR_CMD'})
 
@@ -71,7 +70,7 @@ class RobotInspection(smach.StateMachine):
                                                 'failed': 'WAIT_FOR_QR'})
 
             smach.StateMachine.add('CONFIRM_QR_CODE',
-                                   Dummy("Okay, I will go to the exit now"),
+                                   Acknowledge(),
                                    transitions={'succeeded': 'EXIT',
                                                 'failed': 'CONFIRM_QR_CODE'})
 

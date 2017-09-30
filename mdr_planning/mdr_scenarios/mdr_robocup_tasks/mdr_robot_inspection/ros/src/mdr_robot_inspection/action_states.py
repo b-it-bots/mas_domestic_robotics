@@ -8,6 +8,7 @@ import actionlib
 from std_msgs.msg import String
 
 from mdr_enter_door_action.msg import EnterDoorAction, EnterDoorGoal
+from mdr_introduce_self_action.msg import IntroduceSelfAction, IntroduceSelfGoal
 from mdr_move_base_safe.msg import MoveBaseSafeAction, MoveBaseSafeGoal
 from mdr_move_tray_action.msg import MoveTrayAction, MoveTrayGoal
 
@@ -57,10 +58,65 @@ class MoveBase(smach.State):
                 return 'failed'
         return 'succeeded'
 
+class IntroduceSelf(smach.State):
+    def __init__(self, profession=True, residence=True, date_of_birth=True,
+                 timeout=120.0, action_server='/mdr_actions/introduce_self_action_server'):
+        smach.State.__init__(self, outcomes=['succeeded', 'failed'])
+        self.profession = profession
+        self.residence = residence
+        self.date_of_birth = date_of_birth
+        self.timeout = timeout
+
+        self.introduce_self_client = actionlib.SimpleActionClient(action_server, IntroduceSelfAction)
+        self.introduce_self_client.wait_for_server()
+
+    def execute(self, userdata):
+        goal = IntroduceSelfGoal()
+        goal.profession = self.profession
+        goal.residence = self.residence
+        goal.date_of_birth = self.date_of_birth
+
+        self.introduce_self_client.send_goal(goal)
+        self.introduce_self_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
+        res = self.client.get_result()
+        if res and res.success:
+            return 'succeeded'
+        else:
+            return 'failed'
+
+class Acknowledge(smach.State):
+    def __init__(self, timeout=120.0, say_topic='/sound/say'):
+        smach.State.__init__(self, outcomes=['succeeded', 'failed'])
+        self.message = message
+        self.timeout = timeout
+        self.sound_pub = rospy.Publisher(say_topic, String, queue_size=1, latch=True)
+
+    def execute(self, userdata):
+        command = userdata.command.lower()
+        publish_command = True
+        msg = String()
+        if 'move' in command:
+            if 'up' in command:
+                msg.data = 'Moving the tray up'
+            elif 'down' in command:
+                msg.data = 'Moving the tray down'
+            else:
+                publish_command = False
+        elif 'qr' in command:
+            if 'continue' in command:
+                msg.data = 'Received continue command from QR code'
+            else:
+                publish_command = False
+
+        if publish_command:
+            self.sound_pub.publish(msg)
+            return 'succeeded'
+        else:
+            return 'failed'
+
 class MoveTray(smach.State):
     def __init__(self, direction, timeout=120.0, action_server='/mdr_actions/move_tray_server'):
         smach.State.__init__(self, outcomes=['up', 'down', 'failed'])
-        self.direction = direction
         self.timeout = timeout
 
         self.move_tray_client = actionlib.SimpleActionClient(action_server, MoveTrayAction)
@@ -68,7 +124,7 @@ class MoveTray(smach.State):
 
     def execute(self, userdata):
         goal = MoveTrayGoal()
-        goal.direction = self.direction
+        goal.direction = userdata.command
 
         self.move_tray_client.send_goal(goal)
         self.move_tray_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
@@ -91,6 +147,7 @@ class WaitForQR(smach.State):
         if (rospy.Time.now() - self.start_time) < timeout:
             if self.qr_message and self.qr_message.lower().find('continue') != -1:
                 rospy.loginfo('QR message: %s' % self.qr_message)
+                userdata.command = 'QR code message received: ' + self.qr_message
                 return 'succeeded'
             else:
                 self.state_check_rate.sleep()
