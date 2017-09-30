@@ -7,9 +7,10 @@
 
     <group>
       <machine name="hbrs_pc1" address="$(arg pc1)" env-loader="$(find mdr_bringup)/env.sh" default="true" />
-      <include file="$(find mcr_door_status)/ros/launch/door_status.launch" />
       <include file="$(find mdr_2dnav)/ros/launch/2dnav.launch" />
-      <node pkg="mdr_move_base_safe" type="move_base_safe" name="move_base_safe_server" output="screen"/>
+      <include file="$(find mdr_enter_door_action)/launch/enter_door.launch" />
+      <include file="$(find mdr_move_base_safe)/launch/move_base_safe.launch" />
+      <include file="$(find mdr_move_tray_action)/launch/move_tray.launch" />
     </group>
 
     <group>
@@ -21,7 +22,7 @@
       </node>
     </group>
 
-<!-- This can be discarded if we decide not to use speech in the inspection test -->
+    <!-- This can be discarded if we decide not to use speech in the inspection test -->
     <group>
       <machine name="hbrs_pc3" address="$(arg pc3)" env-loader="$(find mdr_bringup)/env.sh" default="true" />
       <include file="$(find mcr_question_matching)/ros/launch/question_matching.launch"/>
