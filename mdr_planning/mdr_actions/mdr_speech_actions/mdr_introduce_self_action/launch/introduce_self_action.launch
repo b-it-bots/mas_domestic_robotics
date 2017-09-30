@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_introduce_self_action" type="introduce_self_action" name="introduce_self_server" output="screen" ns="mdr_actions" />
+</launch>

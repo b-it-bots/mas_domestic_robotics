@@ -1,0 +1,35 @@
+#! /usr/bin/env python
+import sys
+
+import rospy
+import roslib
+import actionlib
+
+from mdr_introduce_self_action.msg import IntroduceSelfAction, IntroduceSelfGoal
+
+
+def print_usage_info():
+    rospy.loginfo('usage: introduce_self')
+
+
+if __name__ == '__main__':
+    rospy.init_node('introduce_self_client_test')
+
+    client = actionlib.SimpleActionClient('/mdr_actions/introduce_self_action_server',
+                                          IntroduceSelfAction)
+    rospy.loginfo("Waiting for introduce_self_action_server", )
+    client.wait_for_server()
+
+    goal = IntroduceSelfGoal()
+    goal.profession = True
+    goal.residence = True
+    goal.date_of_birth = True
+
+    try:
+        timeout = 15.0
+        rospy.loginfo('Sending action lib goal to introduce_self_server')
+        client.send_goal(goal)
+        client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
+        print client.get_result()
+    except:
+        pass

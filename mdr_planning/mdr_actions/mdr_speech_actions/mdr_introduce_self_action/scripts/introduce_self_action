@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+import rospy
+import smach
+
+# action lib
+from smach_ros import ActionServerWrapper, IntrospectionServer
+
+from mdr_introduce_self_action.msg import IntroduceSelfAction
+from mdr_introduce_self_action.action_states import (SetActionLibResult,
+                                                     Greet, SayName,
+                                                     ShareInformation)
+
+
+class IntroduceSelf(smach.StateMachine):
+    def __init__(self, timeout=10):
+        smach.StateMachine.__init__(self,
+                                    outcomes=['OVERALL_SUCCESS',
+                                              'OVERALL_FAILED', 'PREEMPTED'],
+                                    input_keys=['introduce_self_goal'],
+                                    output_keys=['introduce_self_feedback',
+                                                 'introduce_self_result'])
+
+        with self:
+            # Add states as a normal state machine
+            smach.StateMachine.add('GREET', Greet(),
+                                   transitions={'succeeded': 'SAY_NAME'})
+
+            smach.StateMachine.add('SAY_NAME', SayName(),
+                                   transitions={'succeeded': 'SAY_PROFESSION'})
+
+            smach.StateMachine.add('SAY_PROFESSION', ShareInformation(),
+                                   transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS'})
+
+            # Add the actionlib states
+            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS',
+                                   SetActionLibResult(True),
+                                   transitions={
+                                               'succeeded': 'OVERALL_SUCCESS'})
+            smach.StateMachine.add('SET_ACTION_LIB_FAILURE',
+                                   SetActionLibResult(False),
+                                   transitions={'succeeded': 'OVERALL_FAILED'})
+
+
+def main():
+    rospy.init_node('introduce_self_action_server')
+
+    # Construct state machine
+    sm = IntroduceSelf()
+
+    # Smach viewer
+    sis = IntrospectionServer('introduce_self_action_smach_viewer',
+                              sm,
+                              '/INTRODUCE_SELF_SMACH_VIEWER')
+    sis.start()
+
+    # Construct action server wrapper
+    asw = ActionServerWrapper(
+        server_name='introduce_self_action_server',
+        action_spec=IntroduceSelfAction,
+        wrapped_container=sm,
+        succeeded_outcomes=['OVERALL_SUCCESS'],
+        aborted_outcomes=['OVERALL_FAILED'],
+        preempted_outcomes=['PREEMPTED'],
+        goal_key='introduce_self_goal',
+        feedback_key='introduce_self_feedback',
+        result_key='introduce_self_result')
+    # Run the server in a background thread
+    asw.run_server()
+    rospy.spin()
+
+
+if __name__ == '__main__':
+    main()
