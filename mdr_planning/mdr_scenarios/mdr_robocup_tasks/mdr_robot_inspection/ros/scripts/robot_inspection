@@ -6,8 +6,8 @@ import smach
 import smach_ros
 
 from mdr_robot_inspection.action_states import (Enter, MoveBase, MoveTray,
-                                                IntroduceSelf, Acknowledge,
-                                                WaitForQR)
+                                                IntroduceSelf, WaitForCmd,
+                                                Acknowledge, WaitForQR)
 
 
 class Dummy(smach.State):
