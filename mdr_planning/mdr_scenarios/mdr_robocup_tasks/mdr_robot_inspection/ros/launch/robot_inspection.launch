@@ -11,6 +11,7 @@
       <include file="$(find mdr_enter_door_action)/launch/enter_door.launch" />
       <include file="$(find mdr_move_base_safe)/launch/move_base_safe.launch" />
       <include file="$(find mdr_move_tray_action)/launch/move_tray.launch" />
+      <include file="$(find mdr_introduce_self_action)/launch/introduce_self_action.launch" />
     </group>
 
     <group>
