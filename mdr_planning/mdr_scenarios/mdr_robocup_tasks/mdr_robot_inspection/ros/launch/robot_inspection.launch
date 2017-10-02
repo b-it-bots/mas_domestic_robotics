@@ -26,7 +26,7 @@
     <!-- This can be discarded if we decide not to use speech in the inspection test -->
     <group>
       <machine name="hbrs_pc3" address="$(arg pc3)" env-loader="$(find mdr_bringup)/env.sh" default="true" />
-      <include file="$(find mcr_question_matching)/ros/launch/question_matching.launch"/>
+      <include file="$(find mdr_question_matching)/ros/launch/question_matching.launch"/>
       <include file="$(find vocon_speech_recognizer)/launch/vocon.launch">
       <!-- This file still needs to be created -->
         <arg name="vocon_grammar" value="$(find mdr_robot_inspection)/ros/config/robot_inspection.fcf" />
