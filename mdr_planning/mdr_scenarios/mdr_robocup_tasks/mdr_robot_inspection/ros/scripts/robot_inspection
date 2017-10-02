@@ -51,6 +51,7 @@ class RobotInspection(smach.StateMachine):
             smach.StateMachine.add('WAIT_FOR_CMD',
                                    WaitForCmd(),
                                    transitions={'succeeded': 'ACKNOWLEDGE_CMD',
+                                                'waiting': 'WAIT_FOR_CMD',
                                                 'failed': 'WAIT_FOR_CMD'})
 
             smach.StateMachine.add('ACKNOWLEDGE_CMD',
