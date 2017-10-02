@@ -47,7 +47,7 @@ class WaitForDoor(smach.State):
         self.door_open = msg.data
 
 class EnterDoor(smach.State):
-    def __init__(self, timeout=120.0, move_forward_server='/mdr_actions/move_forward_server', movement_duration=5., speed=0.1):
+    def __init__(self, timeout=120.0, move_forward_server='/mdr_actions/move_forward_server', movement_duration=15., speed=0.1):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'])
         self.timeout = timeout
         self.movement_duration = movement_duration
