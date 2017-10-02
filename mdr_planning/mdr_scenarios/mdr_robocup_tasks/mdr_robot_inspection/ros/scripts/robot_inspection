@@ -25,11 +25,23 @@ class Dummy(smach.State):
 
 class RobotInspection(smach.StateMachine):
     """The  Robot Inspection state machine."""
-    def __init__(self):
+    def __init__(self, pose_param='/script_server/base/entry'):
         # super(RobotInspection, self).__init__()
         smach.StateMachine.__init__(self, outcomes=['DONE', 'TIMEOUT'])
         self.userdata.tray_position = 'DOWN'
         self.userdata.last_command = ''
+
+        # Get the navigation goal specified in the initialization from the
+        # script server. Default: "entry"
+        if rospy.has_param(pose_param):
+            self.pose = rospy.get_param(pose_param)
+        else:
+            self.pose = [0.0, 0.0, 0.0]
+
+        # Set the pose from the script server as the initial pose mean for AMCL
+        rospy.set_param('/amcl/initial_pose_x', self.pose[0])
+        rospy.set_param('/amcl/initial_pose_y', self.pose[1])
+        rospy.set_param('/amcl/initial_pose_a', self.pose[2])
 
         with self:
             smach.StateMachine.add('ENTER',
