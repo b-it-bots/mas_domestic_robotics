@@ -146,7 +146,7 @@ class MoveTray(smach.State):
         goal = MoveTrayGoal()
         goal.direction = direction
 
-        rospy.loginfo('Calling move_tray action with direction' % direction)
+        rospy.loginfo('Calling move_tray action with direction %s' % direction)
         self.move_tray_client.send_goal(goal)
         self.move_tray_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
         rospy.loginfo('move_tray call completed')
