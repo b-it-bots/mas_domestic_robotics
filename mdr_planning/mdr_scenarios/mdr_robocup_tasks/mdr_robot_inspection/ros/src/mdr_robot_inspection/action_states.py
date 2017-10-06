@@ -166,12 +166,18 @@ class WaitForQR(smach.State):
         self.qr_code_sub = rospy.Subscriber(qr_topic, String, self.register_qr_code)
         self.qr_message = None
         self.start_time = rospy.Time.now()
+        self.restart_state = False
 
     def execute(self, userdata):
+        if self.restart_state:
+            self.start_time = rospy.Time.now()
+            self.restart_state = False
+
         if (rospy.Time.now() - self.start_time) < self.timeout:
             if self.qr_message and self.qr_message.lower().find('continue') != -1:
                 rospy.loginfo('QR message: %s' % self.qr_message)
                 userdata.command = 'QR code message received: ' + self.qr_message
+                self.restart_state = True
                 return 'succeeded'
             else:
                 self.state_check_rate.sleep()
@@ -179,6 +185,7 @@ class WaitForQR(smach.State):
                 return 'waiting'
         else:
             rospy.loginfo('wait_for_qr timed out')
+            self.restart_state = True
             return 'failed'
 
     def register_qr_code(self, msg):
@@ -193,12 +200,18 @@ class WaitForCmd(smach.State):
         self.speech_sub = rospy.Subscriber(speech_topic, String, self.command_cb)
         self.command = None
         self.start_time = rospy.Time.now()
+        self.restart_state = False
 
     def execute(self, userdata):
+        if self.restart_state:
+            self.start_time = rospy.Time.now()
+            self.restart_state = False
+
         if (rospy.Time.now() - self.start_time) < self.timeout:
             if self.command:
                 rospy.loginfo('Received command: %s' % self.command)
                 userdata.command = self.command
+                self.restart_state = True
                 return 'succeeded'
             else:
                 self.state_check_rate.sleep()
@@ -206,6 +219,7 @@ class WaitForCmd(smach.State):
                 return 'waiting'
         else:
             rospy.loginfo('wait_for_cmd timed out')
+            self.restart_state = True
             return 'failed'
 
     def command_cb(self, msg):
