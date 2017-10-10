@@ -12,18 +12,42 @@
   <author email="alex.moriarty@inf.h-brs.de">Alex Moriarty</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>smach</build_depend>
+  <build_depend>smach_ros</build_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+  <build_depend>mdr_enter_door_action</build_depend>
+  <build_depend>mdr_introduce_self_action</build_depend>
+  <build_depend>mdr_move_base_safe</build_depend>
+  <build_depend>mdr_move_tray_action</build_depend>
+
   <build_depend>roslint</build_depend>
 
-  <run_depend>mcr_door_status</run_depend>
-  <run_depend>mdr_2dnav</run_depend>
-  <run_depend>mdr_move_base_safe</run_depend>
-  <run_depend>mdr_bringup</run_depend>
-  <run_depend>mdr_common_states</run_depend>
+
   <run_depend>rospy</run_depend>
   <run_depend>smach</run_depend>
   <run_depend>smach_ros</run_depend>
+  <run_depend>actionlib</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <!-- External components -->
   <run_depend>zbar_ros</run_depend>
-  <run_depend>roslint</run_depend>
+  <run_depend>vocon_speech_recognizer</run_depend>
+  <!-- mas_common components -->
+  <run_depend>mcr_door_status</run_depend>
+
+  <!-- Nodes-->
+  <run_depend>mdr_bringup</run_depend>
+  <run_depend>mdr_2dnav</run_depend>
+  <run_depend>mdr_question_matching</run_depend>
+
+  <!-- Actions -->
+  <run_depend>mdr_enter_door_action</run_depend>
+  <run_depend>mdr_introduce_self_action</run_depend>
+  <run_depend>mdr_move_base_safe</run_depend>
+  <run_depend>mdr_move_tray_action</run_depend>
 
   <test_depend>roslaunch</test_depend>
 

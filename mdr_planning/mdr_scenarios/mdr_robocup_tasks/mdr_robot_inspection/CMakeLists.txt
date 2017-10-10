@@ -6,12 +6,20 @@ find_package(catkin REQUIRED COMPONENTS roslint)
 catkin_package(
   CATKIN_DEPENDS
     rospy
-    mdr_move_base_safe
-    mdr_bringup
-    mdr_common_states
-    rospy
     smach
     smach_ros
+    actionlib
+    std_msgs
+    zbar_ros
+    vocon_speech_recognizer
+    mcr_door_status
+    mdr_bringup
+    mdr_2dnav
+    mdr_question_matching
+    mdr_move_base_safe
+    mdr_enter_door_action
+    mdr_introduce_self_action
+    mdr_move_tray_action
 )
 
 catkin_python_setup()
