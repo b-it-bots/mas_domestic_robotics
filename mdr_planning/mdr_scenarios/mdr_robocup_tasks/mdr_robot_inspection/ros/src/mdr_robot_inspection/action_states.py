@@ -3,7 +3,7 @@
 import rospy
 import smach
 import smach_ros
-import actionlib
+from actionlib import SimpleActionClient
 
 from std_msgs.msg import String
 
@@ -20,7 +20,8 @@ class Enter(smach.State):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'],
                              output_keys=['_feedback'])
         self.timeout = timeout
-        self.enter_action_client = actionlib.SimpleActionClient(enter_action_server, EnterDoorAction)
+        self.enter_action_client = SimpleActionClient(enter_action_server,
+                                                      EnterDoorAction)
         self.enter_action_client.wait_for_server()
 
     def execute(self, userdata):
@@ -28,7 +29,8 @@ class Enter(smach.State):
 
         rospy.loginfo('Calling enter_door action')
         self.enter_action_client.send_goal(goal)
-        result = self.enter_action_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
+        duration = rospy.Duration.from_sec(self.timeout)
+        result = self.enter_action_client.wait_for_result(duration)
         rospy.loginfo('enter_door call completed')
 
         if result:
@@ -37,12 +39,13 @@ class Enter(smach.State):
 
 
 class MoveBase(smach.State):
-    def __init__(self, destination_locations, timeout=120.0, action_server='/mdr_actions/move_base_safe_server'):
+    def __init__(self, destination_locations, timeout=120.0,
+                 action_server='/mdr_actions/move_base_safe_server'):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'])
         self.destination_locations = list(destination_locations)
         self.timeout = timeout
         self.action_server = action_server
-        self.client = actionlib.SimpleActionClient(action_server, MoveBaseSafeAction)
+        self.client = SimpleActionClient(action_server, MoveBaseSafeAction)
         self.client.wait_for_server()
 
     def execute(self, userdata):
@@ -65,14 +68,16 @@ class MoveBase(smach.State):
 
 class IntroduceSelf(smach.State):
     def __init__(self, profession=True, residence=True, date_of_birth=True,
-                 timeout=120.0, action_server='/mdr_actions/introduce_self_action_server'):
+                 timeout=120.0,
+                 action_server='/mdr_actions/introduce_self_action_server'):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'])
         self.profession = profession
         self.residence = residence
         self.date_of_birth = date_of_birth
         self.timeout = timeout
 
-        self.introduce_self_client = actionlib.SimpleActionClient(action_server, IntroduceSelfAction)
+        self.introduce_self_client = SimpleActionClient(action_server,
+                                                        IntroduceSelfAction)
         self.introduce_self_client.wait_for_server()
 
     def execute(self, userdata):
@@ -83,7 +88,8 @@ class IntroduceSelf(smach.State):
 
         rospy.loginfo('Calling introduce_self action')
         self.introduce_self_client.send_goal(goal)
-        self.introduce_self_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
+        duration = rospy.Duration.from_sec(self.timeout)
+        self.introduce_self_client.wait_for_result(duration)
         rospy.loginfo('introduce_self call completed')
 
         res = self.introduce_self_client.get_result()
@@ -95,9 +101,12 @@ class IntroduceSelf(smach.State):
 
 class Acknowledge(smach.State):
     def __init__(self, timeout=120.0, say_topic='/sound/say'):
-        smach.State.__init__(self, outcomes=['succeeded', 'failed'], input_keys=['command'])
+        smach.State.__init__(self,
+                             outcomes=['succeeded', 'failed'],
+                             input_keys=['command'])
         self.timeout = timeout
-        self.sound_pub = rospy.Publisher(say_topic, String, queue_size=1, latch=True)
+        self.sound_pub = rospy.Publisher(say_topic, String, queue_size=1,
+                                         latch=True)
 
     def execute(self, userdata):
         command = userdata.command.lower()
@@ -126,10 +135,14 @@ class Acknowledge(smach.State):
 
 
 class MoveTray(smach.State):
-    def __init__(self, direction, timeout=120.0, action_server='/mdr_actions/move_tray_server'):
-        smach.State.__init__(self, outcomes=['up', 'down', 'failed'], input_keys=['command'])
+    def __init__(self, direction, timeout=120.0,
+                 action_server='/mdr_actions/move_tray_server'):
+        smach.State.__init__(self,
+                             outcomes=['up', 'down', 'failed'],
+                             input_keys=['command'])
         self.timeout = timeout
-        self.move_tray_client = actionlib.SimpleActionClient(action_server, MoveTrayAction)
+        self.move_tray_client = SimpleActionClient(action_server,
+                                                   MoveTrayAction)
         self.move_tray_client.wait_for_server()
 
     def execute(self, userdata):
@@ -148,7 +161,8 @@ class MoveTray(smach.State):
 
         rospy.loginfo('Calling move_tray action with direction %s' % direction)
         self.move_tray_client.send_goal(goal)
-        self.move_tray_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
+        duration = rospy.Duration.from_sec(self.timeout)
+        self.move_tray_client.wait_for_result(duration)
         rospy.loginfo('move_tray call completed')
 
         res = self.move_tray_client.get_result()
@@ -159,11 +173,15 @@ class MoveTray(smach.State):
 
 
 class WaitForQR(smach.State):
-    def __init__(self, timeout=120.0, qr_topic='/mcr_perception/qr_reader/output'):
-        smach.State.__init__(self, outcomes=['succeeded', 'waiting', 'failed'], output_keys=['command'])
+    def __init__(self, timeout=120.0,
+                 qr_topic='/mcr_perception/qr_reader/output'):
+        smach.State.__init__(self,
+                             outcomes=['succeeded', 'waiting', 'failed'],
+                             output_keys=['command'])
         self.timeout = rospy.Duration.from_sec(timeout)
         self.state_check_rate = rospy.Rate(5)
-        self.qr_code_sub = rospy.Subscriber(qr_topic, String, self.register_qr_code)
+        self.qr_code_sub = rospy.Subscriber(qr_topic, String,
+                                            self.register_qr_code)
         self.qr_message = None
         self.start_time = rospy.Time.now()
         self.restart_state = False
@@ -174,9 +192,9 @@ class WaitForQR(smach.State):
             self.restart_state = False
 
         if (rospy.Time.now() - self.start_time) < self.timeout:
-            if self.qr_message and self.qr_message.lower().find('continue') != -1:
+            if self.qr_message and "continue" in self.qr_message.lower():
                 rospy.loginfo('QR message: %s' % self.qr_message)
-                userdata.command = 'QR code message received: ' + self.qr_message
+                userdata.command = self.qr_message
                 self.restart_state = True
                 return 'succeeded'
             else:
@@ -194,10 +212,13 @@ class WaitForQR(smach.State):
 
 class WaitForCmd(smach.State):
     def __init__(self, timeout=120.0, speech_topic='/recognized_speech'):
-        smach.State.__init__(self, outcomes=['succeeded', 'waiting', 'failed'], output_keys=['command'])
+        smach.State.__init__(self,
+                             outcomes=['succeeded', 'waiting', 'failed'],
+                             output_keys=['command'])
         self.timeout = rospy.Duration.from_sec(timeout)
         self.state_check_rate = rospy.Rate(5)
-        self.speech_sub = rospy.Subscriber(speech_topic, String, self.command_cb)
+        self.speech_sub = rospy.Subscriber(speech_topic, String,
+                                           self.command_cb)
         self.command = None
         self.start_time = rospy.Time.now()
         self.restart_state = False
