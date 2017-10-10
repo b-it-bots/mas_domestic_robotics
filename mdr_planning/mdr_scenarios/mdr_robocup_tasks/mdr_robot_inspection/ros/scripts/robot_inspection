@@ -10,19 +10,6 @@ from mdr_robot_inspection.action_states import (Enter, MoveBase, MoveTray,
                                                 Acknowledge, WaitForQR)
 
 
-class Dummy(smach.State):
-    def __init__(self, msg="", timeout=5):
-        # super(Dummy, self).__init__(self, outcomes=['succeeded', 'failed'])
-        smach.State.__init__(self, outcomes=['succeeded', 'failed'])
-        self.timeout = timeout
-        self.msg = msg
-
-    def execute(self, userdata):
-        rospy.loginfo(self.msg)
-        rospy.sleep(self.timeout)  # Just for debugging purposes
-        return 'succeeded'
-
-
 class RobotInspection(smach.StateMachine):
     """The  Robot Inspection state machine."""
     def __init__(self, pose_param='/script_server/base/entry'):
@@ -46,13 +33,15 @@ class RobotInspection(smach.StateMachine):
         with self:
             smach.StateMachine.add('ENTER',
                                    Enter(),
-                                   transitions={'succeeded': 'GO_TO_INSPECTION_WAYPOINT',
-                                                'failed': 'ENTER'})
+                                   transitions={
+                                    'succeeded': 'GO_TO_INSPECTION_WAYPOINT',
+                                    'failed': 'ENTER'})
 
             smach.StateMachine.add('GO_TO_INSPECTION_WAYPOINT',
                                    MoveBase(['inside_arena']),
-                                   transitions={'succeeded': 'INTRODUCE_SELF',
-                                                'failed': 'GO_TO_INSPECTION_WAYPOINT'})
+                                   transitions={
+                                    'succeeded': 'INTRODUCE_SELF',
+                                    'failed': 'GO_TO_INSPECTION_WAYPOINT'})
 
             smach.StateMachine.add('INTRODUCE_SELF',
                                    IntroduceSelf(),
