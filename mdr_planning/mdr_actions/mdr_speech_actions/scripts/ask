@@ -1,0 +1,58 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Created on 2017.09.25
+
+@author: Patrick Nagel
+"""
+
+import rospy
+import smach
+
+from smach_ros import ActionServerWrapper, IntrospectionServer
+from mdr_speech_actions.msg import AskAction, AskResult, AskFeedback
+from ask_action.action_states import InitializeAsk, InitializationError, \
+MatchQuestion, MatchError
+
+class AskSkill(smach.StateMachine):
+    def __init__(self):
+        smach.StateMachine.__init__(self,\
+        outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],\
+        input_keys=['ask_goal'],\
+        output_keys=['ask_feedback', 'ask_result'])
+        with self:
+            smach.StateMachine.add('INITIALIZE_ASK', InitializeAsk(),\
+            transitions={'succeeded':'MATCH_QUESTION', 'failed':'INITIALIZATION_ERROR'})
+            smach.StateMachine.add('INITIALIZATION_ERROR', InitializationError(),\
+            transitions={'error_detected':'OVERALL_FAILED', 'processing':'INITIALIZATION_ERROR'})
+            smach.StateMachine.add('MATCH_QUESTION', MatchQuestion(),\
+            transitions={'succeeded':'OVERALL_SUCCESS', 'question_not_found':'MATCH_ERROR',\
+            'processing':'MATCH_QUESTION'})
+            smach.StateMachine.add('MATCH_ERROR', MatchError(),\
+            transitions={'error_detected':'OVERALL_FAILED', 'processing':'MATCH_ERROR'})
+
+if __name__ == '__main__':
+    rospy.init_node('ask_server')
+
+    # construct state machine
+    sm = AskSkill()
+
+    # smach viewer
+    sis = IntrospectionServer('ask_smach_viewer', sm, '/ASK_SMACH_VIEWER')
+    sis.start()
+
+    # construct the action server wrapper
+    asw = ActionServerWrapper(
+        server_name='ask_server',
+        action_spec=AskAction,
+        wrapped_container=sm,
+        succeeded_outcomes=['OVERALL_SUCCESS'],
+        aborted_outcomes=['OVERALL_FAILED'],
+        preempted_outcomes=['PREEMPTED'],
+        goal_key='ask_goal',
+        feedback_key='ask_feedback',
+        result_key='ask_result')
+
+    # Run the server in the background thread
+    asw.run_server()
+    rospy.spin()
