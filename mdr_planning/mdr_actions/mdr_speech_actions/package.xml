@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_speech_actions</name>
+  <version>0.0.1</version>
+  <description>The mdr_speech_actions package</description>
+  <maintainer email="patrick.nagel@smail.inf.h-brs.de">Patrick Nagel</maintainer>
+  <license>GPLv3</license>
+  <buildtool_depend>catkin</buildtool_depend>
+</package>
