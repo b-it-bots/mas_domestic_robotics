@@ -1,0 +1,11 @@
+# goal definition
+bool start
+---
+# result definition
+bool success
+
+---
+# feedback
+double[] faces
+string current_state
+string text
