@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_detect_person" type="detect_person" name="detect_person_server" output="screen" ns="mdr_actions" />
+</launch>
