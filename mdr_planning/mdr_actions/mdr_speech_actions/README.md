@@ -7,6 +7,19 @@ The `listen` part is supposed to be the action, which enables the listening mode
 
 The actions `ask` and `answer` receive as a goal a string, which is reffered to as _triggering_statement_ (ask) or _question_ (answer). The node then tries to match a response to the received string by comparing the input with saved statements in ask.txt or answer.txt. If there is a match, the node returns the right side of the corresponding colon. Please note, if you want to reach a match, also copy the _._ or the _?_ at the beginning of the line (see ask.txt and answer.txt).
 
+### Format of _ask.txt_ and _answer.txt_
+The structure of both files is the same. Each line represents one possible conversation. As mentioned before do the lines in _ask.txt_ start with a _._ and the lines in _answer.txt_ start with a _?_. The text, which follows after the punctuation mark and which goes up to the colon, is the triggering statement. The text after the colon is the response to the triggering statement. Following this format, you can add more conversations to the file.
+
+Example for _ask.txt_:
+```
+.the weather is great today:Do you have any plans
+```
+
+Example for _answer.txt_:
+```
+?what are your hobbies:i like to play music on mas parties
+```
+
 ## How to run the code?
 There are two options:
 
