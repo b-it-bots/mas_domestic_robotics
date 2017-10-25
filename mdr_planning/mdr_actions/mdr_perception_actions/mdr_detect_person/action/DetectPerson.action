@@ -6,6 +6,6 @@ bool success
 
 ---
 # feedback
-double[] faces
+float64[] faces
 string current_state
 string text

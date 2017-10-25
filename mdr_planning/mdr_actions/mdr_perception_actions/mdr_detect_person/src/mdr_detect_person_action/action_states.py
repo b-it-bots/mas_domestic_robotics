@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import rospy
 import smach
@@ -7,9 +7,10 @@ import actionlib
 import cv2
 
 from mdr_detect_person.msg import DetectPersonFeedback, DetectPersonGoal, DetectPersonResult
+from sensor_msgs.msg import Image
 
-from utils.inference import detect_faces
-from utils.inference import load_detection_model
+from inference import detect_faces
+from inference import load_detection_model
 
 
 class SetupDetectPerson(smach.State):
@@ -31,32 +32,33 @@ class SetupDetectPerson(smach.State):
 class DetectPerson(smach.State):
     def __init__(self):
         smach.State.__init__(self, input_keys=['detect_person_goal'], outcomes=['succeeded', 'failed'])
+        rospy.Subscriber("/cam3d/rgb/image_raw", Image, self.callback)
         
     def execute(self, userdata):
-
+        # model for 
         detection_model_path = '../trained_models/detection_models/haarcascade_frontalface_default.xml'
-
-        # hyper-parameters for bounding boxes shape
-        frame_window = 10
 
         # loading models
         face_detection = load_detection_model(detection_model_path)
 
-        # starting video streaming
-        cv2.namedWindow('window_frame')
-        video_capture = cv2.VideoCapture(0)
-        while True:
-
-            bgr_image = video_capture.read()[1]
+        for i in xrange(1,1000):
+            bgr_image = self.video_capture.read()[1]
             gray_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
             rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
             faces = detect_faces(face_detection, gray_image)
 
-        feedback =  DetectPersonFeedback()
-        feedback.faces = faces
-        userdata.detect_person_feedback = feedback
+        if np.size(faces) != 0:
 
-        return 'succeeded'
+            feedback =  DetectPersonFeedback()
+            feedback.faces = faces
+            userdata.detect_person_feedback = feedback
+            return 'succeeded'
+        else:
+            return 'failure'
+
+    def callback(self, data):
+        rospy.loginfo(rospy.get_caller_id() + "I heard %s", data.data)
+        self.video_capture = data.data
 
 class SetActionLibResult(smach.State):
     def __init__(self, result):
