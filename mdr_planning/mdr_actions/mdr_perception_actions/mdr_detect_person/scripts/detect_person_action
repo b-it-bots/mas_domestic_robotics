@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import rospy
 import smach
 
@@ -22,7 +22,7 @@ class DetectPersonSkill(smach.StateMachine):
 
             smach.StateMachine.add('DETECT_PERSON', DetectPerson(),
                                    transitions = {'succeeded': 'SET_ACTION_LIB_SUCCESS',
-                                                'failed': 'SET_ACTION_LIB_FAILED'})
+                                                'failed': 'DETECT_PERSON'})
 
             smach.StateMachine.add('SET_ACTION_LIB_FAILED', SetActionLibResult(False),
                                    transitions = {'succeeded': 'OVERALL_FAILED'})
