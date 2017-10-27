@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mcr_question_matching)
+project(mdr_question_matching)
 
 find_package(catkin REQUIRED
   COMPONENTS

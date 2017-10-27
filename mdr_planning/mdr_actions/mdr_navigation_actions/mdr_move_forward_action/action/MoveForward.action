@@ -1,0 +1,10 @@
+# goal definition
+float32 movement_duration
+float32 speed
+---
+# result definition
+bool success
+---
+# feedback
+string current_state
+string message
