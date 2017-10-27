@@ -11,6 +11,7 @@ from random import randint
 import os
 import rospy
 import smach
+import rospkg
 
 from mdr_speech_actions.msg import AnswerFeedback, AnswerResult
 
@@ -80,8 +81,9 @@ class MatchAnswer(smach.State):
             return 'processing'
 
         # check if an answer to the question exists
+        rospack = rospkg.RosPack()
         matching_line = None
-        file_dir = os.path.join(os.path.dirname(__file__), "answers.txt")
+        file_dir = os.path.join(rospack.get_path("mdr_speech_actions"), "answers.txt")
         answer_file = open(file_dir, "r")
         for line in answer_file:
             if userdata.answer_goal.question in line:
