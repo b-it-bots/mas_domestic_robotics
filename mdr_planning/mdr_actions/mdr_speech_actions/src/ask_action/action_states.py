@@ -11,6 +11,7 @@ from random import randint
 import os
 import rospy
 import smach
+import rospkg
 
 from mdr_speech_actions.msg import AskResult, AskFeedback
 
@@ -80,8 +81,9 @@ class MatchQuestion(smach.State):
             self.feedback_given = True
             return 'processing'
 
+        rospack = rospkg.RosPack()
         matching_line = None
-        file_dir = os.path.join(os.path.dirname(__file__), "ask.txt")
+        file_dir = os.path.join(rospack.get_path("mdr_speech_actions"), "ask.txt")
         ask_file = open(file_dir, "r")
         for line in ask_file:
             if userdata.ask_goal.triggering_statement in line:
