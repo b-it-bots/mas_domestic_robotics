@@ -5,8 +5,20 @@ Changelog for package mdr_emergency_stop_mapper
 Forthcoming
 -----------
 
-1.0.0 (2017-04-11 10:44:12 +0200)
----------------------------------
+1.1.1 (2017-09-20)
+------------------
+* Change maintainer tags to MAS Robotics
+* Generate changelogs for mdr_monitoring
+* Contributors: Argentina Ortega Sainz
+
+1.1.0 (2017-09-18 18:15)
+------------------------
+
+1.0.1 (2017-09-18 18:04)
+------------------------
+
+1.0.0 (2017-04-11)
+------------------
 * Merge branch 'catkin_lint' into 'indigo'
   [CATKIN_LINT] fix issues reported by catkin lint
   - Adds missing CATKIN_DEPENDS to catkin_package()

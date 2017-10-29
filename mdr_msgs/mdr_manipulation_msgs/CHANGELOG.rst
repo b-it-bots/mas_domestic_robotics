@@ -4,6 +4,18 @@ Changelog for package mdr_manipulation_msgs
 
 Forthcoming
 -----------
+
+1.1.1 (2017-09-20)
+------------------
+* Change maintainer tags to MAS Robotics
+* Update changelogs for mdr_msgs
+* Contributors: Argentina Ortega Sainz
+
+1.1.0 (2017-09-18 18:15)
+------------------------
+
+1.0.1 (2017-09-18 18:04)
+------------------------
 * Merge branch 'refactor/mdr_msgs' into 'indigo'
   Create a new mdr_msgs metapackage and move all messages/services there
   See merge request !27

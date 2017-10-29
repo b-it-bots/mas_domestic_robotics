@@ -4,9 +4,28 @@ Changelog for package mdr_bringup
 
 Forthcoming
 -----------
+* Add env.sh install to CMakeLists.txt
+* Contributors: Argentina Ortega Sainz
 
-1.0.0 (2017-04-11 10:44:12 +0200)
----------------------------------
+1.1.1 (2017-09-20)
+------------------
+* Change maintainer tags to MAS Robotics
+* Generate changelog for mdr_robots
+* Contributors: Argentina Ortega Sainz
+
+1.1.0 (2017-09-18 18:15)
+------------------------
+
+1.0.1 (2017-09-18 18:04)
+------------------------
+* rm sicktoolbox dependencies
+* rm unused launchers
+* rm volksbot launch files
+* rm mdr_hardware_config
+* Contributors: Alex Mitrevski
+
+1.0.0 (2017-04-11)
+------------------
 * Fix openni2 launch file
 * Do not launch the USB cam nice it crashes quite often and it is not used currently
 * Fix ending include tag

@@ -1,17 +1,32 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package mcr_question_matching
+Changelog for package mdr_question_matching
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Forthcoming
 -----------
+* Add missing scripts to installs in CMakeLists.txt
+* Fix lint issues on mdr_question_matcher
+* Contributors: Argentina Ortega Sainz
+
+1.1.1 (2017-09-20)
+------------------
+* Change maintainer tags to MAS Robotics
+* Generate changelogs for mdr_speech
+* Contributors: Argentina Ortega Sainz
+
+1.1.0 (2017-09-18 18:15)
+------------------------
+
+1.0.1 (2017-09-18 18:04)
+------------------------
 * Merge branch 'refactor/mdr_speech' into 'indigo'
   Refactor/mdr speech
   See merge request !30
 * Add mcr_question_matching from mas_common_robotics
-* Contributors: Alex Mitrevski, Argentina Ortega Sainz
+* Contributors: Argentina Ortega Sainz, Alex Mitrevski
 
-1.0.0 (2017-04-11 10:44:12 +0200)
----------------------------------
+1.0.0 (2017-04-11)
+------------------
 * Added QAgrammar.txt
 * Q&A are loaded from a txt file
 * Fixed a problem with matching answers

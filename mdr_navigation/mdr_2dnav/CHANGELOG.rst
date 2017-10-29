@@ -4,9 +4,24 @@ Changelog for package mdr_2dnav
 
 Forthcoming
 -----------
+* Update permissions of non-executable files
+  Config and launch files are no longer executable
+* Contributors: Argentina Ortega Sainz
 
-1.0.0 (2017-04-11 10:44:12 +0200)
----------------------------------
+1.1.1 (2017-09-20)
+------------------
+* Change maintainer tags to MAS Robotics
+* Generate changelogs for mdr_navigation
+* Contributors: Argentina Ortega Sainz
+
+1.1.0 (2017-09-18 18:15)
+------------------------
+
+1.0.1 (2017-09-18 18:04)
+------------------------
+
+1.0.0 (2017-04-11)
+------------------
 * [2dnav] add projected laser scan as additional source
 * Merge branch 'mdr_2dnav' into 'indigo'
   mdr_2dnav
