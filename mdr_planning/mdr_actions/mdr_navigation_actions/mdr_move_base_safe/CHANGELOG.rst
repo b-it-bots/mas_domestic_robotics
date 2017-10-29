@@ -2,6 +2,11 @@
 Changelog for package mdr_move_base_safe
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add missing scripts to installs in CMakeLists.txt
+* Contributors: Argentina Ortega Sainz
+
 1.1.1 (2017-09-20)
 ------------------
 * Change maintainer tags to MAS Robotics

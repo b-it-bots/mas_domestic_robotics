@@ -2,6 +2,9 @@
 Changelog for package mdr_simulation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.1 (2017-09-20)
 ------------------
 * Change maintainer tags to MAS Robotics

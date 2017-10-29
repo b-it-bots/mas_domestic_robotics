@@ -2,6 +2,9 @@
 Changelog for package mdr_speech
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.1 (2017-09-20)
 ------------------
 * Generate changelogs for mdr_speech

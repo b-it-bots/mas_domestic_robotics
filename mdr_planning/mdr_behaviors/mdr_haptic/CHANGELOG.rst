@@ -2,6 +2,12 @@
 Changelog for package mdr_haptic
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Update permissions of non-executable files
+  Files in src are now not executable
+* Contributors: Argentina Ortega Sainz
+
 1.1.1 (2017-09-20)
 ------------------
 * Change maintainer tags to MAS Robotics
