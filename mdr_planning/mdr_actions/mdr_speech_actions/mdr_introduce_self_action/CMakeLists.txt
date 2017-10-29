@@ -64,7 +64,7 @@ catkin_python_setup()
 # )
 
 ## Generate actions in the 'action' folder
-add_action_files(
+add_action_files(DIRECTORY ros/action
   FILES
   IntroduceSelf.action
 #   Action2.action
@@ -108,7 +108,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES mdr_introduce_self
-  CATKIN_DEPENDS actionlib_msgs message_runtime
+  CATKIN_DEPENDS actionlib_msgs message_runtime std_msgs
 #  DEPENDS system_lib
 )
 
@@ -162,10 +162,11 @@ include_directories(
 
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(PROGRAMS
+  ros/scripts/introduce_self_action
+  ros/scripts/introduce_self_action_client_test
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark executables and/or libraries for installation
 # install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_node
