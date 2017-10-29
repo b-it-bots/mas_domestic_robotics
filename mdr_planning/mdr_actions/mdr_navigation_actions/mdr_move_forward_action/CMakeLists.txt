@@ -28,6 +28,7 @@ catkin_package(
  CATKIN_DEPENDS
    actionlib_msgs
    message_runtime
+   geometry_msgs
 )
 
 include_directories(
