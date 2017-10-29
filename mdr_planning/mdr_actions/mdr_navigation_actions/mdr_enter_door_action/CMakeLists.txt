@@ -35,3 +35,9 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
+install(PROGRAMS
+  scripts/enter_door_action
+  scripts/enter_door_action_client_test
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
+)

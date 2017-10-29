@@ -33,3 +33,9 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
+install(PROGRAMS
+  scripts/move_forward_action
+  scripts/move_forward_action_client_test
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
+)

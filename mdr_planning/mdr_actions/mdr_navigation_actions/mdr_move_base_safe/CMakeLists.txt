@@ -31,3 +31,9 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
+install(PROGRAMS
+  scripts/move_base_safe
+  scripts/move_base_safe_client_test
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
+)
