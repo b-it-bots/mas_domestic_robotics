@@ -3,6 +3,9 @@ Changelog for package mdr_scenarios
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
+1.1.2 (2017-10-29)
+------------------
+
 1.1.1 (2017-09-20)
 ------------------
 * Change maintainer tags to MAS Robotics

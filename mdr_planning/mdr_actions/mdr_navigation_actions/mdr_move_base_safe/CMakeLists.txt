@@ -32,9 +32,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-### INSTALLS
 install(PROGRAMS
   scripts/move_base_safe
   scripts/move_base_safe_client_test
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/ros/scripts
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )

@@ -32,9 +32,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-### INSTALLS
 install(PROGRAMS
   scripts/perceive_table
   scripts/perceive_table_client_test
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/ros/scripts
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )

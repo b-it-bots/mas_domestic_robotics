@@ -33,11 +33,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-### INSTALLS
 install(PROGRAMS
   scripts/move_tray_action
   scripts/move_tray_action_client_test
-#  ros/scripts/move_forward_action
-#  ros/scripts/move_forward_action_client_test
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/ros/scripts
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )

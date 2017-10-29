@@ -37,11 +37,8 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-### INSTALLS
 install(PROGRAMS
-#  ros/scripts/enter_door_action
-#  ros/scripts/enter_door_action_client_test
   scripts/enter_door_action
   scripts/enter_door_action_client_test
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/ros/scripts
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )

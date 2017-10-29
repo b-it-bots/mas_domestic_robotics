@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_simulation</name>
-  <version>1.1.0</version>
+  <version>1.1.2</version>
   <description>The mdr_simulation package</description>
 
   <author email="matthias.fueller@h-brs.de">Matthias Füller</author>

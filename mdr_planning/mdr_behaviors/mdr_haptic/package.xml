@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
 	<name>mdr_haptic</name>
-	<version>1.1.0</version>
+	<version>1.1.2</version>
 	<license>GPLv3</license>
 	<description>The haptic related package (guidance, navigation)</description>
 
