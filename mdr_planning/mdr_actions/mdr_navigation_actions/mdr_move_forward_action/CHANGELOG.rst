@@ -2,8 +2,8 @@
 Changelog for package mdr_move_forward_action
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.2 (2017-10-29)
+------------------
 * Fix lint issues in mdr_actions
 * Add missing scripts to installs in CMakeLists.txt
 * [mdr_move_forward_action] Added a call to 'roslint_python' to CMakeLists.txt

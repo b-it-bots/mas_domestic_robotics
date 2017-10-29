@@ -2,8 +2,8 @@
 Changelog for package mdr_move_base_safe
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.2 (2017-10-29)
+------------------
 * Add missing scripts to installs in CMakeLists.txt
 * Contributors: Argentina Ortega Sainz
 

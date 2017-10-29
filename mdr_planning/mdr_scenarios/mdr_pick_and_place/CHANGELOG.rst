@@ -2,8 +2,8 @@
 Changelog for package mdr_pick_and_place
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.2 (2017-10-29)
+------------------
 * Add missing scripts to installs in CMakeLists.txt
 * Update permissions of non-executable files
   Files in src are now not executable
