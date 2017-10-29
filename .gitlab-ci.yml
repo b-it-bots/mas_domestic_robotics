@@ -29,8 +29,7 @@ build:
     - catkin_make tests
     - touch $CI_PROJECT_DIR/src/cob_robots/CATKIN_IGNORE
     - catkin_make roslint
-    - catkin_lint --strict --ignore CRITICAL_VAR_APPEND,LINK_DIRECTORY src/
+    - catkin_lint --strict --ignore CRITICAL_VAR_APPEND,LINK_DIRECTORY src/$REPOSITORY_NAME
     - catkin_make install
     - catkin_make run_tests
     - catkin_test_results
-

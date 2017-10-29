@@ -28,8 +28,15 @@ catkin_package(
  CATKIN_DEPENDS
    actionlib_msgs
    message_runtime
+   geometry_msgs
 )
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+)
+
+install(PROGRAMS
+  scripts/move_forward_action
+  scripts/move_forward_action_client_test
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )

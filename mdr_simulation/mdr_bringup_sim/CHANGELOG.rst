@@ -2,6 +2,9 @@
 Changelog for package mdr_bringup_sim
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 1.1.1 (2017-09-20)
 ------------------
 * Change maintainer tags to MAS Robotics
