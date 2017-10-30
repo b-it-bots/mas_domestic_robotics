@@ -1,7 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mdr_robot_inspection)
 
-find_package(catkin REQUIRED COMPONENTS roslint)
+find_package(catkin REQUIRED COMPONENTS 
+  roslint
+  rospy
+  smach_ros
+  smach
+  actionlib
+  std_msgs
+  mdr_enter_door_action
+  mdr_introduce_self_action
+  mdr_move_base_safe
+  mdr_move_tray_action  
+)
 
 catkin_package(
   CATKIN_DEPENDS

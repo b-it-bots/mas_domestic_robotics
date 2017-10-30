@@ -9,6 +9,7 @@ project(mdr_introduce_self_action)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   actionlib
+  actionlib_msgs
   genmsg
   message_generation
   rospy
