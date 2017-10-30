@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_enter_door_action</name>
-  <version>1.1.0</version>
+  <version>1.1.2</version>
   <description>An action for moving a robot's base inside a door</description>
 
   <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
@@ -20,6 +20,8 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>mcr_door_status</build_depend>
   <build_depend>mdr_move_forward_action</build_depend>
+  <build_depend>std_msgs</build_depend>
+
 
   <run_depend>rospy</run_depend>
   <run_depend>actionlib</run_depend>
@@ -28,6 +30,8 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>mcr_door_status</run_depend>
   <run_depend>mdr_move_forward_action</run_depend>
+  <run_depend>std_msgs</run_depend>
+
 
   <export></export>
 </package>

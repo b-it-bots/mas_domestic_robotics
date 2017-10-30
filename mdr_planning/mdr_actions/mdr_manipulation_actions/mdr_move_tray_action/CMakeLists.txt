@@ -32,3 +32,9 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
+install(PROGRAMS
+  scripts/move_tray_action
+  scripts/move_tray_action_client_test
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
+)

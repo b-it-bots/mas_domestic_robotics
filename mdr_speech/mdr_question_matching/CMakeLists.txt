@@ -27,6 +27,6 @@ endif()
 
 ### INSTALLS
 install(PROGRAMS
-  ros/scripts/question_matching
+  ros/scripts/question_matcher
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

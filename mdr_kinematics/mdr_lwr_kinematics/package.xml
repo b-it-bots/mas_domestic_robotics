@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_lwr_kinematics</name>
-  <version>1.1.0</version>
+  <version>1.1.2</version>
   <description>
     This package provides forward kinematics and an analytical inverse
     kinematics solver for the Kuka LWR (Light-Weight Robot). The inverse

@@ -2,6 +2,13 @@
 Changelog for package mdr_pick_and_place
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.1.2 (2017-10-29)
+------------------
+* Add missing scripts to installs in CMakeLists.txt
+* Update permissions of non-executable files
+  Files in src are now not executable
+* Contributors: Argentina Ortega Sainz
+
 1.1.1 (2017-09-20)
 ------------------
 * Change maintainer tags to MAS Robotics
