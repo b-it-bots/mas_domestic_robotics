@@ -11,7 +11,7 @@ import sys
 import rospy
 import actionlib
 
-from mdr_speech_actions.msg import AskAction, AskGoal
+from mdr_ask_action.msg import AskAction, AskGoal
 
 def print_usage_info():
     rospy.loginfo("usage: ask <triggering_statement>")
