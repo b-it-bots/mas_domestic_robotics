@@ -13,7 +13,7 @@ import rospy
 import smach
 import rospkg
 
-from mdr_speech_actions.msg import AnswerFeedback, AnswerResult
+from mdr_answer_action.msg import AnswerFeedback, AnswerResult
 
 class InitializeAnswer(smach.State):
     def __init__(self):
@@ -83,7 +83,7 @@ class MatchAnswer(smach.State):
         # check if an answer to the question exists
         rospack = rospkg.RosPack()
         matching_line = None
-        file_dir = os.path.join(rospack.get_path("mdr_speech_actions"), "answers.txt")
+        file_dir = os.path.join(rospack.get_path("mdr_answer_action"), "answers.txt")
         answer_file = open(file_dir, "r")
         for line in answer_file:
             if userdata.answer_goal.question in line:

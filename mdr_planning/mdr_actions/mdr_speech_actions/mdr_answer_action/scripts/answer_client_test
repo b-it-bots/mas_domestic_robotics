@@ -11,7 +11,7 @@ import sys
 import rospy
 import actionlib
 
-from mdr_speech_actions.msg import AnswerAction, AnswerGoal
+from mdr_answer_action.msg import AnswerAction, AnswerGoal
 
 def print_usage_info():
     rospy.loginfo("usage: answer <question>")

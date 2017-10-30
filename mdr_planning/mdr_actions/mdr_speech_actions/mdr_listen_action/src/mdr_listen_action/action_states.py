@@ -13,7 +13,7 @@ import smach
 
 from std_msgs.msg import String
 from smach_ros import ActionServerWrapper, IntrospectionServer
-from mdr_speech_actions.msg import ListenAction, ListenResult, ListenFeedback
+from mdr_listen_action.msg import ListenAction, ListenResult, ListenFeedback
 
 class InitializeListen(smach.State):
     def __init__(self):
