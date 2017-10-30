@@ -13,7 +13,7 @@ import rospy
 import smach
 import rospkg
 
-from mdr_speech_actions.msg import AskResult, AskFeedback
+from mdr_ask_action.msg import AskResult, AskFeedback
 
 class InitializeAsk(smach.State):
     def __init__(self):
@@ -22,8 +22,7 @@ class InitializeAsk(smach.State):
         output_keys=['ask_feedback'])
 
     def execute(self, userdata):
-        rospy.loginfo("Executing state InitializeAsk")
-        
+        rospy.loginfo("Executing state InitializeAsk")        
         initialization_successful = True
 
         # give some feedback
@@ -83,7 +82,7 @@ class MatchQuestion(smach.State):
 
         rospack = rospkg.RosPack()
         matching_line = None
-        file_dir = os.path.join(rospack.get_path("mdr_speech_actions"), "ask.txt")
+        file_dir = os.path.join(rospack.get_path("mdr_ask_action"), "ask.txt")
         ask_file = open(file_dir, "r")
         for line in ask_file:
             if userdata.ask_goal.triggering_statement in line:

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_speech_actions)
+project(mdr_listen_action)
 
 find_package(catkin REQUIRED COMPONENTS
   actionlib
@@ -15,8 +15,6 @@ catkin_python_setup()
 add_action_files(
   FILES
   Listen.action
-  Answer.action
-  Ask.action
 )
 
 generate_messages(
