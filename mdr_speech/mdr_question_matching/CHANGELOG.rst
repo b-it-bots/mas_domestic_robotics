@@ -2,8 +2,8 @@
 Changelog for package mdr_question_matching
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.2 (2017-10-29)
+------------------
 * Add missing scripts to installs in CMakeLists.txt
 * Fix lint issues on mdr_question_matcher
 * Contributors: Argentina Ortega Sainz

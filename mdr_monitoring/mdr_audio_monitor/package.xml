@@ -4,7 +4,7 @@
   <description>
     Monitor the status of the microphone and signal the state by LEDs.
   </description>
-  <version>1.1.0</version>
+  <version>1.1.2</version>
   <license>BSD</license>
 
   <author email="matthias.fueller@-brs.de">Matthias Füller</author>

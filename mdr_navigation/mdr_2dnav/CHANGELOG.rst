@@ -2,8 +2,8 @@
 Changelog for package mdr_2dnav
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.2 (2017-10-29)
+------------------
 * Update permissions of non-executable files
   Config and launch files are no longer executable
 * Contributors: Argentina Ortega Sainz

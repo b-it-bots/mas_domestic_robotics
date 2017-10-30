@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_bringup_sim</name>
-  <version>1.1.0</version>
+  <version>1.1.2</version>
   <description>launch files to bring up BRSU robots in simulation</description>
 
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>

@@ -2,8 +2,8 @@
 Changelog for package mdr_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.2 (2017-10-29)
+------------------
 * Add env.sh install to CMakeLists.txt
 * Contributors: Argentina Ortega Sainz
 
