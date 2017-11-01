@@ -15,11 +15,13 @@ from std_msgs.msg import String
 from smach_ros import ActionServerWrapper, IntrospectionServer
 from mdr_listen_action.msg import ListenAction, ListenResult, ListenFeedback
 
+
 class InitializeListen(smach.State):
+
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'failed'],\
-        input_keys=['error_message', 'listen_feedback'],\
-        output_keys=['listen_feedback', 'init_error_message'])
+        smach.State.__init__(self, outcomes=['succeeded', 'failed'],
+                             input_keys=['error_message', 'listen_feedback'],
+                             output_keys=['listen_feedback', 'init_error_message'])
 
     def execute(self, userdata):
         rospy.loginfo("Executing state InitializeListen")
@@ -42,11 +44,14 @@ class InitializeListen(smach.State):
             rospy.logerr("Microphones could not be initialized.")
             return 'failed'
 
+
 class WaitForUserInput(smach.State):
+
     def __init__(self):
-        smach.State.__init__(self, outcomes=['input_received', 'no_input_received', 'processing'],\
-        input_keys=['listen_goal', 'listen_feedback', 'accoustic_input'],\
-        output_keys=['listen_feedback', 'accoustic_input', 'input_error_message'])
+        smach.State.__init__(self, outcomes=['input_received', 'no_input_received', 'processing'],
+                             input_keys=['listen_goal', 'listen_feedback', 'accoustic_input'],
+                             output_keys=['listen_feedback', 'accoustic_input',
+                                          'input_error_message'])
         self.feedback_given = False
         self.input_received = False
 
@@ -81,11 +86,13 @@ class WaitForUserInput(smach.State):
         rospy.logerr("No input received.")
         return 'no_input_received'
 
+
 class InitializationError(smach.State):
+
     def __init__(self):
-        smach.State.__init__(self, outcomes=['error_detected', 'processing'],\
-        input_keys=['error_message_in', 'listen_feedback'],\
-        output_keys=['listen_feedback', 'listen_result'])
+        smach.State.__init__(self, outcomes=['error_detected', 'processing'],
+                             input_keys=['error_message_in', 'listen_feedback'],
+                             output_keys=['listen_feedback', 'listen_result'])
         self.feedback_given = False
 
     def execute(self, userdata):
@@ -107,11 +114,15 @@ class InitializationError(smach.State):
         userdata.listen_result = result
         return 'error_detected'
 
+
 class ProcessInput(smach.State):
+
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'input_not_understood', 'processing'],\
-        input_keys=['accoustic_input', 'listen_feedback', 'input_error_message'],\
-        output_keys=['listen_feedback', 'listen_result', 'input_error_message'])
+        smach.State.__init__(self, outcomes=['succeeded', 'input_not_understood', 'processing'],
+                             input_keys=['accoustic_input', 'listen_feedback',
+                                         'input_error_message'],
+                             output_keys=['listen_feedback', 'listen_result',
+                                          'input_error_message'])
         self.feedback_given = False
         self.feedback_updated = False
 
@@ -173,11 +184,13 @@ class ProcessInput(smach.State):
             rospy.logerr("%s", userdata.input_error_message)
             return 'input_not_understood'
 
+
 class InputError(smach.State):
+
     def __init__(self):
-        smach.State.__init__(self, outcomes=['error_detected', 'processing'],\
-        input_keys=['error_message_in', 'listen_feedback'],\
-        output_keys=['listen_feedback', 'listen_result'])
+        smach.State.__init__(self, outcomes=['error_detected', 'processing'],
+                             input_keys=['error_message_in', 'listen_feedback'],
+                             output_keys=['listen_feedback', 'listen_result'])
         self.feedback_given = False
 
     def execute(self, userdata):
