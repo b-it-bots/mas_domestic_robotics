@@ -15,15 +15,17 @@ import rospkg
 
 from mdr_answer_action.msg import AnswerFeedback, AnswerResult
 
+
 class InitializeAnswer(smach.State):
+
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'failed'],\
-        input_keys=['answer_feedback'],\
-        output_keys=['answer_feedback', 'init_error_message'])
+        smach.State.__init__(self, outcomes=['succeeded', 'failed'],
+                             input_keys=['answer_feedback'],
+                             output_keys=['answer_feedback', 'init_error_message'])
 
     def execute(self, userdata):
         rospy.loginfo("Executing state InitializeAnswer")
-        
+
         initialization_successful = True
 
         # give some feedback
@@ -39,11 +41,13 @@ class InitializeAnswer(smach.State):
             rospy.logwarn("Initialization failed!")
             return 'failed'
 
+
 class InitializationError(smach.State):
+
     def __init__(self):
-        smach.State.__init__(self, outcomes=['error_detected', 'processing'],\
-        input_keys=['answer_feedback', 'error_message'],\
-        output_keys=['answer_feedback', 'answer_result'])
+        smach.State.__init__(self, outcomes=['error_detected', 'processing'],
+                             input_keys=['answer_feedback', 'error_message'],
+                             output_keys=['answer_feedback', 'answer_result'])
         self.feedback_given = False
 
     def execute(self, userdata):
@@ -61,12 +65,14 @@ class InitializationError(smach.State):
         userdata.answer_result = result
         return 'error_detected'
 
+
 class MatchAnswer(smach.State):
+
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'answer_not_found', 'processing'],\
-        input_keys=['answer_feedback', 'answer_goal', 'answer_result'],\
-        output_keys=['answer_feedback', 'answer_result',\
-        'match_error_message'])
+        smach.State.__init__(self, outcomes=['succeeded', 'answer_not_found', 'processing'],
+                             input_keys=['answer_feedback', 'answer_goal', 'answer_result'],
+                             output_keys=['answer_feedback', 'answer_result',
+                                          'match_error_message'])
         self.feedback_given = False
         self.feedback_updated = False
 
@@ -112,13 +118,15 @@ class MatchAnswer(smach.State):
             rospy.loginfo("%s", userdata.answer_result)
             return 'succeeded'
 
+
 class MatchError(smach.State):
+
     def __init__(self):
-        smach.State.__init__(self, outcomes=['error_detected', 'processing'],\
-        input_keys=['answer_feedback', 'error_message'],\
-        output_keys=['answer_feedback', 'answer_result'])
+        smach.State.__init__(self, outcomes=['error_detected', 'processing'],
+                             input_keys=['answer_feedback', 'error_message'],
+                             output_keys=['answer_feedback', 'answer_result'])
         self.feedback_given = False
-        
+
     def execute(self, userdata):
         rospy.loginfo("Executing state MatchError")
         # give some feedback

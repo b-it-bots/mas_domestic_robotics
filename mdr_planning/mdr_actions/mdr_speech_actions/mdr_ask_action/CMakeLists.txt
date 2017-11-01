@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 catkin_python_setup()
+roslint_python()
 
 add_action_files(
   FILES
@@ -22,7 +23,19 @@ generate_messages(
   actionlib_msgs
 )
 
+catkin_package(
+ CATKIN_DEPENDS
+   actionlib_msgs
+   message_runtime
+   std_msgs
+)
+
 include_directories(
-# include
-# ${catkin_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+)
+
+install(PROGRAMS
+  scripts/ask
+  scripts/ask_client_test
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )
