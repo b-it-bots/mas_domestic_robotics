@@ -14,6 +14,7 @@ import actionlib
 
 from mdr_listen_action.msg import ListenAction, ListenGoal
 
+
 def print_usage_info():
     rospy.loginfo("usage: listen <duration>")
     rospy.loginfo("       where the <duration> is measured in seconds and defines "\
@@ -31,10 +32,11 @@ def give_second_chance(ex):
 def proceed_user_input(goal):
     timeout = 15.0
     rospy.loginfo("Sending action lib goal to listen_server, duration: "\
-        + str(goal.listen_duration))
+                  + str(goal.listen_duration))
     client.send_goal(goal)
     client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
     print client.get_result()
+
 
 if __name__ == '__main__':
     rospy.init_node('listen_client_test')

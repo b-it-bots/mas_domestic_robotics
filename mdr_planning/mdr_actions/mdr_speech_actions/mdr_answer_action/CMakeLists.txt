@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_python_setup()
 roslint_python()
 
-add_action_files(
+add_action_files(DIRECTORY ros/action
   FILES
   Answer.action
 )
@@ -35,8 +35,8 @@ include_directories(
 )
 
 install(PROGRAMS
-  scripts/answer
-  scripts/answer_client_test
+  ros/scripts/answer
+  ros/scripts/answer_client_test
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )
 
