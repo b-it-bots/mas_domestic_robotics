@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_listen_action</name>
-  <version>0.0.1</version>
+  <version>1.0.0</version>
   <description>The mdr_listen_action package</description>
   <maintainer email="patrick.nagel@smail.inf.h-brs.de">Patrick Nagel</maintainer>
   <license>GPLv3</license>
