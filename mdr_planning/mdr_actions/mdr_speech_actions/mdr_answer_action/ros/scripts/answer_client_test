@@ -13,9 +13,11 @@ import actionlib
 
 from mdr_answer_action.msg import AnswerAction, AnswerGoal
 
+
 def print_usage_info():
     rospy.loginfo("usage: answer <question>")
     rospy.loginfo("       where <question> is a string")
+
 
 if __name__ == '__main__':
     rospy.init_node('answer_client_test')
@@ -27,8 +29,8 @@ if __name__ == '__main__':
         user_input_question = sys.argv[1]
         goal.question = user_input_question
         timeout = 15.0
-        rospy.loginfo("Sending action lib goal to answer_server, question: "\
-                        + goal.question)
+        rospy.loginfo("Sending action lib goal to answer_server, question: "
+                      + goal.question)
         client.send_goal(goal)
         client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
         print client.get_result()
