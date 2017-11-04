@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_speech_actions</name>
-  <version>0.0.0</version>
+  <version>1.2.0</version>
   <description>Metapackage for speech-related actions.</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->

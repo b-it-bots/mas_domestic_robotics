@@ -2,6 +2,19 @@
 Changelog for package mdr_robot_inspection_test
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2017-11-04)
+------------------
+* Added functionality for resetting the internal state of the 'WaitForCmd' and 'WaitForQR' states
+* Add amcl pose mean to SM initialization
+  The script gets the pose from the script server and sets the value
+  as the pose mean parameter in amcl.
+* Added actions to launch file
+* Added the existing states from 'action_states' to the scenario SM
+* Added an introduce self state, wait for command, acknowledge,
+  enter, move base, move tray, and wait for QR states
+* Move mdr_robot_inspection to mdr_robocup_tasks
+* Contributors: Alex Mitrevski, Argentina Ortega Sainz
+
 1.1.2 (2017-10-29)
 ------------------
 

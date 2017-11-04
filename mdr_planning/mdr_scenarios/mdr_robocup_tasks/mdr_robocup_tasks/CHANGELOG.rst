@@ -1,12 +1,14 @@
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Changelog for package mdr_speech_actions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Changelog for package mdr_robocup_tasks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 1.2.0 (2017-11-04)
 ------------------
-* Create the introduce self action
-* Create the mdr_speech_actions metapackage
+* Create the metapackage mdr_robocup_tasks
 * Contributors: Argentina Ortega Sainz
+
+1.1.2 (2017-10-29)
+------------------
 
 1.1.1 (2017-09-20)
 ------------------

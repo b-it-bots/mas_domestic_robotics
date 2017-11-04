@@ -2,10 +2,12 @@
 Changelog for package mdr_introduce_self_action
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.2.0 (2017-11-04)
+------------------
+* Add missing dependencies
+* Move actions into ros folder
 * Create the introduce self action
-* Contributors: Argentina Ortega Sainz
+* Contributors: Alex Mitrevski, Argentina Ortega Sainz
 
 1.1.1 (2017-09-20)
 ------------------
