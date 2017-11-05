@@ -34,7 +34,7 @@
   <run_depend>std_msgs</run_depend>
   <!-- External components -->
   <run_depend>zbar_ros</run_depend>
-  <run_depend>vocon_speech_recognizer</run_depend>
+  <!--<run_depend>vocon_speech_recognizer</run_depend>-->
   <!-- mas_common components -->
   <run_depend>mcr_door_status</run_depend>
 
