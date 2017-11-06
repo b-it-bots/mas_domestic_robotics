@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_python_setup()
 roslint_python()
 
-add_action_files(
+add_action_files(DIRECTORY ros/action/
   FILES
   EnterDoor.action
 )
@@ -38,7 +38,7 @@ include_directories(
 )
 
 install(PROGRAMS
-  scripts/enter_door_action
-  scripts/enter_door_action_client_test
+  ros/scripts/enter_door_action
+  ros/scripts/enter_door_action_client_test
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )

@@ -2,6 +2,9 @@
 Changelog for package mdr_simple_pickup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2017-11-04)
+------------------
+
 1.1.2 (2017-10-29)
 ------------------
 * Update permissions of non-executable files

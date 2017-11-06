@@ -2,6 +2,7 @@
 
 # create list of packages to install
 packagelist=(
+  libasound2-dev
   liblog4cpp5-dev
   libzbar-dev
   python-catkin-tools
