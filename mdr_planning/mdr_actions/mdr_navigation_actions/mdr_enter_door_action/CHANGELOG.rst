@@ -2,6 +2,15 @@
 Changelog for package mdr_enter_door_action
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2017-11-04)
+------------------
+* Move actions into ros folder
+* Increased the default movement duration to 15s
+* Updated README
+* Added a launcher that only starts the action server
+* The dependencies are now started in the action's launcher
+* Contributors: Alex Mitrevski, Argentina Ortega Sainz
+
 1.1.2 (2017-10-29)
 ------------------
 * Fix lint issues in mdr_actions

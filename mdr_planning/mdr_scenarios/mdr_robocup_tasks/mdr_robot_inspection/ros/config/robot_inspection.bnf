@@ -1,0 +1,6 @@
+#BNF+EMV1.1;
+!grammar speech_and_person;
+!start <command>;
+
+<command>: move the tray <direction>;
+<direction>: up | down;

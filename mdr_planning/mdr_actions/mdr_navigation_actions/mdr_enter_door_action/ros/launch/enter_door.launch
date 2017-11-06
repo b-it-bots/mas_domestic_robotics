@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+    <group>
+        <include file="$(find mcr_door_status)/ros/launch/door_status.launch" />
+        <include file="$(find mdr_move_forward_action)/launch/move_forward.launch" />
+        <node pkg="mdr_enter_door_action" type="enter_door_action" name="enter_door_server" output="screen" ns="mdr_actions" />
+    </group>
+</launch>

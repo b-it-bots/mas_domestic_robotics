@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_simple_pickup</name>
-  <version>1.1.2</version>
+  <version>1.2.0</version>
   <description>
     A simple implementation of the mdr_behavior_msgs/Pickup service.
   </description>

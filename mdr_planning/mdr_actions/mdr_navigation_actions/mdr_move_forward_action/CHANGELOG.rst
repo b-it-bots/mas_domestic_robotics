@@ -2,6 +2,11 @@
 Changelog for package mdr_move_forward_action
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2017-11-04)
+------------------
+* Move actions into ros folder
+* Contributors: Argentina Ortega Sainz
+
 1.1.2 (2017-10-29)
 ------------------
 * Fix lint issues in mdr_actions

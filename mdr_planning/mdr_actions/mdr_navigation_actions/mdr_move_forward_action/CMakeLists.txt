@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_python_setup()
 roslint_python()
 
-add_action_files(
+add_action_files(DIRECTORY ros/action
   FILES
   MoveForward.action
 )
@@ -36,7 +36,7 @@ include_directories(
 )
 
 install(PROGRAMS
-  scripts/move_forward_action
-  scripts/move_forward_action_client_test
+  ros/scripts/move_forward_action
+  ros/scripts/move_forward_action_client_test
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )

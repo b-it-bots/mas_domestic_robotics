@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+import rospy
+import smach
+
+import smach_ros
+from mdr_move_base_safe.msg import MoveBaseSafeAction, MoveBaseSafeFeedback, MoveBaseSafeResult
+from mdr_move_base_safe.action_states import SetupMoveBase, ClearCostmaps, ApproachPose, SetActionLibResult
+
+def main():
+    rospy.init_node('move_base_safe_server')
+
+    sm = smach.StateMachine(
+            outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED'],
+            input_keys=['move_base_safe_goal'],
+            output_keys=['move_base_safe_feedback', 'move_base_safe_result'])
+
+    with sm:
+        smach.StateMachine.add('SETUP_MOVE_BASE', SetupMoveBase(),
+                               transitions={'succeeded': 'CLEAR_COSTMAPS',
+                                            'failed': 'SETUP_MOVE_BASE'})
+
+        smach.StateMachine.add('CLEAR_COSTMAPS', ClearCostmaps(),
+                               transitions={'succeeded': 'MOVE_BASE_TO_DESTINATION',
+                                            'failed': 'CLEAR_COSTMAPS'})
+
+        smach.StateMachine.add('MOVE_BASE_TO_DESTINATION', ApproachPose(),
+                               transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
+                                            'failed': 'SET_ACTION_LIB_FAILED',
+                                            'reset': 'CLEAR_COSTMAPS'})
+
+        smach.StateMachine.add('SET_ACTION_LIB_FAILED', SetActionLibResult(False),
+                               transitions={'succeeded': 'OVERALL_FAILED'})
+
+        smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
+                               transitions={'succeeded': 'OVERALL_SUCCESS'})
+
+    asw = smach_ros.ActionServerWrapper(
+        server_name='move_base_safe_server',
+        action_spec=MoveBaseSafeAction,
+        wrapped_container=sm,
+        succeeded_outcomes=['OVERALL_SUCCESS'],
+        aborted_outcomes=['OVERALL_FAILED'],
+        preempted_outcomes=['PREEMPTED'],
+        goal_key='move_base_safe_goal',
+        feedback_key='move_base_safe_feedback',
+        result_key='move_base_safe_result')
+
+    asw.run_server()
+    rospy.spin()
+
+if __name__ == '__main__':
+    main()

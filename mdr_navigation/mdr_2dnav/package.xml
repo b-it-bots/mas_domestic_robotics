@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>mdr_2dnav</name>
-  <version>1.1.2</version>
+  <version>1.2.0</version>
   <description>2d base navigation using ros move_base for Care-O-bot 3, Fraunhofer IPA</description>
 
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
