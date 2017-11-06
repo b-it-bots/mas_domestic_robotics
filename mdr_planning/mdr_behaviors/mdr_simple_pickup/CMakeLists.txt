@@ -14,5 +14,6 @@ catkin_package(
 
 install(PROGRAMS
   ros/scripts/simple_pickup_node
+  ros/tools/simple_pickup_test.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

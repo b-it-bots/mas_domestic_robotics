@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="pc1" default="cob3-1-pc1" />
+    <arg name="pc2" default="cob3-1-pc2" />
+    <arg name="pc3" default="cob3-1-pc3" />
+
+
+    <group>
+      <machine name="hbrs_pc1" address="$(arg pc1)" env-loader="$(find mdr_bringup)/env.sh" default="true" />
+      <include file="$(find mdr_2dnav)/ros/launch/2dnav.launch" />
+      <include file="$(find mdr_enter_door_action)/launch/enter_door.launch" />
+      <include file="$(find mdr_move_base_safe)/launch/move_base_safe.launch" />
+      <include file="$(find mdr_move_tray_action)/launch/move_tray.launch" />
+      <include file="$(find mdr_introduce_self_action)/launch/introduce_self_action.launch" />
+    </group>
+
+    <group>
+      <machine name="hbrs_pc2" address="$(arg pc2)" env-loader="$(find mdr_bringup)/env.sh" default="true" />
+      <node pkg="zbar_ros" type="barcode_reader_node" name="barcode_reader" output="screen">
+        <remap from="image" to="/cam3d/rgb/image_raw"/>
+        <remap from="barcode" to="/mcr_perception/qr_reader/output"/>
+        <param name="throttle_repeated_barcodes" type="double" value="2.0"/>
+      </node>
+    </group>
+
+    <!-- This can be discarded if we decide not to use speech in the inspection test -->
+    <group>
+      <machine name="hbrs_pc3" address="$(arg pc3)" env-loader="$(find mdr_bringup)/env.sh" default="true" />
+      <include file="$(find mdr_question_matching)/ros/launch/question_matching.launch"/>
+      <include file="$(find vocon_speech_recognizer)/launch/vocon.launch">
+      <!-- This file still needs to be created -->
+        <arg name="vocon_grammar" value="$(find mdr_robot_inspection)/ros/config/robot_inspection.fcf" />
+      </include>
+    </group>
+
+</launch>

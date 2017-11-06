@@ -2,6 +2,9 @@
 Changelog for package mdr_pick_and_place
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2017-11-04)
+------------------
+
 1.1.2 (2017-10-29)
 ------------------
 * Add missing scripts to installs in CMakeLists.txt

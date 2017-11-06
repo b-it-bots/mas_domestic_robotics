@@ -5,7 +5,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup(
    packages=['mdr_move_base_safe'],
-   package_dir={'mdr_move_base_safe': 'src/mdr_move_base_safe'}
+   package_dir={'mdr_move_base_safe': 'ros/src/mdr_move_base_safe'}
 )
 
 setup(**d)
