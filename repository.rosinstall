@@ -22,7 +22,7 @@
     local-name: cob_robots
     uri: https://github.com/mas-group/cob_robots.git
     version: indigo_dev
-  
+
 - git:
     local-name: schunk_modular_robotics
     uri: https://github.com/mas-group/schunk_modular_robotics.git

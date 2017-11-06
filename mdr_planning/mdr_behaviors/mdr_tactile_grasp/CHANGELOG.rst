@@ -2,6 +2,9 @@
 Changelog for package mdr_tactile_grasp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2017-11-04)
+------------------
+
 1.1.2 (2017-10-29)
 ------------------
 * Update permissions of non-executable files

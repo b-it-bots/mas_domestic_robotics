@@ -14,5 +14,6 @@ catkin_package(
 
 install(PROGRAMS
   ros/scripts/simple_place_node
+  ros/tools/simple_place_test.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
