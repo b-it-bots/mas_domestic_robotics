@@ -11,8 +11,8 @@ from mdr_detect_person.msg import DetectPersonFeedback, DetectPersonGoal, Detect
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
-from mdr_detect_person_action.inference import detect_faces
-from mdr_detect_person_action.inference import load_detection_model
+from mdr_detect_person.inference import detect_faces
+from mdr_detect_person.inference import load_detection_model
 
 
 class SetupDetectPerson(smach.State):
@@ -32,36 +32,32 @@ class SetupDetectPerson(smach.State):
             return 'succeeded'
         else:
             return 'failed'
-                
+
 
 class DetectPerson(smach.State):
     def __init__(self):
         smach.State.__init__(self, input_keys=['detect_person_goal'], outcomes=['succeeded', 'failed'])
         self.bridge = CvBridge()
         self.image_subscriber = rospy.Subscriber("/cam3d/rgb/image_raw", Image, self.callback)
-                # model for 
-        detection_model_path = '/home/gabych/face_classification/trained_models/detection_models/haarcascade_frontalface_default.xml'
-
+        # model for detect faces
+        detection_model_path = rospy.get_param("~config_file")
         # loading models
         self.face_detection = load_detection_model(detection_model_path)
-        
 
     def execute(self, userdata):
 
-        for i in iter(range(1,1000)): #xrange(1,1000):
+        for i in iter(range(1, 1000)):
             try:
-                bgr_image = self.video_capture#.read()[1]
+                bgr_image = self.video_capture
                 gray_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
-                #rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
                 faces = detect_faces(self.face_detection, gray_image)
-                number_of_faces = np.size(faces,0)
+                number_of_faces = np.size(faces, 0)
                 print (number_of_faces)
             except:
                 number_of_faces = 0
-                print ("Ops")
 
         if number_of_faces != 0:
-            feedback =  DetectPersonFeedback()
+            feedback = DetectPersonFeedback()
             feedback.faces = faces
             userdata.detect_person_feedback = feedback
             return 'succeeded'
@@ -69,14 +65,12 @@ class DetectPerson(smach.State):
             return 'failed'
 
     def callback(self, data):
-        #rospy.loginfo(rospy.get_caller_id() + "I heard %s")# data)
+        # rospy.loginfo(rospy.get_caller_id() + "I heard %s")# data)
         self.video_capture = self.convert_image(data)
-        #print (type(self.video_capture), "videocapture")
+        # print (type(self.video_capture), "videocapture")
 
     def convert_image(self, ros_image):
-        # Use cv_bridge() to convert the ROS image to OpenCV format
-        #print (type(ros_image))  
-        cv_image = self.bridge.imgmsg_to_cv2(ros_image, "bgr8")     
+        cv_image = self.bridge.imgmsg_to_cv2(ros_image, "bgr8")
 
         return np.array(cv_image, dtype=np.uint8)
 
