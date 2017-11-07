@@ -15,6 +15,8 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_python_setup()
 
 add_action_files(
+  DIRECTORY
+  ros/action
   FILES
   DetectPerson.action
 )
@@ -33,3 +35,13 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
+
+roslint_python()  # pep8 linting
+roslint_cpp()     # ROS wrapper of Google's cpplint
+
+install(PROGRAMS
+  ros/scripts/detect_person_action
+  ros/scripts/detect_person_action_client_test
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
+)
+
