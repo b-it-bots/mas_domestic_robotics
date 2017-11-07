@@ -12,7 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_python_setup()
 
-add_action_files(
+add_action_files(DIRECTORY ros/action
   FILES
   MoveBaseSafe.action
 )
@@ -30,4 +30,10 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+)
+
+install(PROGRAMS
+  ros/scripts/move_base_safe
+  ros/scripts/move_base_safe_client_test
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )

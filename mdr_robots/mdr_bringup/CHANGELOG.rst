@@ -2,6 +2,16 @@
 Changelog for package mdr_bringup
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2017-11-04)
+------------------
+* Uncommented the LifeCam launcher 
+* Contributors: Alex Mitrevski
+
+1.1.2 (2017-10-29)
+------------------
+* Add env.sh install to CMakeLists.txt
+* Contributors: Argentina Ortega Sainz
+
 1.1.1 (2017-09-20)
 ------------------
 * Change maintainer tags to MAS Robotics

@@ -2,6 +2,16 @@
 Changelog for package mdr_perceive_table
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2017-11-04)
+------------------
+* Move actions into ros folder
+* Contributors: Argentina Ortega Sainz
+
+1.1.2 (2017-10-29)
+------------------
+* Add missing scripts to installs in CMakeLists.txt
+* Contributors: Argentina Ortega Sainz
+
 1.1.1 (2017-09-20)
 ------------------
 * Change maintainer tags to MAS Robotics

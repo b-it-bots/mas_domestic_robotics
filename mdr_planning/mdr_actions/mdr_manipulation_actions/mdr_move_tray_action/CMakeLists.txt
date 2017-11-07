@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_python_setup()
 
-add_action_files(
+add_action_files(DIRECTORY ros/action
   FILES
   MoveTray.action
 )
@@ -31,4 +31,10 @@ catkin_package(
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+)
+
+install(PROGRAMS
+  ros/scripts/move_tray_action
+  ros/scripts/move_tray_action_client_test
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )

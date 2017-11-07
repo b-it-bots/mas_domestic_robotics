@@ -2,6 +2,14 @@
 Changelog for package mdr_lwr_kinematics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.0 (2017-11-04)
+------------------
+* Switched from Eigen to Eigen3
+* Contributors: Argentina Ortega Sainz
+
+1.1.2 (2017-10-29)
+------------------
+
 1.1.1 (2017-09-20)
 ------------------
 * Change maintainer tags to MAS Robotics

@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_python_setup()
 roslint_python()
 
-add_action_files(
+add_action_files(DIRECTORY ros/action
   FILES
   MoveForward.action
 )
@@ -28,8 +28,15 @@ catkin_package(
  CATKIN_DEPENDS
    actionlib_msgs
    message_runtime
+   geometry_msgs
 )
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
+)
+
+install(PROGRAMS
+  ros/scripts/move_forward_action
+  ros/scripts/move_forward_action_client_test
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )
