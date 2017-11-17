@@ -1,0 +1,72 @@
+#!/usr/bin/python
+import sys
+
+import rospy
+import smach
+import smach_ros
+
+from mdr_speech_person_recognition.action_states import (Dummy,
+                                                         ListenDummyConcurrent)
+
+
+class BlindMansBluff(smach.StateMachine):
+    """The blind man's bluff test"""
+    def __init__(self, waypoint=''):
+        smach.StateMachine.__init__(self, outcomes=['DONE', 'TIMEOUT'])
+        self.waypoint = waypoint
+
+        with self:
+            smach.StateMachine.add('NOTIFY_READY',
+                                   Dummy(),
+                                   transitions={
+                                    'succeeded': 'LISTEN',
+                                    'failed': 'LISTEN'})
+
+            smach.StateMachine.add('LISTEN',
+                                   ListenDummyConcurrent(),
+                                   transitions={
+                                    'answer': 'COUNT_QUESTION',
+                                    'ask_repeat': 'LISTEN',
+                                    'turn_and_answer': 'COUNT_QUESTION',
+                                    'failed': 'LISTEN'})
+
+            smach.StateMachine.add('COUNT_QUESTION',
+                                   Dummy(),
+                                   transitions={
+                                    'succeeded': 'ANSWER',
+                                    'failed': 'COUNT_QUESTION'})
+
+            smach.StateMachine.add('ANSWER',
+                                   Dummy(),
+                                   transitions={
+                                    'succeeded': 'CHECK_COUNT',
+                                    'failed': 'LISTEN'})
+
+            smach.StateMachine.add('CHECK_COUNT',
+                                   Dummy(),
+                                   transitions={
+                                    'succeeded': 'DONE',
+                                    'failed': 'LISTEN'})
+
+        rospy.loginfo("Blind Man's Bluff SM initialized successfully")
+
+
+def main():
+    rospy.init_node('blind_mans_bluff')
+
+    SM = BlindMansBluff()
+
+    smach_viewer = smach_ros.IntrospectionServer('blind_mans_bluff',
+                                                 SM,
+                                                 'BLIND_MANS_BLUFF')
+    smach_viewer.start()
+
+    result = SM.execute()
+    while (result is None):
+        rospy.spin()
+    rospy.loginfo("Blind Man's Bluff complete.")
+    smach_viewer.stop()
+
+
+if __name__ == '__main__':
+    main()
