@@ -16,7 +16,7 @@
     </include>
     <include file="$(arg pkg_env_config)/upload_param.launch">
         <arg name="robot_env" value="$(arg robot_env)" />
-        <arg name="atHome" value="true" />
+        <arg name="domestic_domain" value="true" />
     </include>
 
     <!-- world -->
