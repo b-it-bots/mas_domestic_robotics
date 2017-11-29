@@ -26,7 +26,7 @@ Changelog for package mdr_bringup_sim
 
 1.0.1 (2017-04-11 10:44:12 +0200)
 ---------------------------------
-* [bringup sim] Add atHome parameter
+* [bringup sim] Add domestic_domain parameter
 * Contributor: Jose Mayoraly
 
 1.0.0 (2017-04-11 10:44:12 +0200)
