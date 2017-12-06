@@ -70,7 +70,7 @@ class DetectPerson(smach.State):
                     self.image_publisher.publish(output_ros_image)
                     centers_of_faces.append([(x+w)/2.0,(y+h)/2.0])
             feedback.center_of_face = centers_of_faces
-            print (feedback)
+            #print (feedback)
             userdata.detect_person_feedback = feedback
             return 'succeeded'
         else:
