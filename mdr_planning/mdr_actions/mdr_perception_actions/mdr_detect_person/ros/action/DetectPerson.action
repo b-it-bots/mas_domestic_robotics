@@ -6,6 +6,9 @@ bool success
 
 ---
 # feedback
-float64[] faces
+float64[] bounding_boxes
+int64 number_of_faces
+float64[] center_of_face
+
 string current_state
 string text
