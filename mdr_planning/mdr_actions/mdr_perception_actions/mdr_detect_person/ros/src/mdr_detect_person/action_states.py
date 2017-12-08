@@ -54,13 +54,14 @@ class DetectPerson(smach.State):
                 gray_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
                 rgb_image = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2RGB)
                 faces = detect_faces(self.face_detection, gray_image)
+                print faces
                 number_of_faces = np.size(faces, 0)
             except:
                 number_of_faces = 0
 
         if number_of_faces != 0:
             feedback = DetectPersonFeedback()
-            feedback.bounding_boxes = faces 
+            feedback.bounding_boxes = faces.tolist()
             feedback.number_of_faces = number_of_faces 
 
             for face_coordinates in faces:                
@@ -86,7 +87,7 @@ class DetectPerson(smach.State):
 class SetActionLibResult(smach.State):
     def __init__(self, result):
         smach.State.__init__(self, outcomes=['succeeded'],
-                             output_keys=['detect_person_result'])
+                             output_keys=['detect_person_result','detect_person_feedback'])
         self.result = result
 
     def execute(self, userdata):
