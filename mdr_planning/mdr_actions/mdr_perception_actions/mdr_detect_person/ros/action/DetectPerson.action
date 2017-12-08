@@ -6,7 +6,7 @@ bool success
 
 ---
 # feedback
-float64[] bounding_boxes
+mdr_perception_msgs/FaceBoundingBox[] bounding_boxes
 int64 number_of_faces
 float64[] center_of_face
 string current_state
