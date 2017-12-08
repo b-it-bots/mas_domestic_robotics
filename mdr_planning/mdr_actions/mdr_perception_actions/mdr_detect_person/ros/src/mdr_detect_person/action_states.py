@@ -60,17 +60,17 @@ class DetectPerson(smach.State):
 
         if number_of_faces != 0:
             feedback = DetectPersonFeedback()
-            feedback.bounding_boxes = list(faces)
+            feedback.bounding_boxes = faces 
             feedback.number_of_faces = number_of_faces 
 
-            for face_coordinates in faces:
-                    x, y, w, h = face_coordinates
-                    rgb_cv2 = cv2.rectangle(rgb_image, (x, y), (x + w, y + h), (0,0,255), 2)
-                    output_ros_image = self.bridge.cv2_to_imgmsg(rgb_cv2, 'bgr8')
-                    self.image_publisher.publish(output_ros_image)
-                    centers_of_faces.append([(x+w)/2.0,(y+h)/2.0])
+            for face_coordinates in faces:                
+                x, y, w, h = face_coordinates
+                rgb_cv2 = cv2.rectangle(rgb_image, (x, y), (x + w, y + h), (0,0,255), 2)
+                output_ros_image = self.bridge.cv2_to_imgmsg(rgb_cv2, 'bgr8')
+                self.image_publisher.publish(output_ros_image)
+                centers_of_faces.append([(x+w)/2.0,(y+h)/2.0])
             feedback.center_of_face = centers_of_faces
-            #print (feedback)
+            print (feedback)
             userdata.detect_person_feedback = feedback
             return 'succeeded'
         else:
