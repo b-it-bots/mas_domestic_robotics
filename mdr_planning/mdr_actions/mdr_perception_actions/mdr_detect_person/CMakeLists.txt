@@ -4,6 +4,7 @@ project(mdr_detect_person)
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
+  mdr_perception_msgs
   genmsg
   std_msgs
   message_generation
@@ -27,12 +28,15 @@ generate_messages(
   actionlib_msgs
   sensor_msgs
   std_msgs
+  mdr_perception_msgs
 )
 
 catkin_package(
   CATKIN_DEPENDS
   actionlib_msgs
   message_runtime
+  mdr_perception_msgs
+  std_msgs
 )
 
 include_directories(
