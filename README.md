@@ -1,4 +1,4 @@
-[![pipeline status](https://mas.b-it-center.de/gitgate/mas-group/mas_common_robotics/badges/indigo/pipeline.svg)](https://mas.b-it-center.de/gitgate/mas-group/mas_common_robotics/commits/indigo)
+[![pipeline status](https://mas.b-it-center.de/gitgate/mas-group/mas_domestic_robotics/badges/indigo/pipeline.svg)](https://mas.b-it-center.de/gitgate/mas-group/mas_domestic_robotics/commits/indigo)
 
 
 ## Install Ubuntu
