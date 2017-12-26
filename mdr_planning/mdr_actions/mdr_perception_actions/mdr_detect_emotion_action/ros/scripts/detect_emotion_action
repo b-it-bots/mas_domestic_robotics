@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+import rospy
+import smach
+
+from smach_ros import ActionServerWrapper, IntrospectionServer
+
+from mdr_detect_emotion_action.msg import DetectEmotionAction
+from mdr_detect_emotion_action.action_states import (SetupDetectEmotion, DetectEmotion,
+                                                SetActionLibResult)
+
+
+class DetectEmotionSkill(smach.StateMachine):
+    def __init__(self, timeout=10):
+        smach.StateMachine.__init__(self,
+                                    outcomes=['OVERALL_SUCCESS',
+                                              'OVERALL_FAILED', 'PREEMPTED'],
+                                    input_keys=['detect_emotion_goal'],
+                                    output_keys=['detect_emotion_feedback',
+                                                 'detect_emotion_result'])
+
+        emotion_model_path = rospy.get_param('~emotion_model_path', '')
+        detect_person_server = rospy.get_param('~detect_person_server',
+                                               '/mdr_actions/detect_person_server')
+        image_topic = rospy.get_param('~image_topic', '/cam3d/rgb/image_raw')
+        labels = {0: 'angry', 1: 'disgusted', 2: 'sad', 3: 'happy',
+                  4: 'sad', 5: 'surprised', 6: 'neutral'}
+        image_size = (48, 48, 1)
+
+        with self:
+            smach.StateMachine.add('SETUP_DETECT_EMOTION', SetupDetectEmotion(),
+                                   transitions={'succeeded': 'DETECT_EMOTION',
+                                                'failed': 'SETUP_DETECT_EMOTION'})
+
+            smach.StateMachine.add('DETECT_EMOTION',
+                                   DetectEmotion(emotion_model_path=emotion_model_path,
+                                                 image_topic=image_topic,
+                                                 labels=labels, image_size=image_size,
+                                                 detect_person_server=detect_person_server),
+                                   transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
+                                                'failed': 'SET_ACTION_LIB_FAILED'})
+
+            smach.StateMachine.add('SET_ACTION_LIB_FAILED',
+                                   SetActionLibResult(False),
+                                   transitions={'succeeded': 'OVERALL_FAILED'})
+
+            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS',
+                                   SetActionLibResult(True),
+                                   transitions={'succeeded': 'OVERALL_SUCCESS'})
+
+
+if __name__ == '__main__':
+    rospy.init_node('detect_emotion_server')
+
+    # construct state machine
+    sm = DetectEmotionSkill()
+
+    # smach viewer
+    sis = IntrospectionServer('detect_emotion_smach_viewer', sm,
+                              '/detect_emotion_SMACH_VIEWER')
+    sis.start()
+
+    asw = ActionServerWrapper(
+        server_name='detect_emotion_server',
+        action_spec=DetectEmotionAction,
+        wrapped_container=sm,
+        succeeded_outcomes=['OVERALL_SUCCESS'],
+        aborted_outcomes=['OVERALL_FAILED'],
+        preempted_outcomes=['PREEMPTED'],
+        goal_key='detect_emotion_goal',
+        feedback_key='detect_emotion_feedback',
+        result_key='detect_emotion_result')
+
+    # Run the server in a background thread
+    asw.run_server()
+    rospy.spin()
