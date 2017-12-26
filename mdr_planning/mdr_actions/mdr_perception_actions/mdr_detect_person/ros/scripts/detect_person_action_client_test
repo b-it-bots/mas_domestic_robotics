@@ -5,16 +5,31 @@ import rospy
 import roslib
 import actionlib
 
+import cv2
+from sensor_msgs.msg import Image
+
 from mdr_detect_person.msg import DetectPersonAction, DetectPersonGoal, DetectPersonFeedback, DetectPersonResult
 
 if __name__ == '__main__':
     rospy.init_node('detect_person_client_test')
+    if len(sys.argv) != 2:
+        print 'Usage: detect_person_action_client_test <input_image_path>'
+    input_image_path = sys.argv[1]
 
     client = actionlib.SimpleActionClient('mdr_actions/detect_person_server', DetectPersonAction)
     client.wait_for_server()
+
     goal = DetectPersonGoal()
     goal.start = True
+
+    img = cv2.imread(input_image_path)
+    ros_image = Image()
+    ros_image.height = img.shape[0]
+    ros_image.width = img.shape[1]
+    ros_image.encoding = 'bgr8'
+    ros_image.data = img.flatten().tolist()
+    goal.image = ros_image
+
     client.send_goal(goal)
     client.wait_for_result()
     print (client.get_result())
-
