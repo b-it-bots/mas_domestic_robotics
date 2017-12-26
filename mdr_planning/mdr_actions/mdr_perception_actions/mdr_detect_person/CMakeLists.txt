@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   roslint
   rospy
-  cob_script_server
   sensor_msgs
 )
 
@@ -51,4 +50,3 @@ install(PROGRAMS
   ros/scripts/detect_person_action_client_test
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )
-
