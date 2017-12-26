@@ -25,7 +25,7 @@ class DetectPersonSkill(smach.StateMachine):
                                    DetectPerson(image_topic=image_topic,
                                                 detection_model_path=detection_model_path),
                                    transitions = {'succeeded': 'SET_ACTION_LIB_SUCCESS',
-                                                  'failed': 'DETECT_PERSON'})
+                                                  'failed': 'SET_ACTION_LIB_FAILED'})
 
             smach.StateMachine.add('SET_ACTION_LIB_FAILED', SetActionLibResult(False),
                                    transitions = {'succeeded': 'OVERALL_FAILED'})
