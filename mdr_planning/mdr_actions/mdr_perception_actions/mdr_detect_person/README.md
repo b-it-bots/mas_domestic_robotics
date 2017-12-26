@@ -10,13 +10,15 @@ An action for detecting persons in a crowd
 
 ### Result:
 
+* ``int64 number_of_faces``
+* ``mdr_perception_msgs/FaceBoundingBox[] bounding_boxes``
+* ``float64[] centers_of_faces``
 * ``bool success``
 
 ### Feedback:
 
 * ``string current_state``
 * ``string text``
-* ``double[] faces``
 
 ## Dependencies
 
@@ -24,4 +26,4 @@ An action for detecting persons in a crowd
 ## Example usage
 
 1. Run the action server: ``roslaunch mdr_detect_person detect_person.launch``
-2. Run the client example: ``rosrun mdr_detect_person detect_person_client_test `` 
+2. Run the client example: ``rosrun mdr_detect_person detect_person_client_test ``
