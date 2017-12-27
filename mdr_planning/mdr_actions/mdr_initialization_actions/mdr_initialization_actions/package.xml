@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_initialization_actions</name>
+  <version>1.2.0</version>
+  <description>Metapackage for initialization-related actions.</description>
+
+  <license>GPLv3</license>
+
+  <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
