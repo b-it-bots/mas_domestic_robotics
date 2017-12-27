@@ -1,0 +1,36 @@
+#! /usr/bin/env python
+import sys
+
+import rospy
+import roslib
+import actionlib
+
+from mdr_init_robot_action.msg import InitRobotAction, InitRobotGoal
+
+def print_usage_info():
+    print('usage: init_robot <component1> <component2> ... <componentN>' +
+          ' where <componentX> can take the values: { base, gripper,' +
+          ' tray, torso, head, or arm }. Unknown components will' +
+          ' be ignored by the action server.')
+
+if __name__ == '__main__':
+    rospy.init_node('init_robot_client_test')
+
+    client = actionlib.SimpleActionClient('/init_robot_server', InitRobotAction)
+    client.wait_for_server()
+
+    goal = InitRobotGoal()
+    if len(sys.argv) < 2:
+        rospy.logerr('Arguments were not received in the proper format')
+        print_usage_info()
+    else:
+        try:
+            for i in xrange(1, len(sys.argv)):
+                goal.components.append(sys.argv[i].lower())
+            timeout = 15.0
+            rospy.loginfo('Sending action lib goal to init_robot_server')
+            client.send_goal(goal)
+            client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
+            print(client.get_result())
+        except:
+            pass
