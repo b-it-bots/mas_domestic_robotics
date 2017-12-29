@@ -1,0 +1,25 @@
+string HOME=home
+string FOLDED=folded
+string PREGRASP=pregrasp
+string PREGRASP_TOP=pregrasp_top
+string GRASP=grasp
+string HOLD=hold
+string PRE_LOOK_AT_TABLE=pre_look_at_table
+string LOOK_AT_TABLE=look_at_table
+
+int32 NAMED_TARGET=1
+int32 END_EFFECTOR_POSE=2
+int32 JOINT_VALUES=3
+
+# goal
+int32 goal_type
+string named_target
+geometry_msgs/PoseStamped end_effector_pose
+float64[] joint_values
+---
+# result
+bool success
+---
+# feedback
+string current_state
+string message
