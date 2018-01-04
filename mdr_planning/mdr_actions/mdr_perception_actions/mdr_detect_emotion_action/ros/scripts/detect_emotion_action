@@ -6,7 +6,7 @@ from smach_ros import ActionServerWrapper, IntrospectionServer
 
 from mdr_detect_emotion_action.msg import DetectEmotionAction
 from mdr_detect_emotion_action.action_states import (SetupDetectEmotion, DetectEmotion,
-                                                SetActionLibResult)
+                                                     SetActionLibResult)
 
 
 class DetectEmotionSkill(smach.StateMachine):
@@ -19,8 +19,6 @@ class DetectEmotionSkill(smach.StateMachine):
                                                  'detect_emotion_result'])
 
         emotion_model_path = rospy.get_param('~emotion_model_path', '')
-        detect_person_server = rospy.get_param('~detect_person_server',
-                                               '/mdr_actions/detect_person_server')
         image_topic = rospy.get_param('~image_topic', '/cam3d/rgb/image_raw')
         labels = {0: 'angry', 1: 'disgusted', 2: 'sad', 3: 'happy',
                   4: 'sad', 5: 'surprised', 6: 'neutral'}
@@ -34,8 +32,7 @@ class DetectEmotionSkill(smach.StateMachine):
             smach.StateMachine.add('DETECT_EMOTION',
                                    DetectEmotion(emotion_model_path=emotion_model_path,
                                                  image_topic=image_topic,
-                                                 labels=labels, image_size=image_size,
-                                                 detect_person_server=detect_person_server),
+                                                 labels=labels, image_size=image_size),
                                    transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
                                                 'failed': 'SET_ACTION_LIB_FAILED'})
 

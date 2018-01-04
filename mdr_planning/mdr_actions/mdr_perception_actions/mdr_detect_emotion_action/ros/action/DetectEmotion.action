@@ -1,9 +1,9 @@
 # goal
 sensor_msgs/Image image
+int64 number_of_faces
+mdr_perception_msgs/FaceBoundingBox[] bounding_boxes
 ---
 # result
-int64 number_of_people
-mdr_perception_msgs/FaceBoundingBox[] bounding_boxes
 string[] emotions
 bool success
 ---
