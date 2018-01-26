@@ -1,0 +1,16 @@
+string BASE=base
+string GRIPPER=gripper
+string TRAY=tray
+string TORSO=torso
+string HEAD=head
+string ARM=arm
+
+# goal
+string[] components
+---
+# result
+bool[] success
+---
+# feedback
+string current_state
+string message

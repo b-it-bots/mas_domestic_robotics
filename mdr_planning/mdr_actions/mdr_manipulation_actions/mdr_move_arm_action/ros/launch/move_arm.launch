@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_move_arm_action" type="move_arm_action" name="move_arm_server" output="screen">
+        <param name="arm_name" value="arm" />
+    </node>
+</launch>
