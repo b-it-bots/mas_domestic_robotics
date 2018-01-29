@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mdr_lwr_kinematics)
+set (CMAKE_CXX_STANDARD 11)
 
 find_package(cmake_modules REQUIRED)
 find_package(Eigen3 REQUIRED)

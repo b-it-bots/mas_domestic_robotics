@@ -10,63 +10,57 @@ packagelist=(
   python-rosinstall
   python-unicodecsv
   python-vcstools
-  ros-indigo-amcl
-  ros-indigo-cob-command-tools
-  ros-indigo-cob-common
-  ros-indigo-cob-environments
-  ros-indigo-cob-extern
-  ros-indigo-cob-driver
-  ros-indigo-cob-lbr
-  ros-indigo-cob-simulation
-  ros-indigo-cob-twist-controller
-  ros-indigo-cob-vision-utils
-  ros-indigo-control-msgs
-  ros-indigo-costmap-2d
-  ros-indigo-diagnostic-updater
-  ros-indigo-dwa-local-planner
-  ros-indigo-frida-driver
-  ros-indigo-gazebo-ros
-  ros-indigo-gazebo-ros-control
-  ros-indigo-gmapping
-  ros-indigo-hokuyo-node
-  ros-indigo-interactive-markers
-  ros-indigo-joy
-  ros-indigo-laser-geometry
-  ros-indigo-libphidgets
-  ros-indigo-libntcan
-  ros-indigo-libpcan
-  ros-indigo-lms1xx
-  ros-indigo-manipulation-msgs
-  ros-indigo-map-server
-  ros-indigo-move-base
-  ros-indigo-move-base-msgs
-  ros-indigo-moveit-core
-  ros-indigo-moveit-planners-ompl
-  ros-indigo-moveit-commander
-  ros-indigo-moveit-ros-warehouse
-  ros-indigo-moveit-ros-perception
-  ros-indigo-openni2-launch
-  ros-indigo-polled-camera
-  ros-indigo-pr2-computer-monitor
-  ros-indigo-pr2-dashboard-aggregator
-  ros-indigo-pr2-msgs
-  ros-indigo-robot-state-publisher
-  ros-indigo-ros
-  ros-indigo-ros-canopen
-  ros-indigo-ros-controllers
-  ros-indigo-rqt-gui
-  ros-indigo-rqt-pr2-dashboard
-  ros-indigo-rqt-reconfigure
-  ros-indigo-rqt-robot-dashboard
-  ros-indigo-rviz
-  ros-indigo-schunk-modular-robotics
-  ros-indigo-smach
-  ros-indigo-smach-ros
-  ros-indigo-twist-mux
-  ros-indigo-usb-cam
-  ros-indigo-wifi-ddwrt
-  ros-indigo-xacro
-  ros-indigo-eband-local-planner
+  ros-kinetic-amcl
+  ros-kinetic-cob-command-tools
+  ros-kinetic-cob-common
+  ros-kinetic-cob-environments
+  ros-kinetic-cob-extern
+  ros-kinetic-cob-driver
+  ros-kinetic-cob-simulation
+  ros-kinetic-cob-twist-controller
+  ros-kinetic-cob-vision-utils
+  ros-kinetic-control-msgs
+  ros-kinetic-costmap-2d
+  ros-kinetic-diagnostic-updater
+  ros-kinetic-dwa-local-planner
+  ros-kinetic-gazebo-ros
+  ros-kinetic-gazebo-ros-control
+  ros-kinetic-gmapping
+  ros-kinetic-interactive-markers
+  ros-kinetic-joy
+  ros-kinetic-laser-geometry
+  ros-kinetic-libphidgets
+  ros-kinetic-libntcan
+  ros-kinetic-libpcan
+  ros-kinetic-lms1xx
+  ros-kinetic-manipulation-msgs
+  ros-kinetic-map-server
+  ros-kinetic-move-base
+  ros-kinetic-move-base-msgs
+  ros-kinetic-moveit-core
+  ros-kinetic-moveit-planners-ompl
+  ros-kinetic-moveit-commander
+  ros-kinetic-moveit-ros-warehouse
+  ros-kinetic-moveit-ros-perception
+  ros-kinetic-openni2-launch
+  ros-kinetic-polled-camera
+  ros-kinetic-pr2-dashboard-aggregator
+  ros-kinetic-pr2-msgs
+  ros-kinetic-robot-state-publisher
+  ros-kinetic-ros
+  ros-kinetic-ros-canopen
+  ros-kinetic-ros-controllers
+  ros-kinetic-rqt-gui
+  ros-kinetic-rqt-reconfigure
+  ros-kinetic-rqt-robot-dashboard
+  ros-kinetic-rviz
+  ros-kinetic-schunk-modular-robotics
+  ros-kinetic-smach
+  ros-kinetic-smach-ros
+  ros-kinetic-twist-mux
+  ros-kinetic-usb-cam
+  ros-kinetic-xacro
+  ros-kinetic-eband-local-planner
   python-setuptools
 )
 
@@ -75,7 +69,7 @@ sudo apt-get update
 sudo apt-get install -y ${packagelist[@]}
 
 ### install further repositories
-rosinstall .. /opt/ros/indigo repository.rosinstall
+rosinstall .. /opt/ros/kinetic repository.rosinstall
 
 ### install dependencies of BRSU repositories
 dependent_repositories=('mas_common_robotics' 'mas_third_party_software')
