@@ -36,6 +36,7 @@ catkin_package(
   message_runtime
   mdr_perception_msgs
   std_msgs
+  sensor_msgs
 )
 
 include_directories(
