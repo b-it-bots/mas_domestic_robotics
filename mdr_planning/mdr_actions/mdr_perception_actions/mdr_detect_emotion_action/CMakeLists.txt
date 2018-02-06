@@ -31,6 +31,8 @@ catkin_package(
  CATKIN_DEPENDS
    actionlib_msgs
    message_runtime
+   mdr_perception_msgs
+   sensor_msgs
 )
 
 include_directories(

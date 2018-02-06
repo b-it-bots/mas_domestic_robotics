@@ -14,6 +14,7 @@ from cv_bridge import CvBridge, CvBridgeError
 
 from mdr_gender_recognition.msg import GenderRecognitionFeedback, GenderRecognitionResult
 
+
 class SetupGenderRecognition(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'],
@@ -61,16 +62,15 @@ class RecognizeGenders(smach.State):
         gray_image = self.rgb2gray(rgb_image)
         for face in bounding_boxes:
             x, y, w, h = face.bounding_box_coordinates
-            face = gray_image[y : (y + h), x : (x + w)]  #check if it is not rgb
-            face = cv2.resize(face, self.image_size[0:2])  
-            face = np.expand_dims(face, 0)    
+            face = gray_image[y: (y + h), x: (x + w)]  # check if it is not rgb
+            face = cv2.resize(face, self.image_size[0:2])
+            face = np.expand_dims(face, 0)
             face = np.expand_dims(face, -1)
             face = self.preprocess_image(face)
-            recognized_gender= self.recognize_gender(face)
+            recognized_gender = self.recognize_gender(face)
             userdata.genders.append(recognized_gender)
-            rgb_cv2 = cv2.rectangle(rgb_image, (x, y), (x + w, y + h), (0,0,255), 2)
-            cv2.putText(rgb_image, recognized_gender, (x, y - 30),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0),
+            rgb_cv2 = cv2.rectangle(rgb_image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+            cv2.putText(rgb_image, recognized_gender, (x, y - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0),
                         1, cv2.LINE_AA)
         output_ros_image = self.bridge.cv2_to_imgmsg(rgb_image, 'bgr8')
         self.image_publisher.publish(output_ros_image)
@@ -109,4 +109,3 @@ class SetActionLibResult(smach.State):
         result.genders = userdata.genders
         userdata.gender_recognition_result = result
         return 'succeeded'
-
