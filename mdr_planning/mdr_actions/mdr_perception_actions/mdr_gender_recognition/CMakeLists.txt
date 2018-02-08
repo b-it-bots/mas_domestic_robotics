@@ -1,42 +1,38 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_detect_person)
+project(mdr_gender_recognition)
 
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
-  mdr_perception_msgs
   genmsg
-  std_msgs
   message_generation
   roslint
   rospy
   sensor_msgs
+  mdr_perception_msgs
+  mdr_detect_person
 )
 
 catkin_python_setup()
 
-add_action_files(
-  DIRECTORY
-  ros/action
+add_action_files(DIRECTORY ros/action
   FILES
-  DetectPerson.action
+  GenderRecognition.action
 )
 
 generate_messages(
   DEPENDENCIES
-  actionlib_msgs
   sensor_msgs
-  std_msgs
   mdr_perception_msgs
+  actionlib_msgs
 )
 
 catkin_package(
-  CATKIN_DEPENDS
-  actionlib_msgs
-  message_runtime
-  mdr_perception_msgs
-  std_msgs
-  sensor_msgs
+ CATKIN_DEPENDS
+   actionlib_msgs
+   message_runtime
+   mdr_perception_msgs
+   sensor_msgs
 )
 
 include_directories(
@@ -47,7 +43,7 @@ roslint_python()  # pep8 linting
 roslint_cpp()     # ROS wrapper of Google's cpplint
 
 install(PROGRAMS
-  ros/scripts/detect_person_action
-  ros/scripts/detect_person_action_client_test
+  ros/scripts/gender_recognition_action
+  ros/scripts/gender_recognition_client_test
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )
