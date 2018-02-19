@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <node pkg="mdr_move_tray_action" type="move_tray_action" name="move_tray_server" output="screen" ns="mdr_actions" />
-</launch>

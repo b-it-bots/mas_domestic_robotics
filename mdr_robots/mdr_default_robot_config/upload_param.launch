@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-
-	<arg name="robot" default="$(env ROBOT)"/>
-
-	<!-- include robot specific launch file -->
-	<include file="$(find mdr_default_robot_config)/$(arg robot)/upload_param_$(arg robot).launch" />
-
-</launch>

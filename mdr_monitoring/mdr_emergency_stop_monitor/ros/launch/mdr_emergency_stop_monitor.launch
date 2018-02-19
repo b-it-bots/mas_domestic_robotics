@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-	<node pkg="mdr_emergency_stop_monitor" type="mdr_emergency_stop_monitor" name="mdr_emergency_stop_monitor" output="screen"/>
-</launch>
