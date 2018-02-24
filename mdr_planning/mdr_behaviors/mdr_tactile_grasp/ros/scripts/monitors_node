@@ -1,6 +1,0 @@
-#!/usr/bin/env python
-
-import mdr_tactile_grasp.monitors
-
-if __name__ == '__main__':
-    mdr_tactile_grasp.monitors.main()
