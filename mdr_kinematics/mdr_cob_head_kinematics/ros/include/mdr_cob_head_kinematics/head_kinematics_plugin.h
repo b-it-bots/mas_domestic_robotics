@@ -1,6 +1,7 @@
 #ifndef HEAD_KINEMATICS_PLUGIN_H
 #define HEAD_KINEMATICS_PLUGIN_H
 
+#include <memory>
 #include <moveit/kinematics_base/kinematics_base.h>
 
 namespace mdr_cob_head_kinematics
