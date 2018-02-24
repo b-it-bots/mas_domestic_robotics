@@ -11,14 +11,6 @@ packagelist=(
   python-unicodecsv
   python-vcstools
   ros-kinetic-amcl
-  ros-kinetic-cob-command-tools
-  ros-kinetic-cob-common
-  ros-kinetic-cob-environments
-  ros-kinetic-cob-extern
-  ros-kinetic-cob-driver
-  ros-kinetic-cob-simulation
-  ros-kinetic-cob-twist-controller
-  ros-kinetic-cob-vision-utils
   ros-kinetic-control-msgs
   ros-kinetic-costmap-2d
   ros-kinetic-diagnostic-updater
