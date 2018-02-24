@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <node pkg="mdr_init_robot_action" type="init_robot_action" name="init_robot_server" output="screen">
-        <param name="arm_name" value="arm" />
-        <param name="arm_recover_srv_name" value="/arm_controller/lwr_node/recover" />
-    </node>
-</launch>
