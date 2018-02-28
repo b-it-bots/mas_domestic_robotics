@@ -3,6 +3,7 @@
 
     <arg name="robot" default="$(optenv ROBOT !!ROBOT NOT SET!!)" />
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!ROBOT_ENV NOT SET!!)" />
+    <arg name="robot_pkg" default="mas_cob_bringup" />
 
     <!-- delete old parameters -->
     <rosparam command="delete" param="/move_base"/>
@@ -18,30 +19,30 @@
         <remap from="cmd_vel" to="/base/twist_mux/command_navigation"/>
         <remap from="odom" to="base_controller/odometry"/>
         <remap from="~force_field_recovery/cmd_vel" to="/base/twist_mux/command_navigation"/>
-        
+
         <!-- planner selection parameter -->
         <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
-        
+
         <!-- move_base parameters -->
-        <rosparam file="$(find mdr_2dnav)/ros/config/dwa/move_base_params.yaml" command="load" />
-        <rosparam file="$(find mdr_2dnav)/ros/config/common/robot_footprint.yaml" command="load" />
-        
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/dwa/move_base_params.yaml" command="load" />
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/common/robot_footprint.yaml" command="load" />
+
         <!-- local planner parameters (Dynamic Window Approach) -->
-        <rosparam file="$(find mdr_2dnav)/ros/config/dwa/dwa_local_planner_params.yaml" command="load" ns="DWAPlannerROS" />
-        
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/dwa/dwa_local_planner_params.yaml" command="load" ns="DWAPlannerROS" />
+
         <!-- global costmap parameters -->
-        <rosparam file="$(find mdr_2dnav)/ros/config/common/robot_footprint.yaml" command="load" ns="global_costmap"/>
-        <rosparam file="$(find mdr_2dnav)/ros/config/dwa/costmap_common_params.yaml" command="load" ns="global_costmap"/>
-        <rosparam file="$(find mdr_2dnav)/ros/config/dwa/global_costmap_params.yaml" command="load" />
-        
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/common/robot_footprint.yaml" command="load" ns="global_costmap"/>
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/dwa/costmap_common_params.yaml" command="load" ns="global_costmap"/>
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/dwa/global_costmap_params.yaml" command="load" />
+
         <!-- local costmap parameters -->
-        <rosparam file="$(find mdr_2dnav)/ros/config/common/robot_footprint.yaml" command="load" ns="local_costmap"/>
-        <rosparam file="$(find mdr_2dnav)/ros/config/dwa/costmap_common_params.yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find mdr_2dnav)/ros/config/dwa/local_costmap_params.yaml" command="load" />    
-        
-        <!-- recovery behavior parameters-->    
-        <rosparam file="$(find mdr_2dnav)/ros/config/recovery_behaviors/force_field_parameters.yaml" command="load" ns="force_field_recovery"/>    
-        <rosparam file="$(find mdr_2dnav)/ros/config/recovery_behaviors/clear_costmap_parameters.yaml" command="load" ns="clear_costmap_recovery"/>    
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/common/robot_footprint.yaml" command="load" ns="local_costmap"/>
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/dwa/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/dwa/local_costmap_params.yaml" command="load" />
+
+        <!-- recovery behavior parameters-->
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/recovery_behaviors/force_field_parameters.yaml" command="load" ns="force_field_recovery"/>
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/recovery_behaviors/clear_costmap_parameters.yaml" command="load" ns="clear_costmap_recovery"/>
     </node>
 
 </launch>
