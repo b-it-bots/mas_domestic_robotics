@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <launch>
-  
+
     <arg name="robot" default="$(optenv ROBOT !!ROBOT NOT SET!!)" />
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!ROBOT_ENV NOT SET!!)" />
+    <arg name="robot_pkg" default="mas_cob_bringup" />
 
     <!-- eband planner set to omni by default -->
     <arg name="diff" default="false"/>
@@ -14,7 +15,7 @@
     <include file="$(find mdr_2dnav)/ros/launch/nav_common.launch">
       <arg name="robot_env" value="$(arg robot_env)" />
     </include>
-    
+
     <!--- setting omni or differential mode -->
     <param name="move_base/EBandPlannerROS/differential_drive" value="$(arg diff)" />
 
@@ -24,30 +25,30 @@
         <remap from="cmd_vel" to="/base/twist_mux/command_navigation"/>
         <remap from="odom" to="base_controller/odometry"/>
         <remap from="~force_field_recovery/cmd_vel" to="/base/twist_mux/command_navigation"/>
-        
+
         <!-- planner selection parameter -->
         <param name="base_local_planner" value="eband_local_planner/EBandPlannerROS" />
 
         <!-- move_base parameters -->
-        <rosparam file="$(find mdr_2dnav)/ros/config/eband/move_base_params.yaml" command="load" />
-        <rosparam file="$(find mdr_2dnav)/ros/config/common/robot_footprint.yaml" command="load" />
-        
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/eband/move_base_params.yaml" command="load" />
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/common/robot_footprint.yaml" command="load" />
+
         <!-- local planner parameters (Elastic Band) -->
-        <rosparam file="$(find mdr_2dnav)/ros/config/eband/eband_local_planner_params.yaml" command="load" ns="EBandPlannerROS"/>
-        
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/eband/eband_local_planner_params.yaml" command="load" ns="EBandPlannerROS"/>
+
         <!-- global costmap parameters -->
-        <rosparam file="$(find mdr_2dnav)/ros/config/common/robot_footprint.yaml" command="load" ns="global_costmap"/>
-        <rosparam file="$(find mdr_2dnav)/ros/config/eband/costmap_common_params.yaml" command="load" ns="global_costmap" />
-        <rosparam file="$(find mdr_2dnav)/ros/config/eband/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/common/robot_footprint.yaml" command="load" ns="global_costmap"/>
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/eband/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/eband/global_costmap_params.yaml" command="load" />
 
         <!-- local costmap parameters -->
-        <rosparam file="$(find mdr_2dnav)/ros/config/common/robot_footprint.yaml" command="load" ns="local_costmap"/>
-        <rosparam file="$(find mdr_2dnav)/ros/config/eband/costmap_common_params.yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find mdr_2dnav)/ros/config/eband/local_costmap_params.yaml" command="load" />
-        
-        <!-- recovery behavior parameters-->    
-        <rosparam file="$(find mdr_2dnav)/ros/config/recovery_behaviors/force_field_parameters.yaml" command="load" ns="force_field_recovery"/>    
-        <rosparam file="$(find mdr_2dnav)/ros/config/recovery_behaviors/clear_costmap_parameters.yaml" command="load" ns="clear_costmap_recovery"/>    
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/common/robot_footprint.yaml" command="load" ns="local_costmap"/>
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/eband/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/eband/local_costmap_params.yaml" command="load" />
+
+        <!-- recovery behavior parameters-->
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/recovery_behaviors/force_field_parameters.yaml" command="load" ns="force_field_recovery"/>
+        <rosparam file="$(find $(arg robot_pkg))/config/navigation/recovery_behaviors/clear_costmap_parameters.yaml" command="load" ns="clear_costmap_recovery"/>
     </node>
 
 </launch>

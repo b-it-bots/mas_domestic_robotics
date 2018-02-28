@@ -4,10 +4,12 @@
   <arg name="nav_mode" default="dwa" />
   <arg name="robot" default="$(optenv ROBOT !!ROBOT NOT SET!!)" />
   <arg name="robot_env" default="$(optenv ROBOT_ENV !!ROBOT_ENV NOT SET!!)" />
+  <arg name="robot_pkg" default="mas_cob_bringup" />
 
   <include file="$(find mdr_2dnav)/ros/launch/2dnav_$(arg nav_mode).launch">
     <arg name="robot" value="$(arg robot)" />
     <arg name="robot_env" value="$(arg robot_env)" />
+    <arg name="robot_pkg" value="$(arg robot_pkg)"
   </include>
 
 </launch>

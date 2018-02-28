@@ -1,6 +1,0 @@
-#!/usr/bin/python
-
-import mdr_pick_and_place.pick_and_place
-
-if __name__ == '__main__':
-    mdr_pick_and_place.pick_and_place.main()
