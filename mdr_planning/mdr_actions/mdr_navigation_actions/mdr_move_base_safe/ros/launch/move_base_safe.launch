@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <node pkg="mdr_move_base_safe" type="move_base_safe" name="move_base_safe_server" output="screen" ns="mdr_actions" />
-</launch>
