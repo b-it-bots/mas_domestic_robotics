@@ -47,7 +47,7 @@ An action for moving the arm of a robot.
 ## Example usage
 
 1. Run the robot simulation: ``roslaunch mdr_bringup_sim robot.launch``
-2. Run the cob moveit interface: ``roslaunch mdr_moveit_cob move_group.launch``
+2. Run the moveit interface for the robot: ``roslaunch mdr_[robot]_moveit move_group.launch``
 3. Run the action server: ``roslaunch mdr_move_arm_action move_arm.launch``
 4. Run the client example
     1. with a named target motion goal: ``rosrun mdr_move_arm_action move_arm_action_client_test 1 folded``
