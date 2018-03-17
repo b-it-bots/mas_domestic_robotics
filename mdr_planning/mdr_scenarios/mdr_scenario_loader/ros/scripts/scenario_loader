@@ -1,0 +1,42 @@
+#!/usr/bin/python
+from importlib import import_module
+
+import rospy
+import smach
+import smach_ros
+
+from mdr_scenario_loader.scenario_loader import ScenarioLoader
+
+class Scenario(smach.StateMachine):
+    '''An interface for creating state machines from state machine description files
+
+    Author -- Alex Mitrevski
+    Email -- aleksandar.mitrevski@h-brs.de
+
+    '''
+    def __init__(self, scenario_data):
+        smach.StateMachine.__init__(self, outcomes=scenario_data.outcomes)
+        with self:
+            for _, state in scenario_data.state_params.items():
+                state_class = getattr(import_module(state.state_module_name),
+                                      state.state_class_name)
+                smach.StateMachine.add(state.name,
+                                       state_class(**state.args),
+                                       transitions=state.transitions)
+
+if __name__ == '__main__':
+    scenario_config_file = rospy.get_param('/scenario_config_file', '')
+    parent_scenario_config_file = rospy.get_param('/parent_scenario_config_file', '')
+    scenario_data = ScenarioLoader.load_scenario(scenario_config_file,
+                                                 parent_scenario_config_file)
+
+    rospy.init_node(scenario_data.id)
+    state_machine = Scenario(scenario_data)
+    smach_viewer = smach_ros.IntrospectionServer(scenario_data.id, state_machine,
+                                                 scenario_data.id)
+    smach_viewer.start()
+    result = state_machine.execute()
+    while result is None:
+        rospy.spin()
+    rospy.loginfo('%s complete' % (scenario_data.id))
+    smach_viewer.stop()
