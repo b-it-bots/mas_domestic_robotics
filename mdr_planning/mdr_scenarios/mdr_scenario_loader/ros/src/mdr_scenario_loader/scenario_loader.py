@@ -61,6 +61,10 @@ class ScenarioLoader(object):
             if ScenarioFileKeys.REMOVE_STATE in state_data:
                 state_name = state_data[ScenarioFileKeys.STATE_NAME]
                 scenario_params.state_params.pop(state_name, None)
+                try:
+                    scenario_params.states.remove(state_name)
+                except ValueError:
+                    pass
             else:
                 state_params = StateParams()
                 state_params.name = state_data[ScenarioFileKeys.STATE_NAME]
