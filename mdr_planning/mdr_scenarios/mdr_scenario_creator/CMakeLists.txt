@@ -4,6 +4,7 @@ project(mdr_scenario_creator)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   smach
+  roslint
 )
 
 roslint_python()
