@@ -5,7 +5,7 @@ import rospy
 import smach
 import smach_ros
 
-from mdr_scenario_loader.scenario_loader import ScenarioLoader
+from mdr_scenario_creator.scenario_loader import ScenarioLoader
 
 class Scenario(smach.StateMachine):
     '''An interface for creating state machines from state machine description files

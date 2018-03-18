@@ -1,9 +1,9 @@
 from __future__ import print_function
 import yaml
 
-from mdr_scenario_loader.scenario_params import (StateParams,
-                                                 StateMachineParams,
-                                                 ScenarioFileKeys)
+from mdr_scenario_creator.scenario_params import (StateParams,
+                                                  StateMachineParams,
+                                                  ScenarioFileKeys)
 
 class ScenarioLoader(object):
     '''An interface for loading scenario configuration files
@@ -14,7 +14,7 @@ class ScenarioLoader(object):
     '''
     @staticmethod
     def load_scenario(scenario_file, parent_scenario_file=''):
-        '''Returns an 'mdr_scenario_loader.scenario_params.StateMachineParams'
+        '''Returns an 'mdr_scenario_creator.scenario_params.StateMachineParams'
         object containing scenario description parameters
 
         Keyword arguments:
@@ -87,7 +87,7 @@ class ScenarioLoader(object):
 
     @staticmethod
     def __load_scenario_file(scenario_file):
-        '''Loads the file whose path is specified by "scenario_file"
+        '''Loads the file whose path is specified by 'scenario_file'
 
         Keyword arguments:
         scenario_file -- path to a scenario file in yaml format
@@ -100,8 +100,12 @@ class ScenarioLoader(object):
 
     @staticmethod
     def __load_parent_config(parent_scenario_data):
-        '''Returns an 'mdr_scenario_loader.scenario_params.StateMachineParams'
+        '''Returns an 'mdr_scenario_creator.scenario_params.StateMachineParams'
         object containing description parameters for a generic scenario description
+
+        Keyword arguments:
+        parent_scenario_data -- an 'mdr_scenario_creator.scenario_params.StateMachineParams' object
+
         '''
         scenario_params = StateMachineParams()
         scenario_params.id = parent_scenario_data[ScenarioFileKeys.ID]
@@ -131,10 +135,10 @@ class ScenarioLoader(object):
 
     @staticmethod
     def __print_scenario_configuration(scenario_params):
-        '''Prints the scenario description parameters specified by "scenario_params"
+        '''Prints the scenario description parameters specified by 'scenario_params'
 
         Keyword arguments:
-        scenario_params -- an "mdr_scenario_loader.scenario_params.StateMachineParams" object
+        scenario_params -- an 'mdr_scenario_creator.scenario_params.StateMachineParams' object
 
         '''
         print('State machine ID: %s' % (scenario_params.id))
