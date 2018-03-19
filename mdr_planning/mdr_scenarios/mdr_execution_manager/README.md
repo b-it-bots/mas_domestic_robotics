@@ -28,7 +28,7 @@ mdr_execution_manager
      |    |    |____sm_params.py
      |    |
      |____scripts
-          |____scenario_creator
+          |____state_machine_creator
 
 ```
 
