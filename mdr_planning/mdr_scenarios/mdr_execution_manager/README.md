@@ -113,7 +113,7 @@ The following rules apply for the child state machine configuration:
 
 ## State implementations
 
-Loading a state machine through a configuration file imposes some constraints on the implementations of a state. In particular, a state cannot have named arguments unless they have default values; in addition, all arguments that are defined in the configuration file are passed to the state's constructor as `kwargs`.
+Loading a state machine through a configuration file imposes some constraints on the implementation of a state. In particular, a state cannot have named arguments unless they have default values; in addition, all arguments that are defined in the configuration file are passed to the state's constructor as `kwargs`.
 
 A prototypical definition of a smach state that can be used together with a state machine definition file is shown below:
 ```
