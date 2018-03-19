@@ -1,5 +1,5 @@
 class StateMachineParams(object):
-    '''Defines parameters for state machine
+    '''Defines parameters for a state machine
 
     Author -- Alex Mitrevski
     Email -- aleksandar.mitrevski@h-brs.de
@@ -12,7 +12,7 @@ class StateMachineParams(object):
         self.state_params = dict()
 
 class StateParams(object):
-    '''Defines parameters for a single scenario state
+    '''Defines parameters for a single state machine state
 
     Author -- Alex Mitrevski
     Email -- aleksandar.mitrevski@h-brs.de
@@ -25,8 +25,8 @@ class StateParams(object):
         self.transitions = dict()
         self.args = dict()
 
-class ScenarioFileKeys(object):
-    '''Defined a set of constants used in a scenario description file
+class SMFileKeys(object):
+    '''Defined a set of constants used in a state machine description file
 
     Author -- Alex Mitrevski
     Email -- aleksandar.mitrevski@h-brs.de

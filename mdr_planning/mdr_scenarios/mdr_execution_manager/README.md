@@ -1,4 +1,4 @@
-# ``mdr_scenario_creator``
+# ``mdr_execution_manager``
 
 ## Summary
 
@@ -6,26 +6,26 @@ Creates and executes a smach state machine from a state machine description spec
 
 State machine configuration files can be specified in two different ways:
 
-* independently, i.e. a single configuration files fully describes a state machine for a given scenario
+* independently, i.e. a single configuration files fully describes a state machine
 * one state machine can inherit the structure from another state machine, but can also add new states and remove/replace states that exist in the parent state machine
 
-The latter allows defining generic/robot-independent state machines for a given scenario that can then be made specific by a robot-dependent definition. For example, the generic definition might contain an `arm_moving` state that might be defined somewhere in `mas_domestic_robotics`; however, this state might need to be reimplemented for a particular robot, such that the child configuration file allows us to specify the new state without redefining the complete state machine.
+The latter allows defining generic/robot-independent state machines that can then be made specific by a robot-dependent definition. For example, the generic definition might contain an `arm_moving` state that might be defined somewhere in `mas_domestic_robotics`; however, this state might need to be reimplemented for a particular robot, such that the child configuration file allows us to specify the new state without redefining the complete state machine.
 
 ## Package organisation
 
 The package has the following structure:
 ```
-mdr_scenario_creator
+mdr_execution_manager
 |    package.xml
 |    CMakeLists.txt
 |    setup.py
 |    README.md
 |____ros
      |____src
-     |    |____mdr_scenario_creator
+     |    |____mdr_execution_manager
      |    |    |    __init__.py
-     |    |    |    scenario_loader.py
-     |    |    |____scenario_params.py
+     |    |    |    sm_loader.py
+     |    |    |____sm_params.py
      |    |
      |____scripts
           |____scenario_creator
