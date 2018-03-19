@@ -111,6 +111,24 @@ The following rules apply for the child state machine configuration:
 * For each state, if the `remove` key is defined, the state will be removed from the list of states (provided that it is already there). On the other hand, if a state has the same `name` as a state in the parent state machine configuration, but is completely redefined in the child configuration, the definition of the state from the child configuration file will be used
 
 
+## State implementations
+
+Loading a state machine through a configuration file imposes some constraints on the implementations of a state. In particular, a state cannot have named arguments unless they have default values; in addition, all arguments that are defined in the configuration file are passed to the state's constructor as `kwargs`.
+
+A prototypical definition of a smach state that can be used together with a state machine definition file is shown below:
+```
+class StateName(smach.State):
+    def __init__(self, **kwargs):
+        smach.State.__init__(self, outcomes=['outcome_1', ... 'outcome_n'],
+                             output_keys=['key_1, ..., key_n'])
+        self.arg = kwargs.get('arg_name', <default_value>)
+        ...
+
+    def execute(self, userdata):
+        ...
+```
+
+
 ## Examples
 
 The example below shows a state machine definition for a simple scenario in which a robot needs to pick a bottle from a table.
@@ -188,3 +206,70 @@ state_descriptions:
 This configuration file defines the following state machine:
 
 ![Pick bottle from table state machine](docs/figures/pick_bottle_from_table_sm.png)
+
+
+The three states of the state machine will be implemented as smach states as shown below:
+```
+class MoveBase(smach.State):
+    def __init__(self, **kwargs):
+        smach.State.__init__(self, outcomes=['succeeded', 'failed', 'failed_after_retrying'])
+        self.destination_locations = kwargs.get('destination_locations', list())
+        self.number_of_retries = kwargs.get('number_of_retries', 0)
+        self.retry_count = 0
+        ...
+
+    def execute(self, userdata):
+        ...
+        success = <wait for the base to move and get the result>
+        if success:
+            return 'succeeded'
+        else:
+            if self.retry_count == self.number_of_retries:
+                return 'failed_after_retrying'
+            else:
+                self.retry_count += 1
+                return 'failed'
+
+
+class LocateObject(smach.State):
+    def __init__(self, **kwargs):
+        smach.State.__init__(self, outcomes=['succeeded', 'failed', 'failed_after_retrying'],
+                             output_keys=['object_pose'])
+        self.object = kwargs.get('object', '')
+        self.number_of_retries = kwargs.get('number_of_retries', 0)
+        self.retry_count = 0
+        ...
+
+    def execute(self, userdata):
+        ...
+        success = <try to find the object and wait for the result>
+        if success:
+            return 'succeeded'
+        else:
+            if self.retry_count == self.number_of_retries:
+                return 'failed_after_retrying'
+            else:
+                self.retry_count += 1
+                return 'failed'
+
+
+class Pick(smach.State):
+    def __init__(self, **kwargs):
+        smach.State.__init__(self, outcomes=['succeeded', 'failed', 'failed_after_retrying'])
+        self.object = kwargs.get('object', '')
+        self.number_of_retries = kwargs.get('number_of_retries', 0)
+        self.retry_count = 0
+        ...
+
+    def execute(self, userdata):
+        ...
+        success = <try to grasp the object and wait for the result>
+        if success:
+            return 'succeeded'
+        else:
+            if self.retry_count == self.number_of_retries:
+                return 'failed_after_retrying'
+            else:
+                self.retry_count += 1
+                return 'failed'
+```
