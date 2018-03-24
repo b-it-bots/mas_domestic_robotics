@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_rosplan_interface" type="init_planning_problem" name="init_planning_problem" output="screen" ns="mdr_planning">
+        <param name="problem_file" type="str" value="" />
+        <param name="kb_update_service" type="str" value="/kcl_rosplan/update_knowledge_base" />
+    </node>
+</launch>
