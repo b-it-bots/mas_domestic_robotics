@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_pickup_action" type="pickup_action" name="pickup_server" output="screen">
+        <param name="arm_name" value="arm" />
+        <param name="gripper_cmd_topic" value="gripper_controller" />
+        <rosparam param="gripper_joint_names">[gripper]</rosparam>
+    </node>
+
+    <node pkg="mdr_place_action" type="place_action" name="place_server" output="screen">
+        <param name="arm_name" value="arm" />
+        <param name="gripper_cmd_topic" value="gripper_controller" />
+        <rosparam param="gripper_joint_names">[gripper]</rosparam>
+        <rosparam param="gripper_joint_values">[1]</rosparam>
+    </node>
+
+    <param name="sm_config_file" type="str" value="$(find mdr_store_groceries)/config/store_groceries_sm.yaml" />
+    <node pkg="mdr_execution_manager" type="state_machine_creator" name="store_groceries" output="screen" />
+</launch>
