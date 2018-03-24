@@ -1,0 +1,125 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_rosplan_interface.action_client_base import ActionClientBase
+from mdr_pickup_action.msg import PickupAction, PickupGoal
+
+import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
+import rosplan_knowledge_msgs.srv as rosplan_srvs
+import diagnostic_msgs.msg as diag_msgs
+
+class PickupClient(ActionClientBase):
+    def __init__(self):
+        super(PickupClient, self).__init__()
+
+        self.obj_plane = None
+        self.obj = None
+        self.frame_id = rospy.get_param('~grasping_pose_frame', 'base_link')
+
+        while not rospy.is_shutdown():
+            rospy.sleep(0.1)
+
+    def call_action(self, msg):
+        # we only react to calls to this action
+        if self.action_name != msg.name.lower():
+            return
+
+        rospy.loginfo('[PICKUP] Action request received')
+        self.action_id = msg.action_id
+
+        client = actionlib.SimpleActionClient(self.action_server_name, PickupAction)
+        client.wait_for_server()
+        goal = self.get_action_message(msg)
+
+        # calling the actionlib server and waiting for the execution to end
+        rospy.loginfo('[PICKUP] Sending actionlib goal to %s' % self.action_server_name)
+        client.send_goal(goal)
+        client.wait_for_result(rospy.Duration.from_sec(int(self.action_timeout)))
+        result = client.get_result()
+
+        if result and result.success:
+            rospy.loginfo('[PICKUP] Updating the knowledge base')
+            self.update_knowledge_base()
+            self.send_action_feedback(True)
+        else:
+            self.send_action_feedback(False)
+
+    def get_action_message(self, rosplan_action_msg):
+        '''Reads the action parameters and uses them to initialise an actionlib message.
+        '''
+        goal = PickupGoal()
+        for param in rosplan_action_msg.parameters:
+            if param.key == 'obj':
+                self.obj = param.value
+            elif param.key == 'plane':
+                self.obj_plane = param.value
+            elif param.key == 'bot':
+                self.robot_name = param.value
+
+        goal.pose.header.frame_id = self.frame_id
+        goal.pose.header.stamp = rospy.Time.now()
+        # TODO: choose a grasping pose based on the object position
+        # goal.pose.position.point.x = ?
+        # goal.pose.position.point.y = ?
+        # goal.pose.position.point.z = ?
+        return goal
+
+    def update_knowledge_base(self):
+        # we add the fact that the robot is not on the surface anymore to the knowledge base
+        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
+        request.update_type = 0
+        request.knowledge.knowledge_type = 1
+        request.knowledge.attribute_name = 'on'
+        request.knowledge.is_negative = True
+
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'obj'
+        arg_msg.value = self.obj
+        request.knowledge.values.append(arg_msg)
+
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'plane'
+        arg_msg.value = self.obj_plane
+        request.knowledge.values.append(arg_msg)
+
+        self.knowledge_update_client(request)
+
+        # we add the fact that the robot's gripper is not empty anymore to the knowledge base
+        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
+        request.update_type = 0
+        request.knowledge.knowledge_type = 1
+        request.knowledge.attribute_name = 'empty_gripper'
+        request.knowledge.is_negative = True
+
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'bot'
+        arg_msg.value = self.robot_name
+        request.knowledge.values.append(arg_msg)
+
+        self.knowledge_update_client(request)
+
+        # we add the fact that the robot is holding the object to the knowledge base
+        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
+        request.update_type = 0
+        request.knowledge.knowledge_type = 1
+        request.knowledge.attribute_name = 'holding'
+
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'bot'
+        arg_msg.value = self.robot_name
+        request.knowledge.values.append(arg_msg)
+
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'obj'
+        arg_msg.value = self.obj
+        request.knowledge.values.append(arg_msg)
+
+        self.knowledge_update_client(request)
+
+if __name__ == '__main__':
+    rospy.init_node('pickup_client')
+    try:
+        PickupClient()
+    except rospy.ROSInterruptException:
+        pass
