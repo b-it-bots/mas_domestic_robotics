@@ -7,21 +7,11 @@ find_package(catkin REQUIRED COMPONENTS
   smach_ros
   smach
   actionlib
-  std_msgs
   mdr_pickup_action
   mdr_place_action
 )
 
-catkin_package(
-  CATKIN_DEPENDS
-    rospy
-    smach
-    smach_ros
-    actionlib
-    std_msgs
-    mdr_pickup_action
-    mdr_place_action
-)
+catkin_package()
 
 catkin_python_setup()
 roslint_python()
