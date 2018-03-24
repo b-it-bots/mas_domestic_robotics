@@ -1,0 +1,10 @@
+# goal
+geometry_msgs/PoseStamped pose
+float32[] closed_gripper_joint_values
+---
+# result
+bool success
+---
+# feedback
+string current_state
+string message

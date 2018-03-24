@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_pickup_action" type="pickup_action" name="pickup_server" output="screen">
+        <param name="arm_name" value="arm" />
+        <param name="gripper_cmd_topic" value="gripper_controller" />
+        <rosparam param="gripper_joint_names">[gripper]</rosparam>
+    </node>
+</launch>
