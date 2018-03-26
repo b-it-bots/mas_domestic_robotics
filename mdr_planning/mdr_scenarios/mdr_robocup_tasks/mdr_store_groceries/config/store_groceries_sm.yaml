@@ -8,7 +8,7 @@ state_descriptions:
     - state:
         name: ENTER
         state_module_name: mdr_store_groceries.scenario_states
-        state_class_name: Enter
+        state_class_name: MoveBase
         transitions:
             - transition:
                 name: succeeded
@@ -20,6 +20,9 @@ state_descriptions:
                 name: failed_after_retrying
                 state: FAILED
         arguments:
+            - argument:
+                name: destination_locations
+                value: [INSIDE_ARENA]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -158,6 +161,9 @@ state_descriptions:
                 name: failed_after_retrying
                 state: FAILED
         arguments:
+            - argument:
+                name: destination_locations
+                value: [OUTSIDE_ARENA]
             - argument:
                 name: number_of_retries
                 value: 3
