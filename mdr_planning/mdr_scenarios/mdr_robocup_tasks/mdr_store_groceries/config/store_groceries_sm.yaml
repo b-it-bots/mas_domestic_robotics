@@ -7,7 +7,7 @@ outcomes: [DONE, TIMEOUT]
 state_descriptions:
     - state:
         name: ENTER
-        state_module_name: mdr_store_groceries.action_states
+        state_module_name: mdr_store_groceries.scenario_states
         state_class_name: Enter
         transitions:
             - transition:
@@ -25,7 +25,7 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_TO_TABLE
-        state_module_name: mdr_store_groceries.action_states
+        state_module_name: mdr_store_groceries.scenario_states
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -46,7 +46,7 @@ state_descriptions:
                 value: 3
     - state:
         name: PERCEIVE_TABLE
-        state_module_name: mdr_store_groceries.action_states
+        state_module_name: mdr_store_groceries.scenario_states
         state_class_name: PerceiveTable
         transitions:
             - transition:
@@ -64,7 +64,7 @@ state_descriptions:
                 value: 3
     - state:
         name: PICK_OBJECT
-        state_module_name: mdr_store_groceries.action_states
+        state_module_name: mdr_store_groceries.scenario_states
         state_class_name: Pick
         transitions:
             - transition:
@@ -82,7 +82,7 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_TO_SHELF
-        state_module_name: mdr_store_groceries.action_states
+        state_module_name: mdr_store_groceries.scenario_states
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -103,7 +103,7 @@ state_descriptions:
                 value: 3
     - state:
         name: PLACE_OBJECT
-        state_module_name: mdr_store_groceries.action_states
+        state_module_name: mdr_store_groceries.scenario_states
         state_class_name: Place
         transitions:
             - transition:
@@ -124,7 +124,7 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_BACK_TO_TABLE
-        state_module_name: mdr_store_groceries.action_states
+        state_module_name: mdr_store_groceries.scenario_states
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -145,7 +145,7 @@ state_descriptions:
                 value: 3
     - state:
         name: EXIT
-        state_module_name: mdr_store_groceries.action_states
+        state_module_name: mdr_store_groceries.scenario_states
         state_class_name: MoveBase
         transitions:
             - transition:
