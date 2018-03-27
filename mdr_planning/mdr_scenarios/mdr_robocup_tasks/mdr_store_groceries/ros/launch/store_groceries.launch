@@ -1,18 +1,56 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="mdr_pickup_action" type="pickup_action" name="pickup_server" output="screen">
-        <param name="arm_name" value="arm" />
-        <param name="gripper_cmd_topic" value="gripper_controller" />
-        <rosparam param="gripper_joint_names">[gripper]</rosparam>
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+
+    <!-- ROSPlan -->
+    <!-- data paths -->
+    <param name="/rosplan/data_path" value="$(find mdr_store_groceries)/config/" />
+    <param name="/rosplan/planner_path" value="$(find rosplan_planning_system)/common/bin/" />
+
+    <!-- domain file -->
+    <param name="/rosplan/domain_path" value="$(find mdr_store_groceries)/config/domain.pddl" />
+
+    <!-- knowledge base -->
+    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen" />
+
+    <!-- scene database (MongoDB) -->
+    <node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
+        <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB" />
+    </node>
+    <node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log" />
+
+    <!-- planning system -->
+    <node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
+        <!-- directory for generated files -->
+        <param name="data_path" value="$(find mdr_store_groceries)/config/" />
+        <param name="problem_path" value="$(find mdr_store_groceries)/config/problem.pddl" />
+        <param name="strl_file_path" value="$(find mdr_store_groceries)/config/plan.strl" />
+
+        <!-- to run the planner -->
+        <param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n DOMAIN PROBLEM" />
+        <param name="generate_default_problem" value="true" />
+        <param name="max_dispatch_attempts" value="2" />
     </node>
 
-    <node pkg="mdr_place_action" type="place_action" name="place_server" output="screen">
-        <param name="arm_name" value="arm" />
-        <param name="gripper_cmd_topic" value="gripper_controller" />
-        <rosparam param="gripper_joint_names">[gripper]</rosparam>
-        <rosparam param="gripper_joint_values">[1]</rosparam>
+    <node name="init_planning_problem" pkg="mdr_rosplan_interface" type="init_planning_problem" respawn="false" output="screen">
+        <param name="problem_file" type="str" value="$(find mdr_store_groceries)/config/sample_initial_problem.yaml" />
+        <param name="kb_update_service" type="str" value="/kcl_rosplan/update_knowledge_base" />
     </node>
 
+    <!-- Actions -->
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" />
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
+
+    <include file="$(find mdr_perceive_plane_action)/ros/launch/pickup_action.launch" />
+    <include file="$(find mdr_perceive_plane_action)/ros/launch/pickup_client.launch" />
+
+    <include file="$(find mdr_pickup_action)/ros/launch/pickup_action.launch" />
+    <include file="$(find mdr_pickup_action)/ros/launch/pickup_client.launch" />
+
+    <include file="$(find mdr_place_action)/ros/launch/place_action.launch" />
+    <include file="$(find mdr_place_action)/ros/launch/place_client.launch" />
+
+    <!-- State machine -->
     <param name="sm_config_file" type="str" value="$(find mdr_store_groceries)/config/store_groceries_sm.yaml" />
     <node pkg="mdr_execution_manager" type="state_machine_creator" name="store_groceries" output="screen" />
 </launch>
