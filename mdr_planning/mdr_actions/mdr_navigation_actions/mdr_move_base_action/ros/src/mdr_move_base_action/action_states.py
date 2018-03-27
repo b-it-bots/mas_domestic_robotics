@@ -14,7 +14,7 @@ class SetupMoveBase(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'],
                              input_keys=['move_base_goal'],
-                             output_keys=['move_base_feedback'])
+                             output_keys=['move_base_feedback', 'move_base_result'])
 
     def execute(self, userdata):
         feedback = MoveBaseFeedback()
@@ -30,7 +30,7 @@ class ApproachPose(smach.State):
                  pose_frame='map'):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'],
                              input_keys=['move_base_goal'],
-                             output_keys=['move_base_feedback'])
+                             output_keys=['move_base_feedback', 'move_base_result'])
         self.pose = None
         self.move_base_server = move_base_server
         self.pose_description_file = pose_description_file
@@ -84,7 +84,8 @@ class ApproachPose(smach.State):
 class SetActionLibResult(smach.State):
     def __init__(self, result):
         smach.State.__init__(self, outcomes=['succeeded'],
-                             output_keys=['move_base_result'])
+                             input_keys=['move_base_goal'],
+                             output_keys=['move_base_feedback', 'move_base_result'])
         self.result = result
 
     def execute(self, userdata):
