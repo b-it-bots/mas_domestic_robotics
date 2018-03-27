@@ -11,6 +11,7 @@
     )
 
     (:predicates
+        (robot_name ?bot - robot)
         (robot_at ?bot - robot ?wp - waypoint)
         (door_at ?door - door ?wp - waypoint)
         (object_at ?obj - object ?wp - waypoint)
