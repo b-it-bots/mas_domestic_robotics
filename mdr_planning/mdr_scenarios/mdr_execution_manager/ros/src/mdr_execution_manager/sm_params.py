@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 class StateMachineParams(object):
     '''Defines parameters for a state machine
 
@@ -9,7 +11,7 @@ class StateMachineParams(object):
         self.id = ''
         self.states = list()
         self.outcomes = list()
-        self.state_params = dict()
+        self.state_params = OrderedDict()
 
 class StateParams(object):
     '''Defines parameters for a single state machine state
