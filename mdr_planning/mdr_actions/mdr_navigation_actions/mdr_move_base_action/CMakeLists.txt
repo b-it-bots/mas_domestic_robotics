@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_move_base)
+project(mdr_move_base_action)
 
 find_package(catkin REQUIRED COMPONENTS
   actionlib
@@ -33,7 +33,7 @@ include_directories(
 )
 
 install(PROGRAMS
-  ros/scripts/mdr_move_base
-  ros/scripts/mdr_move_base_client_test
+  ros/scripts/move_base_action
+  ros/scripts/move_base_action_client_test
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )

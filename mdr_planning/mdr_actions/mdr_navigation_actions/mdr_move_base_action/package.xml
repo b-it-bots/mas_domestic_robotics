@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>mdr_move_base</name>
+  <name>mdr_move_base_action</name>
   <version>1.2.0</version>
   <description>An action for moving a robot's base</description>
 
