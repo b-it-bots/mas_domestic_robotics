@@ -4,7 +4,6 @@ import smach
 
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
-import diagnostic_msgs.msg as diag_msgs
 
 class ScenarioStateBase(smach.State):
     def __init__(self, action_name, outcomes):
@@ -22,7 +21,8 @@ class ScenarioStateBase(smach.State):
                          plan_dispatch_msgs.ActionFeedback,
                          self.get_action_feedback)
 
-        self.attribute_fetching_client = rospy.ServiceProxy('/kcl_rosplan/update_knowledge_base',
+        rospy.wait_for_service('/kcl_rosplan/get_current_knowledge')
+        self.attribute_fetching_client = rospy.ServiceProxy('/kcl_rosplan/get_current_knowledge',
                                                             rosplan_srvs.GetAttributeService)
 
         self.robot_name = ''
@@ -43,7 +43,7 @@ class ScenarioStateBase(smach.State):
         pass
 
     def get_action_feedback(self, msg):
-        if msg.information and msg.information[0]['action_name'] and \
-        msg.information[0]['action_name'] == self.action_name:
+        if msg.information and msg.information[0].key == 'action_name' and \
+        msg.information[0].value == self.action_name:
             self.executing = False
             self.succeeded = msg.status == 'action achieved'
