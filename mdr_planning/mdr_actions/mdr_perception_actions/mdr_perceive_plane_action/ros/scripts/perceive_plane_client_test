@@ -1,0 +1,20 @@
+#! /usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_perceive_plane_action.msg import PerceivePlaneAction, PerceivePlaneGoal
+
+if __name__ == '__main__':
+    rospy.init_node('perceive_plane_client_tester')
+    client = actionlib.SimpleActionClient('/mdr_actions/perceive_plane_server', PerceivePlaneAction)
+    client.wait_for_server()
+    goal = PerceivePlaneGoal()
+    goal.plane_config = 'table'
+    try:
+        timeout = 45.0
+        rospy.loginfo('Sending action lib goal to perceive_plane_server')
+        client.send_goal(goal)
+        client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
+        print client.get_result()
+    except:
+        pass
