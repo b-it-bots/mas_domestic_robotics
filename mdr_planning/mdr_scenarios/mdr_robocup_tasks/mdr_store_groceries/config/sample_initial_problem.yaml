@@ -28,6 +28,12 @@ objects:
         type: door
 init_state:
     - predicate:
+        name: 'robot_name'
+        args:
+            - arg:
+                key: bot
+                value: hbrs
+    - predicate:
         name: 'robot_at'
         args:
             - arg:
