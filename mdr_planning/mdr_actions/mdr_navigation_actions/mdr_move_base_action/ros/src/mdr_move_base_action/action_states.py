@@ -83,7 +83,7 @@ class ApproachPose(smach.State):
 
 class SetActionLibResult(smach.State):
     def __init__(self, result):
-        smach.State.__init__(self, outcomes=['succeeded', 'failed'],
+        smach.State.__init__(self, outcomes=['succeeded'],
                              output_keys=['move_base_result'])
         self.result = result
 
