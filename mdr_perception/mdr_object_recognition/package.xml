@@ -14,5 +14,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
+  <run_depend>rospy</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>tmc_tabletop_segmentator</run_depend>
   <run_depend>mcr_object_recognition_mean_circle</run_depend>
 </package>

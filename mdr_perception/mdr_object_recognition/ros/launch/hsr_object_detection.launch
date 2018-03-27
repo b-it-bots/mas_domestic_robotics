@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="input_pointcloud_topic" default="/hsrb/head_rgbd_sensor/depth_registered/rectified_points" />
+
+    <node pkg="mdr_object_recognition" type="hsr_object_detector" name="object_detector" output="screen">
+        <param name="input_pointcloud_topic" type="string" value="$(arg input_pointcloud_topic)" />
+    </node>
+</launch>
