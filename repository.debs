@@ -2,58 +2,8 @@
 
 # create list of packages to install
 packagelist=(
-  libasound2-dev
-  liblog4cpp5-dev
-  libzbar-dev
-  python-catkin-tools
-  python-pygraphviz
-  python-rosinstall
-  python-unicodecsv
-  python-vcstools
-  ros-kinetic-amcl
-  ros-kinetic-control-msgs
-  ros-kinetic-costmap-2d
-  ros-kinetic-diagnostic-updater
-  ros-kinetic-dwa-local-planner
-  ros-kinetic-gazebo-ros
-  ros-kinetic-gazebo-ros-control
-  ros-kinetic-gmapping
-  ros-kinetic-interactive-markers
-  ros-kinetic-joy
-  ros-kinetic-laser-geometry
-  ros-kinetic-libphidgets
-  ros-kinetic-libntcan
-  ros-kinetic-libpcan
-  ros-kinetic-lms1xx
-  ros-kinetic-manipulation-msgs
-  ros-kinetic-map-server
-  ros-kinetic-move-base
-  ros-kinetic-move-base-msgs
-  ros-kinetic-moveit-core
-  ros-kinetic-moveit-planners-ompl
   ros-kinetic-moveit-commander
-  ros-kinetic-moveit-ros-warehouse
-  ros-kinetic-moveit-ros-perception
-  ros-kinetic-openni2-launch
-  ros-kinetic-polled-camera
-  ros-kinetic-pr2-dashboard-aggregator
-  ros-kinetic-pr2-msgs
-  ros-kinetic-robot-state-publisher
-  ros-kinetic-ros
-  ros-kinetic-ros-canopen
-  ros-kinetic-ros-controllers
-  ros-kinetic-rqt-gui
-  ros-kinetic-rqt-reconfigure
-  ros-kinetic-rqt-robot-dashboard
-  ros-kinetic-rviz
-  ros-kinetic-schunk-modular-robotics
   ros-kinetic-smach
-  ros-kinetic-smach-ros
-  ros-kinetic-twist-mux
-  ros-kinetic-usb-cam
-  ros-kinetic-xacro
-  ros-kinetic-eband-local-planner
-  python-setuptools
 )
 
 ### install debian packages listed in array above
@@ -64,7 +14,7 @@ sudo apt-get install -y ${packagelist[@]}
 rosinstall .. /opt/ros/kinetic repository.rosinstall
 
 ### install dependencies of BRSU repositories
-dependent_repositories=('mas_common_robotics' 'mas_third_party_software')
+dependent_repositories=('mas_common_robotics')
 for i in $dependent_repositories
 do
     cd ../$i
