@@ -68,10 +68,9 @@ class PickupClient(ActionClientBase):
     def update_knowledge_base(self):
         # we add the fact that the robot is not on the surface anymore to the knowledge base
         request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 0
+        request.update_type = 2
         request.knowledge.knowledge_type = 1
         request.knowledge.attribute_name = 'on'
-        request.knowledge.is_negative = True
 
         arg_msg = diag_msgs.KeyValue()
         arg_msg.key = 'obj'
@@ -88,9 +87,8 @@ class PickupClient(ActionClientBase):
         # we add the fact that the robot's gripper is not empty anymore to the knowledge base
         request = rosplan_srvs.KnowledgeUpdateServiceRequest()
         request.update_type = 0
-        request.knowledge.knowledge_type = 1
+        request.knowledge.knowledge_type = 2
         request.knowledge.attribute_name = 'empty_gripper'
-        request.knowledge.is_negative = True
 
         arg_msg = diag_msgs.KeyValue()
         arg_msg.key = 'bot'
