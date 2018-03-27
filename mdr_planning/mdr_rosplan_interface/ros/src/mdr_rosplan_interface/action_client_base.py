@@ -5,10 +5,11 @@ import abc
 import rospy
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
+import diagnostic_msgs.msg as diag_msgs
 
 class ActionClientBase(object):
     def __init__(self):
-        self.action_success_msg = 'action accomplished'
+        self.action_success_msg = 'action achieved'
         self.action_failure_msg = 'action failed'
         self.action_id = -1
 
@@ -22,6 +23,9 @@ class ActionClientBase(object):
 
         self.knowledge_update_client = rospy.ServiceProxy('knowledge_update_service',
                                                           rosplan_srvs.KnowledgeUpdateService)
+
+        self.attribute_fetching_client = rospy.ServiceProxy('knowledge_update_service',
+                                                            rosplan_srvs.GetAttributeService)
 
         rospy.Subscriber('action_dispatch_topic',
                          plan_dispatch_msgs.ActionDispatch,
@@ -51,4 +55,10 @@ class ActionClientBase(object):
             msg.status = self.action_success_msg
         else:
             msg.status = self.action_failure_msg
+
+        action_name_kvp = diag_msgs.KeyValue()
+        action_name_kvp.key = 'action_name'
+        action_name_kvp.value = self.action_name
+        msg.information.append(action_name_kvp)
+
         self.feedback_pub.publish(msg)
