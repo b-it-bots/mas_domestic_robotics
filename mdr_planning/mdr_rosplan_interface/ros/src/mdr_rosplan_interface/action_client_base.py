@@ -6,6 +6,7 @@ import rospy
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
+from mongodb_store.message_store import MessageStoreProxy
 
 class ActionClientBase(object):
     def __init__(self):
@@ -26,6 +27,8 @@ class ActionClientBase(object):
 
         self.attribute_fetching_client = rospy.ServiceProxy('knowledge_update_service',
                                                             rosplan_srvs.GetAttributeService)
+
+        self.msg_store_client = MessageStoreProxy()
 
         rospy.Subscriber('action_dispatch_topic',
                          plan_dispatch_msgs.ActionDispatch,
