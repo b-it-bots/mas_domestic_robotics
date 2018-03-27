@@ -3,11 +3,11 @@ import rospy
 import smach
 
 import smach_ros
-from mdr_move_base.msg import MoveBaseAction, MoveBaseFeedback, MoveBaseResult
-from mdr_move_base.action_states import SetupMoveBase, ClearCostmaps, ApproachPose, SetActionLibResult
+from mdr_move_base_action.msg import MoveBaseAction, MoveBaseFeedback, MoveBaseResult
+from mdr_move_base_action.action_states import SetupMoveBase, ClearCostmaps, ApproachPose, SetActionLibResult
 
 def main():
-    rospy.init_node('mdr_move_base_server')
+    rospy.init_node('mdr_move_base_action_server')
 
     move_base_server = rospy.get_param('~move_base_server', '')
     pose_description_file = rospy.get_param('~pose_description_file', '')
