@@ -56,10 +56,9 @@ class MoveBaseClient(ActionClientBase):
     def update_knowledge_base(self, destination_location):
         # we add the fact that the robot is not at the source location to the knowledge base
         request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 0
+        request.update_type = 2
         request.knowledge.knowledge_type = 1
         request.knowledge.attribute_name = 'robot_at'
-        request.knowledge.is_negative = True
 
         arg_msg = diag_msgs.KeyValue()
         arg_msg.key = 'bot'
