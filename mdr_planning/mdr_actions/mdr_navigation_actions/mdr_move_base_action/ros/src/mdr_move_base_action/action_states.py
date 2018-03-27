@@ -8,7 +8,7 @@ import tf
 from geometry_msgs.msg import PoseStamped, Quaternion
 
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from mdr_move_base.msg import MoveBaseFeedback, MoveBaseResult
+from mdr_move_base_action.msg import MoveBaseFeedback, MoveBaseResult
 
 class SetupMoveBase(smach.State):
     def __init__(self):
