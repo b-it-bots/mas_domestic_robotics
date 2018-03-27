@@ -1,14 +1,4 @@
 - git:
-    local-name: mas_third_party_software
-    uri: gitgate@mas.b-it-center.de:mas-group/mas_third_party_software.git
-    version: indigo
-
-- git:
     local-name: mas_common_robotics
-    uri: gitgate@mas.b-it-center.de:mas-group/mas_common_robotics.git
+    uri: git@github.com:b-it-bots/mas_common_robotics.git
     version: kinetic
-
-- git:
-    local-name: zbar_ros
-    uri: https://github.com/sthoduka/zbar_ros.git
-    version: hydro-devel
