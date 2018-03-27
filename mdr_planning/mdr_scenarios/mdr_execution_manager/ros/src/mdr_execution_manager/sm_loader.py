@@ -1,5 +1,5 @@
 from __future__ import print_function
-import yaml
+import oyaml as yaml
 
 from mdr_execution_manager.sm_params import (StateParams,
                                              StateMachineParams,
