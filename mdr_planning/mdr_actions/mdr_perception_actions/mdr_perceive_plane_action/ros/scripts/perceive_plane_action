@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+import rospy
+import smach
+
+import mcr_states.common.perception_states as perception_states
+import mcr_states.common.basic_states as basic_states
+
+from smach_ros import ActionServerWrapper, IntrospectionServer
+from mdr_perceive_plane_action.msg import PerceivePlaneAction
+from mdr_perceive_plane_action.action_states import SetActionLibResult, SetupPlaneConfig
+
+
+class PerceivePlaneSkill(smach.StateMachine):
+    def __init__(self, timeout=20):
+        smach.StateMachine.__init__(self, outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
+                                    input_keys=['perceive_plane_goal'],
+                                    output_keys=['perceive_plane_feedback', 'perceive_plane_result'])
+
+        with self:
+            smach.StateMachine.add('CONFIGURE_PLANE', SetupPlaneConfig(),
+                                   transitions={'success': 'START_WORKSPACE_FINDER',
+                                                'waiting': 'CONFIGURE_PLANE',
+                                                'failure': 'SET_ACTION_LIB_FAILURE',
+                                                'timeout': 'CONFIGURE_PLANE'})
+
+            smach.StateMachine.add('START_WORKSPACE_FINDER',
+                                   basic_states.send_event(event_list=[('/mcr_perception/mux_pointcloud/select',
+                                                                        '/cam3d/depth_registered/points')]),
+                                   transitions={'success': 'RECOGNIZE_OBJECTS'})
+
+            smach.StateMachine.add('RECOGNIZE_OBJECTS',
+                                   perception_states.find_objects(retries=3),
+                                   transitions={'objects_found': 'SET_ACTION_LIB_SUCCESS',
+                                                'no_objects_found': 'SET_ACTION_LIB_FAILURE'},
+                                   remapping={'found_objects': 'recognized_objects'})
+
+            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
+                                   transitions={'succeeded': 'OVERALL_SUCCESS'})
+
+            smach.StateMachine.add('SET_ACTION_LIB_FAILURE', SetActionLibResult(False),
+                                   transitions={'succeeded': 'OVERALL_FAILED'})
+
+def main():
+    rospy.init_node('perceive_plane_server')
+
+    # Construct state machine
+    sm = PerceivePlaneSkill()
+
+    # smach viewer
+    sis = IntrospectionServer('perceive_plane_smach_viewer', sm, '/PERCEIVE_PLANE_SMACH_VIEWER')
+    sis.start()
+
+    # Construct action server wrapper
+    asw = ActionServerWrapper(
+        server_name='perceive_plane_server',
+        action_spec=PerceivePlaneAction,
+        wrapped_container=sm,
+        succeeded_outcomes=['OVERALL_SUCCESS'],
+        aborted_outcomes=['OVERALL_FAILED'],
+        preempted_outcomes=['PREEMPTED'],
+        goal_key='perceive_plane_goal',
+        feedback_key='perceive_plane_feedback',
+        result_key='perceive_plane_result')
+
+    # Run the server in a background thread
+    asw.run_server()
+    rospy.spin()
+
+if __name__ == '__main__':
+    main()

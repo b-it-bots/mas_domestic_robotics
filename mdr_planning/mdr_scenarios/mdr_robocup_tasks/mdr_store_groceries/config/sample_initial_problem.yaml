@@ -1,0 +1,122 @@
+objects:
+    - obj:
+        name: hbrs
+        type: robot
+    - obj:
+        name: cupboard_waypoint
+        type: waypoint
+    - obj:
+        name: table_waypoint
+        type: waypoint
+    - obj:
+        name: home
+        type: waypoint
+    - obj:
+        name: shelf1
+        type: plane
+    - obj:
+        name: shelf2
+        type: plane
+    - obj:
+        name: table
+        type: plane
+    - obj:
+        name: cupboard
+        type: object
+    - obj:
+        name: cupboard_door
+        type: door
+init_state:
+    - predicate:
+        name: 'robot_name'
+        args:
+            - arg:
+                key: bot
+                value: hbrs
+    - predicate:
+        name: 'robot_at'
+        args:
+            - arg:
+                key: bot
+                value: hbrs
+            - arg:
+                key: wp
+                value: home
+    - predicate:
+        name: 'empty_gripper'
+        args:
+            - arg:
+                key: bot
+                value: hbrs
+    - predicate:
+        name: 'plane_at'
+        args:
+            - arg:
+                key: plane
+                value: shelf1
+            - arg:
+                key: wp
+                value: cupboard_waypoint
+    - predicate:
+        name: 'plane_at'
+        args:
+            - arg:
+                key: plane
+                value: shelf2
+            - arg:
+                key: wp
+                value: cupboard_waypoint
+    - predicate:
+        name: 'plane_at'
+        args:
+            - arg:
+                key: plane
+                value: table
+            - arg:
+                key: wp
+                value: table_waypoint
+    - predicate:
+        name: 'unexplored'
+        args:
+            - arg:
+                key: plane
+                value: shelf1
+    - predicate:
+        name: 'unexplored'
+        args:
+            - arg:
+                key: plane
+                value: shelf2
+    - predicate:
+        name: 'unexplored'
+        args:
+            - arg:
+                key: plane
+                value: table
+    - predicate:
+        name: 'door_at'
+        args:
+            - arg:
+                key: door
+                value: cupboard_door
+            - arg:
+                key: wp
+                value: cupboard_waypoint
+    - predicate:
+        name: 'belongs_to'
+        args:
+            - arg:
+                key: plane
+                value: shelf1
+            - arg:
+                key: obj
+                value: cupboard
+    - predicate:
+        name: 'belongs_to'
+        args:
+            - arg:
+                key: plane
+                value: shelf2
+            - arg:
+                key: obj
+                value: cupboard

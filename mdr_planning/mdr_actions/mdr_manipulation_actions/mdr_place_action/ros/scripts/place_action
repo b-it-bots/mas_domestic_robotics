@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+import rospy
+import smach
+
+from smach_ros import ActionServerWrapper, IntrospectionServer
+
+from mdr_place_action.msg import PlaceAction
+from mdr_place_action.action_states import (SetupPlace, Place,
+                                            SetActionLibResult)
+
+
+class PlaceSkill(smach.StateMachine):
+    def __init__(self):
+        smach.StateMachine.__init__(self,
+                                    outcomes=['OVERALL_SUCCESS',
+                                              'OVERALL_FAILED', 'PREEMPTED'],
+                                    input_keys=['place_goal'],
+                                    output_keys=['place_feedback',
+                                                 'place_result'])
+
+        arm_name = rospy.get_param('~arm_name', '')
+        gripper_cmd_topic = rospy.get_param('~gripper_cmd_topic', '')
+        gripper_joint_names = rospy.get_param('~gripper_joint_names', list())
+        gripper_joint_values = rospy.get_param('~gripper_joint_values', list())
+
+        with self:
+            smach.StateMachine.add('SETUP_PLACE', SetupPlace(),
+                                   transitions={'succeeded': 'PLACE',
+                                                'failed': 'SETUP_PLACE'})
+
+            smach.StateMachine.add('PLACE', Place(arm_name=arm_name,
+                                                  gripper_joint_names=gripper_joint_names,
+                                                  gripper_joint_values=gripper_joint_values,
+                                                  gripper_cmd_topic=gripper_cmd_topic),
+                                   transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
+                                                'failed': 'SET_ACTION_LIB_FAILED'})
+
+            smach.StateMachine.add('SET_ACTION_LIB_FAILED',
+                                   SetActionLibResult(False),
+                                   transitions={'succeeded': 'OVERALL_FAILED'})
+
+            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS',
+                                   SetActionLibResult(True),
+                                   transitions={'succeeded': 'OVERALL_SUCCESS'})
+
+
+if __name__ == '__main__':
+    rospy.init_node('place_server')
+
+    # construct state machine
+    sm = PlaceSkill()
+
+    # smach viewer
+    sis = IntrospectionServer('place_smach_viewer', sm,
+                              '/PLACE_SMACH_VIEWER')
+    sis.start()
+
+    asw = ActionServerWrapper(
+        server_name='place_server',
+        action_spec=PlaceAction,
+        wrapped_container=sm,
+        succeeded_outcomes=['OVERALL_SUCCESS'],
+        aborted_outcomes=['OVERALL_FAILED'],
+        preempted_outcomes=['PREEMPTED'],
+        goal_key='place_goal',
+        feedback_key='place_feedback',
+        result_key='place_result')
+
+    # Run the server in a background thread
+    asw.run_server()
+    rospy.spin()

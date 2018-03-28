@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_place_action" type="place_action" name="place_server" output="screen">
+        <param name="arm_name" value="arm" />
+        <param name="gripper_cmd_topic" value="gripper_controller" />
+        <rosparam param="gripper_joint_names">[gripper]</rosparam>
+        <rosparam param="gripper_joint_values">[1]</rosparam>
+    </node>
+</launch>

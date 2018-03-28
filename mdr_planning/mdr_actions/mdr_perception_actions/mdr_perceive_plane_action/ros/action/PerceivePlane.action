@@ -1,0 +1,10 @@
+# goal definition
+string plane_config
+---
+# result definition
+bool success
+mcr_perception_msgs/ObjectList recognized_objects
+---
+# feedback
+string current_state
+string message 

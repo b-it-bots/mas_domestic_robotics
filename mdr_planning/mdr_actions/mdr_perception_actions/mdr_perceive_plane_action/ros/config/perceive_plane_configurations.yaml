@@ -1,0 +1,39 @@
+# configuration_name:
+#   node_name:
+#      param_name: param_value
+#      param_name: param_value
+#   node_name:
+#      param_name: param_value
+#      param_name: param_value
+# configuration_name:
+#   node_name:
+#      param_name: param_value
+#      param_name: param_value
+#   node_name:
+#      param_name: param_value
+#      param_name: param_value
+
+shelf_1:
+    /mcr_perception/voxel_filter:
+      filter_limit_min: 0.3
+      filter_limit_max: 0.6
+shelf_2:
+    /mcr_perception/voxel_filter:
+      filter_limit_min: 0.3
+      filter_limit_max: 0.6
+shelf_3:
+    /mcr_perception/voxel_filter:
+      filter_limit_min: 0.6
+      filter_limit_max: 0.9
+shelf_4:
+    /mcr_perception/voxel_filter:
+      filter_limit_min: 0.9
+      filter_limit_max: 1.3
+shelf_5:
+    /mcr_perception/voxel_filter:
+      filter_limit_min: 1.2
+      filter_limit_max: 1.8
+table:
+    /mcr_perception/voxel_filter:
+      filter_limit_min: 0.6
+      filter_limit_max: 1.5
