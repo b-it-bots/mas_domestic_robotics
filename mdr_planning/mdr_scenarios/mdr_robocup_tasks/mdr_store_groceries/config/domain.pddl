@@ -5,6 +5,7 @@
     (:types
         waypoint
         object
+        category
         robot
         door
         plane
@@ -12,6 +13,7 @@
 
     (:predicates
         (robot_name ?bot - robot)
+        (object_category ?obj - object ?cat - category)
         (robot_at ?bot - robot ?wp - waypoint)
         (door_at ?door - door ?wp - waypoint)
         (object_at ?obj - object ?wp - waypoint)
