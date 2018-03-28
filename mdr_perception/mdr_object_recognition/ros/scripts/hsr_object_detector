@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+
+NODE = 'object_detector'
+HSR_SEGMENTATION_SERVICE = '/tabletop_segmentator_node/execute'
+
+import rospy
+from tmc_tabletop_segmentator.srv import TabletopSegmentation
+from tmc_tabletop_segmentator.srv import TabletopSegmentationRequest
+from sensor_msgs.msg import Image
+
+
+if __name__ == '__main__':
+    rospy.init_node(NODE)
+    cloud_topic = rospy.get_param('~input_pointcloud_topic')
+
+    try:
+        rospy.wait_for_service(HSR_SEGMENTATION_SERVICE, timeout=5.0)
+        img_pub = rospy.Publisher('/first_object', Image, queue_size=1)
+        segment_client = rospy.ServiceProxy(HSR_SEGMENTATION_SERVICE, TabletopSegmentation)
+        req = TabletopSegmentationRequest()
+        req.crop_enabled = True  # limit the processing area
+        req.crop_x_max = 0.5     # X coordinate maximum value in the area [m]
+        req.crop_x_min = -0.5    # X coordinate minimum value in the area [m]
+        req.crop_y_max = 0.5     # Y coordinate maximum value in the area [m]
+        req.crop_y_min = -0.5    # Y coordinate minimum value in the area [m]
+        req.crop_z_max = 1.5     # Z coordinate maximum value in the area [m]
+        req.crop_z_min = 0.5     # Z coordinate minimum value in the area [m]
+        req.cluster_z_max = 1.0  # maximum height value of cluster on table [m]
+        req.cluster_z_min = 0.0  # minimum height value of cluster on table [m]
+        req.remove_bg = False    # remove the background of the segment image
+
+        while True:
+            res = segment_client(req)
+
+            if len(res.segmented_objects_array.table_objects_array) == 0:
+                continue
+
+            rospy.loginfo('Number of detected objects={0}'.format(
+                len(res.segmented_objects_array.table_objects_array[0].rgb_image_array)))
+            rospy.loginfo('Number of detected planes={0}'.format(len(res.table_array.tables)))
+
+            if len(res.segmented_objects_array.table_objects_array[0].rgb_image_array) == 0:
+                continue
+            img_pub.publish(res.segmented_objects_array.table_objects_array[0].rgb_image_array[0])
+            rospy.sleep(1.0)
+
+    except rospy.ROSException:
+        rospy.logwarn("'{0}' service is not available".format(HSR_SEGMENTATION_SERVICE))
+
