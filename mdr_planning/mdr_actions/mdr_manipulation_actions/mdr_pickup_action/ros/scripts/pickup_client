@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import actionlib
+import tf
 
 from mdr_rosplan_interface.action_client_base import ActionClientBase
 from mdr_pickup_action.msg import PickupAction, PickupGoal
@@ -9,6 +10,8 @@ import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
 
+from mcr_perception_msgs.msg import Object
+
 class PickupClient(ActionClientBase):
     def __init__(self):
         super(PickupClient, self).__init__()
@@ -16,6 +19,7 @@ class PickupClient(ActionClientBase):
         self.obj_plane = None
         self.obj = None
         self.frame_id = rospy.get_param('~grasping_pose_frame', 'base_link')
+        self.tf_listener = tf.TransformListener()
 
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
@@ -57,13 +61,18 @@ class PickupClient(ActionClientBase):
             elif param.key == 'bot':
                 self.robot_name = param.value
 
+        object_pose = self.get_object_pose(self.obj)
+
         goal.pose.header.frame_id = self.frame_id
         goal.pose.header.stamp = rospy.Time.now()
-        # TODO: choose a grasping pose based on the object position
-        # goal.pose.position.point.x = ?
-        # goal.pose.position.point.y = ?
-        # goal.pose.position.point.z = ?
+        object_pose_picking_frame = self.tf_listener.transformPose(self.frame_id,
+                                                                   object_pose)
+        goal.pose.pose = object_pose_picking_frame
         return goal
+
+    def get_object_pose(self, object_name):
+        obj = self.msg_store_client.query_named(object_name, Object._type)
+        return obj.pose
 
     def update_knowledge_base(self):
         # we add the fact that the robot is not on the surface anymore to the knowledge base
