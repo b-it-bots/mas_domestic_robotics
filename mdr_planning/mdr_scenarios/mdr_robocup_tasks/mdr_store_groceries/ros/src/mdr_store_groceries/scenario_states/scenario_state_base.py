@@ -1,13 +1,15 @@
-import time
 import rospy
 import smach
 
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
+from mongodb_store.message_store import MessageStoreProxy
 
 class ScenarioStateBase(smach.State):
-    def __init__(self, action_name, outcomes):
-        smach.State.__init__(self, outcomes)
+    def __init__(self, action_name, outcomes, input_keys=list(), output_keys=list()):
+        smach.State.__init__(self, outcomes=outcomes,
+                             input_keys=input_keys,
+                             output_keys=output_keys)
         self.action_name = action_name
         self.retry_count = 0
         self.executing = False
@@ -25,6 +27,7 @@ class ScenarioStateBase(smach.State):
         self.attribute_fetching_client = rospy.ServiceProxy('/kcl_rosplan/get_current_knowledge',
                                                             rosplan_srvs.GetAttributeService)
 
+        self.msg_store_client = MessageStoreProxy()
         self.robot_name = ''
         request = rosplan_srvs.GetAttributeServiceRequest()
         request.predicate_name = 'robot_name'
