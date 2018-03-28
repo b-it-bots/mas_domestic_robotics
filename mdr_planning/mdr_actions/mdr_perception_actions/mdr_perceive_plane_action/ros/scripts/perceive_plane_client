@@ -79,6 +79,9 @@ class PerceivePlaneClient(ActionClientBase):
 
         # we add the detected objects to the knowledge base
         for obj in objects:
+            # we add the surface on which the object is to the knowledge base
+            obj_name = obj.name + '_' + str(obj.database_id)
+
             request = rosplan_srvs.KnowledgeUpdateServiceRequest()
             request.update_type = 0
             request.knowledge.knowledge_type = 1
@@ -86,12 +89,30 @@ class PerceivePlaneClient(ActionClientBase):
 
             arg_msg = diag_msgs.KeyValue()
             arg_msg.key = 'obj'
-            arg_msg.value = obj.name
+            arg_msg.value = obj_name
             request.knowledge.values.append(arg_msg)
 
             arg_msg = diag_msgs.KeyValue()
             arg_msg.key = 'plane'
             arg_msg.value = self.obj_plane
+            request.knowledge.values.append(arg_msg)
+
+            self.knowledge_update_client(request)
+
+            # we add the object category to the knowledge base
+            request = rosplan_srvs.KnowledgeUpdateServiceRequest()
+            request.update_type = 0
+            request.knowledge.knowledge_type = 1
+            request.knowledge.attribute_name = 'object_category'
+
+            arg_msg = diag_msgs.KeyValue()
+            arg_msg.key = 'obj'
+            arg_msg.value = obj_name
+            request.knowledge.values.append(arg_msg)
+
+            arg_msg = diag_msgs.KeyValue()
+            arg_msg.key = 'cat'
+            arg_msg.value = obj.category
             request.knowledge.values.append(arg_msg)
 
             self.knowledge_update_client(request)
