@@ -43,6 +43,11 @@ class PerceiveTable(ScenarioStateBase):
         dispatch_msg.name = self.action_name
 
         arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'bot'
+        arg_msg.value = self.robot_name
+        dispatch_msg.parameters.append(arg_msg)
+
+        arg_msg = diag_msgs.KeyValue()
         arg_msg.key = 'plane'
         arg_msg.value = plane_name
         dispatch_msg.parameters.append(arg_msg)
