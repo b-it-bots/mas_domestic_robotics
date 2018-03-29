@@ -1,4 +1,4 @@
-# mdr_detect_emotion_action
+# mdr_recognize_emotion_action
 
 An action for recognising emotions in a crowd.
 
@@ -34,5 +34,5 @@ An action for recognising emotions in a crowd.
 ## Example usage
 
 1. Run the detect person server: ``roslaunch mdr_detect_person detect_person.launch``
-2. Run the action server: ``roslaunch mdr_detect_emotion_action detect_emotion.launch``
-3. Run the client example: ``rosrun mdr_detect_emotion_action detect_emotion_action_client_test <input_image>``, where ``<input_image>`` is the path to a test image (e.g. the absolute path of ``mdr_detect_emotion_action/tests/data/detect_emotion_test_image.jpg``)
+2. Run the action server: ``roslaunch mdr_recognize_emotion_action recognize_emotion.launch``
+3. Run the client example: ``rosrun mdr_recognize_emotion_action recognize_emotion_action_client_test <input_image>``, where ``<input_image>`` is the path to a test image (e.g. the absolute path of ``mdr_recognize_emotion_action/tests/data/recognize_emotion_test_image.jpg``)
