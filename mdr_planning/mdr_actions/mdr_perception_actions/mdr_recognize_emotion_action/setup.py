@@ -4,8 +4,8 @@ from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup(
-   packages=['mdr_detect_emotion_action'],
-   package_dir={'mdr_detect_emotion_action': 'ros/src/mdr_detect_emotion_action'}
+   packages=['mdr_recognize_emotion_action'],
+   package_dir={'mdr_recognize_emotion_action': 'ros/src/mdr_recognize_emotion_action'}
 )
 
 setup(**d)

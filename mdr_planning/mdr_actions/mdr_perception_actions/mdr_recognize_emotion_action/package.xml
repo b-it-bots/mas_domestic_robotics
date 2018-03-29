@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
 <package>
-  <name>mdr_detect_emotion_action</name>
+  <name>mdr_recognize_emotion_action</name>
   <version>1.2.0</version>
-  <description>An action for detection emotions</description>
+  <description>An action for recognizing emotions</description>
 
   <author email="octavio.arriaga@smail.inf.h-brs.de">Octavio Arriaga</author>
   <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
+  <author email="gabriela.cortes@smail.inf.h-brs.de"> Gabriela Cortes </author>
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <license>GPLv3</license>

@@ -8,13 +8,15 @@ import actionlib
 import cv2
 from sensor_msgs.msg import Image
 
-from mdr_detect_emotion_action.msg import DetectEmotionAction, DetectEmotionGoal
+from mdr_recognize_emotion_action.msg import (RecognizeEmotionAction,
+                                              RecognizeEmotionGoal)
 from mdr_detect_person.msg import DetectPersonAction, DetectPersonGoal
 
+
 if __name__ == '__main__':
-    rospy.init_node('detect_emotion_client_test')
+    rospy.init_node('recognize_emotion_client_test')
     if len(sys.argv) != 2:
-        print('Usage: detect_emotion_action_client_test <input_image_path>')
+        print('Usage: recocgnize_emotion_action_client_test <input_image_path>')
 
     input_image_path = sys.argv[1]
     img = cv2.imread(input_image_path)
@@ -42,13 +44,14 @@ if __name__ == '__main__':
     detect_person_result = detect_person_client.get_result()
 
     # creating a client for the detect emotion action
-    client = actionlib.SimpleActionClient('mdr_actions/detect_emotion_server', DetectEmotionAction)
+    client = actionlib.SimpleActionClient('mdr_actions/recognize_emotion_server',
+                                          RecognizeEmotionAction)
     client.wait_for_server()
 
     # creating a detect person action goal; the goal parameters
     # use the results of the detect person action
     print('Recognising the emotions of the detected people...')
-    goal = DetectEmotionGoal()
+    goal = RecognizeEmotionGoal()
     goal.image = ros_image
     goal.number_of_faces = detect_person_result.number_of_faces
     goal.bounding_boxes = detect_person_result.bounding_boxes
