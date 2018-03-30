@@ -14,5 +14,6 @@
         <remap from="action_feedback_topic" to="$(arg action_feedback_topic)" />
         <remap from="knowledge_update_service" to="$(arg knowledge_update_service)" />
         <remap from="attribute_fetching_service" to="$(arg attribute_fetching_service)" />
+        <rosparam param="closed_gripper_joint_values">[1]</rosparam>
     </node>
 </launch>
