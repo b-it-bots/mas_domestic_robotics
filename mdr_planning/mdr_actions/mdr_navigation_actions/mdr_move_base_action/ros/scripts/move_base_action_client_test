@@ -13,6 +13,7 @@ if __name__ == '__main__':
     goal = MoveBaseGoal()
     if len(sys.argv) == 2:
         try:
+            goal.goal_type = MoveBaseGoal.NAMED_TARGET
             goal.destination_location = str(sys.argv[1])
             timeout = 15.0
             rospy.loginfo('Sending action lib goal to move_base_server, ' +
