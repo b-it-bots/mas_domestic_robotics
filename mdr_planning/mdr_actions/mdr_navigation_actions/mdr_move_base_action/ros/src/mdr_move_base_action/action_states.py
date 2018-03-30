@@ -25,7 +25,7 @@ class SetupMoveBase(smach.State):
         feedback.message = '[MOVE_BASE] Received a move base request'
         userdata.move_base_feedback = feedback
 
-        rospy.logerr('[MOVE_BASE] Moving arm to safe configuration...')
+        rospy.loginfo('[MOVE_BASE] Moving the arm to a safe configuration...')
         self.arm.clear_pose_targets()
         self.arm.set_named_target(self.safe_arm_joint_config)
         self.arm.go(wait=True)
