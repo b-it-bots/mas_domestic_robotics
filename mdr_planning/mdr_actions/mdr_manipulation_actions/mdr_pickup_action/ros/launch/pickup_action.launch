@@ -4,5 +4,7 @@
         <param name="arm_name" value="arm" />
         <param name="gripper_cmd_topic" value="gripper_controller" />
         <rosparam param="gripper_joint_names">[gripper]</rosparam>
+        <param name="pregrasp_config_name" value="pregrasp" />
+        <param name="intermediate_grasp_offset" value="0.1" />
     </node>
 </launch>

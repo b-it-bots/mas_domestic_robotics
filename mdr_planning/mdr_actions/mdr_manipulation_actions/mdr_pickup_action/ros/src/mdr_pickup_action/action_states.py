@@ -2,9 +2,13 @@
 
 import rospy
 import smach
+import tf
+import actionlib
 import moveit_commander
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
+from geometry_msgs.msg import PoseStamped
 
+from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_pickup_action.msg import PickupGoal, PickupFeedback, PickupResult
 
 class SetupPickup(smach.State):
@@ -27,7 +31,9 @@ class SetupPickup(smach.State):
 class Pickup(smach.State):
     def __init__(self, timeout=120.0, arm_name='arm',
                  gripper_joint_names=list(),
-                 gripper_cmd_topic='/gripper/command'):
+                 gripper_cmd_topic='/gripper/command',
+                 pregrasp_config_name='pregrasp',
+                 intermediate_grasp_offset=-1):
         smach.State.__init__(self, input_keys=['pickup_goal'],
                              output_keys=['pickup_feedback'],
                              outcomes=['succeeded', 'failed'])
@@ -36,7 +42,11 @@ class Pickup(smach.State):
         self.gripper_traj_pub = rospy.Publisher(gripper_cmd_topic,
                                                 JointTrajectory,
                                                 queue_size=10)
+        self.pregrasp_config_name = pregrasp_config_name
+        self.intermediate_grasp_offset = intermediate_grasp_offset
         self.arm = moveit_commander.MoveGroupCommander(arm_name)
+        self.arm.set_pose_reference_frame('base_link')
+        self.tf_listener = tf.TransformListener()
 
     def execute(self, userdata):
         feedback = PickupFeedback()
@@ -44,15 +54,26 @@ class Pickup(smach.State):
         feedback.message = '[PICKUP] moving the arm'
         userdata.pickup_feedback = feedback
 
-        # we set up the arm group for moving
         self.arm.clear_pose_targets()
+        self.arm.set_named_target(self.pregrasp_config_name)
+        self.arm.go(wait=True)
+
         pose = userdata.pickup_goal.pose
-        self.arm.set_pose_reference_frame(pose.header.frame_id)
-        self.arm.set_pose_target(pose.pose)
+        pose.header.stamp = rospy.Time(0)
+        pose_base_link = self.tf_listener.transformPose('base_link', pose)
 
-        rospy.loginfo('[PICKUP] Planning motion and trying to move arm...')
+        if self.intermediate_grasp_offset > 0:
+            rospy.loginfo('[PICKUP] Moving to intermediate grasping pose...')
+            self.arm.clear_pose_targets()
+            pose_base_link.pose.position.x -= self.intermediate_grasp_offset
+            self.arm.set_pose_target(pose_base_link.pose)
+            self.arm.go(wait=True)
 
-        # we move the arm
+        rospy.loginfo('[PICKUP] Grasping...')
+        self.arm.clear_pose_targets()
+        if self.intermediate_grasp_offset > 0:
+            pose_base_link.pose.position.x += self.intermediate_grasp_offset
+        self.arm.set_pose_target(pose_base_link.pose)
         success = self.arm.go(wait=True)
         if not success:
             rospy.logerr('[pickup] Arm motion unsuccessful')
@@ -70,6 +91,16 @@ class Pickup(smach.State):
         traj.points = [trajectory_point]
         self.gripper_traj_pub.publish(traj)
         rospy.sleep(3.)
+
+        rospy.loginfo('[PICKUP] Moving the arm back')
+        move_arm_client = actionlib.SimpleActionClient('move_arm_server', MoveArmAction)
+        move_arm_client.wait_for_server()
+        move_arm_goal = MoveArmGoal()
+        move_arm_goal.goal_type = MoveArmGoal.NAMED_TARGET
+        move_arm_goal.named_target = MoveArmGoal.GO
+        move_arm_client.send_goal(move_arm_goal)
+        move_arm_client.wait_for_result()
+        move_arm_client.get_result()
 
         return 'succeeded'
 
