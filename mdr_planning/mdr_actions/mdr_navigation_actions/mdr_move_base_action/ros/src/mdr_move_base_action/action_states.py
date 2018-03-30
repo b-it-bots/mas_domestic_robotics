@@ -5,22 +5,30 @@ import smach
 import actionlib
 import yaml
 import tf
+import moveit_commander
 from geometry_msgs.msg import PoseStamped, Quaternion
 
-from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from mdr_move_base_action.msg import MoveBaseFeedback, MoveBaseResult
+import move_base_msgs.msg as move_base_msgs
+from mdr_move_base_action.msg import MoveBaseGoal, MoveBaseFeedback, MoveBaseResult
 
 class SetupMoveBase(smach.State):
-    def __init__(self):
+    def __init__(self, safe_arm_joint_config='folded', arm_name='arm'):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'],
                              input_keys=['move_base_goal'],
                              output_keys=['move_base_feedback', 'move_base_result'])
+        self.safe_arm_joint_config = safe_arm_joint_config
+        self.arm = moveit_commander.MoveGroupCommander(arm_name)
 
     def execute(self, userdata):
         feedback = MoveBaseFeedback()
         feedback.current_state = 'SETUP_MOVE_BASE'
         feedback.message = '[MOVE_BASE] Received a move base request'
         userdata.move_base_feedback = feedback
+
+        rospy.logerr('[MOVE_BASE] Moving arm to safe configuration...')
+        self.arm.clear_pose_targets()
+        self.arm.set_named_target(self.safe_arm_joint_config)
+        self.arm.go(wait=True)
         return 'succeeded'
 
 class ApproachPose(smach.State):
@@ -38,28 +46,39 @@ class ApproachPose(smach.State):
         self.timeout = timeout
 
     def execute(self, userdata):
-        destination = userdata.move_base_goal.destination_location
-
-        feedback = MoveBaseFeedback()
-        feedback.current_state = 'APPROACH_POSE'
-        feedback.message = '[MOVE_BASE] Moving base to ' + destination
-        userdata.move_base_feedback = feedback
-
-        self.pose = self.convert_pose_name_to_coordinates(destination)
         pose = PoseStamped()
-        pose.header.stamp = rospy.Time.now()
-        pose.header.frame_id = self.pose_frame
-        pose.pose.position.x = self.pose[0]
-        pose.pose.position.y = self.pose[1]
+        if userdata.move_base_goal.goal_type == MoveBaseGoal.NAMED_TARGET:
+            destination = userdata.move_base_goal.destination_location
 
-        quat = tf.transformations.quaternion_from_euler(0, 0, self.pose[2])
-        pose.pose.orientation = Quaternion(*quat)
+            feedback = MoveBaseFeedback()
+            feedback.current_state = 'APPROACH_POSE'
+            feedback.message = '[MOVE_BASE] Moving base to ' + destination
+            userdata.move_base_feedback = feedback
 
-        goal = MoveBaseGoal()
+            self.pose = self.convert_pose_name_to_coordinates(destination)
+            pose.header.stamp = rospy.Time.now()
+            pose.header.frame_id = self.pose_frame
+            pose.pose.position.x = self.pose[0]
+            pose.pose.position.y = self.pose[1]
+
+            quat = tf.transformations.quaternion_from_euler(0, 0, self.pose[2])
+            pose.pose.orientation = Quaternion(*quat)
+        elif userdata.move_base_goal.goal_type == MoveBaseGoal.POSE:
+            pose = userdata.move_base_goal.pose
+
+            feedback = MoveBaseFeedback()
+            feedback.current_state = 'APPROACH_POSE'
+            feedback.message = '[MOVE_BASE] Moving base to {0}'.format(pose)
+            userdata.move_base_feedback = feedback
+        else:
+            rospy.logerr('[MOVE_BASE] Received an unknown goal type; ignoring request')
+            return 'failed'
+
+        goal = move_base_msgs.MoveBaseGoal()
         goal.target_pose = pose
 
         move_base_client = actionlib.SimpleActionClient(self.move_base_server,
-                                                        MoveBaseAction)
+                                                        move_base_msgs.MoveBaseAction)
         move_base_client.wait_for_server()
         move_base_client.send_goal(goal)
         success = move_base_client.wait_for_result()

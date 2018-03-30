@@ -2,10 +2,11 @@
 import rospy
 import actionlib
 
-from mdr_rosplan_interface.action_client_base import ActionClientBase
-from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
+
+from mdr_rosplan_interface.action_client_base import ActionClientBase
+from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 
 class MoveBaseClient(ActionClientBase):
     def __init__(self):
@@ -51,6 +52,7 @@ class MoveBaseClient(ActionClientBase):
                 goal.destination_location = param.value
             elif param.key == 'bot':
                 self.robot_name = param.value
+        goal.goal_type = MoveBaseGoal.NAMED_TARGET
         return goal
 
     def update_knowledge_base(self, destination_location):

@@ -12,13 +12,17 @@ def main():
     move_base_server = rospy.get_param('~move_base_server', '')
     pose_description_file = rospy.get_param('~pose_description_file', '')
     pose_frame = rospy.get_param('~pose_frame', '')
+    arm_name = rospy.get_param('~arm_name', 'arm')
+    safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
 
     sm = smach.StateMachine(outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED'],
                             input_keys=['move_base_goal'],
                             output_keys=['move_base_feedback', 'move_base_result'])
 
     with sm:
-        smach.StateMachine.add('SETUP_MOVE_BASE', SetupMoveBase(),
+        smach.StateMachine.add('SETUP_MOVE_BASE',
+                               SetupMoveBase(safe_arm_joint_config=safe_arm_joint_config,
+                                             arm_name=arm_name),
                                transitions={'succeeded': 'MOVE_BASE_TO_DESTINATION',
                                             'failed': 'SETUP_MOVE_BASE'})
 
