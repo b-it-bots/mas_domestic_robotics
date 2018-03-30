@@ -27,7 +27,7 @@ class Pick(ScenarioStateBase):
         obj_to_grasp_idx = self.select_object_for_grasping(object_poses)
         obj_to_grasp = surface_objects[obj_to_grasp_idx]
 
-        dispatch_msg = self.get_dispatch_msg(grasped_object, 'table')
+        dispatch_msg = self.get_dispatch_msg(obj_to_grasp, 'table')
         rospy.loginfo('Picking %s from the table' % obj_to_grasp)
         self.action_dispatch_pub.publish(dispatch_msg)
 
@@ -71,8 +71,11 @@ class Pick(ScenarioStateBase):
     def get_object_poses(self, surface_objects):
         object_poses = list()
         for obj_name in surface_objects:
-            obj = self.msg_store_client.query_named(obj_name, Object._type)
-            object_poses.append(obj.pose)
+            try:
+                obj = self.msg_store_client.query_named(obj_name, Object._type)
+                object_poses.append(obj.pose)
+            except:
+                pass
         return object_poses
 
     def select_object_for_grasping(self, object_poses):
@@ -89,9 +92,9 @@ class Pick(ScenarioStateBase):
             point_stamped.point.y = pose.pose.position.y
             point_stamped.point.z = pose.pose.position.z
             point_map_pos = self.tf_listener.transformPoint('map', point_stamped)
-            distances.append(robot_position, np.array([point_map_pos.point.x,
-                                                       point_map_pos.point.y,
-                                                       point_map_pos.point.z]))
+            distances.append(self.distance(robot_position, np.array([point_map_pos.point.x,
+                                                                     point_map_pos.point.y,
+                                                                     point_map_pos.point.z])))
 
         min_dist_obj_idx = np.argmin(distances)
         return min_dist_obj_idx
