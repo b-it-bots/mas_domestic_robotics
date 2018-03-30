@@ -78,9 +78,10 @@ class PickupClient(ActionClientBase):
 
     def get_object_pose(self, object_name):
         try:
-            obj = self.msg_store_client.query_named(object_name, Object._type)
+            obj = self.msg_store_client.query_named(object_name, Object._type)[0]
             return obj.pose
         except:
+            rospy.logerr('Error retriving knowledge about %s', object_name)
             return PoseStamped()
 
     def update_knowledge_base(self):

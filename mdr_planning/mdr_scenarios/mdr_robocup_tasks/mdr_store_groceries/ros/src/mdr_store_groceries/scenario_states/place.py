@@ -46,8 +46,12 @@ class Place(ScenarioStateBase):
         return 'failed'
 
     def get_object_category(self, obj_name):
-        obj = self.msg_store_client.query_named(obj_name, Object._type)
-        return obj.category
+        try:
+            obj = self.msg_store_client.query_named(obj_name, Object._type)[0]
+            return obj.category
+        except:
+            rospy.logerr('Error retriving knowledge about %s', obj_name)
+            return ''
 
     def choose_placing_surface(self, obj_name, obj_category):
         obj_category_map = self.get_obj_category_map()
