@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   roslint
   rospy
+  geometry_msgs
 )
 
 catkin_python_setup()
@@ -20,6 +21,7 @@ add_action_files(DIRECTORY ros/action
 generate_messages(
   DEPENDENCIES
   actionlib_msgs
+  geometry_msgs
 )
 
 catkin_package(
