@@ -58,14 +58,16 @@ class Pick(ScenarioStateBase):
         request.predicate_name = 'on'
         result = self.attribute_fetching_client(request)
         for item in result.attributes:
+            object_on_desired_surface =  False
+            object_name = ''
             if not item.is_negative:
                 for param in item.values:
-                    if (param.key == 'bot' and param.value != self.robot_name) \
-                    or (param.key == 'plane' and param.value != surface_name):
-                        break
-
-                    if param.key == 'obj':
-                        surface_objects.append(param.value)
+                    if param.key == 'plane' and param.value == surface_name:
+                        object_on_desired_surface = True
+                    elif param.key == 'obj':
+                        object_name = param.value
+            if object_on_desired_surface:
+                surface_objects.append(object_name)
         return surface_objects
 
     def get_object_poses(self, surface_objects):
@@ -83,19 +85,12 @@ class Pick(ScenarioStateBase):
         '''Returns the index of the object whose distance is closest to the robot
         '''
         distances = list()
-        robot_position, robot_orientation = self.get_robot_pose(map_frame='map',
-                                                                base_link_frame='base_link')
+        robot_position = np.zeros(3)
         for pose in object_poses:
-            point_stamped = PointStamped()
-            point_stamped.header.frame_id = pose.header.frame_id
-            point_stamped.header.stamp = rospy.Time(0)
-            point_stamped.point.x = pose.pose.position.x
-            point_stamped.point.y = pose.pose.position.y
-            point_stamped.point.z = pose.pose.position.z
-            point_map_pos = self.tf_listener.transformPoint('map', point_stamped)
-            distances.append(self.distance(robot_position, np.array([point_map_pos.point.x,
-                                                                     point_map_pos.point.y,
-                                                                     point_map_pos.point.z])))
+            base_link_pose = self.tf_listener.transformPose('base_link', pose)
+            distances.append(self.distance(robot_position, np.array([base_link_pose.pose.position.x,
+                                                                     base_link_pose.pose.position.y,
+                                                                     base_link_pose.pose.position.z])))
 
         min_dist_obj_idx = np.argmin(distances)
         return min_dist_obj_idx
