@@ -58,6 +58,7 @@ The following parameters may be passed when launching the action server:
 * ``pregrasp_config_name``: The name of the pregrasp configuration specified in the moveit configuration (default: 'pregrasp')
 * ``intermediate_grasp_offset``: An optional pose offset that creates an intermediate trajectory goal following the pregrasp configuration (default: -1)
 * ``safe_arm_joint_config``: The name of a configuration specified in the moveit configuration in which the robot can safely move around the environment (default: 'folded')
+* ``move_arm_server``: Name of the `move_arm` action server (default: 'move_arm_server')
 
 ### Action client
 
