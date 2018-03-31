@@ -3,7 +3,7 @@ import rospy
 import smach
 
 import smach_ros
-from mdr_move_base_action.msg import MoveBaseAction, MoveBaseFeedback, MoveBaseResult
+from mdr_move_base_action.msg import MoveBaseAction, MoveBaseResult
 from mdr_move_base_action.action_states import SetupMoveBase, ApproachPose, SetActionLibResult
 
 def main():
@@ -12,8 +12,8 @@ def main():
     move_base_server = rospy.get_param('~move_base_server', '')
     pose_description_file = rospy.get_param('~pose_description_file', '')
     pose_frame = rospy.get_param('~pose_frame', '')
-    arm_name = rospy.get_param('~arm_name', 'arm')
     safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
+    move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
 
     sm = smach.StateMachine(outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED'],
                             input_keys=['move_base_goal'],
@@ -22,7 +22,7 @@ def main():
     with sm:
         smach.StateMachine.add('SETUP_MOVE_BASE',
                                SetupMoveBase(safe_arm_joint_config=safe_arm_joint_config,
-                                             arm_name=arm_name),
+                                             move_arm_server=move_arm_server),
                                transitions={'succeeded': 'MOVE_BASE_TO_DESTINATION',
                                             'failed': 'SETUP_MOVE_BASE'})
 

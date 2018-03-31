@@ -5,19 +5,19 @@ import smach
 import actionlib
 import yaml
 import tf
-import moveit_commander
 from geometry_msgs.msg import PoseStamped, Quaternion
-
 import move_base_msgs.msg as move_base_msgs
+
+from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_move_base_action.msg import MoveBaseGoal, MoveBaseFeedback, MoveBaseResult
 
 class SetupMoveBase(smach.State):
-    def __init__(self, safe_arm_joint_config='folded', arm_name='arm'):
+    def __init__(self, safe_arm_joint_config='folded', move_arm_server='move_arm_server'):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'],
                              input_keys=['move_base_goal'],
                              output_keys=['move_base_feedback', 'move_base_result'])
         self.safe_arm_joint_config = safe_arm_joint_config
-        self.arm = moveit_commander.MoveGroupCommander(arm_name)
+        self.move_arm_server = move_arm_server
 
     def execute(self, userdata):
         feedback = MoveBaseFeedback()
@@ -26,9 +26,13 @@ class SetupMoveBase(smach.State):
         userdata.move_base_feedback = feedback
 
         rospy.loginfo('[MOVE_BASE] Moving the arm to a safe configuration...')
-        self.arm.clear_pose_targets()
-        self.arm.set_named_target(self.safe_arm_joint_config)
-        self.arm.go(wait=True)
+        move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
+        move_arm_client.wait_for_server()
+        move_arm_goal = MoveArmGoal()
+        move_arm_goal.goal_type = MoveArmGoal.NAMED_TARGET
+        move_arm_goal.named_target = self.safe_arm_joint_config
+        move_arm_client.send_goal(move_arm_goal)
+        move_arm_client.wait_for_result()
         return 'succeeded'
 
 class ApproachPose(smach.State):
