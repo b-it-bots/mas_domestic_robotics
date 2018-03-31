@@ -51,13 +51,12 @@ mdr_place_action
 ### Action server
 
 The following parameters may be passed when launching the action server:
-* ``arm_name``: Name of the arm moveit group (default: 'arm')
+* ``move_arm_server``: Name of the `move_arm` action server (default: 'move_arm_server')
 * ``gripper_cmd_topic``: Name of a topic that the gripper controller listens to for gripper commands (default: 'gripper_controller')
 * ``gripper_joint_names``: A list of names of end-effector joints as expected by the gripper controller (default: ['gripper'])
 * ``gripper_joint_values``: A list of gripper joint values at which the gripper is considered open (default: [1])
-* ``preplace_config_name``: Name of the preplace configuration specified in the moveit configuration (default: 'pregrasp')
-* ``safe_arm_joint_config``: Name of a configuration specified in the moveit configuration in which the robot can safely move around the environment (default: 'folded')
-* ``move_arm_server``: Name of the `move_arm` action server (default: 'move_arm_server')
+* ``preplace_config_name``: Name of the preplace configuration (default: 'pregrasp')
+* ``safe_arm_joint_config``: Name of a configuration in which the robot can safely move around the environment (default: 'folded')
 
 ### Action client
 
@@ -86,7 +85,6 @@ The action performs placing with respect to the `base_link` frame (even if the g
 * ``smach_ros``
 * ``tf``
 * ``actionlib``
-* ``moveit_commander``
 * ``geometry_msgs``
 * ``trajectory_msgs``
 * ``rosplan_dispatch_msgs``

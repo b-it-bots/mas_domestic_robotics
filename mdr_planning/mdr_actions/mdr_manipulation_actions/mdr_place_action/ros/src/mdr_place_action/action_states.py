@@ -4,7 +4,6 @@ import rospy
 import smach
 import tf
 import actionlib
-import moveit_commander
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
@@ -28,7 +27,7 @@ class SetupPlace(smach.State):
         return 'succeeded'
 
 class Place(smach.State):
-    def __init__(self, timeout=120.0, arm_name='arm',
+    def __init__(self, timeout=120.0,
                  gripper_joint_names=list(),
                  gripper_joint_values=list(),
                  gripper_cmd_topic='/gripper/command',
@@ -46,9 +45,10 @@ class Place(smach.State):
         self.preplace_config_name = preplace_config_name
         self.safe_arm_joint_config = safe_arm_joint_config
         self.move_arm_server = move_arm_server
-        self.arm = moveit_commander.MoveGroupCommander(arm_name)
-        self.arm.set_pose_reference_frame('base_link')
         self.tf_listener = tf.TransformListener()
+
+        self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
+        self.move_arm_client.wait_for_server()
 
     def execute(self, userdata):
         feedback = PlaceFeedback()
@@ -56,9 +56,7 @@ class Place(smach.State):
         feedback.message = '[PLACE] moving the arm'
         userdata.place_feedback = feedback
 
-        self.arm.clear_pose_targets()
-        self.arm.set_named_target(self.preplace_config_name)
-        self.arm.go(wait=True)
+        self.move_arm(MoveArmGoal.NAMED_TARGET, self.preplace_config_name)
 
         pose = userdata.place_goal.pose
         pose.header.stamp = rospy.Time(0)
@@ -66,9 +64,7 @@ class Place(smach.State):
 
         # we set up the arm group for moving
         rospy.loginfo('[PLACE] Placing...')
-        self.arm.clear_pose_targets()
-        self.arm.set_pose_target(pose_base_link.pose)
-        success = self.arm.go(wait=True)
+        success = self.move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
         if not success:
             rospy.logerr('[PLACE] Arm motion unsuccessful')
             return 'failed'
@@ -87,16 +83,30 @@ class Place(smach.State):
         rospy.sleep(3.)
 
         rospy.loginfo('[PLACE] Moving the arm back')
-        move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
-        move_arm_client.wait_for_server()
-        move_arm_goal = MoveArmGoal()
-        move_arm_goal.goal_type = MoveArmGoal.NAMED_TARGET
-        move_arm_goal.named_target = self.safe_arm_joint_config
-        move_arm_client.send_goal(move_arm_goal)
-        move_arm_client.wait_for_result()
-        move_arm_client.get_result()
+        self.move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
 
         return 'succeeded'
+
+    def move_arm(self, goal_type, goal):
+        '''Sends a request to the 'move_arm' action server and waits for the
+        results of the action execution.
+
+        Keyword arguments:
+        goal_type -- 'MoveArmGoal.NAMED_TARGET' or 'MoveArmGoal.END_EFFECTOR_POSE'
+        goal -- A string if 'goal_type' is 'MoveArmGoal.NAMED_TARGET';
+                a 'geometry_msgs/PoseStamped' if 'goal_type' is 'MoveArmGoal.END_EFFECTOR_POSE'
+
+        '''
+        move_arm_goal = MoveArmGoal()
+        move_arm_goal.goal_type = goal_type
+        if goal_type == MoveArmGoal.NAMED_TARGET:
+            move_arm_goal.named_target = goal
+        elif goal_type == MoveArmGoal.END_EFFECTOR_POSE:
+            move_arm_goal.end_effector_pose = goal
+        self.move_arm_client.send_goal(move_arm_goal)
+        self.move_arm_client.wait_for_result()
+        result = self.move_arm_client.get_result()
+        return result
 
 class SetActionLibResult(smach.State):
     def __init__(self, result):
