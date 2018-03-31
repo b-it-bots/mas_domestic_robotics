@@ -2,8 +2,6 @@
 
 import rospy
 import smach
-import smach_ros
-import actionlib
 import moveit_commander
 
 from mdr_move_arm_action.msg import MoveArmGoal, MoveArmFeedback, MoveArmResult
