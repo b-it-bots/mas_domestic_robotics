@@ -2,10 +2,12 @@
 
 import rospy
 import smach
+import tf
+import actionlib
 import moveit_commander
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-from controller_manager_msgs.srv import ListControllers
 
+from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_place_action.msg import PlaceGoal, PlaceFeedback, PlaceResult
 
 class SetupPlace(smach.State):
@@ -29,7 +31,9 @@ class Place(smach.State):
     def __init__(self, timeout=120.0, arm_name='arm',
                  gripper_joint_names=list(),
                  gripper_joint_values=list(),
-                 gripper_cmd_topic='/gripper/command'):
+                 gripper_cmd_topic='/gripper/command',
+                 preplace_config_name='pregrasp',
+                 safe_arm_joint_config='folded'):
         smach.State.__init__(self, input_keys=['place_goal'],
                              output_keys=['place_feedback'],
                              outcomes=['succeeded', 'failed'])
@@ -38,8 +42,11 @@ class Place(smach.State):
         self.gripper_joint_values = gripper_joint_values
         self.gripper_traj_pub = rospy.Publisher(gripper_cmd_topic, JointTrajectory,
                                                 queue_size=10)
-
+        self.preplace_config_name = preplace_config_name
+        self.safe_arm_joint_config = safe_arm_joint_config
         self.arm = moveit_commander.MoveGroupCommander(arm_name)
+        self.arm.set_pose_reference_frame('base_link')
+        self.tf_listener = tf.TransformListener()
 
     def execute(self, userdata):
         feedback = PlaceFeedback()
@@ -47,15 +54,18 @@ class Place(smach.State):
         feedback.message = '[PLACE] moving the arm'
         userdata.place_feedback = feedback
 
-        # we set up the arm group for moving
         self.arm.clear_pose_targets()
+        self.arm.set_named_target(self.preplace_config_name)
+        self.arm.go(wait=True)
+
         pose = userdata.place_goal.pose
-        self.arm.set_pose_reference_frame(pose.header.frame_id)
-        self.arm.set_pose_target(pose.pose)
+        pose.header.stamp = rospy.Time(0)
+        pose_base_link = self.tf_listener.transformPose('base_link', pose)
 
-        rospy.loginfo('[PLACE] Planning motion and trying to move arm...')
-
-        # we move the arm
+        # we set up the arm group for moving
+        rospy.loginfo('[PLACE] Placing...')
+        self.arm.clear_pose_targets()
+        self.arm.set_pose_target(pose_base_link.pose)
         success = self.arm.go(wait=True)
         if not success:
             rospy.logerr('[PLACE] Arm motion unsuccessful')
@@ -73,6 +83,16 @@ class Place(smach.State):
         traj.points = [trajectory_point]
         self.gripper_traj_pub.publish(traj)
         rospy.sleep(3.)
+
+        rospy.loginfo('[PLACE] Moving the arm back')
+        move_arm_client = actionlib.SimpleActionClient('move_arm_server', MoveArmAction)
+        move_arm_client.wait_for_server()
+        move_arm_goal = MoveArmGoal()
+        move_arm_goal.goal_type = MoveArmGoal.NAMED_TARGET
+        move_arm_goal.named_target = self.safe_arm_joint_config
+        move_arm_client.send_goal(move_arm_goal)
+        move_arm_client.wait_for_result()
+        move_arm_client.get_result()
 
         return 'succeeded'
 

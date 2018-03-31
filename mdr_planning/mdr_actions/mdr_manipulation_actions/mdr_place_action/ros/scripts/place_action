@@ -18,10 +18,12 @@ class PlaceSkill(smach.StateMachine):
                                     output_keys=['place_feedback',
                                                  'place_result'])
 
-        arm_name = rospy.get_param('~arm_name', '')
-        gripper_cmd_topic = rospy.get_param('~gripper_cmd_topic', '')
-        gripper_joint_names = rospy.get_param('~gripper_joint_names', list())
-        gripper_joint_values = rospy.get_param('~gripper_joint_values', list())
+        arm_name = rospy.get_param('~arm_name', 'arm')
+        gripper_cmd_topic = rospy.get_param('~gripper_cmd_topic', 'gripper_controller')
+        gripper_joint_names = rospy.get_param('~gripper_joint_names', ['gripper'])
+        gripper_joint_values = rospy.get_param('~gripper_joint_values', [1.])
+        preplace_config_name = rospy.get_param('~preplace_config_name', 'pregrasp')
+        safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
 
         with self:
             smach.StateMachine.add('SETUP_PLACE', SetupPlace(),
@@ -31,7 +33,9 @@ class PlaceSkill(smach.StateMachine):
             smach.StateMachine.add('PLACE', Place(arm_name=arm_name,
                                                   gripper_joint_names=gripper_joint_names,
                                                   gripper_joint_values=gripper_joint_values,
-                                                  gripper_cmd_topic=gripper_cmd_topic),
+                                                  gripper_cmd_topic=gripper_cmd_topic,
+                                                  preplace_config_name=preplace_config_name,
+                                                  safe_arm_joint_config=safe_arm_joint_config),
                                    transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
                                                 'failed': 'SET_ACTION_LIB_FAILED'})
 
