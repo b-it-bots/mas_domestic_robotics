@@ -58,6 +58,7 @@ The following parameters may be passed when launching the action server:
 * ``pregrasp_config_name``: The name of the pregrasp configuration (default: 'pregrasp')
 * ``intermediate_grasp_offset``: An optional pose offset that creates an intermediate trajectory goal following the pregrasp configuration (default: -1)
 * ``safe_arm_joint_config``: The name of a configuration in which the robot can safely move around the environment (default: 'folded')
+* ``base_elbow_offset``: An optional offset between `base_link` and the manipulator's elbow; used for aligning the base with the object to be grasped so that the manipulator can easily reach the object (default: -1)
 
 ### Action client
 
@@ -77,10 +78,11 @@ The following parameters need to be passed when launching the action client:
 ## Action execution summary
 
 The action performs grasping with respect to the `base_link` frame (even if the goal pose is expressed in another frame) and is executed in a few steps:
-1. The manipulator is moved to a predefined pregrasp configuration
-2. If ``intermediate_grasp_offset`` is greater than 0, the end-effector is sent to an intermediate goal pose that is ``intermediate_grasp_offset`` meters away (along `base_link`'s x-axis) from the grasping goal
-3. The end-effector is then sent to its grasping goal and the gripper is closed
-4. The manipulator is moved to a configuration in which the robot can safely move around in the environment
+1. If ``base_elbow_offset`` is greater than 0, the base is aligned with the object so that the origin of `base_link` is ``base_elbow_offset`` units away from the object's pose
+2. The manipulator is moved to a predefined pregrasp configuration
+3. If ``intermediate_grasp_offset`` is greater than 0, the end-effector is sent to an intermediate goal pose that is ``intermediate_grasp_offset`` meters away (along `base_link`'s x-axis) from the grasping goal
+4. The end-effector is then sent to its grasping goal and the gripper is closed
+5. The manipulator is moved to a configuration in which the robot can safely move around in the environment
 
 ## Dependencies
 
@@ -96,11 +98,13 @@ The action performs grasping with respect to the `base_link` frame (even if the 
 * ``mcr_perception_msgs``
 * ``mdr_rosplan_interface``
 * ``mdr_move_arm_action``
+* ``mdr_move_base_action``
 
 ## Example usage
 
 1. Run the robot simulation: ``roslaunch mas_<robot>_bringup_sim robot.launch``
 2. Run the moveit interface for the robot: ``roslaunch mas_<robot>_moveit move_group.launch``
 3. Run the ``move_arm`` action server: ``roslaunch mdr_move_arm_action move_arm.launch``
-4. Run the action server: ``roslaunch mdr_pickup_action pickup_action.launch``
-5. Run the client example: ``rosrun mdr_pickup_action pickup_action_client_test``; the client example uses a predefined grasping pose
+4. Run the ``move_base`` action server: ``roslaunch mdr_move_base_action move_base_action.launch``
+5. Run the action server: ``roslaunch mdr_pickup_action pickup_action.launch``
+6. Run the client example: ``rosrun mdr_pickup_action pickup_action_client_test``; the client example uses a predefined grasping pose

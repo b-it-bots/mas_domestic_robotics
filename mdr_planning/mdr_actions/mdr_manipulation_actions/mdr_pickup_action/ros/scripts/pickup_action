@@ -23,6 +23,7 @@ class PickupSkill(smach.StateMachine):
         pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp')
         grasp_offset = float(rospy.get_param('~intermediate_grasp_offset', -1.))
         safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
+        base_elbow_offset = float(rospy.get_param('~safe_arm_joint_config', -1.))
 
         with self:
             smach.StateMachine.add('SETUP_PICKUP', SetupPickup(),
@@ -34,7 +35,8 @@ class PickupSkill(smach.StateMachine):
                                                     gripper_cmd_topic=gripper_cmd_topic,
                                                     pregrasp_config_name=pregrasp_config_name,
                                                     intermediate_grasp_offset=grasp_offset,
-                                                    safe_arm_joint_config=safe_arm_joint_config),
+                                                    safe_arm_joint_config=safe_arm_joint_config,
+                                                    base_elbow_offset=base_elbow_offset),
                                    transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
                                                 'failed': 'SET_ACTION_LIB_FAILED'})
 
