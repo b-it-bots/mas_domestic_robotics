@@ -6,5 +6,6 @@
         <rosparam param="gripper_joint_names">[gripper]</rosparam>
         <param name="pregrasp_config_name" value="pregrasp" />
         <param name="intermediate_grasp_offset" value="0.1" />
+        <param name="safe_arm_joint_config" value="folded" />
     </node>
 </launch>
