@@ -24,6 +24,7 @@ class PlaceSkill(smach.StateMachine):
         gripper_joint_values = rospy.get_param('~gripper_joint_values', [1.])
         preplace_config_name = rospy.get_param('~preplace_config_name', 'pregrasp')
         safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
+        move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
 
         with self:
             smach.StateMachine.add('SETUP_PLACE', SetupPlace(),
@@ -35,7 +36,8 @@ class PlaceSkill(smach.StateMachine):
                                                   gripper_joint_values=gripper_joint_values,
                                                   gripper_cmd_topic=gripper_cmd_topic,
                                                   preplace_config_name=preplace_config_name,
-                                                  safe_arm_joint_config=safe_arm_joint_config),
+                                                  safe_arm_joint_config=safe_arm_joint_config,
+                                                  move_arm_server=move_arm_server),
                                    transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
                                                 'failed': 'SET_ACTION_LIB_FAILED'})
 
