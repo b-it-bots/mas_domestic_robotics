@@ -88,9 +88,9 @@ class ApproachPose(smach.State):
         success = move_base_client.wait_for_result()
 
         if success:
-            rospy.loginfo('Pose %s reached successfully' % destination)
+            rospy.loginfo('Pose reached successfully')
             return 'succeeded'
-        rospy.logerr('Pose %s could not be reached' % destination)
+        rospy.logerr('Pose could not be reached')
         return 'failed'
 
     def convert_pose_name_to_coordinates(self, pose_name):
