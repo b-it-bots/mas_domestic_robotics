@@ -2,12 +2,12 @@
 import rospy
 import actionlib
 
-from mdr_rosplan_interface.action_client_base import ActionClientBase
-from mdr_place_action.msg import PlaceAction, PlaceGoal
-
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
+
+from mdr_rosplan_interface.action_client_base import ActionClientBase
+from mdr_place_action.msg import PlaceAction, PlaceGoal
 
 class PlaceClient(ActionClientBase):
     def __init__(self):
