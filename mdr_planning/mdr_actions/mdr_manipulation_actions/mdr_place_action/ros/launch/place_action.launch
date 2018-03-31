@@ -5,5 +5,7 @@
         <param name="gripper_cmd_topic" value="gripper_controller" />
         <rosparam param="gripper_joint_names">[gripper]</rosparam>
         <rosparam param="gripper_joint_values">[1]</rosparam>
+        <param name="preplace_config_name" value="pregrasp" />
+        <param name="safe_arm_joint_config" value="folded" />
     </node>
 </launch>
