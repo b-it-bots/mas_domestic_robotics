@@ -39,12 +39,6 @@ An action for moving the arm of a robot.
 * ``string current_state``
 * ``string message``
 
-## Dependencies
-
-* ``smach``
-* ``geometry_msgs``
-* ``moveit_commander``
-
 ## Directory structure
 
 ```
@@ -64,17 +58,22 @@ mdr_move_arm_action
      |    |     move_arm_action
      |    |_____move_arm_action_client_test
      |    |
-     |    |
      |____src
           |____mdr_move_arm_action
                |    __init__.py
                |____action_states.py
 ```
 
+## Dependencies
+
+* ``smach``
+* ``geometry_msgs``
+* ``moveit_commander``
+
 ## Example usage
 
-1. Run the robot simulation: ``roslaunch mdr_bringup_sim robot.launch``
-2. Run the moveit interface for the robot: ``roslaunch mas_[robot]_moveit move_group.launch``
+1. Run the robot simulation: ``roslaunch mas_<robot>_bringup_sim robot.launch``
+2. Run the moveit interface for the robot: ``roslaunch mas_<robot>_moveit move_group.launch``
 3. Run the action server: ``roslaunch mdr_move_arm_action move_arm.launch``
 4. Run the client example:
     1. with a named target motion goal: ``rosrun mdr_move_arm_action move_arm_action_client_test 1 folded``
