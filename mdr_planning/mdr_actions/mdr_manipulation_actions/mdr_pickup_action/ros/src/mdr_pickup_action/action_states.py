@@ -6,7 +6,6 @@ import tf
 import actionlib
 import moveit_commander
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-from geometry_msgs.msg import PoseStamped
 
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_pickup_action.msg import PickupGoal, PickupFeedback, PickupResult
@@ -33,7 +32,8 @@ class Pickup(smach.State):
                  gripper_joint_names=list(),
                  gripper_cmd_topic='/gripper/command',
                  pregrasp_config_name='pregrasp',
-                 intermediate_grasp_offset=-1):
+                 intermediate_grasp_offset=-1,
+                 safe_arm_joint_config='folded'):
         smach.State.__init__(self, input_keys=['pickup_goal'],
                              output_keys=['pickup_feedback'],
                              outcomes=['succeeded', 'failed'])
@@ -44,6 +44,7 @@ class Pickup(smach.State):
                                                 queue_size=10)
         self.pregrasp_config_name = pregrasp_config_name
         self.intermediate_grasp_offset = intermediate_grasp_offset
+        self.safe_arm_joint_config = safe_arm_joint_config
         self.arm = moveit_commander.MoveGroupCommander(arm_name)
         self.arm.set_pose_reference_frame('base_link')
         self.tf_listener = tf.TransformListener()
@@ -97,7 +98,7 @@ class Pickup(smach.State):
         move_arm_client.wait_for_server()
         move_arm_goal = MoveArmGoal()
         move_arm_goal.goal_type = MoveArmGoal.NAMED_TARGET
-        move_arm_goal.named_target = MoveArmGoal.GO
+        move_arm_goal.named_target = self.safe_arm_joint_config
         move_arm_client.send_goal(move_arm_goal)
         move_arm_client.wait_for_result()
         move_arm_client.get_result()
