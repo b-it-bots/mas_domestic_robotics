@@ -5,7 +5,7 @@
         <param name="move_base_server" value="/move_base" />
         <param name="pose_description_file" value="$(find mcr_default_env_config)/$(arg robot_env)/navigation_goals.yaml" />
         <param name="pose_frame" value="map" />
-        <param name="arm_name" value="arm" />
         <param name="safe_arm_joint_config" value="folded" />
+        <param name="move_arm_server" value="move_arm_server" />
     </node>
 </launch>
