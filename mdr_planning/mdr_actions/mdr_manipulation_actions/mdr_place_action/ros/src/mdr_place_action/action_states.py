@@ -33,7 +33,8 @@ class Place(smach.State):
                  gripper_joint_values=list(),
                  gripper_cmd_topic='/gripper/command',
                  preplace_config_name='pregrasp',
-                 safe_arm_joint_config='folded'):
+                 safe_arm_joint_config='folded',
+                 move_arm_server='move_arm_server'):
         smach.State.__init__(self, input_keys=['place_goal'],
                              output_keys=['place_feedback'],
                              outcomes=['succeeded', 'failed'])
@@ -44,6 +45,7 @@ class Place(smach.State):
                                                 queue_size=10)
         self.preplace_config_name = preplace_config_name
         self.safe_arm_joint_config = safe_arm_joint_config
+        self.move_arm_server = move_arm_server
         self.arm = moveit_commander.MoveGroupCommander(arm_name)
         self.arm.set_pose_reference_frame('base_link')
         self.tf_listener = tf.TransformListener()
@@ -85,7 +87,7 @@ class Place(smach.State):
         rospy.sleep(3.)
 
         rospy.loginfo('[PLACE] Moving the arm back')
-        move_arm_client = actionlib.SimpleActionClient('move_arm_server', MoveArmAction)
+        move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
         move_arm_client.wait_for_server()
         move_arm_goal = MoveArmGoal()
         move_arm_goal.goal_type = MoveArmGoal.NAMED_TARGET
