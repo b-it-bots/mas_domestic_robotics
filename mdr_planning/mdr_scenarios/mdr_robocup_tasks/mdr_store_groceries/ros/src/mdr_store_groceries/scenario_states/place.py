@@ -21,8 +21,8 @@ class Place(ScenarioStateBase):
         grasped_object = userdata.grasped_object
         grasped_obj_category = self.get_object_category(grasped_object)
         surface_name = self.choose_placing_surface(grasped_object, grasped_obj_category)
-        dispatch_msg = self.get_dispatch_msg(grasped_object, plane_name)
-        rospy.loginfo('Placing %s on %s' % (grasped_object, plane_name))
+        dispatch_msg = self.get_dispatch_msg(grasped_object, surface_name)
+        rospy.loginfo('Placing %s on %s' % (grasped_object, surface_name))
         self.action_dispatch_pub.publish(dispatch_msg)
 
         self.executing = True
