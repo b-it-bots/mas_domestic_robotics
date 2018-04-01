@@ -18,6 +18,7 @@ class PickupSkill(smach.StateMachine):
                                                  'pickup_result'])
 
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
+        move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
         gripper_cmd_topic = rospy.get_param('~gripper_cmd_topic', 'gripper_controller')
         gripper_joint_names = rospy.get_param('~gripper_joint_names', ['gripper'])
         pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp')
@@ -31,6 +32,7 @@ class PickupSkill(smach.StateMachine):
                                                 'failed': 'SETUP_PICKUP'})
 
             smach.StateMachine.add('PICKUP', Pickup(move_arm_server=move_arm_server,
+                                                    move_base_server=move_base_server,
                                                     gripper_joint_names=gripper_joint_names,
                                                     gripper_cmd_topic=gripper_cmd_topic,
                                                     pregrasp_config_name=pregrasp_config_name,
