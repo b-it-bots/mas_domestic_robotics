@@ -25,7 +25,7 @@ class ActionClientBase(object):
         self.knowledge_update_client = rospy.ServiceProxy('knowledge_update_service',
                                                           rosplan_srvs.KnowledgeUpdateService)
 
-        self.attribute_fetching_client = rospy.ServiceProxy('knowledge_update_service',
+        self.attribute_fetching_client = rospy.ServiceProxy('attribute_fetching_service',
                                                             rosplan_srvs.GetAttributeService)
 
         self.msg_store_client = MessageStoreProxy()
