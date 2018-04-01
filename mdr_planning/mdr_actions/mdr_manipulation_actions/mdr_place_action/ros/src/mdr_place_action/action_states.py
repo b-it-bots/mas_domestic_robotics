@@ -4,8 +4,10 @@ import rospy
 import smach
 import tf
 import actionlib
+from geometry_msgs.msg import PoseStamped
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
+from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_place_action.msg import PlaceGoal, PlaceFeedback, PlaceResult
 
@@ -33,7 +35,9 @@ class Place(smach.State):
                  gripper_cmd_topic='/gripper/command',
                  preplace_config_name='pregrasp',
                  safe_arm_joint_config='folded',
-                 move_arm_server='move_arm_server'):
+                 move_arm_server='move_arm_server',
+                 move_base_server='move_base_server',
+                 base_elbow_offset=-1.):
         smach.State.__init__(self, input_keys=['place_goal'],
                              output_keys=['place_feedback'],
                              outcomes=['succeeded', 'failed'])
@@ -45,10 +49,15 @@ class Place(smach.State):
         self.preplace_config_name = preplace_config_name
         self.safe_arm_joint_config = safe_arm_joint_config
         self.move_arm_server = move_arm_server
+        self.move_base_server = move_base_server
+        self.base_elbow_offset = base_elbow_offset
         self.tf_listener = tf.TransformListener()
 
         self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
         self.move_arm_client.wait_for_server()
+
+        self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
+        self.move_base_client.wait_for_server()
 
     def execute(self, userdata):
         feedback = PlaceFeedback()
@@ -56,11 +65,19 @@ class Place(smach.State):
         feedback.message = '[PLACE] moving the arm'
         userdata.place_feedback = feedback
 
-        self.move_arm(MoveArmGoal.NAMED_TARGET, self.preplace_config_name)
-
         pose = userdata.place_goal.pose
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
+
+        if self.base_elbow_offset > 0:
+            self.align_base_with_pose(pose_base_link)
+
+            # the base is now correctly aligned with the pose, so we set the
+            # y position of the goal pose to the elbow offset
+            pose_base_link.pose.position.y = self.base_elbow_offset
+
+        rospy.loginfo('[PLACE] Moving to a preplace configuration...')
+        self.move_arm(MoveArmGoal.NAMED_TARGET, self.preplace_config_name)
 
         # we set up the arm group for moving
         rospy.loginfo('[PLACE] Placing...')
@@ -86,6 +103,32 @@ class Place(smach.State):
         self.move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
 
         return 'succeeded'
+
+    def align_base_with_pose(self, pose_base_link):
+        '''Moves the base so that the elbow is aligned with the goal pose.
+
+        Keyword arguments:
+        pose_base_link -- a 'geometry_msgs/PoseStamped' message representing
+                          the goal pose in the base link frame
+
+        '''
+        aligned_base_pose = PoseStamped()
+        aligned_base_pose.header.frame_id = 'base_link'
+        aligned_base_pose.header.stamp = rospy.Time.now()
+        aligned_base_pose.pose.position.x = 0.
+        aligned_base_pose.pose.position.y = pose_base_link.pose.position.y - self.base_elbow_offset
+        aligned_base_pose.pose.position.z = 0.
+        aligned_base_pose.pose.orientation.x = 0.
+        aligned_base_pose.pose.orientation.y = 0.
+        aligned_base_pose.pose.orientation.z = 0.
+        aligned_base_pose.pose.orientation.w = 1.
+
+        move_base_goal = MoveBaseGoal()
+        move_base_goal.goal_type = MoveBaseGoal.POSE
+        move_base_goal.pose = aligned_base_pose
+        self.move_base_client.send_goal(move_base_goal)
+        self.move_base_client.wait_for_result()
+        self.move_base_client.get_result()
 
     def move_arm(self, goal_type, goal):
         '''Sends a request to the 'move_arm' action server and waits for the
