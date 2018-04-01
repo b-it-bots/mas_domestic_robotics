@@ -57,7 +57,7 @@ class Place(ScenarioStateBase):
         obj_category_map = self.get_obj_category_map()
         surface_category_counts = self.get_surface_category_counts(obj_category_map)
         grasped_object_category = obj_category_map[obj_name]
-        placing_surface = self.get_best_placing_surface(grasped_obj_category,
+        placing_surface = self.get_best_placing_surface(obj_category,
                                                         surface_category_counts)
         return placing_surface
 
