@@ -98,7 +98,7 @@ class Place(ScenarioStateBase):
                 if param.key == 'obj':
                     obj_name = param.value
                 elif param.key == 'plane':
-                    obj_surface = 'param.value'
+                    obj_surface = param.value
                     if obj_surface not in surface_category_counts:
                         surface_category_counts[obj_surface] = dict()
 
