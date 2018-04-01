@@ -53,6 +53,7 @@ mdr_pickup_action
 
 The following parameters may be passed when launching the action server:
 * ``move_arm_server``: Name of the `move_arm` action server (default: 'move_arm_server')
+* ``move_base_server``: Name of the `move_base` action server (default: 'move_base_server')
 * ``gripper_cmd_topic``: The name of a topic that the gripper controller listens to for gripper commands (default: 'gripper_controller')
 * ``gripper_joint_names``: A list of names of end-effector joints as expected by the gripper controller (default: ['gripper'])
 * ``pregrasp_config_name``: The name of the pregrasp configuration (default: 'pregrasp')
