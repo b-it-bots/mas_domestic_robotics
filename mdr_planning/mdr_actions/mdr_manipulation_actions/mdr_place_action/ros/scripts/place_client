@@ -1,10 +1,20 @@
 #!/usr/bin/env python
+import numpy as np
 import rospy
+import tf
 import actionlib
+
+from std_msgs.msg import Header
+from geometry_msgs.msg import Point, Quaternion, Pose, PoseStamped
 
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
+from mcr_perception_msgs.msg import Object
+
+from action_execution.action import Action
+from action_execution.utils.configuration import Configuration
+from ae_ros_message_converter.converter_factory import ConverterFactory
 
 from mdr_rosplan_interface.action_client_base import ActionClientBase
 from mdr_place_action.msg import PlaceAction, PlaceGoal
@@ -16,6 +26,7 @@ class PlaceClient(ActionClientBase):
         self.obj_plane = None
         self.obj = None
         self.frame_id = rospy.get_param('~placing_pose_frame', 'base_link')
+        self.tf_listener = tf.TransformListener()
 
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
@@ -57,13 +68,88 @@ class PlaceClient(ActionClientBase):
             elif param.key == 'bot':
                 self.robot_name = param.value
 
-        goal.pose.header.frame_id = self.frame_id
-        goal.pose.header.stamp = rospy.Time.now()
-        # TODO: choose a placing pose based on the object position
-        # goal.pose.position.point.x = ?
-        # goal.pose.position.point.y = ?
-        # goal.pose.position.point.z = ?
+        goal.pose = self.get_placing_pose()
         return goal
+
+    def get_placing_pose(self):
+        obj_config = Configuration()
+        obj_config.frame_id = self.frame_id
+
+        surface_object_names = self.get_surface_object_names(self.obj_plane)
+        surface_objects = self.get_surface_object(surface_object_names)
+        for obj in surface_objects:
+            obj.pose.header.stamp = rospy.Time(0)
+            obj.pose = self.tf_listener.transformPose(self.frame_id, obj.pose)
+            obj_config.static_objs.append(ConverterFactory.convert_ros_msg(obj))
+
+        manipulated_obj = self.get_object_by_name(self.obj)
+        manipulated_obj.pose.header.frame_id = self.frame_id
+        obj_config.manipulated_obj = ConverterFactory.convert_ros_msg(manipulated_obj)
+
+        surface_plane = self.get_surface_by_name(self.obj_plane)
+        surface_plane.pose.header.stamp = rospy.Time(0)
+        surface_plane.pose = self.tf_listener.transformPose(self.frame_id, surface_plane.pose)
+        obj_config.surface = ConverterFactory.convert_ros_msg(surface_plane)
+
+        # TODO: find the right action context for executing the action
+        action_model = Action(action_name='release')
+        number_of_samples = 10
+
+        robot_pose = PoseStamped(Header(1, rospy.Time.now(), self.frame_id),
+                                 Pose(Point(0., 0., 0.), Quaternion(0., 0., 0., 1.)))
+        robot_pose = ConverterFactory.convert_ros_msg(robot_pose)
+        model_results = action_model.get_execution_guidelines(data_count=number_of_samples,
+                                                              frame_id=self.frame_id,
+                                                              manipulated_object=obj_config.manipulated_obj,
+                                                              objects_on_surface=obj_config.static_objs,
+                                                              surface=obj_config.surface,
+                                                              robot_pose=robot_pose)
+        candidate_pose_idx = np.argmax(model_results['success_probabilities'])
+        candidate_pose = model_results['candidate_poses'][candidate_pose_idx]
+        candidate_pose = ConverterFactory.convert_to_ros_msg(candidate_pose)
+        return candidate_pose
+
+    def get_surface_object_names(self, surface_name):
+        surface_objects = list()
+        request = rosplan_srvs.GetAttributeServiceRequest()
+        request.predicate_name = 'on'
+        result = self.attribute_fetching_client(request)
+        for item in result.attributes:
+            object_on_desired_surface = False
+            object_name = ''
+            if not item.is_negative:
+                for param in item.values:
+                    if param.key == 'plane' and param.value == surface_name:
+                        object_on_desired_surface = True
+                    elif param.key == 'obj':
+                        object_name = param.value
+            if object_on_desired_surface:
+                surface_objects.append(object_name)
+        return surface_objects
+
+    def get_surface_object(self, surface_objects):
+        objects = list()
+        for obj_name in surface_objects:
+            obj = self.get_object_by_name(obj_name)
+            if obj is not None:
+                objects.append(obj)
+        return objects
+
+    def get_object_by_name(self, obj_name):
+        try:
+            obj = self.msg_store_client.query_named(obj_name, Object._type)[0]
+            return obj
+        except:
+            rospy.logerr('Error retriving knowledge about %s', obj_name)
+            return None
+
+    def get_surface_by_name(self, surface_name):
+        try:
+            surface = self.msg_store_client.query_named(surface_name, Object._type)[0]
+            return surface
+        except:
+            rospy.logerr('Error retriving knowledge about %s', surface_name)
+            return None
 
     def update_knowledge_base(self):
         # we add the fact that the robot is not holding the object anymore to the knowledge base
