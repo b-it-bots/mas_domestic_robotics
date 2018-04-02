@@ -105,14 +105,17 @@ class Place(ScenarioStateBase):
                     obj_name = param.value
                 elif param.key == 'plane':
                     obj_surface = param.value
-                    if obj_surface not in surface_category_counts:
+                    # we don't want to place items on the table, so we
+                    # don't consider the table as a placing surface
+                    if obj_surface not in surface_category_counts and obj_surface != 'table':
                         surface_category_counts[obj_surface] = dict()
 
-            obj_category = obj_category_map[obj_name]
-            if obj_category not in surface_category_counts[obj_surface]:
-                surface_category_counts[obj_surface][obj_category] = 1
-            else:
-                surface_category_counts[obj_surface][obj_category] += 1
+            if obj_surface != 'table':
+                obj_category = obj_category_map[obj_name]
+                if obj_category not in surface_category_counts[obj_surface]:
+                    surface_category_counts[obj_surface][obj_category] = 1
+                else:
+                    surface_category_counts[obj_surface][obj_category] += 1
         return surface_category_counts
 
     def get_best_placing_surface(self, obj_category, surface_category_counts):
