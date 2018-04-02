@@ -98,6 +98,7 @@ The action performs placing with respect to the `base_link` frame (even if the g
 * ``mdr_rosplan_interface``
 * ``mdr_move_arm_action``
 * ``mdr_move_base_action``
+* ``action_execution``
 
 ## Example usage
 
