@@ -14,7 +14,8 @@ class Place(ScenarioStateBase):
         ScenarioStateBase.__init__(self, 'place',
                                    save_sm_state=save_sm_state,
                                    input_keys=['grasped_object'],
-                                   outcomes=['succeeded', 'failed', 'failed_after_retrying'])
+                                   outcomes=['pick_new_object', 'finished',
+                                             'failed', 'failed_after_retrying'])
         self.sm_id = kwargs.get('sm_id', 'mdr_store_groceries')
         self.state_name = kwargs.get('state_name', 'place')
         self.timeout = kwargs.get('timeout', 120.)
@@ -41,7 +42,9 @@ class Place(ScenarioStateBase):
 
         if self.succeeded:
             rospy.loginfo('Object placed successfully')
-            return 'succeeded'
+            if self.surface_empty(surface_name='table'):
+                return 'finished'
+            return 'pick_new_object'
 
         rospy.loginfo('Could not place object %s' % grasped_object)
         if self.retry_count == self.number_of_retries:
@@ -139,6 +142,22 @@ class Place(ScenarioStateBase):
         else:
             surface_idx = np.random.randint(0, len(surfaces))
         return surfaces[surface_idx]
+
+    def surface_empty(self, surface_name='table'):
+        no_objects_on_surface = True
+        request = rosplan_srvs.GetAttributeServiceRequest()
+        request.predicate_name = 'on'
+        result = self.attribute_fetching_client(request)
+        for item in result.attributes:
+            object_on_desired_surface = False
+            if not item.is_negative:
+                for param in item.values:
+                    if param.key == 'plane' and param.value == surface_name:
+                        object_on_desired_surface = True
+            if object_on_desired_surface:
+                no_objects_on_surface = False
+                break
+        return no_objects_on_surface
 
     def get_dispatch_msg(self, obj_name, plane_name):
         dispatch_msg = plan_dispatch_msgs.ActionDispatch()
