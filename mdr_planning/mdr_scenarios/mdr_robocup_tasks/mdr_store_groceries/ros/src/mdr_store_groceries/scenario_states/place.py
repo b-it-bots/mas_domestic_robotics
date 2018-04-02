@@ -21,8 +21,8 @@ class Place(ScenarioStateBase):
         grasped_object = userdata.grasped_object
         grasped_obj_category = self.get_object_category(grasped_object)
         surface_name = self.choose_placing_surface(grasped_object, grasped_obj_category)
-        dispatch_msg = self.get_dispatch_msg(grasped_object, plane_name)
-        rospy.loginfo('Placing %s on %s' % (grasped_object, plane_name))
+        dispatch_msg = self.get_dispatch_msg(grasped_object, surface_name)
+        rospy.loginfo('Placing %s on %s' % (grasped_object, surface_name))
         self.action_dispatch_pub.publish(dispatch_msg)
 
         self.executing = True
@@ -46,14 +46,18 @@ class Place(ScenarioStateBase):
         return 'failed'
 
     def get_object_category(self, obj_name):
-        obj = self.msg_store_client.query_named(obj_name, Object._type)
-        return obj.category
+        try:
+            obj = self.msg_store_client.query_named(obj_name, Object._type)[0]
+            return obj.category
+        except:
+            rospy.logerr('Error retriving knowledge about %s', obj_name)
+            return ''
 
     def choose_placing_surface(self, obj_name, obj_category):
         obj_category_map = self.get_obj_category_map()
         surface_category_counts = self.get_surface_category_counts(obj_category_map)
         grasped_object_category = obj_category_map[obj_name]
-        placing_surface = self.get_best_placing_surface(grasped_obj_category,
+        placing_surface = self.get_best_placing_surface(obj_category,
                                                         surface_category_counts)
         return placing_surface
 
@@ -94,7 +98,7 @@ class Place(ScenarioStateBase):
                 if param.key == 'obj':
                     obj_name = param.value
                 elif param.key == 'plane':
-                    obj_surface = 'param.value'
+                    obj_surface = param.value
                     if obj_surface not in surface_category_counts:
                         surface_category_counts[obj_surface] = dict()
 

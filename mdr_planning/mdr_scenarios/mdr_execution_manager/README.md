@@ -6,10 +6,12 @@ Creates and executes a smach state machine from a state machine description spec
 
 State machine configuration files can be specified in two different ways:
 
-* independently, i.e. a single configuration files fully describes a state machine
+* independently, i.e. a single configuration file fully describes a state machine
 * one state machine can inherit the structure from another state machine, but can also add new states and remove/replace states that exist in the parent state machine
 
 The latter allows defining generic/robot-independent state machines that can then be made specific by a robot-dependent definition. For example, the generic definition might contain an `arm_moving` state that might be defined somewhere in `mas_domestic_robotics`; however, this state might need to be reimplemented for a particular robot, such that the child configuration file allows us to specify the new state without redefining the complete state machine.
+
+State machines can also be resumed if states are saved as `mdr_monitoring_msgs/ExecutionState` messages using `mongodb_store`. Saving the state and resuming the execution can be enabled/disabled by passing the parameters `save_sm_state` and `recover_sm` when starting the creator node, which is launched by the `state_machine_creator` executable.
 
 ## Package organisation
 
@@ -31,6 +33,15 @@ mdr_execution_manager
           |____state_machine_creator
 
 ```
+
+## Dependencies
+
+* ``importlib``
+* ``rospy``
+* ``smach``
+* ``smach_ros``
+* ``mongodb_store``
+* ``mdr_monitoring_msgs``
 
 ## State machine configuration file syntax
 

@@ -27,7 +27,7 @@ class Pick(ScenarioStateBase):
         obj_to_grasp_idx = self.select_object_for_grasping(object_poses)
         obj_to_grasp = surface_objects[obj_to_grasp_idx]
 
-        dispatch_msg = self.get_dispatch_msg(grasped_object, 'table')
+        dispatch_msg = self.get_dispatch_msg(obj_to_grasp, 'table')
         rospy.loginfo('Picking %s from the table' % obj_to_grasp)
         self.action_dispatch_pub.publish(dispatch_msg)
 
@@ -58,40 +58,39 @@ class Pick(ScenarioStateBase):
         request.predicate_name = 'on'
         result = self.attribute_fetching_client(request)
         for item in result.attributes:
+            object_on_desired_surface =  False
+            object_name = ''
             if not item.is_negative:
                 for param in item.values:
-                    if (param.key == 'bot' and param.value != self.robot_name) \
-                    or (param.key == 'plane' and param.value != surface_name):
-                        break
-
-                    if param.key == 'obj':
-                        surface_objects.append(param.value)
+                    if param.key == 'plane' and param.value == surface_name:
+                        object_on_desired_surface = True
+                    elif param.key == 'obj':
+                        object_name = param.value
+            if object_on_desired_surface:
+                surface_objects.append(object_name)
         return surface_objects
 
     def get_object_poses(self, surface_objects):
         object_poses = list()
         for obj_name in surface_objects:
-            obj = self.msg_store_client.query_named(obj_name, Object._type)
-            object_poses.append(obj.pose)
+            try:
+                obj = self.msg_store_client.query_named(obj_name, Object._type)[0]
+                object_poses.append(obj.pose)
+            except:
+                rospy.logerr('Error retriving knowledge about %s', obj_name)
+                pass
         return object_poses
 
     def select_object_for_grasping(self, object_poses):
         '''Returns the index of the object whose distance is closest to the robot
         '''
         distances = list()
-        robot_position, robot_orientation = self.get_robot_pose(map_frame='map',
-                                                                base_link_frame='base_link')
+        robot_position = np.zeros(3)
         for pose in object_poses:
-            point_stamped = PointStamped()
-            point_stamped.header.frame_id = pose.header.frame_id
-            point_stamped.header.stamp = rospy.Time(0)
-            point_stamped.point.x = pose.pose.position.x
-            point_stamped.point.y = pose.pose.position.y
-            point_stamped.point.z = pose.pose.position.z
-            point_map_pos = self.tf_listener.transformPoint('map', point_stamped)
-            distances.append(robot_position, np.array([point_map_pos.point.x,
-                                                       point_map_pos.point.y,
-                                                       point_map_pos.point.z]))
+            base_link_pose = self.tf_listener.transformPose('base_link', pose)
+            distances.append(self.distance(robot_position, np.array([base_link_pose.pose.position.x,
+                                                                     base_link_pose.pose.position.y,
+                                                                     base_link_pose.pose.position.z])))
 
         min_dist_obj_idx = np.argmin(distances)
         return min_dist_obj_idx

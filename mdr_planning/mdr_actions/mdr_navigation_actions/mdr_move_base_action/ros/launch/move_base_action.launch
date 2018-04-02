@@ -1,9 +1,11 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
-    <node pkg="mdr_move_base_action" type="move_base_action" name="move_base_server" output="screen" ns="/mdr_actions">
+    <node pkg="mdr_move_base_action" type="move_base_action" name="move_base_server" output="screen">
         <param name="move_base_server" value="/move_base" />
         <param name="pose_description_file" value="$(find mcr_default_env_config)/$(arg robot_env)/navigation_goals.yaml" />
         <param name="pose_frame" value="map" />
+        <param name="safe_arm_joint_config" value="folded" />
+        <param name="move_arm_server" value="move_arm_server" />
     </node>
 </launch>
