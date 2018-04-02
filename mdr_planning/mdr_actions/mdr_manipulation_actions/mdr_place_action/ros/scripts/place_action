@@ -25,6 +25,7 @@ class PlaceSkill(smach.StateMachine):
         preplace_config_name = rospy.get_param('~preplace_config_name', 'pregrasp')
         safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
         base_elbow_offset = float(rospy.get_param('~base_elbow_offset', -1.))
+        placing_orientation = rospy.get_param('~placing_orientation', list())
 
         with self:
             smach.StateMachine.add('SETUP_PLACE', SetupPlace(),
@@ -38,7 +39,8 @@ class PlaceSkill(smach.StateMachine):
                                                   gripper_cmd_topic=gripper_cmd_topic,
                                                   preplace_config_name=preplace_config_name,
                                                   safe_arm_joint_config=safe_arm_joint_config,
-                                                  base_elbow_offset=base_elbow_offset),
+                                                  base_elbow_offset=base_elbow_offset,
+                                                  placing_orientation=placing_orientation),
                                    transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
                                                 'failed': 'SET_ACTION_LIB_FAILED'})
 

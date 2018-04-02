@@ -7,5 +7,6 @@
         <rosparam param="gripper_joint_values">[1]</rosparam>
         <param name="preplace_config_name" value="pregrasp" />
         <param name="safe_arm_joint_config" value="folded" />
+        <rosparam param="placing_orientation">[0, 0, 0, 1]</rosparam>
     </node>
 </launch>
