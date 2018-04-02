@@ -10,14 +10,20 @@ from mcr_perception_msgs.msg import Object
 from mdr_store_groceries.scenario_states.scenario_state_base import ScenarioStateBase
 
 class Place(ScenarioStateBase):
-    def __init__(self, **kwargs):
+    def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'place',
+                                   save_sm_state=save_sm_state,
                                    input_keys=['grasped_object'],
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'])
+        self.sm_id = kwargs.get('sm_id', 'mdr_store_groceries')
+        self.state_name = kwargs.get('state_name', 'place')
         self.timeout = kwargs.get('timeout', 120.)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
 
     def execute(self, userdata):
+        if self.save_sm_state:
+            self.save_current_state()
+
         grasped_object = userdata.grasped_object
         grasped_obj_category = self.get_object_category(grasped_object)
         surface_name = self.choose_placing_surface(grasped_object, grasped_obj_category)
