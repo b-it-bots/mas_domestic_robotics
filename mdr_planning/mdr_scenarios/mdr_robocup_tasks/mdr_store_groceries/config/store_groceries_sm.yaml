@@ -2,7 +2,7 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_store_groceries
-states: [ENTER, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, GO_TO_SHELF, PLACE_OBJECT, GO_BACK_TO_TABLE, EXIT]
+states: [ENTER, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, GO_TO_SHELF, PLACE_OBJECT, EXIT]
 outcomes: [DONE, TIMEOUT]
 state_descriptions:
     - state:
@@ -111,7 +111,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: pick_new_object
-                state: GO_BACK_TO_TABLE
+                state: GO_TO_TABLE
             - transition:
                 name: finished
                 state: EXIT
@@ -122,27 +122,6 @@ state_descriptions:
                 name: failed_after_retrying
                 state: FAILED
         arguments:
-            - argument:
-                name: number_of_retries
-                value: 3
-    - state:
-        name: GO_BACK_TO_TABLE
-        state_module_name: mdr_store_groceries.scenario_states
-        state_class_name: MoveBase
-        transitions:
-            - transition:
-                name: succeeded
-                state: PICK_OBJECT
-            - transition:
-                name: failed
-                state: GO_BACK_TO_TABLE
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: destination_locations
-                value: [TABLE]
             - argument:
                 name: number_of_retries
                 value: 3
