@@ -13,15 +13,21 @@ from mcr_perception_msgs.msg import Object
 from mdr_store_groceries.scenario_states.scenario_state_base import ScenarioStateBase
 
 class Pick(ScenarioStateBase):
-    def __init__(self, **kwargs):
+    def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'pickup',
+                                   save_sm_state=save_sm_state,
                                    output_keys=['grasped_object'],
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'])
+        self.sm_id = kwargs.get('sm_id', 'mdr_store_groceries')
+        self.state_name = kwargs.get('state_name', 'pick')
         self.timeout = kwargs.get('timeout', 120.)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.tf_listener = TransformListener()
 
     def execute(self, userdata):
+        if self.save_sm_state:
+            self.save_current_state()
+
         surface_objects = self.get_surface_objects()
         object_poses = self.get_object_poses(surface_objects)
         obj_to_grasp_idx = self.select_object_for_grasping(object_poses)

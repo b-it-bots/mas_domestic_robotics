@@ -37,7 +37,8 @@ class Place(smach.State):
                  safe_arm_joint_config='folded',
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
-                 base_elbow_offset=-1.):
+                 base_elbow_offset=-1.,
+                 placing_orientation=list()):
         smach.State.__init__(self, input_keys=['place_goal'],
                              output_keys=['place_feedback'],
                              outcomes=['succeeded', 'failed'])
@@ -51,6 +52,7 @@ class Place(smach.State):
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
         self.base_elbow_offset = base_elbow_offset
+        self.placing_orientation = placing_orientation
         self.tf_listener = tf.TransformListener()
 
         self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
@@ -68,6 +70,11 @@ class Place(smach.State):
         pose = userdata.place_goal.pose
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
+        if self.placing_orientation:
+            pose_base_link.pose.orientation.x = self.placing_orientation[0]
+            pose_base_link.pose.orientation.y = self.placing_orientation[1]
+            pose_base_link.pose.orientation.z = self.placing_orientation[2]
+            pose_base_link.pose.orientation.w = self.placing_orientation[3]
 
         if self.base_elbow_offset > 0:
             self.align_base_with_pose(pose_base_link)

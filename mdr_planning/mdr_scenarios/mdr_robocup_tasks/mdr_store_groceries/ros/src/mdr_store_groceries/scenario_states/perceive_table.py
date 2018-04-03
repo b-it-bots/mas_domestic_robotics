@@ -7,13 +7,19 @@ import diagnostic_msgs.msg as diag_msgs
 from mdr_store_groceries.scenario_states.scenario_state_base import ScenarioStateBase
 
 class PerceiveTable(ScenarioStateBase):
-    def __init__(self, **kwargs):
+    def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'perceive_plane',
+                                   save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'])
+        self.sm_id = kwargs.get('sm_id', 'mdr_store_groceries')
+        self.state_name = kwargs.get('state_name', 'perceive_table')
         self.timeout = kwargs.get('timeout', 120.)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
 
     def execute(self, userdata):
+        if self.save_sm_state:
+            self.save_current_state()
+
         dispatch_msg = self.get_dispatch_msg('table')
         rospy.loginfo('Perceiving table')
         self.action_dispatch_pub.publish(dispatch_msg)
