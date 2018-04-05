@@ -10,7 +10,7 @@
   <author email="shehzi001@gmail.com">Shehzad Ahmed</author>
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
-  <license>GPLv3,</license>
+  <license>GPLv3</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 
