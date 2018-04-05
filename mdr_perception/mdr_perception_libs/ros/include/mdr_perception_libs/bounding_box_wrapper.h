@@ -16,6 +16,9 @@ namespace mdr_perception_libs
 
     private:
         BoundingBox mBox;
+        geometry_msgs::Pose mPose;
+
+        void calculatePose();
     };
 }
 #endif //MDR_PERCEPTION_LIBS_BOUNDING_BOX_PY_WRAPPER_H

@@ -26,12 +26,21 @@ namespace mdr_perception_libs
 
         PointCloud::Ptr pclCloudPtr(new PointCloud);
         pcl::fromROSMsg(rosCloud, *pclCloudPtr);
+
         mBox = BoundingBox::create(pclCloudPtr->points, normal);
+
+        calculatePose();
     }
 
     BoundingBoxWrapper::~BoundingBoxWrapper() {};
 
     std::string BoundingBoxWrapper::getPose()
+    {
+        std::string serialPose = to_python(mPose);
+        return serialPose;
+    }
+
+    void BoundingBoxWrapper::calculatePose()
     {
         BoundingBox::Points vertices = mBox.getVertices();
         Eigen::Vector3f n1;
@@ -56,19 +65,14 @@ namespace mdr_perception_libs
 
         Eigen::Vector3f centroid = mBox.getCenter();
 
-        geometry_msgs::Pose pose;
-        pose.position.x = centroid(0);
-        pose.position.y = centroid(1);
-        pose.position.z = centroid(2);
-        pose.orientation.x = q.x();
-        pose.orientation.y = q.y();
-        pose.orientation.z = q.z();
-        pose.orientation.w = q.w();
-
-        std::string serialPose = to_python(pose);
-        return serialPose;
+        mPose.position.x = centroid(0);
+        mPose.position.y = centroid(1);
+        mPose.position.z = centroid(2);
+        mPose.orientation.x = q.x();
+        mPose.orientation.y = q.y();
+        mPose.orientation.z = q.z();
+        mPose.orientation.w = q.w();
     }
-
 }
 
 BOOST_PYTHON_MODULE(_cpp_wrapper)
