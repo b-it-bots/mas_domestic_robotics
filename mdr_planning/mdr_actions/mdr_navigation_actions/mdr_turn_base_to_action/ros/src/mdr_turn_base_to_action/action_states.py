@@ -3,55 +3,69 @@
 import rospy
 import smach
 import smach_ros
+import actionlib
+from tf.transformations import quaternion_from_euler
 from actionlib import SimpleActionClient
-
-
-from geometry_msgs.msg import Quaternion
+import move_base_msgs.msg as move_base_msgs
+from geometry_msgs.msg import Quaternion, PoseStamped
 from mdr_turn_base_to_action.msg import TurnBaseToFeedback, TurnBaseToResult
 
 
 class SetupTurnBaseTo(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'],
-                             output_keys=['turn_to_feedback'])
+                             input_keys=['desired_yaw'],
+                             output_keys=['turn_base_to_feedback', 'desired_yaw'])
 
     def execute(self, userdata):
         feedback = TurnBaseToFeedback()
         feedback.message = '[enter_door] entering door'
-        userdata.enter_door_feedback = feedback
+        print(userdata.desired_yaw)
+        userdata.desired_yaw = 0.5
+        userdata.turn_base_to_feedback = feedback
 
         return 'succeeded'
 
 
 class TurnBaseTo(smach.State):
     def __init__(self, timeout=120.0,
-                 move_forward_server='/mdr_actions/move_forward_server',
+                 local_frame = 'base_link',
+                 move_base_server='/move_base',
                  movement_duration=15., speed=0.1):
-        smach.State.__init__(self, outcomes=['succeeded', 'failed'])
+        smach.State.__init__(self, input_keys=['desired_yaw'], outcomes=['succeeded', 'failed'])
+
+        self.move_base_server = move_base_server
         self.timeout = timeout
+        self.local_frame = local_frame
         self.movement_duration = movement_duration
         self.speed = speed
-
-        self.move_forward_client = SimpleActionClient(move_forward_server,
-                                                      MoveForwardAction)
-        self.move_forward_client.wait_for_server()
 
         self.entered = False
 
     def execute(self, userdata):
-        goal = MoveForwardGoal()
-        goal.movement_duration = self.movement_duration
-        goal.speed = self.speed
 
-        self.move_forward_client.send_goal(goal)
-        timeout_duration = rospy.Duration.from_sec(self.timeout)
-        self.move_forward_client.wait_for_result(timeout_duration)
+        move_base_client = actionlib.SimpleActionClient(self.move_base_server, move_base_msgs.MoveBaseAction)
 
-        result = self.move_forward_client.get_result()
-        if result and result.success:
+        feedback = move_base_msgs.MoveBaseFeedback()
+        #feedback.str = '[MOVE_BASE] Moving base to {0}'.format(pose)
+
+        goal = move_base_msgs.MoveBaseGoal()
+        goal.target_pose.header.frame_id = self.local_frame
+        q = quaternion_from_euler(0, 0, userdata.desired_yaw)
+        goal.target_pose.pose.orientation.x  = q[0]
+        goal.target_pose.pose.orientation.y  = q[1]
+        goal.target_pose.pose.orientation.z  = q[2]
+        goal.target_pose.pose.orientation.w  = q[3]
+        print ("Goal ", goal)
+        move_base_client.wait_for_server()
+        move_base_client.send_goal(goal)
+        success = move_base_client.wait_for_result()
+
+        if success:
             return 'succeeded'
         else:
             return 'failed'
+
 
 
 class SetActionLibResult(smach.State):
