@@ -11,8 +11,8 @@ class TurnToSkill(smach.StateMachine):
     def __init__(self, timeout=10):
         smach.StateMachine.__init__(self,
                 outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
-                input_keys=['desired_yaw'],
-                output_keys=['turn_to_feedback', 'turn_to_result'])
+                input_keys=['turn_base_to_goal'],
+                output_keys=['turn_base_to_feedback', 'turn_base_to_result'])
 
         with self:
             smach.StateMachine.add('SETUP_TURN_BASE_TO', SetupTurnBaseTo(),
@@ -46,7 +46,7 @@ if __name__ == '__main__':
         succeeded_outcomes = ['OVERALL_SUCCESS'],
         aborted_outcomes = ['OVERALL_FAILED'],
         preempted_outcomes = ['PREEMPTED'],
-        goal_key = 'desired_yaw',
+        goal_key = 'turn_base_to_goal',
         feedback_key = 'turn_base_to_feedback',
         result_key = 'turn_base_to_result')
 
