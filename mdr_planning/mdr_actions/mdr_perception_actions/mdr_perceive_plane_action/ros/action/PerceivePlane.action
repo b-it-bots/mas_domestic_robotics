@@ -3,7 +3,7 @@ string plane_config
 ---
 # result definition
 bool success
-mcr_perception_msgs/ObjectList recognized_objects
+mcr_perception_msgs/PlaneList recognized_planes
 ---
 # feedback
 string current_state

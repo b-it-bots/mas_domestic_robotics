@@ -1,6 +1,7 @@
+#include <utility>
 #include <boost/python.hpp>
-#include <geometry_msgs/PoseArray.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <geometry_msgs/PoseArray.h>
 #include <mcr_scene_segmentation/bounding_box.h>
 #include "mdr_perception_libs/impl/ros_message_serialization.hpp"
 #include "mdr_perception_libs/bounding_box_wrapper.h"
@@ -11,7 +12,7 @@ namespace mdr_perception_libs
 {
     BoundingBoxWrapper::BoundingBoxWrapper(std::string pSerialCloud, bp::list &pNormal)
     {
-        sensor_msgs::PointCloud2 rosCloud = from_python<sensor_msgs::PointCloud2>(pSerialCloud);
+        sensor_msgs::PointCloud2 rosCloud = from_python<sensor_msgs::PointCloud2>(std::move(pSerialCloud));
 
         bp::ssize_t len = bp::len(pNormal);
         if (len != 3)
@@ -32,7 +33,7 @@ namespace mdr_perception_libs
         calculatePose();
     }
 
-    BoundingBoxWrapper::~BoundingBoxWrapper() {};
+    BoundingBoxWrapper::~BoundingBoxWrapper() = default;
 
     std::string BoundingBoxWrapper::getPose()
     {
