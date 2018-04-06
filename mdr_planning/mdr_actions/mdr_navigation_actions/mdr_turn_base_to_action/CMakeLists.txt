@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_turn_to_action)
+project(mdr_turn_base_to_action)
 
 find_package(catkin REQUIRED COMPONENTS
   actionlib
@@ -17,7 +17,7 @@ roslint_python()
 
 add_action_files(DIRECTORY ros/action/
   FILES
-  TurnTo.action
+  TurnBaseTo.action
 )
 
 generate_messages(
@@ -39,7 +39,7 @@ include_directories(
 )
 
 install(PROGRAMS
-  ros/scripts/turn_to_action
-  ros/scripts/turn_to_action_client_test
+  ros/scripts/turn_base_to_action
+  ros/scripts/turn_base_to_action_client_test
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )

@@ -4,8 +4,8 @@ import smach
 
 from smach_ros import ActionServerWrapper, IntrospectionServer
 
-from mdr_turn_to_action.msg import TurnToAction
-from mdr_turn_to_action.action_states import SetupTurnTo, TurnTo, SetActionLibResult
+from mdr_turn_base_to_action.msg import TurnToAction
+from mdr_turn_base_to_action.action_states import SetupTurnTo, TurnTo, SetActionLibResult
 
 class TurnToSkill(smach.StateMachine):
     def __init__(self, timeout=10):
@@ -30,25 +30,25 @@ class TurnToSkill(smach.StateMachine):
                                    transitions = {'succeeded': 'OVERALL_SUCCESS'})
 
 if __name__ == '__main__':
-    rospy.init_node('turn_to_server')
+    rospy.init_node('turn_base_to_server')
 
     # construct state machine
     sm = TurnToSkill()
 
     # smach viewer
-    sis = IntrospectionServer('turn_to_smach_viewer', sm, '/turn_to_SMACH_VIEWER')
+    sis = IntrospectionServer('turn_base_to_smach_viewer', sm, '/turn_base_to_SMACH_VIEWER')
     sis.start()
 
     asw = ActionServerWrapper(
-        server_name = 'turn_to_server',
+        server_name = 'turn_base_to_server',
         action_spec = TurnToAction,
         wrapped_container = sm,
         succeeded_outcomes = ['OVERALL_SUCCESS'],
         aborted_outcomes = ['OVERALL_FAILED'],
         preempted_outcomes = ['PREEMPTED'],
         goal_key = 'desired_orientation',
-        feedback_key = 'turn_to_feedback',
-        result_key = 'turn_to_result')
+        feedback_key = 'turn_base_to_feedback',
+        result_key = 'turn_base_to_result')
 
     # Run the server in a background thread
     asw.run_server()
