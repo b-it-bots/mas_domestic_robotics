@@ -19,3 +19,7 @@ class BoundingBox(object):
     def get_pose(self):
         serial_pose = self._bounding_box.get_pose()
         return from_cpp(serial_pose, Pose)
+
+    def get_ros_message(self):
+        serial_message = self._bounding_box.get_ros_message()
+        return from_cpp(serial_message)
