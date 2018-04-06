@@ -1,6 +1,6 @@
 import rospy
 from sensor_msgs.msg import PointCloud2
-from geometry_msgs.msg import Pose
+from geometry_msgs.msg import PoseStamped
 from mcr_perception_msgs.msg import BoundingBox as BoundingBoxMsg
 from .ros_message_serialization import to_cpp, from_cpp
 
@@ -19,7 +19,7 @@ class BoundingBox(object):
 
     def get_pose(self):
         serial_pose = self._bounding_box.get_pose()
-        return from_cpp(serial_pose, Pose)
+        return from_cpp(serial_pose, PoseStamped)
 
     def get_ros_message(self):
         serial_message = self._bounding_box.get_ros_message()
