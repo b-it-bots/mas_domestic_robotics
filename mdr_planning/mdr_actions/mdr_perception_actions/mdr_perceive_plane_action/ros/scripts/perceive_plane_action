@@ -6,33 +6,25 @@ import mcr_states.common.perception_states as perception_states
 import mcr_states.common.basic_states as basic_states
 
 from smach_ros import ActionServerWrapper, IntrospectionServer
+from mdr_perception_libs import Constant
 from mdr_perceive_plane_action.msg import PerceivePlaneAction
-from mdr_perceive_plane_action.action_states import SetActionLibResult, SetupPlaneConfig
+from mdr_perceive_plane_action.action_states import SetActionLibResult, DetectObjects, RecognizeObjects
 
 
 class PerceivePlaneSkill(smach.StateMachine):
-    def __init__(self, timeout=20):
+    def __init__(self):
         smach.StateMachine.__init__(self, outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
                                     input_keys=['perceive_plane_goal'],
                                     output_keys=['perceive_plane_feedback', 'perceive_plane_result'])
 
         with self:
-            smach.StateMachine.add('CONFIGURE_PLANE', SetupPlaneConfig(),
-                                   transitions={'success': 'START_WORKSPACE_FINDER',
-                                                'waiting': 'CONFIGURE_PLANE',
-                                                'failure': 'SET_ACTION_LIB_FAILURE',
-                                                'timeout': 'CONFIGURE_PLANE'})
+            smach.StateMachine.add('DETECT_OBJECTS', DetectObjects(None, '~object_detection_event_out'),
+                                   transitions={Constant.SUCCESS: 'RECOGNIZE_OBJECTS',
+                                                Constant.TIMEOUT: 'SET_ACTION_LIB_FAILURE',
+                                                Constant.FAILURE: 'SET_ACTION_LIB_FAILURE'})
 
-            smach.StateMachine.add('START_WORKSPACE_FINDER',
-                                   basic_states.send_event(event_list=[('/mcr_perception/mux_pointcloud/select',
-                                                                        '/cam3d/depth_registered/points')]),
-                                   transitions={'success': 'RECOGNIZE_OBJECTS'})
-
-            smach.StateMachine.add('RECOGNIZE_OBJECTS',
-                                   perception_states.find_objects(retries=3),
-                                   transitions={'objects_found': 'SET_ACTION_LIB_SUCCESS',
-                                                'no_objects_found': 'SET_ACTION_LIB_FAILURE'},
-                                   remapping={'found_objects': 'recognized_objects'})
+            smach.StateMachine.add('RECOGNIZE_OBJECTS', RecognizeObjects(),
+                                   transitions={Constant.SUCCESS: 'SET_ACTION_LIB_SUCCESS'})
 
             smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
                                    transitions={'succeeded': 'OVERALL_SUCCESS'})
