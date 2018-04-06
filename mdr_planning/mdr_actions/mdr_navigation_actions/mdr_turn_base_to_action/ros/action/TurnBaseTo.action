@@ -1,6 +1,5 @@
 # goal definition
 float64 desired_yaw
-geometry_msgs/Quaternion desired_quaternion
 ---
 # result definition
 bool success
