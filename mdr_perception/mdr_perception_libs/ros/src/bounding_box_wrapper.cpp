@@ -3,6 +3,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <geometry_msgs/PoseArray.h>
 #include <mcr_scene_segmentation/bounding_box.h>
+#include <mcr_perception_msgs/BoundingBox.h>
 #include "mdr_perception_libs/impl/ros_message_serialization.hpp"
 #include "mdr_perception_libs/bounding_box_wrapper.h"
 
@@ -74,6 +75,28 @@ namespace mdr_perception_libs
         mPose.orientation.z = q.z();
         mPose.orientation.w = q.w();
     }
+
+    std::string BoundingBoxWrapper::getRosMsg()
+    {
+        mcr_perception_msgs::BoundingBox boxMsg;
+        boxMsg.center = mPose.position;
+
+        Eigen::Vector3f dimensions = mBox.getDimensions();
+        boxMsg.dimensions.x = dimensions(0);
+        boxMsg.dimensions.y = dimensions(1);
+        boxMsg.dimensions.z = dimensions(2);
+
+        BoundingBox::Points vertices = mBox.getVertices();
+        for (size_t i = 0; i < vertices.size(); ++i)
+        {
+            geometry_msgs::Point vertice;
+            vertice.x = vertices[i](0);
+            vertice.y = vertices[i](1);
+            vertice.z = vertices[i](2);
+            boxMsg.vertices.push_back(vertice);
+        }
+        return to_python(boxMsg);
+    }
 }
 
 BOOST_PYTHON_MODULE(_cpp_wrapper)
@@ -81,5 +104,6 @@ BOOST_PYTHON_MODULE(_cpp_wrapper)
     using namespace mdr_perception_libs;
     bp::class_<BoundingBoxWrapper>("BoundingBoxWrapper", bp::init<std::string, bp::list&>())
             .def("get_pose", &BoundingBoxWrapper::getPose)
+            .def("get_ros_message", &BoundingBoxWrapper::getRosMsg)
     ;
 }

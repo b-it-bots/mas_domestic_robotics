@@ -13,6 +13,7 @@ namespace mdr_perception_libs
         ~BoundingBoxWrapper();
 
         std::string getPose();
+        std::string getRosMsg();
 
     private:
         BoundingBox mBox;
