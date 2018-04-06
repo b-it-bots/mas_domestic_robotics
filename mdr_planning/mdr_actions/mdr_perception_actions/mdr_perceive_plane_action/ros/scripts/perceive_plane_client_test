@@ -15,6 +15,5 @@ if __name__ == '__main__':
         rospy.loginfo('Sending action lib goal to perceive_plane_server')
         client.send_goal(goal)
         client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
-        print client.get_result()
     except:
         pass
