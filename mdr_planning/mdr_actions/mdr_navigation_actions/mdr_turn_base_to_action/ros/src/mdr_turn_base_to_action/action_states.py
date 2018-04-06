@@ -7,23 +7,23 @@ from actionlib import SimpleActionClient
 
 
 from geometry_msgs.msg import Quaternion
-from mdr_turn_to_action.msg import TurnToFeedback, TurnToResult
+from mdr_turn_base_to_action.msg import TurnBaseToFeedback, TurnBaseToResult
 
 
-class SetupTurnTo(smach.State):
+class SetupTurnBaseTo(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'],
                              output_keys=['turn_to_feedback'])
 
     def execute(self, userdata):
-        feedback = TurnToFeedback()
+        feedback = TurnBaseToFeedback()
         feedback.message = '[enter_door] entering door'
         userdata.enter_door_feedback = feedback
 
         return 'succeeded'
 
 
-class TurnTo(smach.State):
+class TurnBaseTo(smach.State):
     def __init__(self, timeout=120.0,
                  move_forward_server='/mdr_actions/move_forward_server',
                  movement_duration=15., speed=0.1):
@@ -61,7 +61,7 @@ class SetActionLibResult(smach.State):
         self.result = result
 
     def execute(self, userdata):
-        result = EnterDoorResult()
+        result = TurnBaseToResult()
         result.success = self.result
         userdata.enter_door_result = result
         return 'succeeded'
