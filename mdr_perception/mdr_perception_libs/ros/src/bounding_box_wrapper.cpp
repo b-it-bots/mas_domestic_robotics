@@ -2,6 +2,7 @@
 #include <boost/python.hpp>
 #include <pcl_conversions/pcl_conversions.h>
 #include <geometry_msgs/PoseArray.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <mcr_scene_segmentation/bounding_box.h>
 #include <mcr_perception_msgs/BoundingBox.h>
 #include "mdr_perception_libs/impl/ros_message_serialization.hpp"
@@ -31,7 +32,7 @@ namespace mdr_perception_libs
 
         mBox = BoundingBox::create(pclCloudPtr->points, normal);
 
-        calculatePose();
+        calculatePose(rosCloud.header);
     }
 
     BoundingBoxWrapper::~BoundingBoxWrapper() = default;
@@ -42,7 +43,7 @@ namespace mdr_perception_libs
         return serialPose;
     }
 
-    void BoundingBoxWrapper::calculatePose()
+    void BoundingBoxWrapper::calculatePose(std_msgs::Header header)
     {
         BoundingBox::Points vertices = mBox.getVertices();
         Eigen::Vector3f n1;
@@ -67,19 +68,20 @@ namespace mdr_perception_libs
 
         Eigen::Vector3f centroid = mBox.getCenter();
 
-        mPose.position.x = centroid(0);
-        mPose.position.y = centroid(1);
-        mPose.position.z = centroid(2);
-        mPose.orientation.x = q.x();
-        mPose.orientation.y = q.y();
-        mPose.orientation.z = q.z();
-        mPose.orientation.w = q.w();
+        mPose.header = header;
+        mPose.pose.position.x = centroid(0);
+        mPose.pose.position.y = centroid(1);
+        mPose.pose.position.z = centroid(2);
+        mPose.pose.orientation.x = q.x();
+        mPose.pose.orientation.y = q.y();
+        mPose.pose.orientation.z = q.z();
+        mPose.pose.orientation.w = q.w();
     }
 
     std::string BoundingBoxWrapper::getRosMsg()
     {
         mcr_perception_msgs::BoundingBox boxMsg;
-        boxMsg.center = mPose.position;
+        boxMsg.center = mPose.pose.position;
 
         Eigen::Vector3f dimensions = mBox.getDimensions();
         boxMsg.dimensions.x = dimensions(0);

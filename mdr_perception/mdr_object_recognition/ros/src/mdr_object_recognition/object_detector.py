@@ -24,10 +24,7 @@ class ObjectDetector(object):
             normal = [plane_quart.x, plane_quart.y, plane_quart.z]
             for detected_obj in plane.object_list.objects:
                 bounding_box = BoundingBox(detected_obj.pointcloud, normal)
-                pose = bounding_box.get_pose()
-                detected_obj.pose.pose = pose
-                #TODO: return PoseStamped from bounding box wrapper
-                detected_obj.pose.header = detected_obj.pointcloud.header
+                detected_obj.pose = bounding_box.get_pose()
                 detected_obj.bounding_box = bounding_box.get_ros_message()
                 pass
             pass
