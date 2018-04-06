@@ -14,14 +14,11 @@ from mdr_turn_base_to_action.msg import TurnBaseToFeedback, TurnBaseToResult
 class SetupTurnBaseTo(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'failed'],
-                             input_keys=['desired_yaw'],
-                             output_keys=['turn_base_to_feedback', 'desired_yaw'])
+                             output_keys=['turn_base_to_feedback'])
 
     def execute(self, userdata):
         feedback = TurnBaseToFeedback()
-        feedback.message = '[enter_door] entering door'
-        print(userdata.desired_yaw)
-        userdata.desired_yaw = 0.5
+        feedback.message = '[turn_base_to_goal] sm initialize'
         userdata.turn_base_to_feedback = feedback
 
         return 'succeeded'
@@ -32,7 +29,7 @@ class TurnBaseTo(smach.State):
                  local_frame = 'base_link',
                  move_base_server='/move_base',
                  movement_duration=15., speed=0.1):
-        smach.State.__init__(self, input_keys=['desired_yaw'], outcomes=['succeeded', 'failed'])
+        smach.State.__init__(self, input_keys=['turn_base_to_goal'], outcomes=['succeeded', 'failed'])
 
         self.move_base_server = move_base_server
         self.timeout = timeout
@@ -51,7 +48,7 @@ class TurnBaseTo(smach.State):
 
         goal = move_base_msgs.MoveBaseGoal()
         goal.target_pose.header.frame_id = self.local_frame
-        q = quaternion_from_euler(0, 0, userdata.desired_yaw)
+        q = quaternion_from_euler(0, 0, userdata.turn_base_to_goal.desired_yaw)
         goal.target_pose.pose.orientation.x  = q[0]
         goal.target_pose.pose.orientation.y  = q[1]
         goal.target_pose.pose.orientation.z  = q[2]
@@ -71,11 +68,11 @@ class TurnBaseTo(smach.State):
 class SetActionLibResult(smach.State):
     def __init__(self, result):
         smach.State.__init__(self, outcomes=['succeeded'],
-                             output_keys=['enter_door_result'])
+                             output_keys=['turn_base_to_result'])
         self.result = result
 
     def execute(self, userdata):
         result = TurnBaseToResult()
         result.success = self.result
-        userdata.enter_door_result = result
+        userdata.turn_base_to_result = result
         return 'succeeded'
