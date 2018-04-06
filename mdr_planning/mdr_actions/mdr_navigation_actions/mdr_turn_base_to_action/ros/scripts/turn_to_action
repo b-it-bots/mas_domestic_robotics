@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+import rospy
+import smach
+
+from smach_ros import ActionServerWrapper, IntrospectionServer
+
+from mdr_turn_to_action.msg import TurnToAction
+from mdr_turn_to_action.action_states import SetupTurnTo, TurnTo, SetActionLibResult
+
+class TurnToSkill(smach.StateMachine):
+    def __init__(self, timeout=10):
+        smach.StateMachine.__init__(self,
+                outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
+                input_keys=['desired_orientation'],
+                output_keys=['turn_to_feedback', 'turn_to_result'])
+
+        with self:
+            smach.StateMachine.add('SETUP_TURN_TO', SetupEnterDoor(),
+                                   transitions = {'succeeded': 'TURN_TO',
+                                                'failed': 'SETUP_ENTER_DOOR'})
+
+            smach.StateMachine.add('TURN_TO', TurnTo(),
+                                   transitions = {'succeeded': 'SET_ACTION_LIB_SUCCESS',
+                                                'failed': 'SET_ACTION_LIB_FAILED'})
+
+            smach.StateMachine.add('SET_ACTION_LIB_FAILED', SetActionLibResult(False),
+                                   transitions = {'succeeded': 'OVERALL_FAILED'})
+
+            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
+                                   transitions = {'succeeded': 'OVERALL_SUCCESS'})
+
+if __name__ == '__main__':
+    rospy.init_node('turn_to_server')
+
+    # construct state machine
+    sm = TurnToSkill()
+
+    # smach viewer
+    sis = IntrospectionServer('turn_to_smach_viewer', sm, '/turn_to_SMACH_VIEWER')
+    sis.start()
+
+    asw = ActionServerWrapper(
+        server_name = 'turn_to_server',
+        action_spec = TurnToAction,
+        wrapped_container = sm,
+        succeeded_outcomes = ['OVERALL_SUCCESS'],
+        aborted_outcomes = ['OVERALL_FAILED'],
+        preempted_outcomes = ['PREEMPTED'],
+        goal_key = 'desired_orientation',
+        feedback_key = 'turn_to_feedback',
+        result_key = 'turn_to_result')
+
+    # Run the server in a background thread
+    asw.run_server()
+    rospy.spin()

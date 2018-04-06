@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <group>
+        <node pkg="mdr_turn_to_action" type="turn_to_action" name="turn_to_server" output="screen" ns="mdr_actions" />
+    </group>
+</launch>
