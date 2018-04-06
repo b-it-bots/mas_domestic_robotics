@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>mdr_turn_to_action</name>
+  <name>mdr_turn_base_to_action</name>
   <version>1.0.0</version>
-  <description>An action to turn a robot to face a given orientationr</description>
+  <description>An action to turn a robot base to face a given orientationr</description>
 
   <author email="jose.mayoral@smail.inf.h-brs.de">Jose Mayoral</author>
 
