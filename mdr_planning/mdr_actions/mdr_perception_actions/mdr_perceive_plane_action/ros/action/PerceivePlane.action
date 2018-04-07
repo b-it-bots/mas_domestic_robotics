@@ -1,5 +1,6 @@
 # goal definition
 string plane_config
+string plane_frame_prefix
 ---
 # result definition
 bool success
