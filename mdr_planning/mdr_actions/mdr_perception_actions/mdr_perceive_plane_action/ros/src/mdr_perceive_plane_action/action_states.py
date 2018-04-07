@@ -11,7 +11,7 @@ from mdr_perception_libs import Constant
 class DetectObjects(smach.State):
     def __init__(self, detection_service_proxy, detection_event_topic, target_frame=None, timeout_duration=1):
         smach.State.__init__(self, outcomes=[Constant.SUCCESS, Constant.FAILURE, Constant.TIMEOUT],
-                             input_keys=['perceive_plane_goal'],
+                             input_keys=['perceive_plane_goal', 'perceive_plane_feedback'],
                              output_keys=['detected_planes', 'perceive_plane_feedback'])
         self._detector = ObjectDetector(detection_service_proxy, detection_event_topic)
         self._timeout_duration = timeout_duration
@@ -53,7 +53,8 @@ class DetectObjects(smach.State):
 class RecognizeObjects(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=[Constant.SUCCESS, Constant.FAILURE],
-                             input_keys=['detected_planes'], output_keys=['recognized_planes'])
+                             input_keys=['detected_planes', 'perceive_plane_feedback'],
+                             output_keys=['recognized_planes', 'perceive_plane_feedback'])
         pass
 
     def execute(self, ud):
@@ -107,17 +108,17 @@ class SetupPlaneConfig(smach.State):
             rate.sleep()
         return Constant.TIMEOUT
 
-    def execute(self, userdata):
+    def execute(self, ud):
         feedback = PerceivePlaneFeedback()
         feedback.current_state = 'setup_plane_config'
-        if 'perceive_plane_goal' in userdata:
+        if 'perceive_plane_goal' in ud:
             feedback.message = '[perceive_plane] received plane config goal ' +\
-                               userdata.perceive_plane_goal.plane_config
-            userdata.perceive_plane_feedback = feedback
-            return self.configure_plane(userdata.perceive_plane_goal.plane_config)
+                               ud.perceive_plane_goal.plane_config
+            ud.perceive_plane_feedback = feedback
+            return self.configure_plane(ud.perceive_plane_goal.plane_config)
 
         feedback.message = '[perceive_plane] waiting for plane config goal'
-        userdata.perceive_plane_feedback = feedback
+        ud.perceive_plane_feedback = feedback
         rospy.sleep(self.sleep_duration)
         return Constant.WAITING
 
@@ -125,21 +126,21 @@ class SetupPlaneConfig(smach.State):
 class SetActionLibResult(smach.State):
     def __init__(self, result):
         smach.State.__init__(self, outcomes=[Constant.SUCCESS],
-                             input_keys=['perceive_plane_goal', 'recognized_planes'],
+                             input_keys=['perceive_plane_goal', 'recognized_planes', 'perceive_plane_feedback'],
                              output_keys=['perceive_plane_feedback', 'perceive_plane_result'])
         self.result = result
 
-    def execute(self, userdata):
+    def execute(self, ud):
         if 'perceive_plane_feedback' not in ud:
             ud.perceive_plane_feedback = PerceivePlaneFeedback()
         ud.perceive_plane_feedback.current_state = 'set_action_lib_result'
 
         result = PerceivePlaneResult()
         result.success = self.result
-        if userdata.recognized_planes is None:
+        if ud.recognized_planes is None:
             result.recognized_planes = PlaneList()
             result.recognized_planes.planes = []
         else:
-            result.recognized_planes = userdata.recognized_planes
-        userdata.perceive_plane_result = result
+            result.recognized_planes = ud.recognized_planes
+        ud.perceive_plane_result = result
         return Constant.SUCCESS
