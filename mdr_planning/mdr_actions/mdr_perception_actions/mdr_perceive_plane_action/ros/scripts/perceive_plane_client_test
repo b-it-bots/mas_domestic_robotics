@@ -10,6 +10,7 @@ if __name__ == '__main__':
     client.wait_for_server()
     goal = PerceivePlaneGoal()
     goal.plane_config = 'table'
+    goal.plane_frame_prefix = 'frame_table'
     try:
         timeout = 45.0
         rospy.loginfo('Sending action lib goal to perceive_plane_server')

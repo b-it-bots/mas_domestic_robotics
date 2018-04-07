@@ -3,7 +3,7 @@
 
   <arg name="workspace_finder_config_file" default="$(find mdr_object_recognition)/ros/config/tabletop_constraints.yaml" />
   <arg name="object_constraints_config_file" default="$(find mdr_object_recognition)/ros/config/object_constraints.yaml" />
-  <arg name="input_pointcloud_topic" default="/hsrb/head_rgbd_sensor/depth_registered/rectified_points" />
+  <arg name="input_pointcloud_topic" default="/cam3d/depth_registered/points" />
   <arg name="camera_frame" default="cam3d_link" />
   <arg name="target_frame" default="base_link" />
   <arg name="classifier" default="athome" />

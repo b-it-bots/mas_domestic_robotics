@@ -9,24 +9,26 @@ from mdr_perception_libs import Constant
 
 
 class DetectObjects(smach.State):
-    def __init__(self, detection_service_proxy, detection_event_topic, timeout_duration=1):
+    def __init__(self, detection_service_proxy, detection_event_topic, target_frame=None, timeout_duration=1):
         smach.State.__init__(self, outcomes=[Constant.SUCCESS, Constant.FAILURE, Constant.TIMEOUT],
-                             output_keys=['detected_planes'])
+                             input_keys=['perceive_plane_goal'], output_keys=['detected_planes'])
         self._detector = ObjectDetector(detection_service_proxy, detection_event_topic)
         self._timeout_duration = timeout_duration
         self._detecting_done = False
         self._event_out_sub = rospy.Subscriber(detection_event_topic, std_msgs.msg.String, self._event_cb)
-        return
+        self._target_frame = target_frame
 
-    def _event_cb(self, event):
+    def _event_cb(self, _):
         self._detecting_done = True
-        return
 
     def execute(self, ud):
         self._detecting_done = False
         ud.detected_planes = None
+        if 'perceive_plane_goal' not in ud:
+            rospy.logerr('no goal passed into DetectObjects state')
+            return Constant.FAILURE
 
-        self._detector.start_detect_objects()
+        self._detector.start_detect_objects(ud.perceive_plane_goal.plane_frame_prefix, self._target_frame)
 
         timeout = rospy.Duration.from_sec(self._timeout_duration)
         rate = rospy.Rate(10)   # 10Hz
@@ -39,6 +41,7 @@ class DetectObjects(smach.State):
                 ud.detected_planes = self._detector.plane_list
                 return Constant.SUCCESS
             rate.sleep()
+
         return Constant.TIMEOUT
 
 
