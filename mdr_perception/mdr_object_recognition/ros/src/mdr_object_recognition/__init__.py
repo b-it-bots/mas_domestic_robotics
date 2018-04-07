@@ -1,0 +1,2 @@
+from mdr_object_recognition.object_detector import ObjectDetector
+from mdr_object_recognition.detection_service_proxy import DetectionServiceProxy
