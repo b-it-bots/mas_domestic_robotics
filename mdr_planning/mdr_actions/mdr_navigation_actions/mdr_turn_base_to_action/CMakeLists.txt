@@ -22,7 +22,6 @@ add_action_files(DIRECTORY ros/action/
 
 generate_messages(
   DEPENDENCIES
-  geometry_msgs
   actionlib_msgs
 )
 
