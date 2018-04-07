@@ -31,6 +31,7 @@ class TurnBaseTo(smach.State):
                  movement_duration=15., speed=0.1):
         smach.State.__init__(self, input_keys=['turn_base_to_goal'], outcomes=['succeeded', 'failed'])
 
+        rospy.loginfo("Using move base server: " + move_base_server)
         self.move_base_server = move_base_server
         self.timeout = timeout
         self.local_frame = local_frame
