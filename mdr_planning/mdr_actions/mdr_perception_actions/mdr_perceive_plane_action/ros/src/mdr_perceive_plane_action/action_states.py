@@ -11,7 +11,8 @@ from mdr_perception_libs import Constant
 class DetectObjects(smach.State):
     def __init__(self, detection_service_proxy, detection_event_topic, target_frame=None, timeout_duration=1):
         smach.State.__init__(self, outcomes=[Constant.SUCCESS, Constant.FAILURE, Constant.TIMEOUT],
-                             input_keys=['perceive_plane_goal'], output_keys=['detected_planes'])
+                             input_keys=['perceive_plane_goal'],
+                             output_keys=['detected_planes', 'perceive_plane_feedback'])
         self._detector = ObjectDetector(detection_service_proxy, detection_event_topic)
         self._timeout_duration = timeout_duration
         self._detecting_done = False
@@ -22,6 +23,10 @@ class DetectObjects(smach.State):
         self._detecting_done = True
 
     def execute(self, ud):
+        if 'perceive_plane_feedback' not in ud:
+            ud.perceive_plane_feedback = PerceivePlaneFeedback()
+        ud.perceive_plane_feedback.current_state = 'detect_objects'
+
         self._detecting_done = False
         ud.detected_planes = None
         if 'perceive_plane_goal' not in ud:
@@ -52,6 +57,10 @@ class RecognizeObjects(smach.State):
         pass
 
     def execute(self, ud):
+        if 'perceive_plane_feedback' not in ud:
+            ud.perceive_plane_feedback = PerceivePlaneFeedback()
+        ud.perceive_plane_feedback.current_state = 'recognize_objects'
+
         if 'detected_planes' not in ud:
             ud.recognized_planes = None
             return Constant.FAILURE
@@ -121,6 +130,10 @@ class SetActionLibResult(smach.State):
         self.result = result
 
     def execute(self, userdata):
+        if 'perceive_plane_feedback' not in ud:
+            ud.perceive_plane_feedback = PerceivePlaneFeedback()
+        ud.perceive_plane_feedback.current_state = 'set_action_lib_result'
+
         result = PerceivePlaneResult()
         result.success = self.result
         if userdata.recognized_planes is None:
