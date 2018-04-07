@@ -3,7 +3,7 @@ import rospy
 from mcr_perception_msgs.msg import PlaneList
 
 
-class DetectionServiceProxy:
+class DetectionServiceProxy(object):
     __metaclass__ = ABCMeta
 
     def __init__(self, service_name, service_class):
@@ -38,12 +38,8 @@ class DetectionServiceProxy:
 
     @abstractmethod
     def _get_segmentation_req(self):
-        return 'should not get here'
+        pass
 
     @abstractmethod
     def _get_objects_and_planes_from_response(self, res):
-        return 'should not get here'
-
-    pass
-
-
+        pass

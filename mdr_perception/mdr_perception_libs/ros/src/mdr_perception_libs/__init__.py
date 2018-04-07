@@ -1,2 +1,2 @@
 from mdr_perception_libs.bounding_box_wrapper import BoundingBox
-from .constants import Constant
+from mdr_perception_libs.constants import Constant

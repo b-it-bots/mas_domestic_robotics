@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   roslaunch
   mcr_perception_msgs
+  mdr_perception_libs
 )
 
 catkin_python_setup()
@@ -21,8 +22,8 @@ add_action_files(DIRECTORY ros/action
 
 generate_messages(
   DEPENDENCIES
-  actionlib_msgs
-  mcr_perception_msgs
+    actionlib_msgs
+    mcr_perception_msgs
 )
 
 catkin_package(
