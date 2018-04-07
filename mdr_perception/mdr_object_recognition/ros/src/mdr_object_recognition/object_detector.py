@@ -33,6 +33,7 @@ class ObjectDetector(object):
 
             # publish plane frame
             plane_frame = '{0}_{1}'.format(plane_frame_prefix, plane_index)
+            plane.name = plane_frame
             plane_index = plane_index + 1
             plane_pos = plane.pose.pose.position
             plane_quart = plane.pose.pose.orientation
