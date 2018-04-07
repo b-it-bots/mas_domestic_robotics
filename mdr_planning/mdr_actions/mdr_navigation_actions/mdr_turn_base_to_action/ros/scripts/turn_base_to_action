@@ -7,7 +7,7 @@ from smach_ros import ActionServerWrapper, IntrospectionServer
 from mdr_turn_base_to_action.msg import TurnBaseToAction
 from mdr_turn_base_to_action.action_states import SetupTurnBaseTo, TurnBaseTo, SetActionLibResult
 
-class TurnToSkill(smach.StateMachine):
+class TurnBaseToSkill(smach.StateMachine):
     def __init__(self, timeout=10):
         smach.StateMachine.__init__(self,
                 outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     rospy.init_node('turn_base_to_server')
 
     # construct state machine
-    sm = TurnToSkill()
+    sm = TurnBaseToSkill()
 
     # smach viewer
     sis = IntrospectionServer('turn_base_to_smach_viewer', sm, '/turn_base_to_SMACH_VIEWER')
