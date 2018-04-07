@@ -5,10 +5,10 @@ import rospy
 import roslib
 import actionlib
 
-from mdr_turn_base_to_action.msg import TurnBaseToAction, TurnBaseToActionGoal
+from mdr_turn_base_to_action.msg import TurnBaseToAction, TurnBaseToGoal
 
 def print_usage_info():
-    rospy.loginfo('usage: enter_door_client_test')
+    rospy.loginfo('usage: turn_base_to_client_test  <desired_yaw_in_radians>')
 
 if __name__ == '__main__':
     rospy.init_node('turn_base_to_client_test')
@@ -16,7 +16,8 @@ if __name__ == '__main__':
     client = actionlib.SimpleActionClient('/mdr_actions/turn_base_to_server', TurnBaseToAction)
     client.wait_for_server()
 
-    goal = TurnBaseToActionGoal()
+    test_goal = TurnBaseToGoal()
+
     if len(sys.argv) != 2:
         rospy.logerr('Action takes one argument')
         print_usage_info()
@@ -24,9 +25,10 @@ if __name__ == '__main__':
         try:
             timeout = 120.0
             rospy.loginfo('Sending action lib goal to turn_to_server angle: ' + sys.argv[1])
-            goal.desired_yaw = sys.argv[1]
-            client.send_goal(goal)
+            test_goal.desired_yaw = float(sys.argv[1])
+            print(test_goal)
+            client.send_goal(test_goal)
             client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
             print client.get_result()
-        except:
-            pass
+        except Exception, e:
+            rospy.logerr(e)
