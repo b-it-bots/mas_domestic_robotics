@@ -2,7 +2,7 @@
 <package>
   <name>mdr_turn_base_to_action</name>
   <version>1.0.0</version>
-  <description>An action to turn a robot base to face a given orientationr</description>
+  <description>An action to turn a robot base to face a given orientation</description>
 
   <author email="jose.mayoral@smail.inf.h-brs.de">Jose Mayoral</author>
 
