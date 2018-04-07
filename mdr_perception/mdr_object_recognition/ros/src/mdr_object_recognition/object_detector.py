@@ -38,7 +38,7 @@ class ObjectDetector(object):
             plane_quart = plane.pose.pose.orientation
             self._tf_broadcaster.sendTransform((plane_pos.x, plane_pos.y, plane_pos.z),
                                                (plane_quart.x, plane_quart.y, plane_quart.z, plane_quart.w),
-                                               rospy.Time.now(), plane_frame, plane.pose.header)
+                                               rospy.Time.now(), plane_frame, plane.pose.header.frame_id)
 
             # make bounding boxes
             normal = [plane_quart.x, plane_quart.y, plane_quart.z]
