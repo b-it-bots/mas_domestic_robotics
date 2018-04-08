@@ -6,22 +6,23 @@ import diagnostic_msgs.msg as diag_msgs
 
 from mdr_store_groceries.scenario_states.scenario_state_base import ScenarioStateBase
 
-class PerceiveTable(ScenarioStateBase):
+class PerceivePlanes(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'perceive_plane',
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'])
         self.sm_id = kwargs.get('sm_id', 'mdr_store_groceries')
-        self.state_name = kwargs.get('state_name', 'perceive_table')
+        self.state_name = kwargs.get('state_name', 'perceive_planes')
         self.timeout = kwargs.get('timeout', 120.)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
+        self.plane_prefix = kwargs.get('plane_prefix', 0)
 
     def execute(self, userdata):
         if self.save_sm_state:
             self.save_current_state()
 
-        dispatch_msg = self.get_dispatch_msg('table')
-        rospy.loginfo('Perceiving table')
+        dispatch_msg = self.get_dispatch_msg(self.plane_prefix)
+        rospy.loginfo('Perceiving plane %s' % self.plane_prefix)
         self.action_dispatch_pub.publish(dispatch_msg)
 
         self.executing = True
@@ -33,14 +34,14 @@ class PerceiveTable(ScenarioStateBase):
             duration = time.time() - start_time
 
         if self.succeeded:
-            rospy.loginfo('Table perceived successfully')
+            rospy.loginfo('%s perceived successfully' % self.plane_prefix)
             return 'succeeded'
 
-        rospy.loginfo('Could not perceive table')
+        rospy.loginfo('Could not perceive %s' % self.plane_prefix)
         if self.retry_count == self.number_of_retries:
-            rospy.loginfo('Failed to perceive table')
+            rospy.loginfo('Failed to perceive %s' % self.plane_prefix)
             return 'failed_after_retrying'
-        rospy.loginfo('Retrying to perceive table')
+        rospy.loginfo('Retrying to perceive %s' % self.plane_prefix)
         self.retry_count += 1
         return 'failed'
 
