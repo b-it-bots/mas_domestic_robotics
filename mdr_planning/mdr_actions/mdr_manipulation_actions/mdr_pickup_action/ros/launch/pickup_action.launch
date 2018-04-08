@@ -9,5 +9,6 @@
         <param name="intermediate_grasp_offset" value="0.1" />
         <param name="safe_arm_joint_config" value="folded" />
         <param name="base_elbow_offset" value="-1." />
+        <rosparam param="grasping_orientation">[0, 0, 0, 1]</rosparam>
     </node>
 </launch>
