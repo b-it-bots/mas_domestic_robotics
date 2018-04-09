@@ -70,4 +70,4 @@ mas_domestic_robotics
 
 ## Setup
 
-A fairly detailed explanation about the setup of this repository can be found [here](mdr_docs/setup.md).
+A fairly detailed explanation about the setup of this repository can be found [here](docs/setup.md).
