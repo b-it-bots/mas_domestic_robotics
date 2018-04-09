@@ -34,7 +34,7 @@ class PerceivePlaneClient(ActionClientBase):
 
         if result and result.success:
             rospy.loginfo('[PERCEIVE_PLANE] Sending actionlib goal to %s' % self.action_server_name)
-            self.update_knowledge_base(goal.plane_config, result.recognized_objects)
+            self.update_knowledge_base(goal.plane_frame_prefix, result.recognized_planes)
             self.send_action_feedback(True)
         else:
             self.send_action_feedback(False)
@@ -46,77 +46,81 @@ class PerceivePlaneClient(ActionClientBase):
         for param in rosplan_action_msg.parameters:
             if param.key == 'plane':
                 goal.plane_config = param.value
+                goal.plane_frame_prefix = param.value
             elif param.key == 'bot':
                 self.robot_name = param.value
         return goal
 
-    def update_knowledge_base(self, plane, objects):
-        # we add the fact that the plane is not unexplored anymore to the knowledge base
-        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 2
-        request.knowledge.knowledge_type = 1
-        request.knowledge.attribute_name = 'unexplored'
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'plane'
-        arg_msg.value = plane
-        request.knowledge.values.append(arg_msg)
-
-        self.knowledge_update_client(request)
-
-        # we add the fact that the plane is explored to the knowledge base
-        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 0
-        request.knowledge.knowledge_type = 1
-        request.knowledge.attribute_name = 'explored'
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'plane'
-        arg_msg.value = plane
-        request.knowledge.values.append(arg_msg)
-
-        self.knowledge_update_client(request)
-
-        # we add the detected objects to the knowledge base
-        for obj in objects:
-            # we add the surface on which the object is to the knowledge base
-            obj_name = obj.name + '_' + str(obj.database_id)
-
+    def update_knowledge_base(self, plane_prefix, plane_list):
+        for i, plane in enumerate(plane_list.planes):
+            # we remove the fact that the plane is unexplored from the knowledge base
             request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-            request.update_type = 0
+            request.update_type = 2
             request.knowledge.knowledge_type = 1
-            request.knowledge.attribute_name = 'on'
-
-            arg_msg = diag_msgs.KeyValue()
-            arg_msg.key = 'obj'
-            arg_msg.value = obj_name
-            request.knowledge.values.append(arg_msg)
+            request.knowledge.attribute_name = 'unexplored'
 
             arg_msg = diag_msgs.KeyValue()
             arg_msg.key = 'plane'
-            arg_msg.value = self.obj_plane
+            arg_msg.value = plane.name
             request.knowledge.values.append(arg_msg)
 
             self.knowledge_update_client(request)
 
-            # we add the object category to the knowledge base
+            # we add the fact that the plane is explored to the knowledge base
             request = rosplan_srvs.KnowledgeUpdateServiceRequest()
             request.update_type = 0
             request.knowledge.knowledge_type = 1
-            request.knowledge.attribute_name = 'object_category'
+            request.knowledge.attribute_name = 'explored'
 
             arg_msg = diag_msgs.KeyValue()
-            arg_msg.key = 'obj'
-            arg_msg.value = obj_name
-            request.knowledge.values.append(arg_msg)
-
-            arg_msg = diag_msgs.KeyValue()
-            arg_msg.key = 'cat'
-            arg_msg.value = obj.category
+            arg_msg.key = 'plane'
+            arg_msg.value = plane.name
             request.knowledge.values.append(arg_msg)
 
             self.knowledge_update_client(request)
-            self.msg_store_client.insert_named(obj.name, obj)
+            self.msg_store_client.insert_named(plane.name, plane)
+
+            # we add the detected objects to the knowledge base
+            for obj in plane.object_list.objects:
+                # we add the surface on which the object is to the knowledge base
+                obj.name = plane.name + '_' + str(i)
+                obj_name = obj.name#obj.name + '_' + str(obj.database_id)
+
+                request = rosplan_srvs.KnowledgeUpdateServiceRequest()
+                request.update_type = 0
+                request.knowledge.knowledge_type = 1
+                request.knowledge.attribute_name = 'on'
+
+                arg_msg = diag_msgs.KeyValue()
+                arg_msg.key = 'obj'
+                arg_msg.value = obj_name
+                request.knowledge.values.append(arg_msg)
+
+                arg_msg = diag_msgs.KeyValue()
+                arg_msg.key = 'plane'
+                arg_msg.value = plane.name
+                request.knowledge.values.append(arg_msg)
+
+                self.knowledge_update_client(request)
+
+                # we add the object category to the knowledge base
+                request = rosplan_srvs.KnowledgeUpdateServiceRequest()
+                request.update_type = 0
+                request.knowledge.knowledge_type = 1
+                request.knowledge.attribute_name = 'object_category'
+
+                arg_msg = diag_msgs.KeyValue()
+                arg_msg.key = 'obj'
+                arg_msg.value = obj_name
+                request.knowledge.values.append(arg_msg)
+
+                arg_msg = diag_msgs.KeyValue()
+                arg_msg.key = 'cat'
+                arg_msg.value = obj.category
+                request.knowledge.values.append(arg_msg)
+
+                self.knowledge_update_client(request)
+                self.msg_store_client.insert_named(obj_name, obj)
 
 if __name__ == '__main__':
     rospy.init_node('perceive_plane_client')
