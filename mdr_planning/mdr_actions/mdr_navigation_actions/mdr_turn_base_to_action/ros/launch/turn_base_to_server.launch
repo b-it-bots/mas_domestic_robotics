@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="mdr_turn_base_to_action" type="turn_base_to_action" name="turn_base_to_action" output="screen" ns="mdr_actions" >
-      <param name="move_base_server" value="/move_base/move" />
+      <param name="move_base_server" value="/move_base_server" />
     </node>
 </launch>
