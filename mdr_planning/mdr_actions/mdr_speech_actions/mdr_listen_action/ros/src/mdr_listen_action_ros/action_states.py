@@ -12,9 +12,10 @@ import rospy
 import smach
 
 from std_msgs.msg import String
+from tmc_rosjulius_msgs.msg import RecognitionResult
 from smach_ros import ActionServerWrapper, IntrospectionServer
-from mdr_listen_action_ros.msg import ListenAction, ListenResult, ListenFeedback
-from mdr_listen_action import SpeechVerifier
+from mdr_listen_action.msg import ListenAction, ListenResult, ListenFeedback
+from mdr_listen_action.SpeechVerifier import SpeechVerifier
 
 
 class InitializeListen(smach.State):
@@ -57,11 +58,11 @@ class WaitForUserInput(smach.State):
         self.input_received = False
 
     def callback(self, data, userdata):
-        rospy.loginfo(rospy.get_caller_id() + " I heard %s ", data.data)
+        rospy.loginfo(rospy.get_caller_id() + " I heard %s ", data.sentences)
         
         # TODO: Call the method that verifies the data from Julius even more.
         # TODO: SpeechVerifier, here!
-        sv = SpeechVerifier("../../../common/config/dict", "../../../common/config/sentence_pool.txt", data.data)
+        sv = SpeechVerifier("../../../common/config/dict", "../../../common/config/sentence_pool.txt", data.sentences)
         self.input_received = True
         userdata.accoustic_input = sv.find_best_match()
 
@@ -84,7 +85,7 @@ class WaitForUserInput(smach.State):
 
             # TODO: Subscribe to hsrb/voice/text and get the output from there.
             #rospy.Subscriber("wait_for_user_input", String[], self.callback, userdata)
-            rospy.Subscriber("hsrb/voice/text", tmc_rosjulius_msgs/RecognitionResult, self.callback, userdata)
+            rospy.Subscriber("hsrb/voice/text", RecognitionResult, self.callback, userdata)
             if self.input_received:
                 return 'input_received'
             rospy.sleep(rospy.Duration(1))
@@ -151,6 +152,13 @@ class ProcessInput(smach.State):
 
         pub = rospy.Publisher('talker', String, queue_size=10)
         pub.publish(userdata.accoustic_input)
+       
+        result = ListenResult()
+        result.success = True
+        result.message = userdata.accoustic_input
+        result.message_type = "String"
+        userdata.listen_result = result
+        return 'succeeded'
 
 
 class InputError(smach.State):

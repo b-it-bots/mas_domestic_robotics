@@ -11,7 +11,7 @@ import smach
 
 from smach_ros import ActionServerWrapper, IntrospectionServer
 from mdr_listen_action.msg import ListenAction, ListenResult, ListenFeedback
-from mdr_listen_action.action_states import InitializeListen, WaitForUserInput,\
+from mdr_listen_action_ros.action_states import InitializeListen, WaitForUserInput,\
                                             InitializationError, ProcessInput, InputError
 
 
