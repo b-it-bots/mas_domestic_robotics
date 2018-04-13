@@ -13,7 +13,8 @@ import smach
 
 from std_msgs.msg import String
 from smach_ros import ActionServerWrapper, IntrospectionServer
-from mdr_listen_action.msg import ListenAction, ListenResult, ListenFeedback
+from mdr_listen_action_ros.msg import ListenAction, ListenResult, ListenFeedback
+from mdr_listen_action import SpeechVerifier
 
 
 class InitializeListen(smach.State):
@@ -57,8 +58,12 @@ class WaitForUserInput(smach.State):
 
     def callback(self, data, userdata):
         rospy.loginfo(rospy.get_caller_id() + " I heard %s ", data.data)
+        
+        # TODO: Call the method that verifies the data from Julius even more.
+        # TODO: SpeechVerifier, here!
+        sv = SpeechVerifier("../../../common/config/dict", "../../../common/config/sentence_pool.txt", data.data)
         self.input_received = True
-        userdata.accoustic_input = data.data
+        userdata.accoustic_input = sv.find_best_match()
 
     def execute(self, userdata):
         rospy.loginfo("Executing state WaitForUserInput")
@@ -76,7 +81,10 @@ class WaitForUserInput(smach.State):
         duration = userdata.listen_goal.listen_duration
         while not timer == duration:
             # in order to provide some input: publish to /wait_for_user_input
-            rospy.Subscriber("wait_for_user_input", String, self.callback, userdata)
+
+            # TODO: Subscribe to hsrb/voice/text and get the output from there.
+            #rospy.Subscriber("wait_for_user_input", String[], self.callback, userdata)
+            rospy.Subscriber("hsrb/voice/text", tmc_rosjulius_msgs/RecognitionResult, self.callback, userdata)
             if self.input_received:
                 return 'input_received'
             rospy.sleep(rospy.Duration(1))
@@ -117,6 +125,8 @@ class InitializationError(smach.State):
 
 class ProcessInput(smach.State):
 
+    # TODO: Publisher here?! Or publisher in "wait_for_user_input"?
+
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'input_not_understood', 'processing'],
                              input_keys=['accoustic_input', 'listen_feedback',
@@ -139,50 +149,8 @@ class ProcessInput(smach.State):
             self.feedback_given = True
             return 'processing'
 
-        # simple check
-        # - if the sentence starts with a question mark, then it is a question
-        if "?" in userdata.accoustic_input:
-            # update feedback
-            while not self.feedback_updated:
-                userdata.listen_feedback.status_initialization = "completed"
-                userdata.listen_feedback.status_wait_for_user_input = "completed"
-                userdata.listen_feedback.status_process_input = "completed"
-                userdata.listen_feedback.error_detected = False
-                self.feedback_updated = True
-                return 'processing'
-
-            result = ListenResult()
-            result.success = True
-            result.message = userdata.accoustic_input
-            result.message_type = 'question'
-            userdata.listen_result = result
-            rospy.loginfo("This is the message type %s: ", result.message_type)
-            return 'succeeded'
-
-        # simple check, simple case
-        # - if the sentence starts with a dot, then it is a questionable statement
-        elif "." in userdata.accoustic_input:
-            # update feedback
-            while not self.feedback_updated:
-                userdata.listen_feedback.status_initialization = "completed"
-                userdata.listen_feedback.status_wait_for_user_input = "completed"
-                userdata.listen_feedback.status_process_input = "completed"
-                userdata.listen_feedback.error_detected = False
-                self.feedback_updated = True
-                return 'processing'
-
-            result = ListenResult()
-            result.success = True
-            result.message = userdata.accoustic_input
-            result.message_type = 'questionable_statement'
-            userdata.listen_result = result
-            rospy.loginfo("This is the message type %s: ", result.message_type)
-            return 'succeeded'
-
-        else:
-            userdata.input_error_message = "The accoustic signal could not be identified."
-            rospy.logerr("%s", userdata.input_error_message)
-            return 'input_not_understood'
+        pub = rospy.Publisher('talker', String, queue_size=10)
+        pub.publish(userdata.accoustic_input)
 
 
 class InputError(smach.State):
