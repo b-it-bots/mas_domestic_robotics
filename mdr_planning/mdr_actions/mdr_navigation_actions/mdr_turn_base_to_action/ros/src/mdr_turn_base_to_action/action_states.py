@@ -9,6 +9,7 @@ from actionlib import SimpleActionClient
 import move_base_msgs.msg as move_base_msgs
 from geometry_msgs.msg import Quaternion, PoseStamped
 from mdr_turn_base_to_action.msg import TurnBaseToFeedback, TurnBaseToResult
+from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 
 
 class SetupTurnBaseTo(smach.State):
@@ -42,18 +43,20 @@ class TurnBaseTo(smach.State):
 
     def execute(self, userdata):
 
-        move_base_client = actionlib.SimpleActionClient(self.move_base_server, move_base_msgs.MoveBaseAction)
+        move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
 
-        feedback = move_base_msgs.MoveBaseFeedback()
+        #feedback = move_base_msgs.MoveBaseFeedback()
         #feedback.str = '[MOVE_BASE] Moving base to {0}'.format(pose)
 
-        goal = move_base_msgs.MoveBaseGoal()
-        goal.target_pose.header.frame_id = self.local_frame
+        goal = MoveBaseGoal()
+        goal.goal_type = MoveBaseGoal.POSE
+
+        goal.pose.header.frame_id = self.local_frame
         q = quaternion_from_euler(0, 0, userdata.turn_base_to_goal.desired_yaw)
-        goal.target_pose.pose.orientation.x  = q[0]
-        goal.target_pose.pose.orientation.y  = q[1]
-        goal.target_pose.pose.orientation.z  = q[2]
-        goal.target_pose.pose.orientation.w  = q[3]
+        goal.pose.pose.orientation.x  = q[0]
+        goal.pose.pose.orientation.y  = q[1]
+        goal.pose.pose.orientation.z  = q[2]
+        goal.pose.pose.orientation.w  = q[3]
         print ("Goal ", goal)
         move_base_client.wait_for_server()
         move_base_client.send_goal(goal)
