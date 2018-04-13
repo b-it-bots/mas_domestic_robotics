@@ -37,7 +37,8 @@ class Pickup(smach.State):
                  safe_arm_joint_config='folded',
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
-                 base_elbow_offset=-1.):
+                 base_elbow_offset=-1.,
+                 grasping_orientation=list()):
         smach.State.__init__(self, input_keys=['pickup_goal'],
                              output_keys=['pickup_feedback'],
                              outcomes=['succeeded', 'failed'])
@@ -52,6 +53,7 @@ class Pickup(smach.State):
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
         self.base_elbow_offset = base_elbow_offset
+        self.grasping_orientation = grasping_orientation
         self.tf_listener = tf.TransformListener()
 
         self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
@@ -76,6 +78,12 @@ class Pickup(smach.State):
             # the base is now correctly aligned with the pose, so we set the
             # y position of the goal pose to the elbow offset
             pose_base_link.pose.position.y = self.base_elbow_offset
+
+        if self.grasping_orientation:
+            pose_base_link.pose.orientation.x = self.grasping_orientation[0]
+            pose_base_link.pose.orientation.y = self.grasping_orientation[1]
+            pose_base_link.pose.orientation.z = self.grasping_orientation[2]
+            pose_base_link.pose.orientation.w = self.grasping_orientation[3]
 
         rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
         self.move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)

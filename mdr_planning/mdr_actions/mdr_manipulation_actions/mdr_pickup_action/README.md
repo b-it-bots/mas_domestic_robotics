@@ -60,6 +60,7 @@ The following parameters may be passed when launching the action server:
 * ``intermediate_grasp_offset``: An optional pose offset that creates an intermediate trajectory goal following the pregrasp configuration (default: -1)
 * ``safe_arm_joint_config``: The name of a configuration in which the robot can safely move around the environment (default: 'folded')
 * ``base_elbow_offset``: An optional offset between `base_link` and the manipulator's elbow; used for aligning the base with the object to be grasped so that the manipulator can easily reach the object (default: -1)
+* ``grasping_orientation``: For more constrained manipulators, it might make sense to use a fixed grasping orientation (expressed as an (x, y, z, w) quaternion) to ensure easier reachability (default: [], in which case the argument is ignored)
 
 ### Action client
 

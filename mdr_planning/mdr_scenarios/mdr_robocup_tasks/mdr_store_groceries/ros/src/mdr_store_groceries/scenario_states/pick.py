@@ -17,7 +17,9 @@ class Pick(ScenarioStateBase):
         ScenarioStateBase.__init__(self, 'pickup',
                                    save_sm_state=save_sm_state,
                                    output_keys=['grasped_object'],
-                                   outcomes=['succeeded', 'failed', 'failed_after_retrying'])
+                                   outcomes=['succeeded', 'failed',
+                                             'failed_after_retrying',
+                                             'find_objects_before_picking'])
         self.sm_id = kwargs.get('sm_id', 'mdr_store_groceries')
         self.state_name = kwargs.get('state_name', 'pick')
         self.timeout = kwargs.get('timeout', 120.)
@@ -28,13 +30,18 @@ class Pick(ScenarioStateBase):
         if self.save_sm_state:
             self.save_current_state()
 
-        surface_objects = self.get_surface_objects()
+        surface_objects = self.get_surface_objects(surface_prefix='table')
         object_poses = self.get_object_poses(surface_objects)
-        obj_to_grasp_idx = self.select_object_for_grasping(object_poses)
-        obj_to_grasp = surface_objects[obj_to_grasp_idx]
+        surface, obj_to_grasp_idx = self.select_object_for_grasping(object_poses)
+        obj_to_grasp = ''
+        if obj_to_grasp_idx != -1:
+            obj_to_grasp = surface_objects[surface][obj_to_grasp_idx]
+        else:
+            rospy.logerr('Could not find an object to grasp')
+            return 'find_objects_before_picking'
 
-        dispatch_msg = self.get_dispatch_msg(obj_to_grasp, 'table')
-        rospy.loginfo('Picking %s from the table' % obj_to_grasp)
+        dispatch_msg = self.get_dispatch_msg(obj_to_grasp, surface)
+        rospy.loginfo('Picking %s from %s' % (obj_to_grasp, surface))
         self.action_dispatch_pub.publish(dispatch_msg)
 
         self.executing = True
@@ -58,48 +65,61 @@ class Pick(ScenarioStateBase):
         self.retry_count += 1
         return 'failed'
 
-    def get_surface_objects(self, surface_name='table'):
-        surface_objects = list()
+    def get_surface_objects(self, surface_prefix='table'):
+        surface_objects = dict()
         request = rosplan_srvs.GetAttributeServiceRequest()
         request.predicate_name = 'on'
         result = self.attribute_fetching_client(request)
         for item in result.attributes:
-            object_on_desired_surface =  False
+            object_on_desired_surface = False
             object_name = ''
+            surface_name = ''
             if not item.is_negative:
                 for param in item.values:
-                    if param.key == 'plane' and param.value == surface_name:
+                    if param.key == 'plane' and param.value.find(surface_prefix) != -1:
                         object_on_desired_surface = True
+                        surface_name = param.value
+                        if surface_name not in surface_objects:
+                            surface_objects[surface_name] = list()
                     elif param.key == 'obj':
                         object_name = param.value
             if object_on_desired_surface:
-                surface_objects.append(object_name)
+                surface_objects[surface_name].append(object_name)
         return surface_objects
 
     def get_object_poses(self, surface_objects):
-        object_poses = list()
-        for obj_name in surface_objects:
-            try:
-                obj = self.msg_store_client.query_named(obj_name, Object._type)[0]
-                object_poses.append(obj.pose)
-            except:
-                rospy.logerr('Error retriving knowledge about %s', obj_name)
-                pass
+        object_poses = dict()
+        for surface, objects in surface_objects.items():
+            object_poses[surface] = list()
+            for obj in objects:
+                try:
+                    obj = self.msg_store_client.query_named(obj_name, Object._type)[0]
+                    object_poses[surface].append(obj.pose)
+                except:
+                    rospy.logerr('Error retriving knowledge about %s', obj_name)
+                    pass
         return object_poses
 
     def select_object_for_grasping(self, object_poses):
         '''Returns the index of the object whose distance is closest to the robot
         '''
+        object_surfaces = list()
         distances = list()
         robot_position = np.zeros(3)
-        for pose in object_poses:
-            base_link_pose = self.tf_listener.transformPose('base_link', pose)
-            distances.append(self.distance(robot_position, np.array([base_link_pose.pose.position.x,
-                                                                     base_link_pose.pose.position.y,
-                                                                     base_link_pose.pose.position.z])))
+        for surface, poses in object_poses.items():
+            for pose in poses:
+                base_link_pose = self.tf_listener.transformPose('base_link', pose)
+                distances.append(self.distance(robot_position, np.array([base_link_pose.pose.position.x,
+                                                                         base_link_pose.pose.position.y,
+                                                                         base_link_pose.pose.position.z])))
+                object_surfaces.append(surface)
 
-        min_dist_obj_idx = np.argmin(distances)
-        return min_dist_obj_idx
+        min_dist_obj_idx = -1
+        obj_surface = ''
+        if distances:
+            min_dist_obj_idx = np.argmin(distances)
+            obj_surface = object_surfaces[min_dist_obj_idx]
+        return obj_surface, min_dist_obj_idx
 
     def get_robot_pose(self, map_frame='map', base_link_frame='base_link'):
         latest_tf_time = self.tf_listener.getLatestCommonTime(base_link_frame, map_frame)
