@@ -10,7 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   roslint
   rospy
-  std_msgs
 )
 
 catkin_python_setup()
@@ -32,7 +31,6 @@ catkin_package(
    message_runtime
    mdr_move_base_action
    geometry_msgs
-   std_msgs
 )
 
 include_directories(
