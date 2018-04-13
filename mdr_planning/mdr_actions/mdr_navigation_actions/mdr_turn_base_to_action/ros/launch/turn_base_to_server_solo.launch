@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Run mdr_move_base_action action -->
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch">
+    </include>
+
+    <node pkg="mdr_turn_base_to_action" type="turn_base_to_action" name="turn_base_to_action" output="screen" ns="mdr_actions" >
+      <param name="move_base_server" value="/move_base_server" />
+      <param name="rotation_frame" value="base_link" />
+    </node>
+
+</launch>
