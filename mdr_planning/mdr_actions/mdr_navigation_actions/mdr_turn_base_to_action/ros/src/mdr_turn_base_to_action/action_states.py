@@ -27,15 +27,16 @@ class SetupTurnBaseTo(smach.State):
 
 class TurnBaseTo(smach.State):
     def __init__(self, timeout=120.0,
-                 local_frame = 'base_link',
+                 rotation_frame = 'base_link',
                  move_base_server='/move_base',
                  movement_duration=15., speed=0.1):
         smach.State.__init__(self, input_keys=['turn_base_to_goal'], outcomes=['succeeded', 'failed'])
 
         rospy.loginfo("Using move base server: " + move_base_server)
+        rospy.loginfo("Rotation Frame set to : " + rotation_frame)
         self.move_base_server = move_base_server
         self.timeout = timeout
-        self.local_frame = local_frame
+        self.rotation_frame = rotation_frame
         self.movement_duration = movement_duration
         self.speed = speed
 
@@ -45,13 +46,10 @@ class TurnBaseTo(smach.State):
 
         move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
 
-        #feedback = move_base_msgs.MoveBaseFeedback()
-        #feedback.str = '[MOVE_BASE] Moving base to {0}'.format(pose)
-
         goal = MoveBaseGoal()
         goal.goal_type = MoveBaseGoal.POSE
 
-        goal.pose.header.frame_id = self.local_frame
+        goal.pose.header.frame_id = self.rotation_frame
         q = quaternion_from_euler(0, 0, userdata.turn_base_to_goal.desired_yaw)
         goal.pose.pose.orientation.x  = q[0]
         goal.pose.pose.orientation.y  = q[1]
@@ -66,8 +64,6 @@ class TurnBaseTo(smach.State):
             return 'succeeded'
         else:
             return 'failed'
-
-
 
 class SetActionLibResult(smach.State):
     def __init__(self, result):
