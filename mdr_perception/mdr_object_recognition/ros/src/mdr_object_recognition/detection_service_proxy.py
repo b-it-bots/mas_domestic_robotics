@@ -1,6 +1,9 @@
 from abc import ABCMeta, abstractmethod
 import rospy
-from mcr_perception_msgs.msg import PlaneList
+from std_srvs.srv import Empty, EmptyRequest
+from mcr_perception_msgs.msg import PlaneList, Plane, Object
+
+TEST_DETECTION_SERVICE = '/test_detection_service/execute'
 
 
 class DetectionServiceProxy(object):
@@ -10,18 +13,17 @@ class DetectionServiceProxy(object):
         self._service_name = service_name
         try:
             rospy.loginfo('waiting for segmentation service "{0}" (type {1})'
-                    .format(service_name, service_class.__name__))
+                          .format(service_name, service_class.__name__))
             rospy.wait_for_service(service_name, timeout=5.0)
             self._detection_client = rospy.ServiceProxy(service_name, service_class)
         except rospy.ROSException:
-            rospy.logwarn('"{0}" service is not available'.format(service_name))
+            rospy.logerr('"{0}" service is not available'.format(service_name))
             raise
 
         self._detection_req = self._get_segmentation_req()
-        pass
 
     def get_objects_and_planes(self):
-        res = self._get_detection_response()
+        res = self._detection_client(self._detection_req)
 
         plane_list = self._get_objects_and_planes_from_response(res)
         if not isinstance(plane_list, PlaneList):
@@ -29,12 +31,8 @@ class DetectionServiceProxy(object):
 
         for i in range(len(plane_list.planes)):
             rospy.loginfo('plane [{0}] has[{1}] object(s)'.format(i, len(plane_list.planes[i].object_list.objects)))
-            pass
 
         return plane_list
-
-    def _get_detection_response(self):
-        return self._detection_client(self._detection_req)
 
     @abstractmethod
     def _get_segmentation_req(self):
@@ -43,3 +41,16 @@ class DetectionServiceProxy(object):
     @abstractmethod
     def _get_objects_and_planes_from_response(self, res):
         pass
+
+
+class DetectionServiceProxyTest(DetectionServiceProxy):
+    def __init__(self):
+        super(DetectionServiceProxyTest, self).__init__(TEST_DETECTION_SERVICE, Empty)
+
+    def _get_segmentation_req(self):
+        return EmptyRequest()
+
+    def _get_objects_and_planes_from_response(self, res):
+        plane_list = PlaneList()
+        plane_list.planes.append(Plane())
+        return plane_list

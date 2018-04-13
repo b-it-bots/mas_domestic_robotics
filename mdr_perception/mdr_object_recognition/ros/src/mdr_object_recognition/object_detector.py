@@ -1,25 +1,22 @@
 import rospy
 import tf
-from std_msgs.msg import String as StringMsg
 from geometry_msgs.msg import PointStamped
 from mcr_perception_msgs.msg import PlaneList
 from mdr_perception_libs import Constant, BoundingBox
-from mdr_object_recognition.detection_service_proxy import DetectionServiceProxy
+from detection_service_proxy import DetectionServiceProxy
 
 
 class ObjectDetector(object):
-    def __init__(self, detection_service_proxy, event_out_topic):
+    def __init__(self, detection_service_proxy):
         if not isinstance(detection_service_proxy, DetectionServiceProxy):
             raise ValueError('argument 1 is not a DetectionServiceProxy instance')
 
         self._detection_service_proxy = detection_service_proxy
-        self._event_out_pub = rospy.Publisher(event_out_topic, StringMsg, queue_size=1)
         self._plane_list = None
         self._tf_listener = tf.TransformListener()
-        self._tf_broadcaster = tf.TransformBroadcaster()
         pass
 
-    def start_detect_objects(self, plane_frame_prefix, target_frame=None):
+    def start_detect_objects(self, plane_frame_prefix, done_callback, target_frame=None):
         self._plane_list = self._detection_service_proxy.get_objects_and_planes()
         if not isinstance(self._plane_list, PlaneList):
             raise ValueError('get_objects_and_planes() did not return a PlaneList instance')
@@ -37,9 +34,6 @@ class ObjectDetector(object):
             plane_index = plane_index + 1
             plane_pos = plane.pose.pose.position
             plane_quart = plane.pose.pose.orientation
-            self._tf_broadcaster.sendTransform((plane_pos.x, plane_pos.y, plane_pos.z),
-                                               (plane_quart.x, plane_quart.y, plane_quart.z, plane_quart.w),
-                                               rospy.Time.now(), plane_frame, plane.pose.header.frame_id)
 
             # make bounding boxes
             normal = [plane_quart.x, plane_quart.y, plane_quart.z]
@@ -49,12 +43,11 @@ class ObjectDetector(object):
                 bounding_box_msg = bounding_box.get_ros_message()
                 if target_frame is not None:
                     bounding_box_msg, obj_pose = self._transform_object(bounding_box_msg, obj_pose, target_frame)
-                    pass
+
                 detected_obj.pose = obj_pose
                 detected_obj.bounding_box = bounding_box_msg
-                pass
 
-        self._event_out_pub.publish(Constant.E_SUCCESS)
+        done_callback()
         return
 
     def _transform_plane(self, plane_pose, target_frame):
@@ -62,7 +55,7 @@ class ObjectDetector(object):
             common_time = self._tf_listener.getLatestCommonTime(target_frame, plane_pose.header.frame_id)
             plane_pose.header.stamp = common_time
             self._tf_listener.waitForTransform(target_frame, plane_pose.header.frame_id,
-                                               plane_pose.header.stamp, rospy.Duration(0.1))
+                                               plane_pose.header.stamp, rospy.Duration(1))
 
             plane_pose = self._tf_listener.transformPose(target_frame, plane_pose)
         except(tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
@@ -75,7 +68,7 @@ class ObjectDetector(object):
             common_time = self._tf_listener.getLatestCommonTime(target_frame, obj_pose.header.frame_id)
             obj_pose.header.stamp = common_time
             self._tf_listener.waitForTransform(target_frame, obj_pose.header.frame_id,
-                                               obj_pose.header.stamp, rospy.Duration(0.1))
+                                               obj_pose.header.stamp, rospy.Duration(1))
             # transform object pose
             old_header = obj_pose.header
             obj_pose = self._tf_listener.transformPose(target_frame, obj_pose)
