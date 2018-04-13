@@ -15,13 +15,15 @@ class TurnBaseToSkill(smach.StateMachine):
                 output_keys=['turn_base_to_feedback', 'turn_base_to_result'])
 
         server_name = rospy.get_param('~move_base_server', '/move_base')
+        rotation_frame = rospy.get_param('~rotation_frame', 'base_link')
 
         with self:
             smach.StateMachine.add('SETUP_TURN_BASE_TO', SetupTurnBaseTo(),
                                    transitions = {'succeeded': 'TURN_BASE_TO',
                                                 'failed': 'SET_ACTION_LIB_FAILED'})
 
-            smach.StateMachine.add('TURN_BASE_TO', TurnBaseTo(move_base_server = server_name),
+            smach.StateMachine.add('TURN_BASE_TO', TurnBaseTo(move_base_server = server_name,
+                                                              rotation_frame = rotation_frame),
                                    transitions = {'succeeded': 'SET_ACTION_LIB_SUCCESS',
                                                 'failed': 'SET_ACTION_LIB_FAILED'})
 
