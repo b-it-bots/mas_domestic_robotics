@@ -14,8 +14,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>mdr_perception_libs</build_depend>
-
   <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
