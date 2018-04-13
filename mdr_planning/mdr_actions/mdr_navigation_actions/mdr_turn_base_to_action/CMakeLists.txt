@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   genmsg
   message_generation
+  mdr_move_base_action
   geometry_msgs
   roslint
   rospy
@@ -29,6 +30,7 @@ catkin_package(
  CATKIN_DEPENDS
    actionlib_msgs
    message_runtime
+   mdr_move_base_action
    geometry_msgs
    std_msgs
 )
