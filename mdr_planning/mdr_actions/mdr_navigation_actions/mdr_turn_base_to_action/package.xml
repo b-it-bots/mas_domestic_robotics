@@ -12,6 +12,7 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>genmsg</buildtool_depend>
+  <build_depend>mdr_move_base_action</build_depend>
   <build_depend>actionlib</build_depend>
   <build_depend>actionlib_msgs</build_depend>
   <build_depend>message_generation</build_depend>
@@ -23,6 +24,7 @@
 
 
   <run_depend>rospy</run_depend>
+  <run_depend>mdr_move_base_action</run_depend>
   <run_depend>actionlib</run_depend>
   <run_depend>actionlib_msgs</run_depend>
   <run_depend>message_runtime</run_depend>
