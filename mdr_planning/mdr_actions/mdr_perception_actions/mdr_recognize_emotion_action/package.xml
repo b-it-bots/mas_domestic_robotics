@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_recognize_emotion_action</name>
+  <version>1.2.0</version>
+  <description>An action for recognizing emotions</description>
+
+  <author email="octavio.arriaga@smail.inf.h-brs.de">Octavio Arriaga</author>
+  <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
+  <author email="gabriela.cortes@smail.inf.h-brs.de"> Gabriela Cortes </author>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <license>GPLv3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>genmsg</buildtool_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>actionlib_msgs</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>roslint</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>mdr_perception_msgs</build_depend>
+  <build_depend>mdr_detect_person</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>actionlib</run_depend>
+  <run_depend>actionlib_msgs</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>mdr_perception_msgs</run_depend>
+  <run_depend>mdr_detect_person</run_depend>
+
+  <export></export>
+</package>

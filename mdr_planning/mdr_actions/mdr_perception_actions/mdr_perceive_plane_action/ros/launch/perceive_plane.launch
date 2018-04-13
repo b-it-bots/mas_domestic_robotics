@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_perceive_plane_action" type="perceive_plane_action" name="perceive_plane_server" output="screen" ns="mdr_actions">
+        <param name="target_frame" type="string" value="/base_link" />
+    </node>
+    <include file="$(find mcr_dynamic_reconfigure_client)/ros/launch/dynamic_reconfigure_client.launch">
+        <arg name="config_file" default="$(find mdr_perceive_plane_action)/ros/config/perceive_plane_configurations.yaml" />
+    </include>
+</launch>

@@ -1,147 +1,29 @@
-kinetic## Install Ubuntu
-The repository and its related components have been tested under the following Ubuntu distributions:
+# mas_domestic_robotics
 
-- ROS Kinetic: Ubuntu 16.04
+## Summary
 
-If you do not have a Ubuntu distribution on your computer you can download it here
+This repository contains various core domestic robotics functionalities developed by the Autonomous Systems group at Hochschule Bonn-Rhein-Sieg.
 
-     http://www.ubuntu.com/download
+The code in this repository is mostly ROS-based and is developed in a robot-independent manner. Robot-dependent code and/or configuration files are hosted in robot-specific repositories, e.g. [mas_cob](https://github.com/b-it-bots/mas_cob) for our Care-O-bot.
 
-## Git - Version Control
-### Install Git Software
-Install the Git core components and some additional GUI's for the version control:
+## Repository Organisation
 
-     sudo apt-get install git-core gitg gitk
+The functionalities in this repository are organised based on the main capabilities a domestic robot needs to possess - navigation, manipulation, perception, speech, and planning. Each of these has its own ROS metapackage, which further includes a set of packages related to that particular functionality.
 
-### Set Up Git
-Now it's time to configure your settings. To do this you need to open a new Terminal. First you need to tell git your name, so that it can properly label the commits you make:
+The planning metapackage is where most of the high-level functionalites of our robots are implemented. We are developing our robots as skill-based agents; the planning metapackage includes *action* and *scenario* metapackages because of that. The action metapackage is further divided into metapackages for actions related to particular capabilities, while the scenario metapackage includes domain files and/or state machines for various scenarios (e.g. RoboCup@Home tasks, lab demos, and so forth). In principle, scenarios are built by integrating actions together, which is the main benefit of the skill-based agent framework.
 
-     git config --global user.name "Your Name Here"
+## Naming Conventions
 
-Git also saves your email address into the commits you make.
+All packages in our domestic code base start with the `mdr_` suffix; this stands for `mas_domestic_robotics`, which is the name of the top-level directory/ROS metapackage.
 
-     git config --global user.email "your-email@youremail.com"
+## Programming Languages and Conventions
 
+Pretty much all the code in this repository is Python-based, such that we try to follow the [PEP8 style guide](https://www.python.org/dev/peps/pep-0008/) as much as possible.
 
-### GIT Tutorial
-If you have never worked with git before, we recommend to go through the following basic git tutorial:
+## High-Level Directory Structure
 
-     http://excess.org/article/2008/07/ogre-git-tutorial/
+A high-level directory tree of the repository can be found [here](docs/high-level-dir-structure.md).
 
+## Setup
 
-## ROS - Robot Operating System
-### Install ROS
-The repository has been tested successfully with the following ROS distributions. Use the link behind a ROS distribution to get to the particular ROS installation instructions.
-
-
-- ROS Kinetic - http://wiki.ros.org/kinetic/Installation/Ubuntu
-
-NOTE: Do not forget to update your .bashrc!
-
-
-### ROS Tutorials
-If you have never worked with ROS before, we recommend to go through the beginner tutorials provided by ROS:
-
-     http://wiki.ros.org/ROS/Tutorials
-
-In order to understand at least the different core components of ROS, you have to start from tutorial 1 ("Installing and Configuring Your ROS Environment") till tutorial 7 ("Understanding ROS Services and Parameters").
-
-
-## Set up a catkin workspace
-
-    source /opt/ros/kinetic/setup.bash
-    mkdir -p ~/kinetic/src; cd ~/kinetic/src
-    catkin_init_workspace
-    catkin build
-
-## Clone and compile the MAS domestic robotics software
-First of all you have to clone the repository.
-
-    cd ~/kinetic/src;
-    git clone gitgate@mas.b-it-center.de:mas-group/mas_domestic_robotics.git
-
-Then go on with installing further external dependencies:
-
-    cd ~/kinetic/src/mas_domestic_robotics
-    ./repository.debs
-
-    source ~/kinetic/devel/setup.bash
-
-The last command should be added to the ~/.bashrc file so that they do not need to be executed everytime you open a new terminal.
-
-
-And finally compile the repository:
-
-    cd ~/kinetic
-    catkin build
-
-
-If no errors appear everything is ready to use. Great job!
-
-
-### Setting the Environment Variables
-#### ROBOT variable
-With the ROBOT variable you can choose which hardware configuration should be loaded when starting the robot. The following line will add the variable to your .bashrc:
-
-     echo "export ROBOT=cob3-1" >> ~/.bashrc
-     source ~/.bashrc
-
-
-
-#### ROBOT_ENV Variable
-The ROBOT_ENV variable can be used to switch between different environments. The following line will add the variable to your .bashrc:
-
-     echo "export ROBOT_ENV=brsu-c069" >> ~/.bashrc
-     source ~/.bashrc
-
-
-
-## Bring up the robot and it's basic components
-### In Simulation
-
-The first time you start the simulation, Gazebo tries to download objects from the internet. Thus, make sure that you have established an internet connection before running the following command.
-
-     roslaunch mdr_bringup_sim robot.launch
-
-
-In a new terminal you can open the Gazebo GUI to see the environment and the robot
-
-     gzclient
-
-
-### At the Real Robot
-
-     roslaunch mdr_bringup robot.launch
-
-
-## Test the arm, hand, torso, tray and head
-
-     roslaunch mdr_bringup dashboard.launch
-
-
-## Test the base
-
-     roslaunch cob_teleop teleop_keyboard.launch
-
-
-## Visualize the robot state and sensor data
-
-     rosrun rviz rviz
-
-
-## Build a map for base navigation
-
-     roslaunch mdr_2dslam 2dslam.launch
-
-
-## Use autonomous navigation
-### Omni-directional navigation
-
-     roslaunch mdr_2dnav 2dnav.launch nav_mode:=dwa
-
-or
-
-     roslaunch mdr_2dnav 2dnav.launch nav_mode:=eband
-
-
-Click on the menu bar "File -> Open Config", navigate to "~/kinetic/src/mas_domestic_robotics" and select the "cob.rviz" file.
+A fairly detailed explanation about a working setup of this repository can be found [here](docs/setup.md).

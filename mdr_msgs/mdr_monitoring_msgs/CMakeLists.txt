@@ -3,24 +3,25 @@ project(mdr_monitoring_msgs)
 
 find_package(catkin REQUIRED
   COMPONENTS
-    roscpp
-    message_generation
-    std_msgs
+  roscpp
+  message_generation
+  std_msgs
 )
 
 add_message_files(
   FILES
-  AudioEndpoint.msg  
+  AudioEndpoint.msg
   Endpoints.msg
+  ExecutionState.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs)
 
 catkin_package(
-	CATKIN_DEPENDS
-    message_runtime
-    rospy
-    std_msgs	
+  CATKIN_DEPENDS
+  message_runtime
+  rospy
+  std_msgs
 )
 
 include_directories(
