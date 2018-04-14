@@ -1,9 +1,9 @@
 from abc import ABCMeta, abstractmethod
 import rospy
 from std_srvs.srv import Empty, EmptyRequest
-from mcr_perception_msgs.msg import PlaneList, Plane, Object
+from mcr_perception_msgs.msg import PlaneList, Plane
 
-TEST_DETECTION_SERVICE = '/test_detection_service/execute'
+EMPTY_DETECTION_SERVICE = '/test_detection_service/execute'
 
 
 class DetectionServiceProxy(object):
@@ -45,7 +45,7 @@ class DetectionServiceProxy(object):
 
 class DetectionServiceProxyTest(DetectionServiceProxy):
     def __init__(self):
-        super(DetectionServiceProxyTest, self).__init__(TEST_DETECTION_SERVICE, Empty)
+        super(DetectionServiceProxyTest, self).__init__(EMPTY_DETECTION_SERVICE, Empty)
 
     def _get_segmentation_req(self):
         return EmptyRequest()
