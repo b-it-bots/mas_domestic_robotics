@@ -40,8 +40,7 @@ An action to turn a robot base to face a given orientation
 ```
 
 ## Launch file
-* ``turn_base_to_server_solo.launch`` : Run mdr_turn_base_to_action and mdr_move_base_action
-* ``turn_base_to_server.launch`` : Run just the mdr_turn_base_to_action
+* ``turn_base_to_server.launch`` : Launch the mdr_turn_base_to_action
 
 ## Launch file parameters
 * ``move_base_server``: Name of the mdr `move_base` action server (default: '/move_base_server')
