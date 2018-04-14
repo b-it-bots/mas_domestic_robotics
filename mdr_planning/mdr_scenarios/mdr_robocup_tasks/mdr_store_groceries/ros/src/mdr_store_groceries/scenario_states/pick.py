@@ -91,7 +91,7 @@ class Pick(ScenarioStateBase):
         object_poses = dict()
         for surface, objects in surface_objects.items():
             object_poses[surface] = list()
-            for obj in objects:
+            for obj_name in objects:
                 try:
                     obj = self.msg_store_client.query_named(obj_name, Object._type)[0]
                     object_poses[surface].append(obj.pose)
