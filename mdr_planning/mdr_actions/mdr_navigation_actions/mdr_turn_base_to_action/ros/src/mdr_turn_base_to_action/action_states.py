@@ -55,7 +55,7 @@ class TurnBaseTo(smach.State):
         goal.pose.pose.orientation.y  = q[1]
         goal.pose.pose.orientation.z  = q[2]
         goal.pose.pose.orientation.w  = q[3]
-        print ("Goal ", goal)
+        rospy.loginfo("[mdr_turn_base_to] Goal %s", goal)
         move_base_client.wait_for_server()
         move_base_client.send_goal(goal)
         success = move_base_client.wait_for_result()
