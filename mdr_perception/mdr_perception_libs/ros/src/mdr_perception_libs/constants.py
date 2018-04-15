@@ -6,3 +6,6 @@ class Constant:
     FAILURE = 'failure'
     TIMEOUT = 'timeout'
     WAITING = 'waiting'
+
+    def __init__(self):
+        pass

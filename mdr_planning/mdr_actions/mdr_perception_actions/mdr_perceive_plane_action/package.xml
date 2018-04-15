@@ -19,6 +19,8 @@
   <build_depend>actionlib</build_depend>
 
   <build_depend>mcr_perception_msgs</build_depend>
+  <build_depend>mdr_perception_libs</build_depend>
+  <build_depend>mdr_object_recognition</build_depend>
   <build_depend>actionlib_msgs</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>roslint</build_depend>
