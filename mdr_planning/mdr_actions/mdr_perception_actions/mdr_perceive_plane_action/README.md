@@ -40,7 +40,6 @@ The action includes an action server as well as an action client that interacts 
 │   │   ├── perceive_plane.launch
 │   │   └── perceive_plane_test.launch
 │   ├── scripts
-│   │   ├── hsr_detection_service_proxy.py
 │   │   ├── perceive_plane_action
 │   │   ├── perceive_plane_client
 │   │   └── perceive_plane_client_test
