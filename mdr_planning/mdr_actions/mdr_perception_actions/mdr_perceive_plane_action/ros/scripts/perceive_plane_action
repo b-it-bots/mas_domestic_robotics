@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import smach
+from importlib import import_module
 from smach_ros import ActionServerWrapper, IntrospectionServer
 from mdr_perception_libs import Constant
 from mdr_perceive_plane_action.msg import PerceivePlaneAction
@@ -15,8 +16,7 @@ class PerceivePlaneSkill(smach.StateMachine):
 
         with self:
             smach.StateMachine.add('DETECT_OBJECTS',
-                                   DetectObjects(detection_service_proxy_class(),
-                                                 '~object_detection_event_out', target_frame),
+                                   DetectObjects(detection_service_proxy_class(), target_frame),
                                    transitions={Constant.SUCCESS: 'RECOGNIZE_OBJECTS',
                                                 Constant.TIMEOUT: 'SET_ACTION_LIB_FAILURE',
                                                 Constant.FAILURE: 'SET_ACTION_LIB_FAILURE'})
@@ -34,10 +34,14 @@ class PerceivePlaneSkill(smach.StateMachine):
 
 def main():
     rospy.init_node('perceive_plane_server')
+    service_module = rospy.get_param('detection_service_module', 'mdr_object_recognition')
+    service_class_name = rospy.get_param('detection_service_class', 'DetectionServiceProxyTest')
+
     target_frame = rospy.get_param("~target_frame")
+    service_class = getattr(import_module(service_module), service_class_name)
 
     # Construct state machine
-    sm = PerceivePlaneSkill(object, target_frame)
+    sm = PerceivePlaneSkill(service_class, target_frame)
 
     # smach viewer
     sis = IntrospectionServer('perceive_plane_smach_viewer', sm, '/PERCEIVE_PLANE_SMACH_VIEWER')
