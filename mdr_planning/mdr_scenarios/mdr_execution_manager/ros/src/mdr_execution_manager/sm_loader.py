@@ -1,5 +1,5 @@
 from __future__ import print_function
-import yaml
+import oyaml as yaml
 
 from mdr_execution_manager.sm_params import (StateParams,
                                              StateMachineParams,
@@ -81,6 +81,10 @@ class SMLoader(object):
                         arg_data = arg[SMFileKeys.ARG]
                         state_params.args[arg_data[SMFileKeys.ARG_NAME]] = \
                         arg_data[SMFileKeys.ARG_VALUE]
+
+                # we add the state machine ID and the state name as additional state arguments
+                state_params.args['sm_id'] = sm_params.id
+                state_params.args['state_name'] = state_params.name
 
                 sm_params.state_params[state_params.name] = state_params
         return sm_params

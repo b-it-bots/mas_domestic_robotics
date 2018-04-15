@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_pickup_action" type="pickup_action" name="pickup_server" output="screen">
+        <param name="move_arm_server" value="move_arm_server" />
+        <param name="move_base_server" value="move_base_server" />
+        <param name="gripper_cmd_topic" value="gripper_controller" />
+        <rosparam param="gripper_joint_names">[gripper]</rosparam>
+        <param name="pregrasp_config_name" value="pregrasp" />
+        <param name="intermediate_grasp_offset" value="0.1" />
+        <param name="safe_arm_joint_config" value="folded" />
+        <param name="base_elbow_offset" value="-1." />
+        <rosparam param="grasping_orientation">[0, 0, 0, 1]</rosparam>
+    </node>
+</launch>

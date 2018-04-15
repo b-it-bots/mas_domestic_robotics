@@ -1,0 +1,13 @@
+# goal definition
+bool start
+sensor_msgs/Image image
+---
+# result definition
+mdr_perception_msgs/FaceBoundingBox[] bounding_boxes
+int64 number_of_faces
+bool success
+
+---
+# feedback
+string current_state
+string text
