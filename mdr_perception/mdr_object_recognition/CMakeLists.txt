@@ -10,6 +10,7 @@ find_package(catkin REQUIRED
     std_msgs
     sensor_msgs
     mcr_object_recognition_mean_circle
+    mdr_perception_libs
 )
 
 catkin_python_setup()
@@ -23,4 +24,9 @@ roslint_python()
 
 install(DIRECTORY ros/launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/launch
+)
+
+install(PROGRAMS
+  ros/scripts/object_detection_test_server
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
