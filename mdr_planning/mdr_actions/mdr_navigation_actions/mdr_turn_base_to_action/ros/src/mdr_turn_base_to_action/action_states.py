@@ -2,12 +2,8 @@
 
 import rospy
 import smach
-import smach_ros
 import actionlib
 from tf.transformations import quaternion_from_euler
-from actionlib import SimpleActionClient
-import move_base_msgs.msg as move_base_msgs
-from geometry_msgs.msg import Quaternion, PoseStamped
 from mdr_turn_base_to_action.msg import TurnBaseToFeedback, TurnBaseToResult
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 
@@ -29,7 +25,8 @@ class TurnBaseTo(smach.State):
                  rotation_frame='base_link',
                  move_base_server='/move_base',
                  movement_duration=15., speed=0.1):
-        smach.State.__init__(self, input_keys=['turn_base_to_goal'], outcomes=['succeeded', 'failed'])
+        smach.State.__init__(self, input_keys=['turn_base_to_goal'],
+                             outcomes=['succeeded', 'failed'])
 
         rospy.loginfo("Using move base server: " + move_base_server)
         rospy.loginfo("Rotation Frame set to : " + rotation_frame)
@@ -48,10 +45,10 @@ class TurnBaseTo(smach.State):
 
         goal.pose.header.frame_id = self.rotation_frame
         q = quaternion_from_euler(0, 0, userdata.turn_base_to_goal.desired_yaw)
-        goal.pose.pose.orientation.x  = q[0]
-        goal.pose.pose.orientation.y  = q[1]
-        goal.pose.pose.orientation.z  = q[2]
-        goal.pose.pose.orientation.w  = q[3]
+        goal.pose.pose.orientation.x = q[0]
+        goal.pose.pose.orientation.y = q[1]
+        goal.pose.pose.orientation.z = q[2]
+        goal.pose.pose.orientation.w = q[3]
         rospy.loginfo("[mdr_turn_base_to] Goal %s", goal)
         self.move_base_client.send_goal(goal)
         success = self.move_base_client.wait_for_result()
