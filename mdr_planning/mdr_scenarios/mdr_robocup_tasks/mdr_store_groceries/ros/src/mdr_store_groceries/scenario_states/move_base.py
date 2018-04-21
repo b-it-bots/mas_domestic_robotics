@@ -18,6 +18,7 @@ class MoveBase(ScenarioStateBase):
         self.destination_locations = list(kwargs.get('destination_locations', list()))
         self.timeout = kwargs.get('timeout', 120.)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
+        self.retry_count = 0
 
     def execute(self, userdata):
         if self.save_sm_state:

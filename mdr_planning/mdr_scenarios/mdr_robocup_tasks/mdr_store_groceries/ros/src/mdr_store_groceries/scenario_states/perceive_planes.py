@@ -16,6 +16,7 @@ class PerceivePlanes(ScenarioStateBase):
         self.timeout = kwargs.get('timeout', 120.)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.plane_prefix = kwargs.get('plane_prefix', 0)
+        self.retry_count = 0
 
     def execute(self, userdata):
         if self.save_sm_state:
