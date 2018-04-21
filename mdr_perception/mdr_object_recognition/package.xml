@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mdr_object_recognition</name>
+  <version>1.2.0</version>
+  <description>This package provides launcher for
+      mcr_object_recognition_mean_circle.
+
+  </description>
+
+  <author email="shehzi001@gmail.com">Shehzad Ahmed</author>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <license>GPLv3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>mdr_perception_libs</depend>
+
+  <build_depend>roslint</build_depend>
+
+  <exec_depend>mcr_object_recognition_mean_circle</exec_depend>
+</package>

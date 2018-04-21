@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_detect_person" type="detect_person_action" name="detect_person_server" output="screen" ns="mdr_actions" >
+        <param name="config_file" value="$(find mdr_detect_person)/common/config/haarcascade_frontalface_default.xml"/>
+        <param name="image_topic" value="/cam3d/rgb/image_raw"/>
+    </node>
+</launch>

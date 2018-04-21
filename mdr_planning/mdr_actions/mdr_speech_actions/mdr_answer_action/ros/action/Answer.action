@@ -1,0 +1,11 @@
+# goal
+string question
+---
+# result
+bool success
+string answer_message
+---
+# feedback
+string status_initialization
+string status_match_answer
+bool error_detected

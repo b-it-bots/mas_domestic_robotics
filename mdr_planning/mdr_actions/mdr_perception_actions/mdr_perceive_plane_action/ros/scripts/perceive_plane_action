@@ -1,0 +1,68 @@
+#!/usr/bin/env python
+import rospy
+import smach
+from importlib import import_module
+from smach_ros import ActionServerWrapper, IntrospectionServer
+from mdr_perception_libs import Constant
+from mdr_perceive_plane_action.msg import PerceivePlaneAction
+from mdr_perceive_plane_action.action_states import SetActionLibResult, DetectObjects, RecognizeObjects
+
+
+class PerceivePlaneSkill(smach.StateMachine):
+    def __init__(self, detection_service_proxy_class, target_frame):
+        smach.StateMachine.__init__(self, outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
+                                    input_keys=['perceive_plane_goal'],
+                                    output_keys=['perceive_plane_feedback', 'perceive_plane_result'])
+
+        with self:
+            smach.StateMachine.add('DETECT_OBJECTS',
+                                   DetectObjects(detection_service_proxy_class(), target_frame),
+                                   transitions={Constant.SUCCESS: 'RECOGNIZE_OBJECTS',
+                                                Constant.TIMEOUT: 'SET_ACTION_LIB_FAILURE',
+                                                Constant.FAILURE: 'SET_ACTION_LIB_FAILURE'})
+
+            smach.StateMachine.add('RECOGNIZE_OBJECTS', RecognizeObjects(),
+                                   transitions={Constant.SUCCESS: 'SET_ACTION_LIB_SUCCESS',
+                                                Constant.FAILURE: 'SET_ACTION_LIB_FAILURE'})
+
+            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
+                                   transitions={Constant.SUCCESS: 'OVERALL_SUCCESS'})
+
+            smach.StateMachine.add('SET_ACTION_LIB_FAILURE', SetActionLibResult(False),
+                                   transitions={Constant.SUCCESS: 'OVERALL_FAILED'})
+
+
+def main():
+    rospy.init_node('perceive_plane_server')
+    service_module = rospy.get_param('detection_service_module', 'mdr_object_recognition')
+    service_class_name = rospy.get_param('detection_service_class', 'DetectionServiceProxyTest')
+
+    target_frame = rospy.get_param("~target_frame")
+    service_class = getattr(import_module(service_module), service_class_name)
+
+    # Construct state machine
+    sm = PerceivePlaneSkill(service_class, target_frame)
+
+    # smach viewer
+    sis = IntrospectionServer('perceive_plane_smach_viewer', sm, '/PERCEIVE_PLANE_SMACH_VIEWER')
+    sis.start()
+
+    # Construct action server wrapper
+    asw = ActionServerWrapper(
+        server_name='perceive_plane_server',
+        action_spec=PerceivePlaneAction,
+        wrapped_container=sm,
+        succeeded_outcomes=['OVERALL_SUCCESS'],
+        aborted_outcomes=['OVERALL_FAILED'],
+        preempted_outcomes=['PREEMPTED'],
+        goal_key='perceive_plane_goal',
+        feedback_key='perceive_plane_feedback',
+        result_key='perceive_plane_result')
+
+    # Run the server in a background thread
+    asw.run_server()
+    rospy.spin()
+
+
+if __name__ == '__main__':
+    main()

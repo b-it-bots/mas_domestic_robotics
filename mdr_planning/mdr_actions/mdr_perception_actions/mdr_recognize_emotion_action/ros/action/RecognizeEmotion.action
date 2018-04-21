@@ -1,0 +1,12 @@
+# goal
+sensor_msgs/Image image
+int64 number_of_faces
+mdr_perception_msgs/FaceBoundingBox[] bounding_boxes
+---
+# result
+string[] emotions
+bool success
+---
+# feedback
+string current_state
+string message

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_place_action" type="place_action" name="place_server" output="screen">
+        <param name="move_arm_server" value="move_arm_server" />
+        <param name="gripper_cmd_topic" value="gripper_controller" />
+        <rosparam param="gripper_joint_names">[gripper]</rosparam>
+        <rosparam param="gripper_joint_values">[1]</rosparam>
+        <param name="preplace_config_name" value="pregrasp" />
+        <param name="safe_arm_joint_config" value="folded" />
+        <rosparam param="placing_orientation">[0, 0, 0, 1]</rosparam>
+    </node>
+</launch>

@@ -2,12 +2,14 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mdr_move_arm_action)
 
 find_package(catkin REQUIRED COMPONENTS
+  rospy
+  roslint
   actionlib
   actionlib_msgs
   genmsg
   message_generation
-  roslint
-  rospy
+  smach
+  smach_ros
   geometry_msgs
   moveit_commander
 )
@@ -28,8 +30,14 @@ generate_messages(
 
 catkin_package(
  CATKIN_DEPENDS
+   rospy
+   actionlib
    actionlib_msgs
    message_runtime
+   smach
+   smach_ros
+   geometry_msgs
+   moveit_commander
 )
 
 include_directories(

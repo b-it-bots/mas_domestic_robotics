@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="target_frame" default="/base_link"/>
+    <arg name="service_module" default="mdr_object_recognition"/>
+    <arg name="service_class_name" default="DetectionServiceProxyTest"/>
+    <node pkg="mdr_perceive_plane_action" type="perceive_plane_action" name="perceive_plane_server" output="screen" ns="mdr_actions">
+        <param name="target_frame" type="string" value="$(arg target_frame)" />
+        <param name="service_module" type="string" value="$(arg service_module)" />
+        <param name="service_class_name" type="string" value="$(arg service_class_name)" />
+    </node>
+</launch>
