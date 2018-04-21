@@ -11,22 +11,37 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>rospy</build_depend>
+  <build_depend>roslint</build_depend>
   <build_depend>smach</build_depend>
   <build_depend>smach_ros</build_depend>
   <build_depend>actionlib</build_depend>
+  <build_depend>mongodb_store</build_depend>
 
-  <!-- actions -->
+  <build_depend>mdr_rosplan_interface</build_depend>
+  <build_depend>mdr_execution_manager</build_depend>
+  <build_depend>mdr_move_base_action</build_depend>
+  <build_depend>mdr_move_arm_action</build_depend>
   <build_depend>mdr_pickup_action</build_depend>
   <build_depend>mdr_place_action</build_depend>
+  <build_depend>mdr_perceive_plane_action</build_depend>
 
   <run_depend>rospy</run_depend>
+  <run_depend>roslint</run_depend>
   <run_depend>smach</run_depend>
   <run_depend>smach_ros</run_depend>
   <run_depend>actionlib</run_depend>
 
-  <!-- actions -->
+  <run_depend>mongodb_store</run_depend>
+  <run_depend>rosplan_knowledge_base</run_depend>
+  <run_depend>rosplan_planning_system</run_depend>
+
+  <run_depend>mdr_rosplan_interface</run_depend>
+  <run_depend>mdr_execution_manager</run_depend>
+  <run_depend>mdr_move_base_action</run_depend>
+  <run_depend>mdr_move_arm_action</run_depend>
   <run_depend>mdr_pickup_action</run_depend>
   <run_depend>mdr_place_action</run_depend>
+  <run_depend>mdr_perceive_plane_action</run_depend>
 
   <test_depend>roslaunch</test_depend>
 </package>

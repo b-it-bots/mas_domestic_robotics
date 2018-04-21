@@ -7,19 +7,35 @@ find_package(catkin REQUIRED COMPONENTS
   smach_ros
   smach
   actionlib
+  mongodb_store
+  mdr_rosplan_interface
+  mdr_execution_manager
+  mdr_move_base_action
+  mdr_move_arm_action
   mdr_pickup_action
   mdr_place_action
+  mdr_perceive_plane_action
 )
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS
+    roslint
+    rospy
+    smach_ros
+    smach
+    actionlib
+    mongodb_store
+    mdr_rosplan_interface
+    mdr_execution_manager
+    mdr_move_base_action
+    mdr_move_arm_action
+    mdr_pickup_action
+    mdr_place_action
+    mdr_perceive_plane_action
+)
 
 catkin_python_setup()
 roslint_python()
-
-install(PROGRAMS
-  ros/scripts/store_groceries
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/ros/scripts
-)
 
 install(DIRECTORY ros/launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/launch
