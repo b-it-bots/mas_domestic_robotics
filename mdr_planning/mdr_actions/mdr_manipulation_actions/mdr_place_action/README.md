@@ -92,7 +92,7 @@ The action performs placing with respect to the `base_link` frame (even if the g
 * ``geometry_msgs``
 * ``trajectory_msgs``
 * ``rosplan_dispatch_msgs``
-* ``rosplan_dispatch_msgs``
+* ``rosplan_knowledge_msgs``
 * ``diagnostic_msgs``
 * ``mcr_perception_msgs``
 * ``mdr_rosplan_interface``
