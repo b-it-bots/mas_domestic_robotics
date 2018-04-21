@@ -29,11 +29,6 @@ catkin_package(
 catkin_python_setup()
 roslint_python()
 
-install(PROGRAMS
-  ros/scripts/robot_inspection
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/ros/scripts
-)
-
 install(DIRECTORY ros/launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/launch
 )
