@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+
+    <node pkg="mdr_move_base_action" type="move_base_action" name="move_base_server" output="screen">
+        <param name="move_base_server" value="/move_base" />
+        <param name="pose_description_file" value="$(find mcr_default_env_config)/$(arg robot_env)/navigation_goals.yaml" />
+        <param name="pose_frame" value="map" />
+        <param name="safe_arm_joint_config" value="folded" />
+        <param name="move_arm_server" value="move_arm_server" />
+    </node>
+
+    <node pkg="mdr_move_arm_action" type="move_arm_action" name="move_arm_server" output="screen">
+        <param name="arm_name" value="arm" />
+    </node>
+
+    <node pkg="zbar_ros" type="barcode_reader_node" name="barcode_reader" output="screen">
+        <remap from="image" to="/rgb/image_raw"/>
+        <remap from="barcode" to="/mcr_perception/qr_reader/output"/>
+        <param name="throttle_repeated_barcodes" type="double" value="2.0" />
+    </node>
+
+    <param name="sm_config_file" type="str" value="$(find mdr_robot_inspection)/config/scenario_config.yaml" />
+    <node pkg="mdr_execution_manager" type="state_machine_creator" name="robot_inspection" output="screen" />
+</launch>

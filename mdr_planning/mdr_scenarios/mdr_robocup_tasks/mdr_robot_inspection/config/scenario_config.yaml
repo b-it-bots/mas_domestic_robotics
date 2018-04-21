@@ -1,0 +1,163 @@
+# Description: Defines a state machine for a RoboCup inspection test
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_robot_inspection
+states: [ENTER, GO_TO_KITCHEN, GO_TO_INSPECTION_WAYPOINT, INTRODUCE_SELF, WAIT_FOR_CMD, ACKNOWLEDGE_CMD, SHOW_OFF, WAIT_FOR_QR, CONFIRM_QR_CODE, EXIT]
+outcomes: [DONE, TIMEOUT, FAILED]
+state_descriptions:
+    - state:
+        name: ENTER
+        state_module_name: mdr_robot_inspection.scenario_states.enter
+        state_class_name: Enter
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_KITCHEN
+            - transition:
+                name: failed
+                state: ENTER
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value : 3
+    - state:
+        name: GO_TO_KITCHEN
+        state_module_name: mdr_robot_inspection.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_INSPECTION_WAYPOINT
+            - transition:
+                name: failed
+                state: GO_TO_KITCHEN
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [KITCHEN]
+            - argument:
+                name: number_of_retries
+                value : 3
+    - state:
+        name: GO_TO_INSPECTION_WAYPOINT
+        state_module_name: mdr_robot_inspection.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: INTRODUCE_SELF
+            - transition:
+                name: failed
+                state: GO_TO_INSPECTION_WAYPOINT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [INSPECTION_AREA]
+            - argument:
+                name: number_of_retries
+                value : 3
+    - state:
+        name: INTRODUCE_SELF
+        state_module_name: mdr_robot_inspection.action_states
+        state_class_name: IntroduceSelf
+        transitions:
+            - transition:
+                name: succeeded
+                state: WAIT_FOR_CMD
+            - transition:
+                name: failed
+                state: WAIT_FOR_CMD
+    - state:
+        name: WAIT_FOR_CMD
+        state_module_name: mdr_robot_inspection.scenario_states.wait_for_cmd
+        state_class_name: WaitForCmd
+        transitions:
+            - transition:
+                name: succeeded
+                state: ACKNOWLEDGE_CMD
+            - transition:
+                name: waiting
+                state: WAIT_FOR_CMD
+            - transition:
+                name: failed
+                state: WAIT_FOR_CMD
+    - state:
+        name: ACKNOWLEDGE_CMD
+        state_module_name: mdr_robot_inspection.action_states
+        state_class_name: Acknowledge
+        transitions:
+            - transition:
+                name: succeeded
+                state: SHOW_OFF
+            - transition:
+                name: failed
+                state: WAIT_FOR_CMD
+    - state:
+        name: SHOW_OFF
+        state_module_name: mdr_robot_inspection.action_states
+        state_class_name: MoveArm
+        transitions:
+            - transition:
+                name: up
+                state: WAIT_FOR_CMD
+            - transition:
+                name: down
+                state: WAIT_FOR_QR
+            - transition:
+                name: failed
+                state: WAIT_FOR_CMD
+    - state:
+        name: WAIT_FOR_QR
+        state_module_name: mdr_robot_inspection.scenario_states.wait_for_qr
+        state_class_name: WaitForQR
+        transitions:
+            - transition:
+                name: succeeded
+                state: CONFIRM_QR_CODE
+            - transition:
+                name: waiting
+                state: WAIT_FOR_QR
+            - transition:
+                name: failed
+                state: WAIT_FOR_QR
+    - state:
+        name: CONFIRM_QR_CODE
+        state_module_name: mdr_robot_inspection.action_states
+        state_class_name: Acknowledge
+        transitions:
+            - transition:
+                name: succeeded
+                state: EXIT
+            - transition:
+                name: failed
+                state: CONFIRM_QR_CODE
+    - state:
+        name: EXIT
+        state_module_name: mdr_robot_inspection.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: EXIT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [SECOND_DOOR]
+            - argument:
+                name: number_of_retries
+                value : 3
