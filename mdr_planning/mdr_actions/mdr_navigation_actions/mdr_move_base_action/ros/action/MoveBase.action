@@ -1,0 +1,14 @@
+int32 NAMED_TARGET=0
+int32 POSE=1
+
+# goal definition
+int32 goal_type
+string destination_location
+geometry_msgs/PoseStamped pose
+---
+# result definition
+bool success
+---
+# feedback
+string current_state
+string message

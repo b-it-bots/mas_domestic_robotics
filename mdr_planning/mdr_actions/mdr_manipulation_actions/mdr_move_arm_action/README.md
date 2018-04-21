@@ -26,9 +26,9 @@ An action for moving the arm of a robot.
 ### Goal:
 
 * ``int32 goal_type``: The type of motion goal (one of the allowed goal types defined above)
-* ``string named_target``: Motion goal if ``goal_type`` is ``1``
-* ``geometry_msgs/PoseStamped end_effector_pose``: Motion goal if ``goal_type`` is ``2``
-* ``float64[] joint_values``: Motion goal if ``goal_type`` is ``3``
+* ``string named_target``: Motion goal if ``goal_type`` is ``NAMED_TARGET``
+* ``geometry_msgs/PoseStamped end_effector_pose``: Motion goal if ``goal_type`` is ``END_EFFECTOR_POSE``
+* ``float64[] joint_values``: Motion goal if ``goal_type`` is ``JOINT_VALUES``
 
 ### Result:
 
@@ -39,17 +39,43 @@ An action for moving the arm of a robot.
 * ``string current_state``
 * ``string message``
 
+## Directory structure
+
+```
+mdr_move_arm_action
+|    CMakeLists.txt
+|    package.xml
+|    setup.py
+|    README.md
+|____ros
+     |____action
+     |    |_____MoveArm.action
+     |    |
+     |____launch
+     |    |_____move_arm.launch
+     |    |
+     |    scripts
+     |    |     move_arm_action
+     |    |_____move_arm_action_client_test
+     |    |
+     |____src
+          |____mdr_move_arm_action
+               |    __init__.py
+               |____action_states.py
+```
+
 ## Dependencies
 
+* ``smach``
 * ``geometry_msgs``
 * ``moveit_commander``
 
 ## Example usage
 
-1. Run the robot simulation: ``roslaunch mdr_bringup_sim robot.launch``
-2. Run the moveit interface for the robot: ``roslaunch mdr_[robot]_moveit move_group.launch``
+1. Run the robot simulation: ``roslaunch mas_<robot>_bringup_sim robot.launch``
+2. Run the moveit interface for the robot: ``roslaunch mas_<robot>_moveit move_group.launch``
 3. Run the action server: ``roslaunch mdr_move_arm_action move_arm.launch``
-4. Run the client example
+4. Run the client example:
     1. with a named target motion goal: ``rosrun mdr_move_arm_action move_arm_action_client_test 1 folded``
-    2. with a pose motion goal: ``rosrun mdr_move_arm_action move_arm_action_client_test 2 "['base_link', 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]"``
-    3. with a goal for the joint values: ``rosrun mdr_move_arm_action move_arm_action_client_test 3 "[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]"``
+    2. with a pose motion goal: ``rosrun mdr_move_arm_action move_arm_action_client_test 2 "['base_link', <x, y, z>, <x, y, z, w>]"``
+    3. with a goal for the joint values: ``rosrun mdr_move_arm_action move_arm_action_client_test 3 "[<joint values>]"``

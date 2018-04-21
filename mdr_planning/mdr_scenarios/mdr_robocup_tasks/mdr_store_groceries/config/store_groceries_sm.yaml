@@ -1,0 +1,238 @@
+# Description: Defines a state machine for a RoboCup@Home store groceries scenario
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_store_groceries
+states: [ENTER, GO_TO_TABLE, PERCEIVE_TABLE, GO_TO_SHELF, PERCEIVE_SHELF, GO_BACK_TO_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_SHELF, PLACE_OBJECT, EXIT]
+outcomes: [DONE, TIMEOUT]
+state_descriptions:
+    - state:
+        name: ENTER
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_TABLE
+            - transition:
+                name: failed
+                state: ENTER
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [INSIDE_ARENA]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_TABLE
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed
+                state: GO_TO_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [TABLE]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PERCEIVE_TABLE
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_SHELF
+            - transition:
+                name: failed
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            -argument:
+                name: plane_prefix
+                value: table
+    - state:
+        name: GO_TO_SHELF
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_SHELF
+            - transition:
+                name: failed
+                state: GO_TO_SHELF
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [SHELF]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PERCEIVE_SHELF
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_BACK_TO_TABLE
+            - transition:
+                name: failed
+                state: PERCEIVE_SHELF
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            -argument:
+                name: plane_prefix
+                value: shelf
+    - state:
+        name: GO_BACK_TO_TABLE
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICK_OBJECT
+            - transition:
+                name: failed
+                state: GO_BACK_TO_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [TABLE]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PICK_OBJECT
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: Pick
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_BACK_TO_SHELF
+            - transition:
+                name: failed
+                state: PICK_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+            - transition:
+                name: find_objects_before_picking
+                state: FIND_OBJECTS_BEFORE_PICKING
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: FIND_OBJECTS_BEFORE_PICKING
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICK
+            - transition:
+                name: failed
+                state: FIND_OBJECTS_BEFORE_PICKING
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            -argument:
+                name: plane_prefix
+                value: table
+    - state:
+        name: GO_BACK_TO_SHELF
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PLACE_OBJECT
+            - transition:
+                name: failed
+                state: GO_BACK_TO_SHELF
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [SHELF]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PLACE_OBJECT
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: Place
+        transitions:
+            - transition:
+                name: pick_new_object
+                state: GO_BACK_TO_TABLE
+            - transition:
+                name: finished
+                state: EXIT
+            - transition:
+                name: failed
+                state: PLACE_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: EXIT
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: EXIT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [OUTSIDE_ARENA]
+            - argument:
+                name: number_of_retries
+                value: 3

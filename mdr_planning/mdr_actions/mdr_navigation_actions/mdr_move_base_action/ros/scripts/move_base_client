@@ -1,0 +1,100 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+import rosplan_knowledge_msgs.srv as rosplan_srvs
+import diagnostic_msgs.msg as diag_msgs
+
+from mdr_rosplan_interface.action_client_base import ActionClientBase
+from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
+
+class MoveBaseClient(ActionClientBase):
+    def __init__(self):
+        super(MoveBaseClient, self).__init__()
+        self.original_location = ''
+
+        while not rospy.is_shutdown():
+            rospy.sleep(0.1)
+
+    def call_action(self, msg):
+        # we only react to calls to this action
+        if self.action_name != msg.name.lower():
+            return
+
+        self.action_id = msg.action_id
+
+        client = actionlib.SimpleActionClient(self.action_server_name, MoveBaseAction)
+        client.wait_for_server()
+        goal = self.get_action_message(msg)
+
+        # calling the actionlib server and waiting for the execution to end
+        rospy.loginfo('Sending action lib goal to move_base_server,' +
+                      ' destination: ' + goal.destination_location)
+        client.send_goal(goal)
+        client.wait_for_result(rospy.Duration.from_sec(int(self.action_timeout)))
+        result = client.get_result()
+
+        if result and result.success:
+            rospy.loginfo('[MOVE_BASE] Updating the knowledge base')
+            self.update_knowledge_base(goal.destination_location)
+            self.send_action_feedback(True)
+        else:
+            self.send_action_feedback(False)
+
+    def get_action_message(self, rosplan_action_msg):
+        '''Reads the action parameters and uses them to initialise an actionlib message.
+        '''
+        goal = MoveBaseGoal()
+        for param in rosplan_action_msg.parameters:
+            if param.key == 'from':
+                self.original_location = param.value
+            elif param.key == 'to':
+                goal.destination_location = param.value
+            elif param.key == 'bot':
+                self.robot_name = param.value
+        goal.goal_type = MoveBaseGoal.NAMED_TARGET
+        return goal
+
+    def update_knowledge_base(self, destination_location):
+        # we add the fact that the robot is not at the source location to the knowledge base
+        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
+        request.update_type = 2
+        request.knowledge.knowledge_type = 1
+        request.knowledge.attribute_name = 'robot_at'
+
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'bot'
+        arg_msg.value = self.robot_name
+        request.knowledge.values.append(arg_msg)
+
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'wp'
+        arg_msg.value = self.original_location
+        request.knowledge.values.append(arg_msg)
+
+        self.knowledge_update_client(request)
+
+        # we add the fact that the robot is at the destination location to the knowledge base
+        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
+        request.update_type = 0
+        request.knowledge.knowledge_type = 1
+        request.knowledge.attribute_name = 'robot_at'
+
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'bot'
+        arg_msg.value = self.robot_name
+        request.knowledge.values.append(arg_msg)
+
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'wp'
+        arg_msg.value = destination_location
+        request.knowledge.values.append(arg_msg)
+
+        self.knowledge_update_client(request)
+
+if __name__ == '__main__':
+    rospy.init_node('mdr_move_base_client')
+    try:
+        MoveBaseClient()
+    except rospy.ROSInterruptException:
+        pass

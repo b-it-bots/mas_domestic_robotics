@@ -1,0 +1,62 @@
+#! /usr/bin/env python
+from __future__ import print_function
+import sys
+
+import rospy
+import actionlib
+
+import cv2
+from sensor_msgs.msg import Image
+
+from mdr_recognize_emotion_action.msg import (RecognizeEmotionAction,
+                                              RecognizeEmotionGoal)
+from mdr_detect_person.msg import DetectPersonAction, DetectPersonGoal
+
+
+if __name__ == '__main__':
+    rospy.init_node('recognize_emotion_client_test')
+    if len(sys.argv) != 2:
+        print('Usage: recocgnize_emotion_action_client_test <input_image_path>')
+
+    input_image_path = sys.argv[1]
+    img = cv2.imread(input_image_path)
+    ros_image = Image()
+    ros_image.height = img.shape[0]
+    ros_image.width = img.shape[1]
+    ros_image.encoding = 'bgr8'
+    ros_image.data = img.flatten().tolist()
+
+    # creating a client for the detect person action
+    detect_person_server = '/mdr_actions/detect_person_server'
+    detect_person_client = actionlib.SimpleActionClient(detect_person_server,
+                                                        DetectPersonAction)
+    detect_person_client.wait_for_server()
+
+    # creating a detect person action goal
+    detect_person_goal = DetectPersonGoal()
+    detect_person_goal.start = True
+    detect_person_goal.image = ros_image
+
+    # calling the detect person action and waiting for the result
+    print('Detecting people in the image...')
+    detect_person_client.send_goal(detect_person_goal)
+    detect_person_client.wait_for_result()
+    detect_person_result = detect_person_client.get_result()
+
+    # creating a client for the detect emotion action
+    client = actionlib.SimpleActionClient('mdr_actions/recognize_emotion_server',
+                                          RecognizeEmotionAction)
+    client.wait_for_server()
+
+    # creating a detect person action goal; the goal parameters
+    # use the results of the detect person action
+    print('Recognising the emotions of the detected people...')
+    goal = RecognizeEmotionGoal()
+    goal.image = ros_image
+    goal.number_of_faces = detect_person_result.number_of_faces
+    goal.bounding_boxes = detect_person_result.bounding_boxes
+
+    # calling the detect emotion action and waiting for its result
+    client.send_goal(goal)
+    client.wait_for_result()
+    print(client.get_result())
