@@ -18,6 +18,8 @@ class SetupMoveBase(smach.State):
                              output_keys=['move_base_feedback', 'move_base_result'])
         self.safe_arm_joint_config = safe_arm_joint_config
         self.move_arm_server = move_arm_server
+        self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
+        self.move_arm_client.wait_for_server()
 
     def execute(self, userdata):
         feedback = MoveBaseFeedback()
@@ -26,13 +28,11 @@ class SetupMoveBase(smach.State):
         userdata.move_base_feedback = feedback
 
         rospy.loginfo('[MOVE_BASE] Moving the arm to a safe configuration...')
-        move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
-        move_arm_client.wait_for_server()
         move_arm_goal = MoveArmGoal()
         move_arm_goal.goal_type = MoveArmGoal.NAMED_TARGET
         move_arm_goal.named_target = self.safe_arm_joint_config
-        move_arm_client.send_goal(move_arm_goal)
-        move_arm_client.wait_for_result()
+        self.move_arm_client.send_goal(move_arm_goal)
+        self.move_arm_client.wait_for_result()
         return 'succeeded'
 
 class ApproachPose(smach.State):

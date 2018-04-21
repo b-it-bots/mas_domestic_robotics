@@ -21,13 +21,12 @@ class SetupTurnBaseTo(smach.State):
         feedback = TurnBaseToFeedback()
         feedback.message = '[turn_base_to_goal] sm initialize'
         userdata.turn_base_to_feedback = feedback
-
         return 'succeeded'
 
 
 class TurnBaseTo(smach.State):
     def __init__(self, timeout=120.0,
-                 rotation_frame = 'base_link',
+                 rotation_frame='base_link',
                  move_base_server='/move_base',
                  movement_duration=15., speed=0.1):
         smach.State.__init__(self, input_keys=['turn_base_to_goal'], outcomes=['succeeded', 'failed'])
@@ -40,12 +39,10 @@ class TurnBaseTo(smach.State):
         self.movement_duration = movement_duration
         self.speed = speed
 
-        self.entered = False
+        self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
+        self.move_base_client.wait_for_server()
 
     def execute(self, userdata):
-
-        move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
-
         goal = MoveBaseGoal()
         goal.goal_type = MoveBaseGoal.POSE
 
@@ -56,14 +53,12 @@ class TurnBaseTo(smach.State):
         goal.pose.pose.orientation.z  = q[2]
         goal.pose.pose.orientation.w  = q[3]
         rospy.loginfo("[mdr_turn_base_to] Goal %s", goal)
-        move_base_client.wait_for_server()
-        move_base_client.send_goal(goal)
-        success = move_base_client.wait_for_result()
+        self.move_base_client.send_goal(goal)
+        success = self.move_base_client.wait_for_result()
 
         if success:
             return 'succeeded'
-        else:
-            return 'failed'
+        return 'failed'
 
 class SetActionLibResult(smach.State):
     def __init__(self, result):
