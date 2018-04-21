@@ -2,14 +2,17 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mdr_turn_base_to_action)
 
 find_package(catkin REQUIRED COMPONENTS
+  rospy
+  roslint
   actionlib
   actionlib_msgs
   genmsg
   message_generation
-  mdr_move_base_action
+  smach
+  smach_ros
+  tf
   geometry_msgs
-  roslint
-  rospy
+  mdr_move_base_action
 )
 
 catkin_python_setup()
@@ -27,10 +30,16 @@ generate_messages(
 
 catkin_package(
  CATKIN_DEPENDS
+   rospy
+   actionlib
+   actionlib_msgs
    actionlib_msgs
    message_runtime
-   mdr_move_base_action
+   smach
+   smach_ros
+   tf
    geometry_msgs
+   mdr_move_base_action
 )
 
 include_directories(
