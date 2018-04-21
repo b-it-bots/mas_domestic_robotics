@@ -24,6 +24,7 @@ class Pick(ScenarioStateBase):
         self.state_name = kwargs.get('state_name', 'pick')
         self.timeout = kwargs.get('timeout', 120.)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
+        self.retry_count = 0
         self.tf_listener = TransformListener()
 
     def execute(self, userdata):
