@@ -28,23 +28,23 @@ class SpeechPersonRecognition(smach.StateMachine):
             smach.StateMachine.add('DESCRIBE_CROWD',
                                    Dummy(),
                                    transitions={
-                                    'DONE': 'RIDDLE_GAME',
-                                    'TIMEOUT': 'DESCRIBE_CROWD'})
+                                    'succeeded': 'RIDDLE_GAME',
+                                    'failed': 'DESCRIBE_CROWD'})
             smach.StateMachine.add('RIDDLE_GAME',
                                    Dummy(),
                                    transitions={
-                                    'DONE': 'BLIND_MANS_BLUFF',
-                                    'TIMEOUT': 'BLIND_MANS_BLUFF'})
+                                    'succeeded': 'BLIND_MANS_BLUFF',
+                                    'failed': 'BLIND_MANS_BLUFF'})
             smach.StateMachine.add('BLIND_MANS_BLUFF',
                                    Dummy(),
                                    transitions={
-                                    'DONE': 'LEAVE',
-                                    'TIMEOUT': 'BLIND_MANS_BLUFF'})
+                                    'succeeded': 'LEAVE',
+                                    'failed': 'BLIND_MANS_BLUFF'})
             smach.StateMachine.add('LEAVE',
                                    Dummy(),
                                    transitions={
-                                    'DONE': 'DONE',
-                                    'TIMEOUT': 'LEAVE'})
+                                    'succeeded': 'DONE',
+                                    'failed': 'LEAVE'})
 
         rospy.loginfo("SPR SM initialized successfully")
 

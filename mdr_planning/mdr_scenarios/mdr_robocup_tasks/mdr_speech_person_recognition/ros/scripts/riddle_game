@@ -51,7 +51,7 @@ class RiddleGame(smach.StateMachine):
                                     'succeeded': 'DONE',
                                     'failed': 'LISTEN'})
 
-        rospy.loginfo("Describe Crowd SM initialized successfully")
+        rospy.loginfo("Riddle Game SM initialized successfully")
 
 
 def main():

@@ -1,0 +1,24 @@
+# Description: part of the Speech and Person Recognition scenario
+# in RoboCup@Home
+# Author: Argentina Ortega Sainz
+sm_id: blind_mans_bluff
+states:
+  - NOTIFY_READY
+  - LISTEN
+  - COUNT_QUESTION
+  - ANSWER
+  - CHECK_COUNT
+outcomes: [DONE, TIMEOUT]
+state_descriptions:
+  - state:
+      name: NOTIFY_READY
+      state_module_name: mdr_speech_person_recognition.action_states
+      state_class_name: Wait
+      transitions:
+          - transition:
+              name: succeeded
+              state: FIND_CROWD
+      arguments:
+          - argument:
+              name: timeout
+              value: 5 # Wait 5 seconds
