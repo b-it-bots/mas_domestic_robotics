@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import rospy
+from std_msgs.msg import String
 from tf import TransformListener
 
 from geometry_msgs.msg import PointStamped
@@ -23,9 +24,14 @@ class Pick(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', 'mdr_store_groceries')
         self.state_name = kwargs.get('state_name', 'pick')
         self.timeout = kwargs.get('timeout', 120.)
+        self.tf_listener = TransformListener()
+
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
-        self.tf_listener = TransformListener()
+
+        self.say_topic = kwargs.get('say_topic', '')
+        self.say_enabled = self.say_topic != ''
+        self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
 
     def execute(self, userdata):
         if self.save_sm_state:
@@ -39,10 +45,14 @@ class Pick(ScenarioStateBase):
             obj_to_grasp = surface_objects[surface][obj_to_grasp_idx]
         else:
             rospy.logerr('Could not find an object to grasp')
+            self.say(self.say_enabled, self.say_pub,
+                     'Could not find an object to grasp')
             return 'find_objects_before_picking'
 
         dispatch_msg = self.get_dispatch_msg(obj_to_grasp, surface)
         rospy.loginfo('Picking %s from %s' % (obj_to_grasp, surface))
+        self.say(self.say_enabled, self.say_pub,
+                 'Picking ' + obj_to_grasp + ' from ' + surface)
         self.action_dispatch_pub.publish(dispatch_msg)
 
         self.executing = True
@@ -55,12 +65,17 @@ class Pick(ScenarioStateBase):
 
         if self.succeeded:
             rospy.loginfo('%s grasped successfully' % obj_to_grasp)
+            self.say(self.say_enabled, self.say_pub,
+                     'Successfully grasped ' + obj_to_grasp)
             userdata.grasped_object = obj_to_grasp
             return 'succeeded'
 
         rospy.loginfo('Could not grasp %s' % obj_to_grasp)
+        self.say(self.say_enabled, self.say_pub,
+                 'Could not grasp ' + obj_to_grasp)
         if self.retry_count == self.number_of_retries:
             rospy.loginfo('Failed to grasp %s' % obj_to_grasp)
+            self.say(self.say_enabled, self.say_pub, 'Aborting operation')
             return 'failed_after_retrying'
         rospy.loginfo('Retrying to grasp %s' % obj_to_grasp)
         self.retry_count += 1

@@ -1,5 +1,6 @@
 import time
 import rospy
+from std_msgs.msg import String
 
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
@@ -17,8 +18,13 @@ class MoveBase(ScenarioStateBase):
         self.state_name = kwargs.get('state_name', 'move_base')
         self.destination_locations = list(kwargs.get('destination_locations', list()))
         self.timeout = kwargs.get('timeout', 120.)
+
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
+
+        self.say_topic = kwargs.get('say_topic', '')
+        self.say_enabled = self.say_topic != ''
+        self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
 
     def execute(self, userdata):
         if self.save_sm_state:
@@ -46,6 +52,8 @@ class MoveBase(ScenarioStateBase):
                                                  destination_location)
 
             rospy.loginfo('Sending the base to %s' % destination_location)
+            self.say(self.say_enabled, self.say_pub,
+                     'Sending the base to ' + destination_location)
             self.action_dispatch_pub.publish(dispatch_msg)
 
             self.executing = True
@@ -61,7 +69,10 @@ class MoveBase(ScenarioStateBase):
                 original_location = destination_location
             else:
                 rospy.logerr('Could not reach %s' % destination_location)
+                self.say(self.say_enabled, self.say_pub,
+                         'Could not reach ' + destination_location)
                 if self.retry_count == self.number_of_retries:
+                    self.say(self.say_enabled, self.say_pub, 'Aborting operation')
                     return 'failed_after_retrying'
                 self.retry_count += 1
                 return 'failed'

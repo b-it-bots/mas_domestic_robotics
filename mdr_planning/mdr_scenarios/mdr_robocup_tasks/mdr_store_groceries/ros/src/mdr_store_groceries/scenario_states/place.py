@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import rospy
+from std_msgs.msg import String
 
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
@@ -19,8 +20,13 @@ class Place(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', 'mdr_store_groceries')
         self.state_name = kwargs.get('state_name', 'place')
         self.timeout = kwargs.get('timeout', 120.)
+
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
+
+        self.say_topic = kwargs.get('say_topic', '')
+        self.say_enabled = self.say_topic != ''
+        self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
 
     def execute(self, userdata):
         if self.save_sm_state:
@@ -31,6 +37,8 @@ class Place(ScenarioStateBase):
         surface_name = self.choose_placing_surface(grasped_object, grasped_obj_category)
         dispatch_msg = self.get_dispatch_msg(grasped_object, surface_name)
         rospy.loginfo('Placing %s on %s' % (grasped_object, surface_name))
+        self.say(self.say_enabled, self.say_pub,
+                 'Placing ' + grasped_object + ' on ' + surface_name)
         self.action_dispatch_pub.publish(dispatch_msg)
 
         self.executing = True
@@ -43,13 +51,18 @@ class Place(ScenarioStateBase):
 
         if self.succeeded:
             rospy.loginfo('Object placed successfully')
+            self.say(self.say_enabled, self.say_pub,
+                     'Successfully placed ' + grasped_object)
             if self.surface_empty(surface_name='table'):
                 return 'finished'
             return 'pick_new_object'
 
         rospy.loginfo('Could not place object %s' % grasped_object)
+        self.say(self.say_enabled, self.say_pub,
+                 'Could not place ' + obj_to_grasp)
         if self.retry_count == self.number_of_retries:
             rospy.loginfo('Failed to place object %s' % grasped_object)
+            self.say(self.say_enabled, self.say_pub, 'Aborting operation')
             return 'failed_after_retrying'
         rospy.loginfo('Retrying to place object %s' % grasped_object)
         self.retry_count += 1

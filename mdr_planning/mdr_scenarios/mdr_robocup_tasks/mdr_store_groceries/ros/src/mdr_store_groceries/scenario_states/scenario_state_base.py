@@ -1,5 +1,6 @@
 import rospy
 import smach
+from std_msgs.msg import String
 
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
@@ -67,3 +68,9 @@ class ScenarioStateBase(smach.State):
         msg.information[0].value == self.action_name:
             self.executing = False
             self.succeeded = msg.status == 'action achieved'
+
+    def say(self, say_enabled, publisher, sentence):
+        if say_enabled:
+            say_msg = String()
+            say_msg.data = sentence
+            publisher.publish(say_msg)

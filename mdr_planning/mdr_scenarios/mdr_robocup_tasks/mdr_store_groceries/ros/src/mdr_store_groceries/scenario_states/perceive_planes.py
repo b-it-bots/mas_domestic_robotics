@@ -1,5 +1,6 @@
 import time
 import rospy
+from std_msgs.msg import String
 
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import diagnostic_msgs.msg as diag_msgs
@@ -14,9 +15,14 @@ class PerceivePlanes(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', 'mdr_store_groceries')
         self.state_name = kwargs.get('state_name', 'perceive_planes')
         self.timeout = kwargs.get('timeout', 120.)
-        self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.plane_prefix = kwargs.get('plane_prefix', 0)
+
+        self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
+
+        self.say_topic = kwargs.get('say_topic', '')
+        self.say_enabled = self.say_topic != ''
+        self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
 
     def execute(self, userdata):
         if self.save_sm_state:
@@ -24,6 +30,8 @@ class PerceivePlanes(ScenarioStateBase):
 
         dispatch_msg = self.get_dispatch_msg(self.plane_prefix)
         rospy.loginfo('Perceiving plane %s' % self.plane_prefix)
+        self.say(self.say_enabled, self.say_pub,
+                 'Perceiving plane ' + self.plane_prefix)
         self.action_dispatch_pub.publish(dispatch_msg)
 
         self.executing = True
@@ -39,8 +47,11 @@ class PerceivePlanes(ScenarioStateBase):
             return 'succeeded'
 
         rospy.loginfo('Could not perceive %s' % self.plane_prefix)
+        self.say(self.say_enabled, self.say_pub,
+                 'Could not perceive ' + self.plane_prefix)
         if self.retry_count == self.number_of_retries:
             rospy.loginfo('Failed to perceive %s' % self.plane_prefix)
+            self.say(self.say_enabled, self.say_pub, 'Aborting operation')
             return 'failed_after_retrying'
         rospy.loginfo('Retrying to perceive %s' % self.plane_prefix)
         self.retry_count += 1
