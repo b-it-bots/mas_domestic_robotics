@@ -51,6 +51,14 @@ class SMLoader(object):
                 if outcome not in sm_params.outcomes:
                     sm_params.outcomes.append(outcome)
 
+        # we add any new arguments that are defined in the child config
+        # to the list of global state machine arguments
+        if SMFileKeys.ARGS in sm_data:
+            for arg in sm_data[SMFileKeys.ARGS]:
+                arg_data = arg[SMFileKeys.ARG]
+                sm_params.global_params[arg_data[SMFileKeys.ARG_NAME]] = \
+                arg_data[SMFileKeys.ARG_VALUE]
+
         # we add any new states that are defined in the child config
         # to the list of state machine states; we also remove states
         # defined in the parent state machine config if the child config
@@ -81,6 +89,10 @@ class SMLoader(object):
                         arg_data = arg[SMFileKeys.ARG]
                         state_params.args[arg_data[SMFileKeys.ARG_NAME]] = \
                         arg_data[SMFileKeys.ARG_VALUE]
+
+                for arg_name, arg_value in sm_params.global_params.items():
+                    arg_data = arg[SMFileKeys.ARG]
+                    state_params.args[arg_name] = arg_value
 
                 # we add the state machine ID and the state name as additional state arguments
                 state_params.args['sm_id'] = sm_params.id
@@ -115,6 +127,11 @@ class SMLoader(object):
         sm_params.id = parent_sm_data[SMFileKeys.ID]
         sm_params.states = parent_sm_data[SMFileKeys.STATES]
         sm_params.outcomes = parent_sm_data[SMFileKeys.OUTCOMES]
+        if SMFileKeys.ARGS in parent_sm_data:
+            for arg in parent_sm_data[SMFileKeys.ARGS]:
+                arg_data = arg[SMFileKeys.ARG]
+                sm_params.global_params[arg_data[SMFileKeys.ARG_NAME]] = \
+                arg_data[SMFileKeys.ARG_VALUE]
 
         for state_description in parent_sm_data[SMFileKeys.STATE_DESCRIPTIONS]:
             state_data = state_description[SMFileKeys.STATE]
