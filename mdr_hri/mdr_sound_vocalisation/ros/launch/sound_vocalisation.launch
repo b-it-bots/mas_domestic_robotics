@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="speech_request_topic" default="/say" />
+    <arg name="sound_request_topic" default="/make_sound" />
+    <arg name="speech_topic" default="/sound/say" />
+    <arg name="sound_topic" default="/sound/make" />
+    <node pkg="mdr_speech_synthesis" type="speech_synthesiser" name="speech_synthesiser" output="screen">
+        <remap from="speech_request_topic" to="$(arg speech_request_topic)" />
+        <remap from="sound_request_topic" to="$(arg sound_request_topic)" />
+        <remap from="speech_topic" to="$(arg speech_topic)" />
+        <remap from="sound_topic" to="$(arg sound_topic)" />
+    </node>
+</launch>
