@@ -1,5 +1,6 @@
 import rospy
 import smach
+from std_msgs.msg import String
 
 from mongodb_store.message_store import MessageStoreProxy
 
@@ -31,3 +32,9 @@ class ScenarioStateBase(smach.State):
             self.msg_store_client.insert_named('current_state', execution_state_msg)
         except:
             rospy.logerr('Error while saving current state')
+
+    def say(self, say_enabled, publisher, sentence):
+        if say_enabled:
+            say_msg = String()
+            say_msg.data = sentence
+            publisher.publish(say_msg)

@@ -16,6 +16,11 @@ class WaitForQR(ScenarioStateBase):
                                                        '/mcr_perception/qr_reader/output'),
                                             String, self.register_qr_code)
         self.qr_message = None
+
+        self.say_topic = kwargs.get('say_topic', '')
+        self.say_enabled = self.say_topic != ''
+        self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
+
         self.start_time = rospy.Time.now()
         self.restart_state = False
 
@@ -27,6 +32,7 @@ class WaitForQR(ScenarioStateBase):
         if (rospy.Time.now() - self.start_time) < self.timeout:
             if self.qr_message and "continue" in self.qr_message.lower():
                 rospy.loginfo('QR message: %s' % self.qr_message)
+                self.say(self.say_enabled, self.say_pub, 'Continuing operation')
                 userdata.command = self.qr_message
                 self.restart_state = True
                 return 'succeeded'

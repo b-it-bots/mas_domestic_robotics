@@ -12,6 +12,11 @@ class WaitForCmd(ScenarioStateBase):
                                    output_keys=['command'])
         self.timeout = rospy.Duration.from_sec(kwargs.get('timeout', 120.))
         self.state_check_rate = rospy.Rate(5)
+
+        self.say_topic = kwargs.get('say_topic', '')
+        self.say_enabled = self.say_topic != ''
+        self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
+
         self.speech_sub = rospy.Subscriber(kwargs.get('speech_topic', '/recognized_speech'),
                                            String, self.command_cb)
         self.command = None
@@ -26,6 +31,8 @@ class WaitForCmd(ScenarioStateBase):
         if (rospy.Time.now() - self.start_time) < self.timeout:
             if self.command:
                 rospy.loginfo('Received command: %s' % self.command)
+                self.say(self.say_enabled, self.say_pub,
+                         'Received command ' + self.command)
                 userdata.command = self.command
                 self.restart_state = True
                 return 'succeeded'
