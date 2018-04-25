@@ -18,8 +18,8 @@ class Enter(ScenarioStateBase):
         self.say_enabled = self.say_topic != ''
         self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
 
-        self.enter_action_client = SimpleActionClient(kwargs.get('enter_action_server',
-                                                                 '/mdr_actions/enter_door_server'),
+        self.enter_door_server = kwargs.get('enter_action_server', 'enter_door_server')
+        self.enter_action_client = SimpleActionClient(self.enter_door_server,
                                                       EnterDoorAction)
         self.enter_action_client.wait_for_server()
 
