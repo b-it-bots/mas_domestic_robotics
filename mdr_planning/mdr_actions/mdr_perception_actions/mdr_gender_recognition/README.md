@@ -12,7 +12,7 @@ An action for recognising people's gender in a crowd.
 
 ### Result:
 
-* ``string[] genders``
+* ``string[] genders`` Genders corresponding to the people in the image, in the same order as `bounding_boxes`  
 * ``bool success``
 
 ### Feedback:
@@ -36,4 +36,3 @@ An action for recognising people's gender in a crowd.
 1. Run the detect person server: ``roslaunch mdr_detect_person detect_person.launch``
 2. Run the action server: ``roslaunch mdr_gender_recognition gender_recognition.launch``
 3. Run the client example: ``rosrun mdr_gender_recognition gender_recognition_client_test <input_image>``, where ``<input_image>`` is the path to a test image (e.g. the absolute path of ``mdr_gender_recognition/tests/data/gender_recognition_test_image1.jpg``)
-
