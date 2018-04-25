@@ -14,6 +14,10 @@ class EnterDoorSkill(smach.StateMachine):
                                     input_keys=['enter_door_goal'],
                                     output_keys=['enter_door_feedback', 'enter_door_result'])
 
+        movement_duration = float(rospy.get_param('~movement_duration', 15.))
+        speed = float(rospy.get_param('~speed', 0.15))
+        move_forward_server = rospy.get_param('~move_forward_server', 'move_forward_server')
+
         with self:
             smach.StateMachine.add('SETUP_ENTER_DOOR', SetupEnterDoor(),
                                    transitions={'succeeded': 'WAIT_FOR_DOOR',
@@ -23,7 +27,9 @@ class EnterDoorSkill(smach.StateMachine):
                                    transitions={'succeeded': 'ENTER_DOOR',
                                                 'waiting': 'WAIT_FOR_DOOR'})
 
-            smach.StateMachine.add('ENTER_DOOR', EnterDoor(),
+            smach.StateMachine.add('ENTER_DOOR', EnterDoor(move_forward_server=move_forward_server,
+                                                           movement_duration=movement_duration,
+                                                           speed=speed),
                                    transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
                                                 'failed': 'SET_ACTION_LIB_FAILED'})
 
