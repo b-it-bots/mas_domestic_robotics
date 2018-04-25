@@ -1,4 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="mdr_move_forward_action" type="move_forward_action" name="move_forward_server" output="screen" ns="mdr_actions" />
+    <node pkg="mdr_move_forward_action" type="move_forward_action" name="move_forward_server" output="screen">
+        <param name="velocity_topic" value="/cmd_vel" />
+    </node>
 </launch>
