@@ -38,11 +38,13 @@
     </node>
 
     <!-- Actions -->
+    <include file="$(find mdr_move_arm_action)/ros/launch/move_arm.launch" />
+
     <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" />
     <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
 
-    <include file="$(find mdr_perceive_plane_action)/ros/launch/pickup_action.launch" />
-    <include file="$(find mdr_perceive_plane_action)/ros/launch/pickup_client.launch" />
+    <include file="$(find mdr_perceive_plane_action)/ros/launch/perceive_plane.launch" />
+    <include file="$(find mdr_perceive_plane_action)/ros/launch/perceive_plane_client.launch" />
 
     <include file="$(find mdr_pickup_action)/ros/launch/pickup_action.launch" />
     <include file="$(find mdr_pickup_action)/ros/launch/pickup_client.launch" />
