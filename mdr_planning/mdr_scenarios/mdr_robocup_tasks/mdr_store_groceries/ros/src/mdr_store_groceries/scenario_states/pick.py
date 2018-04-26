@@ -29,7 +29,7 @@ class Pick(ScenarioStateBase):
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
 
-        self.say_topic = kwargs.get('say_topic', '')
+        self.say_topic = kwargs.get('say_topic', '/say')
         self.say_enabled = self.say_topic != ''
         self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
 
@@ -120,21 +120,27 @@ class Pick(ScenarioStateBase):
         '''Returns the index of the object whose distance is closest to the robot
         '''
         object_surfaces = list()
-        distances = list()
+        distances = dict()
         robot_position = np.zeros(3)
         for surface, poses in object_poses.items():
+            object_surfaces.append(surface)
+            distances[surface] = list()
             for pose in poses:
                 base_link_pose = self.tf_listener.transformPose('base_link', pose)
-                distances.append(self.distance(robot_position, np.array([base_link_pose.pose.position.x,
-                                                                         base_link_pose.pose.position.y,
-                                                                         base_link_pose.pose.position.z])))
-                object_surfaces.append(surface)
+                distances[surfaces].append(self.distance(robot_position, np.array([base_link_pose.pose.position.x,
+                                                                                   base_link_pose.pose.position.y,
+                                                                                   base_link_pose.pose.position.z])))
 
+        min_dist = 1e100
         min_dist_obj_idx = -1
         obj_surface = ''
-        if distances:
-            min_dist_obj_idx = np.argmin(distances)
-            obj_surface = object_surfaces[min_dist_obj_idx]
+        for surface, distance_list in distances:
+            if distance_list:
+                surface_min_dist = np.min(distance_list)
+                if surface_min_dist < min_dist:
+                    min_dist = surface_min_dist
+                    min_dist_obj_idx = np.argmin(distance_list)
+                    obj_surface = surface
         return obj_surface, min_dist_obj_idx
 
     def get_robot_pose(self, map_frame='map', base_link_frame='base_link'):
