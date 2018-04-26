@@ -34,7 +34,7 @@ class FindCrowd(smach.State):
         self.retry_count = 0
         self.image = None
 
-        rospy.Subscriber(self.image_topic, Image, image_cb)
+        rospy.Subscriber(self.image_topic, Image, self.image_cb)
         say_pub = rospy.Publisher(say_topic, String, queue_size=1)
         detect_person_client = SimpleActionClient('mdr_actions/detect_person_server',
                                                   DetectPersonAction)
