@@ -5,7 +5,7 @@ import std_msgs.msg
 from mdr_perceive_plane_action.msg import PerceivePlaneResult, PerceivePlaneFeedback
 from mcr_perception_msgs.msg import PlaneList
 from mdr_object_recognition import ObjectDetector
-from mdr_perception_libs import Constant
+from mdr_perception_libs import Constant, ImageRecognitionServiceProxy
 
 
 class DetectObjects(smach.State):
@@ -51,11 +51,13 @@ class DetectObjects(smach.State):
 
 
 class RecognizeObjects(smach.State):
-    def __init__(self):
+    def __init__(self, recog_service_name, recog_model_name, preprocess_input_module):
         smach.State.__init__(self, outcomes=[Constant.SUCCESS, Constant.FAILURE],
                              input_keys=['detected_planes', 'perceive_plane_feedback'],
                              output_keys=['recognized_planes', 'perceive_plane_feedback'])
-        pass
+
+        self._service_proxy = ImageRecognitionServiceProxy(recog_service_name, recog_model_name,
+                                                           preprocess_input_module)
 
     def execute(self, ud):
         if 'perceive_plane_feedback' not in ud:
@@ -65,6 +67,16 @@ class RecognizeObjects(smach.State):
         if 'detected_planes' not in ud:
             ud.recognized_planes = None
             return Constant.FAILURE
+
+        for plane in ud.detected_planes.planes:
+            image_messages = []
+            for obj in plane.object_list.objects:
+                image_messages.append(obj.rgb_image)
+            indices, classes, probs = self._service_proxy.recognize_images(image_messages)
+            for i in indices:
+                plane.object_list.objects[i].name = classes[i]
+                #TODO: handle categories
+                plane.object_list.objects[i].category = classes[i]
 
         ud.recognized_planes = ud.detected_planes
         return Constant.SUCCESS

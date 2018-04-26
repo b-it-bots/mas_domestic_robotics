@@ -37,12 +37,12 @@ class RecognizeImageService(object):
 
 if __name__ == '__main__':
     rospy.init_node('~image_recognition_server')
-    model_dir = rospy.get_param('~model_directory', '')
-    if model_dir is None:
+    model_directory = rospy.get_param('~model_directory', '')
+    if not model_directory:
         from rospkg import ResourceNotFound, RosPack
         try:
             rp = RosPack()
-            model_dir = os.path.join(rp.get_path('mdr_perception_libs'), 'models')
+            model_directory = os.path.join(rp.get_path('mdr_perception_libs'), 'models')
         except ResourceNotFound as e:
             rospy.logerr(e.message)
             raise
@@ -50,5 +50,5 @@ if __name__ == '__main__':
     recog_module = rospy.get_param('~recognition_module', 'mdr_perception_libs')
     recog_class_name = rospy.get_param('~recognition_class', 'ImageClassifierTest')
     recog_class = getattr(import_module(recog_module), recog_class_name)
-    RecognizeImageService(recog_class, model_dir)
+    RecognizeImageService(recog_class, model_directory)
     rospy.spin()
