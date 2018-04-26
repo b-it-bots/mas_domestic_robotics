@@ -22,24 +22,34 @@ class WaitForQR(ScenarioStateBase):
         self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
 
         self.start_time = rospy.Time.now()
+        self.restart_state = False
+        self.asked_for_qr = False
 
     def execute(self, userdata):
-        self.start_time = rospy.Time.now()
-        self.say(self.say_enabled, self.say_pub, 'Please show me a QR code')
-        while (rospy.Time.now() - self.start_time) < self.timeout and self.qr_message is None:
+        if self.restart_state:
+            self.start_time = rospy.Time.now()
+            self.restart_state = False
+            self.say(self.say_enabled, self.say_pub, 'Please show me a continue QR code')
+
+        if not self.asked_for_qr:
+            self.say(self.say_enabled, self.say_pub, 'Please show me a continue QR code')
+            self.asked_for_qr = True
+
+        if (rospy.Time.now() - self.start_time) < self.timeout:
             if self.qr_message and "continue" in self.qr_message.lower():
                 rospy.loginfo('QR message: %s' % self.qr_message)
                 self.say(self.say_enabled, self.say_pub, 'Continuing operation')
                 userdata.command = self.qr_message
-                break
+                self.restart_state = True
+                return 'succeeded'
 
             self.state_check_rate.sleep()
             rospy.loginfo('Waiting for QR code')
+            return 'waiting'
 
-        if self.qr_message is None:
-            rospy.loginfo('wait_for_qr timed out')
-            return 'failed'
-        return 'succeeded'
+        rospy.loginfo('wait_for_qr timed out')
+        self.restart_state = True
+        return 'failed'
 
     def register_qr_code(self, msg):
         self.qr_message = msg.data
