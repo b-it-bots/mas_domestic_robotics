@@ -11,6 +11,12 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   mcr_perception_msgs
   mcr_scene_segmentation
+  message_generation
+)
+
+add_service_files(
+  FILES
+    ImageRecognition.srv
 )
 
 find_package(PCL 1.7 REQUIRED)
@@ -18,6 +24,11 @@ find_package(Boost REQUIRED COMPONENTS python)
 find_package(PythonLibs 2.7 REQUIRED)
 
 catkin_python_setup()
+
+generate_messages(
+  DEPENDENCIES
+  sensor_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -70,6 +81,11 @@ install(DIRECTORY ros/include/${PROJECT_NAME}/
 install(TARGETS _cpp_wrapper
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_PYTHON_DESTINATION}
+)
+
+install(PROGRAMS
+  ros/scripts/image_recognition_server
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
 #############
