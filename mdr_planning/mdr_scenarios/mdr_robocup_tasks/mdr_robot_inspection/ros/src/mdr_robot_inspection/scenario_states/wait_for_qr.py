@@ -38,10 +38,8 @@ class WaitForQR(ScenarioStateBase):
 
         if self.qr_message is None:
             rospy.loginfo('wait_for_qr timed out')
-        else:
-            self.qr_message = None
-            return 'succeeded'
-        return 'failed'
+            return 'failed'
+        return 'succeeded'
 
     def register_qr_code(self, msg):
         self.qr_message = msg.data
