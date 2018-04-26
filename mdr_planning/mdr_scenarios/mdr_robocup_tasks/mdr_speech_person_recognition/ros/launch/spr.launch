@@ -3,8 +3,8 @@
 
     <!-- Actions -->
     <include  file= "$(find mdr_turn_base_to_action)/ros/launch/turn_base_to_server.launch" />
-    <include  file= "$(find mdr_detect_person)/ros/launch/detect_person_server.launch" />
-    <include  file= "$(find mdr_gender_recognition)/ros/launch/gendder_recognition.launch" />
+    <include  file= "$(find mdr_detect_person)/ros/launch/detect_person.launch" />
+    <include  file= "$(find mdr_gender_recognition)/ros/launch/gender_recognition.launch" />
 
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
 

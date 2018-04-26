@@ -4,6 +4,7 @@ import smach
 
 from smach_ros import ActionServerWrapper, IntrospectionServer
 from mdr_gender_recognition.skill import GenderRecognitionSkill
+from mdr_gender_recognition.msg import GenderRecognitionAction
 
 
 if __name__ == '__main__':

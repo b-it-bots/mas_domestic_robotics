@@ -86,7 +86,7 @@ class FindCrowd(smach.State):
 
 class RecognizeGenders(smach.State):
     def __init__(self, **kwargs):
-        smach.State.__init__(self, outcomes=['succeeded', 'failed']
+        smach.State.__init__(self, outcomes=['succeeded', 'failed'],
                              input_keys=['image', 'number_of_faces',
                                          'bounding_boxes'])
         self.timeout = kwargs.get('timeout', 10)
