@@ -21,7 +21,7 @@ class RequestOperator(smach.State):
 
     def execute(self, userdata):
         # Request operator
-        say(say_pub, "I'm ready to play riddles")
+        say(say_pub, "Who wants to play riddles with me?")
         return 'succeeded'
 
 
@@ -37,6 +37,7 @@ class ProcessSpeech(smach.State):
         self.question_topic = kwargs.get('question_topic',
                                          '/question_matcher/answer')
         rospy.Subscriber(question_topic, String, queue_size=10, speech_cb)
+        self.number_of_retries = 1
         self.question_count = 0
         self.question = None
         say_pub = rospy.Publisher(say_topic, String, queue_size=1)
@@ -49,9 +50,25 @@ class ProcessSpeech(smach.State):
             return 'succedeed'
         elif localized_sound and self.question_count > 5:
             # userdata.source_pos = random_pose
-            pass
+            if self.retry_count == self.number_of_retries:
+                rospy.loginfo('Failed to grasp %s' % obj_to_grasp)
+                return 'failed_after_retrying'
+            elif not self.question:
+                say(say_pub, 'Can you repeat the question, please?')
+                self.number_of_retries = 1
+            else:
+                userdata.question = self.question
+                userdata.question_count = self.question_count
+                self.number_of_retries = 0
         elif not self.question:
+            self.number_of_retries = 1
             return 'failed'
+        else:
+            rospy.logerr('Something went wrong')
+
+        # TODO Sound localization with HSR, how?
+        if self.question_count > 5:
+            localized_sound = True
 
     def speech_cb(self, msg):
         # TODO call mdr_question_matcher
