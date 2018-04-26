@@ -13,6 +13,13 @@ from sensor_msgs.msg import Image
 from actionlib import SimpleActionClient
 
 
+def say(publisher, message):
+    msg = String()
+    msg.data = message
+    rospy.loginfo(msg.data)
+    publisher.publish(msg)
+
+
 class FindCrowd(smach.State):
     def __init__(self, **kwargs):
         smach.State.__init__(self, outcomes=['succeeded', 'failed',
@@ -38,6 +45,7 @@ class FindCrowd(smach.State):
         turn_base_client.wait_for_server()
 
     def execute(self, userdata):
+        say(say_pub, 'I want to play riddles')
         rospy.sleep(self.timeout)
 
         # Turn 180
@@ -65,9 +73,9 @@ class FindCrowd(smach.State):
             return 'succeeded'
 
         if self.retry_count == self.number_of_retries:
-            rospy.loginfo('Failed to grasp %s' % obj_to_grasp)
+            rospy.loginfo('Failed to find crowd %s' % obj_to_grasp)
             return 'failed_after_retrying'
-        rospy.loginfo('Retrying to grasp %s' % obj_to_grasp)
+        rospy.loginfo('Retrying to fild crowd %s' % obj_to_grasp)
         self.retry_count += 1
         # TODO Turn a bit? How to handle failures?
         return 'failed'
