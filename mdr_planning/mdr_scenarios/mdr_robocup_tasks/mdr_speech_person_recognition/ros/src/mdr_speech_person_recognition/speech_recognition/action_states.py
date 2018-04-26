@@ -17,11 +17,12 @@ def say(publisher, message):
 class RequestOperator(smach.State):
     def __init__(self, **kwargs):
         smach.State.__init__(self, outcomes=['succeeded'])
-        say_pub = rospy.Publisher(say_topic, String, queue_size=1)
+        self.say_topic = kwargs.get('say_topic', '/say')
+        self.say_pub = rospy.Publisher(self.say_topic, String, queue_size=1)
 
     def execute(self, userdata):
         # Request operator
-        say(say_pub, "Who wants to play riddles with me?")
+        say(self.say_pub, "Who wants to play riddles with me?")
         return 'succeeded'
 
 
@@ -36,25 +37,28 @@ class ProcessSpeech(smach.State):
         # TODO convert the question matcher to an action
         self.question_topic = kwargs.get('question_topic',
                                          '/question_matcher/answer')
-        rospy.Subscriber(question_topic, String, queue_size=10, speech_cb)
+        self.say_topic = kwargs.get('say_topic', '/say')
+        rospy.Subscriber(self.question_topic, String, self.speech_cb)
         self.number_of_retries = 1
+        self.retry_count = 0
         self.question_count = 0
         self.question = None
-        say_pub = rospy.Publisher(say_topic, String, queue_size=1)
+        self.say_pub = rospy.Publisher(self.say_topic, String, queue_size=1)
+        self.localized_sound = False
 
-    def execute(self):
+    def execute(self, userdata):
         # TODO Add patrick's julius listening processing here?
         if self.question and self.question_count <= 5:
             userdata.question = self.question
             userdata.question_count = self.question_count
             return 'succedeed'
-        elif localized_sound and self.question_count > 5:
+        elif self.localized_sound and self.question_count > 5:
             # userdata.source_pos = random_pose
             if self.retry_count == self.number_of_retries:
-                rospy.loginfo('Failed to grasp %s' % obj_to_grasp)
+                rospy.loginfo('Failed to understand')
                 return 'failed_after_retrying'
             elif not self.question:
-                say(say_pub, 'Can you repeat the question, please?')
+                say(self.say_pub, 'Can you repeat the question, please?')
                 self.number_of_retries = 1
             else:
                 userdata.question = self.question
@@ -68,13 +72,13 @@ class ProcessSpeech(smach.State):
 
         # TODO Sound localization with HSR, how?
         if self.question_count > 5:
-            localized_sound = True
+            self.localized_sound = True
 
     def speech_cb(self, msg):
         # TODO call mdr_question_matcher
         # if not recognized:
         if msg.data == 'Sorry, I was not able to recognize your question!':
-            say(say_pub, msg.data)
+            say(self.say_pub, msg.data)
             self.question = None
         else:
             self.question = msg.data
@@ -86,15 +90,16 @@ class AnswerQuestion(smach.State):
         smach.State.__init__(self, outcomes=['succeded', 'failed'],
                              input_keys=['question', 'source_pose'])
         self.timeout = kwargs.get('timeout', 20)
-        answer_client = SimpleActionClient('mdr_actions/answer_server',
-                                           AnswerAction)
-        answer_client.wait_for_server()
-        say_pub = rospy.Publisher(say_topic, String, queue_size=1)
+        self.say_topic = kwargs.get('say_topic', '/say')
+        self.answer_client = SimpleActionClient('mdr_actions/answer_server',
+                                                AnswerAction)
+        self.answer_client.wait_for_server()
+        self.say_pub = rospy.Publisher(self.say_topic, String, queue_size=1)
 
-    def execute(self):
+    def execute(self, userdata):
         answer_goal = AnswerGoal()
         answer_goal.question = userdata.question
-        answer_client.send_goal(answer_goal)
-        result = answer_client.wait_for_result()
+        self.answer_client.send_goal(answer_goal)
+        result = self.answer_client.wait_for_result()
 
-        say(say_pub, result.answer_message)
+        say(self.say_pub, result.answer_message)
