@@ -35,23 +35,23 @@ class FindCrowd(smach.State):
         self.image = None
 
         rospy.Subscriber(self.image_topic, Image, self.image_cb)
-        say_pub = rospy.Publisher(say_topic, String, queue_size=1)
-        detect_person_client = SimpleActionClient('mdr_actions/detect_person_server',
-                                                  DetectPersonAction)
-        detect_person_client.wait_for_server()
+        self.say_pub = rospy.Publisher(self.say_topic, String, queue_size=1)
+        self.detect_person_client = SimpleActionClient('mdr_actions/detect_person_server',
+                                                       DetectPersonAction)
+        self.detect_person_client.wait_for_server()
 
-        turn_base_client = SimpleActionClient('mdr_actions/turn_to_server',
-                                              TurnToBaseAction)
-        turn_base_client.wait_for_server()
+        self.turn_base_client = SimpleActionClient('mdr_actions/turn_to_server',
+                                                   TurnBaseToAction)
+        self.turn_base_client.wait_for_server()
 
     def execute(self, userdata):
-        say(say_pub, 'I want to play riddles')
+        say(self.say_pub, 'I want to play riddles')
         rospy.sleep(self.timeout)
 
         # Turn 180
         turn_goal = TurnBaseToGoal()
         turn_goal.desired_yaw = 180.0
-        turn_base_client.send_goal(turn_goal)
+        self.turn_base_client.send_goal(turn_goal)
 
         # Detect person
         goal = DetectPersonGoal()
@@ -59,8 +59,8 @@ class FindCrowd(smach.State):
         goal.image = self.image
         userdata.image = goal.image
 
-        detect_person_client.send_goal(goal)
-        result = detect_person_client.wait_for_result()
+        self.detect_person_client.send_goal(goal)
+        result = self.detect_person_client.wait_for_result()
 
         if result.number_of_faces > 0:
             # Say how many there are
@@ -69,13 +69,13 @@ class FindCrowd(smach.State):
             userdata.number_of_faces = result.number_of_faces
             userdata.bounding_boxes = result.bounding_boxes
             rospy.loginfo(msg.data)
-            say_pub.publish(msg)
+            self.say_pub.publish(msg)
             return 'succeeded'
 
         if self.retry_count == self.number_of_retries:
-            rospy.loginfo('Failed to find crowd %s' % obj_to_grasp)
+            rospy.loginfo('Failed to find crowd')
             return 'failed_after_retrying'
-        rospy.loginfo('Retrying to fild crowd %s' % obj_to_grasp)
+        rospy.loginfo('Retrying to fild crowd')
         self.retry_count += 1
         # TODO Turn a bit? How to handle failures?
         return 'failed'
@@ -90,11 +90,12 @@ class RecognizeGenders(smach.State):
                              input_keys=['image', 'number_of_faces',
                                          'bounding_boxes'])
         self.timeout = kwargs.get('timeout', 10)
-        say_pub = rospy.Publisher(say_topic, String, queue_size=1)
+        self.say_topic = kwargs.get('say_topic', '/say')
+        self.say_pub = rospy.Publisher(self.say_topic, String, queue_size=1)
 
-        gender_client = SimpleActionClient('mdr_actions/gender_recognition_server',
-                                           GenderRecognitionAction)
-        gender_client.wait_for_server()
+        self.gender_client = SimpleActionClient('mdr_actions/gender_recognition_server',
+                                                GenderRecognitionAction)
+        self.gender_client.wait_for_server()
 
     def execute(self, userdata):
         # Recognize gender
@@ -102,8 +103,8 @@ class RecognizeGenders(smach.State):
         goal.image = userdata.image
         goal.number_of_faces = userdata.number_of_faces
         goal.bounding_boxes = userdata.bounding_boxes
-        gender_client.send_goal(goal)
-        result = gender_client.wait_for_result()
+        self.gender_client.send_goal(goal)
+        result = self.gender_client.wait_for_result()
 
         men = result.genders.count('man')
         women = result.genders.count('woman')
@@ -112,5 +113,5 @@ class RecognizeGenders(smach.State):
         msg = String()
         msg.data = 'There are %i men and %i women' % (men, women)
         rospy.loginfo(msg.data)
-        say_pub.publish(msg)
+        self.say_pub.publish(msg)
         return 'succeeded'
