@@ -13,5 +13,6 @@ def object_detection_test_server():
     rospy.Service(EMPTY_DETECTION_SERVICE, Empty, handle_empty_request)
     rospy.spin()
 
+
 if __name__ == "__main__":
     object_detection_test_server()
