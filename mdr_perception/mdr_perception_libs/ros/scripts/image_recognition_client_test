@@ -8,7 +8,7 @@ from mdr_perception_libs.utils import case_insensitive_glob
 from mdr_perception_libs import ImageRecognitionServiceProxy
 
 
-ALLOWED_FILE_TYPES = ('*.jpg', '*.png', '*.bmp')
+ALLOWED_FILE_TYPES = ('*.jpg', '*.jpeg', '*.png', '*.bmp')
 
 
 def main(arguments):
