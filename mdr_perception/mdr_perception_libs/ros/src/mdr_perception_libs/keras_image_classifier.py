@@ -33,6 +33,9 @@ class KerasImageClassifier(ImageClassifier):
         self._cv_bridge = CvBridge()
 
     def classify(self, image_messages):
+        if len(image_messages) == 0:
+            return [], [], []
+
         np_images = [process_image_message(msg, self._cv_bridge, self._target_size, self._img_preprocess_func)
                      for msg in image_messages]
 
