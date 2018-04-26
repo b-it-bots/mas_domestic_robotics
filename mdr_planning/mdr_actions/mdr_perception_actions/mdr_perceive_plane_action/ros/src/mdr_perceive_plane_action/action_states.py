@@ -2,6 +2,7 @@
 import rospy
 import smach
 import std_msgs.msg
+import sensor_msgs.msg
 from mdr_perceive_plane_action.msg import PerceivePlaneResult, PerceivePlaneFeedback
 from mcr_perception_msgs.msg import PlaneList
 from mdr_object_recognition import ObjectDetector
@@ -58,6 +59,7 @@ class RecognizeObjects(smach.State):
 
         self._service_proxy = ImageRecognitionServiceProxy(recog_service_name, recog_model_name,
                                                            preprocess_input_module)
+        self._image_pub = rospy.Publisher('/first_recognized_image', sensor_msgs.msg.Image, queue_size=1)
 
     def execute(self, ud):
         if 'perceive_plane_feedback' not in ud:
@@ -73,9 +75,18 @@ class RecognizeObjects(smach.State):
             for obj in plane.object_list.objects:
                 image_messages.append(obj.rgb_image)
             indices, classes, probs = self._service_proxy.recognize_images(image_messages)
+
+            # TODO: debug output
+            if len(indices) > 0:
+                obj_index = indices[0]
+                self._image_pub.publish(image_messages[obj_index])
+                rospy.loginfo('first object found: {0} (prob: {1})'.format(classes[obj_index], probs[obj_index]))
+            else:
+                rospy.logwarn('no object recognized for plane ' + plane.name)
+
             for i in indices:
                 plane.object_list.objects[i].name = classes[i]
-                #TODO: handle categories
+                # TODO: handle categories
                 plane.object_list.objects[i].category = classes[i]
 
         ud.recognized_planes = ud.detected_planes
