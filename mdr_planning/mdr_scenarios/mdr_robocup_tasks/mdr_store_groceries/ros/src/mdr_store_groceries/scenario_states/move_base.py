@@ -1,12 +1,14 @@
 import time
 import rospy
+import actionlib
 from std_msgs.msg import String
+from geometry_msgs.msg import PoseStamped
 
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
 
-from mdr_monitoring_msgs.msg import ExecutionState
+from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_store_groceries.scenario_states.scenario_state_base import ScenarioStateBase
 
 class MoveBase(ScenarioStateBase):
@@ -16,13 +18,18 @@ class MoveBase(ScenarioStateBase):
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'])
         self.sm_id = kwargs.get('sm_id', 'mdr_store_groceries')
         self.state_name = kwargs.get('state_name', 'move_base')
+        self.move_base_server = kwargs.get('move_base_server', 'move_base_server')
         self.destination_locations = list(kwargs.get('destination_locations', list()))
         self.timeout = kwargs.get('timeout', 120.)
 
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
 
-        self.say_topic = kwargs.get('say_topic', '')
+        self.move_base_client = actionlib.SimpleActionClient(self.move_base_server,
+                                                             MoveBaseAction)
+        self.move_base_client.wait_for_server()
+
+        self.say_topic = kwargs.get('say_topic', '/say')
         self.say_enabled = self.say_topic != ''
         self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
 
@@ -48,21 +55,38 @@ class MoveBase(ScenarioStateBase):
                 break
 
         for destination_location in self.destination_locations:
-            dispatch_msg = self.get_dispatch_msg(original_location,
-                                                 destination_location)
+            if destination_location.lower().find('table') != -1:
+                self.say(self.say_enabled, self.say_pub, 'Moving to table')
 
-            rospy.loginfo('Sending the base to %s' % destination_location)
-            self.say(self.say_enabled, self.say_pub,
-                     'Sending the base to ' + destination_location)
-            self.action_dispatch_pub.publish(dispatch_msg)
+                table_pose = self.get_table_pose()
+                if table_pose is None:
+                    rospy.loginfo('Could not get table pose')
+                    self.say(self.say_enabled, self.say_pub, 'Could not move to table')
+                    return 'failed'
 
-            self.executing = True
-            self.succeeded = False
-            start_time = time.time()
-            duration = 0.
-            while self.executing and duration < self.timeout:
-                rospy.sleep(0.1)
-                duration = time.time() - start_time
+                move_base_goal = MoveBaseGoal()
+                move_base_goal.goal_type = MoveBaseGoal.POSE
+                move_base_goal.pose = table_pose
+                self.move_base_client.send_goal(move_base_goal)
+                self.move_base_client.wait_for_result()
+                result = self.move_base_client.get_result()
+                if result:
+                    return 'succeeded'
+            else:
+                dispatch_msg = self.get_dispatch_msg(original_location,
+                                                     destination_location)
+
+                rospy.loginfo('Sending the base to %s' % destination_location)
+                self.say(self.say_enabled, self.say_pub, 'Going to ' + destination_location)
+                self.action_dispatch_pub.publish(dispatch_msg)
+
+                self.executing = True
+                self.succeeded = False
+                start_time = time.time()
+                duration = 0.
+                while self.executing and duration < self.timeout:
+                    rospy.sleep(0.1)
+                    duration = time.time() - start_time
 
             if self.succeeded:
                 rospy.loginfo('Successfully reached %s' % destination_location)
@@ -77,6 +101,14 @@ class MoveBase(ScenarioStateBase):
                 self.retry_count += 1
                 return 'failed'
         return 'succeeded'
+
+    def get_table_pose(self):
+        try:
+            pose = self.msg_store_client.query_named('table_pose', PoseStamped._type)[0]
+            return pose
+        except:
+            rospy.logerr('Error retriving knowledge about table_pose')
+            return None
 
     def get_dispatch_msg(self, original_location, destination_location):
         dispatch_msg = plan_dispatch_msgs.ActionDispatch()
