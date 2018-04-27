@@ -46,6 +46,10 @@ class ObjectDetector(object):
                 detected_obj.pose = obj_pose
                 detected_obj.bounding_box = bounding_box_msg
 
+            rospy.loginfo('found plane "{0}", height {1} in frame_id {2}, with {3} objects'
+                          .format(plane_frame, plane.pose.pose.position.z, plane.pose.header.frame_id,
+                                  len(plane.object_list.objects)))
+
         done_callback()
         return
 
