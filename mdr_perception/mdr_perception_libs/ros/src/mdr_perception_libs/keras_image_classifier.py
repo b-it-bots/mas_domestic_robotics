@@ -6,10 +6,7 @@ from image_classifier import ImageClassifier
 
 class KerasImageClassifier(ImageClassifier):
     def __init__(self, **kwargs):
-        import keras.backend as T
         from keras.models import Model, load_model
-
-        T.clear_session()
 
         super(KerasImageClassifier, self).__init__(**kwargs)
 
@@ -18,6 +15,8 @@ class KerasImageClassifier(ImageClassifier):
         if self._model is None:
             if model_path is not None:
                 self._model = load_model(model_path)
+                # see https://github.com/keras-team/keras/issues/6462
+                self._model._make_predict_function()
             else:
                 raise ValueError('No model object or path passed received')
 
