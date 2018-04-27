@@ -20,7 +20,7 @@ class PerceivePlanes(ScenarioStateBase):
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
 
-        self.say_topic = kwargs.get('say_topic', '')
+        self.say_topic = kwargs.get('say_topic', '/say')
         self.say_enabled = self.say_topic != ''
         self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
 
