@@ -6,7 +6,10 @@ from image_classifier import ImageClassifier
 
 class KerasImageClassifier(ImageClassifier):
     def __init__(self, **kwargs):
+        import keras.backend as T
         from keras.models import Model, load_model
+
+        T.clear_session()
 
         super(KerasImageClassifier, self).__init__(**kwargs)
 
