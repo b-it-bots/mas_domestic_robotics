@@ -2,12 +2,12 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_store_groceries
-states: [ENTER, GO_TO_SCANNING_POSE, FIND_TABLE, GO_TO_CUPBOARD, SCAN_CUPBOARD, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_CUPBOARD, PLACE_OBJECT, GO_BACK_TO_TABLE, EXIT]
+states: [ENTER, GO_TO_SCANNING_POSE, FIND_TABLE, GO_TO_CUPBOARD, OPEN_DOOR, SCAN_CUPBOARD, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_CUPBOARD, PLACE_OBJECT, GO_BACK_TO_TABLE, EXIT]
 outcomes: [DONE, TIMEOUT]
 state_descriptions:
     - state:
         name: ENTER
-        state_module_name: mdr_store_groceries.scenario_states
+        state_module_name: mdr_store_groceries.scenario_states.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -28,7 +28,7 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_TO_SCANNING_POSE
-        state_module_name: mdr_store_groceries.scenario_states
+        state_module_name: mdr_store_groceries.scenario_states.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -70,8 +70,29 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_TO_CUPBOARD
-        state_module_name: mdr_store_groceries.scenario_states
+        state_module_name: mdr_store_groceries.scenario_states.move_base
         state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: OPEN_DOOR
+            - transition:
+                name: failed
+                state: GO_TO_CUPBOARD
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [CUPBOARD]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: OPEN_DOOR
+        state_module_name: mdr_store_groceries.scenario_states.open_door
+        state_class_name: OpenDoor
         transitions:
             - transition:
                 name: succeeded
@@ -83,9 +104,6 @@ state_descriptions:
                 name: failed_after_retrying
                 state: FAILED
         arguments:
-            - argument:
-                name: destination_locations
-                value: [CUPBOARD]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -109,7 +127,7 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_TO_TABLE
-        state_module_name: mdr_store_groceries.scenario_states
+        state_module_name: mdr_store_groceries.scenario_states.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -130,7 +148,7 @@ state_descriptions:
                 value: 3
     - state:
         name: PERCEIVE_TABLE
-        state_module_name: mdr_store_groceries.scenario_states
+        state_module_name: mdr_store_groceries.scenario_states.perceive_planes
         state_class_name: PerceivePlanes
         transitions:
             - transition:
@@ -151,7 +169,7 @@ state_descriptions:
                 value: table
     - state:
         name: PICK_OBJECT
-        state_module_name: mdr_store_groceries.scenario_states
+        state_module_name: mdr_store_groceries.scenario_states.pick
         state_class_name: Pick
         transitions:
             - transition:
@@ -172,7 +190,7 @@ state_descriptions:
                 value: 3
     - state:
         name: FIND_OBJECTS_BEFORE_PICKING
-        state_module_name: mdr_store_groceries.scenario_states
+        state_module_name: mdr_store_groceries.scenario_states.perceive_planes
         state_class_name: PerceivePlanes
         transitions:
             - transition:
@@ -193,7 +211,7 @@ state_descriptions:
                 value: table
     - state:
         name: GO_BACK_TO_CUPBOARD
-        state_module_name: mdr_store_groceries.scenario_states
+        state_module_name: mdr_store_groceries.scenario_states.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -214,7 +232,7 @@ state_descriptions:
                 value: 3
     - state:
         name: PLACE_OBJECT
-        state_module_name: mdr_store_groceries.scenario_states
+        state_module_name: mdr_store_groceries.scenario_states.place
         state_class_name: Place
         transitions:
             - transition:
@@ -235,7 +253,7 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_BACK_TO_TABLE
-        state_module_name: mdr_store_groceries.scenario_states
+        state_module_name: mdr_store_groceries.scenario_states.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -256,7 +274,7 @@ state_descriptions:
                 value: 3
     - state:
         name: EXIT
-        state_module_name: mdr_store_groceries.scenario_states
+        state_module_name: mdr_store_groceries.scenario_states.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
