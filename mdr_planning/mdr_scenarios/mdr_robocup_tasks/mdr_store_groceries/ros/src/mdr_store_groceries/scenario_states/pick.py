@@ -127,14 +127,14 @@ class Pick(ScenarioStateBase):
             distances[surface] = list()
             for pose in poses:
                 base_link_pose = self.tf_listener.transformPose('base_link', pose)
-                distances[surfaces].append(self.distance(robot_position, np.array([base_link_pose.pose.position.x,
-                                                                                   base_link_pose.pose.position.y,
-                                                                                   base_link_pose.pose.position.z])))
+                distances[surface].append(self.distance(robot_position, np.array([base_link_pose.pose.position.x,
+                                                                                  base_link_pose.pose.position.y,
+                                                                                  base_link_pose.pose.position.z])))
 
         min_dist = 1e100
         min_dist_obj_idx = -1
         obj_surface = ''
-        for surface, distance_list in distances:
+        for surface, distance_list in distances.items():
             if distance_list:
                 surface_min_dist = np.min(distance_list)
                 if surface_min_dist < min_dist:
