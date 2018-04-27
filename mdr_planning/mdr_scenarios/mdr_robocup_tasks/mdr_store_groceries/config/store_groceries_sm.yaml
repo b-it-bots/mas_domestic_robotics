@@ -2,7 +2,7 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_store_groceries
-states: [ENTER, GO_TO_TABLE, PERCEIVE_TABLE, GO_TO_SHELF, PERCEIVE_SHELF, GO_BACK_TO_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_SHELF, PLACE_OBJECT, EXIT]
+states: [ENTER, GO_TO_SCANNING_POSE, FIND_TABLE, SCAN_CUPBOARD, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_SHELF, PLACE_OBJECT, GO_BACK_TO_TABLE, EXIT]
 outcomes: [DONE, TIMEOUT]
 state_descriptions:
     - state:
@@ -12,7 +12,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: GO_TO_TABLE
+                state: GO_TO_SCANNING_POSE
             - transition:
                 name: failed
                 state: ENTER
@@ -23,6 +23,66 @@ state_descriptions:
             - argument:
                 name: destination_locations
                 value: [INSIDE_ARENA]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_SCANNING_POSE
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: FIND_TABLE
+            - transition:
+                name: failed
+                state: GO_TO_SCANNING_POSE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [CUPBOARD]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: FIND_TABLE
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: FindTable
+        transitions:
+            - transition:
+                name: succeeded
+                state: SCAN_CUPBOARD
+            - transition:
+                name: failed
+                state: GO_TO_SCANNING_POSE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [CUPBOARD]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: SCAN_CUPBOARD
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: ScanCupboard
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_TABLE
+            - transition:
+                name: failed
+                state: SCAN_CUPBOARD
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
             - argument:
                 name: number_of_retries
                 value: 3
@@ -68,69 +128,6 @@ state_descriptions:
             -argument:
                 name: plane_prefix
                 value: table
-    - state:
-        name: GO_TO_SHELF
-        state_module_name: mdr_store_groceries.scenario_states
-        state_class_name: MoveBase
-        transitions:
-            - transition:
-                name: succeeded
-                state: PERCEIVE_SHELF
-            - transition:
-                name: failed
-                state: GO_TO_SHELF
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: destination_locations
-                value: [SHELF]
-            - argument:
-                name: number_of_retries
-                value: 3
-    - state:
-        name: PERCEIVE_SHELF
-        state_module_name: mdr_store_groceries.scenario_states
-        state_class_name: PerceivePlanes
-        transitions:
-            - transition:
-                name: succeeded
-                state: GO_BACK_TO_TABLE
-            - transition:
-                name: failed
-                state: PERCEIVE_SHELF
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: number_of_retries
-                value: 3
-            -argument:
-                name: plane_prefix
-                value: shelf
-    - state:
-        name: GO_BACK_TO_TABLE
-        state_module_name: mdr_store_groceries.scenario_states
-        state_class_name: MoveBase
-        transitions:
-            - transition:
-                name: succeeded
-                state: PICK_OBJECT
-            - transition:
-                name: failed
-                state: GO_BACK_TO_TABLE
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: destination_locations
-                value: [TABLE]
-            - argument:
-                name: number_of_retries
-                value: 3
     - state:
         name: PICK_OBJECT
         state_module_name: mdr_store_groceries.scenario_states
@@ -212,6 +209,27 @@ state_descriptions:
                 name: failed_after_retrying
                 state: FAILED
         arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_BACK_TO_TABLE
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICK_OBJECT
+            - transition:
+                name: failed
+                state: GO_BACK_TO_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [TABLE]
             - argument:
                 name: number_of_retries
                 value: 3
