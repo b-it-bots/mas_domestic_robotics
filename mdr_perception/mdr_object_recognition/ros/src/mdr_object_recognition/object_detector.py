@@ -117,7 +117,7 @@ class ObjectDetector(object):
                 grouped = False
                 for index in plane_group_heights:
                     avg_height = sum(plane_group_heights[index])/len(plane_group_heights[index])
-                    if plane.pose.pose.position.z - avg_height < group_threshold:
+                    if abs(plane.pose.pose.position.z - avg_height) < group_threshold:
                         rospy.loginfo('grouping plane {0} with planes {1}'
                                       .format(plane_index, plane_groups[index]))
                         plane_groups[index].append(plane_index)
