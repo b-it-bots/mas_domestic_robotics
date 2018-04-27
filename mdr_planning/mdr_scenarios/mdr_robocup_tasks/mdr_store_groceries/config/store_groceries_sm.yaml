@@ -164,7 +164,7 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 3
-            -argument:
+            - argument:
                 name: plane_prefix
                 value: table
     - state:
@@ -206,7 +206,7 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 3
-            -argument:
+            - argument:
                 name: plane_prefix
                 value: table
     - state:
