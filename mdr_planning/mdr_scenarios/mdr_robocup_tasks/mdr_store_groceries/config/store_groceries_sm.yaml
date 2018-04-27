@@ -2,7 +2,7 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_store_groceries
-states: [ENTER, GO_TO_SCANNING_POSE, FIND_TABLE, SCAN_CUPBOARD, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_SHELF, PLACE_OBJECT, GO_BACK_TO_TABLE, EXIT]
+states: [ENTER, GO_TO_SCANNING_POSE, FIND_TABLE, GO_TO_CUPBOARD, SCAN_CUPBOARD, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_CUPBOARD, PLACE_OBJECT, GO_BACK_TO_TABLE, EXIT]
 outcomes: [DONE, TIMEOUT]
 state_descriptions:
     - state:
@@ -69,6 +69,27 @@ state_descriptions:
                 name: number_of_retries
                 value: 3
     - state:
+        name: GO_TO_CUPBOARD
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: SCAN_CUPBOARD
+            - transition:
+                name: failed
+                state: GO_TO_CUPBOARD
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [CUPBOARD]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
         name: SCAN_CUPBOARD
         state_module_name: mdr_store_groceries.scenario_states
         state_class_name: ScanCupboard
@@ -114,7 +135,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: GO_TO_SHELF
+                state: PICK_OBJECT
             - transition:
                 name: failed
                 state: PERCEIVE_TABLE
@@ -135,7 +156,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: GO_BACK_TO_SHELF
+                state: GO_BACK_TO_CUPBOARD
             - transition:
                 name: failed
                 state: PICK_OBJECT
@@ -171,7 +192,7 @@ state_descriptions:
                 name: plane_prefix
                 value: table
     - state:
-        name: GO_BACK_TO_SHELF
+        name: GO_BACK_TO_CUPBOARD
         state_module_name: mdr_store_groceries.scenario_states
         state_class_name: MoveBase
         transitions:
@@ -180,7 +201,7 @@ state_descriptions:
                 state: PLACE_OBJECT
             - transition:
                 name: failed
-                state: GO_BACK_TO_SHELF
+                state: GO_BACK_TO_CUPBOARD
             - transition:
                 name: failed_after_retrying
                 state: FAILED
