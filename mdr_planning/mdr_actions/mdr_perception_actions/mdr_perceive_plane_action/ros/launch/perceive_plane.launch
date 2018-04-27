@@ -6,7 +6,7 @@
     <arg name="detection_service_class" default="DetectionServiceProxyTest"/>
     <!-- recognition -->
     <arg name="recognition_service_name" default="/mdr_perception/recognize_image"/>
-    <arg name="recognition_model_name" default="athome_xception_v1"/>
+    <arg name="recognition_model_name" default="athome_xception"/>
     <arg name="preprocess_input_module" default="keras.applications.xception"/>
 
     <node pkg="mdr_perceive_plane_action" type="perceive_plane_action" name="perceive_plane_server" output="screen"
