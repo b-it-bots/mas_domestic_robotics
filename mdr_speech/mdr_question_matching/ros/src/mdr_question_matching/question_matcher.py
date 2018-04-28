@@ -107,6 +107,6 @@ def recognized_text_callback(recognized_phrase):
 
 def main():
     rospy.init_node('question_matcher', anonymous=True)
-    sub = rospy.Subscriber('~recognized_speech', std_msgs.msg.String,
+    sub = rospy.Subscriber('/recognized_speech', std_msgs.msg.String,
                            recognized_text_callback)
     rospy.spin()
