@@ -107,7 +107,8 @@ class RecognizeGenders(smach.State):
         goal.number_of_faces = userdata.number_of_faces
         goal.bounding_boxes = userdata.bounding_boxes
         self.gender_client.send_goal(goal)
-        result = self.gender_client.wait_for_result()
+        self.gender_client.wait_for_result()
+        result = self.gender_client.get_result()
 
         men = result.genders.count('man')
         women = result.genders.count('woman')
