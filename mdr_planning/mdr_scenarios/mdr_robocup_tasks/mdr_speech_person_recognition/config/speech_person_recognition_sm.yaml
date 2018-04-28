@@ -34,9 +34,6 @@ state_descriptions:
             - transition:
                 name: failed
                 state: RECOGNIZE_GENDERS
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
         arguments:
             - argument:
                 name: number_of_retries
@@ -49,16 +46,6 @@ state_descriptions:
             - transition:
                 name: succeeded
                 state: PROCESS_SPEECH
-            - transition:
-                name: failed
-                state: REQUEST_OPERATOR
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: number_of_retries
-                value: 3
     - state:
         name: PROCESS_SPEECH
         state_module_name: mdr_speech_person_recognition.speech_recognition.action_states
@@ -66,28 +53,10 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: ANSWER_QUESTION
-            - transition:
-                name: failed
-                state: PROCESS_SPEECH
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: number_of_retries
-                value: 3
-    - state:
-        name: ANSWER_QUESTION
-        state_module_name: mdr_speech_person_recognition.speech_recognition.action_states
-        state_class_name: AnswerQuestion
-        transitions:
-            - transition:
-                name: succeeded
                 state: PROCESS_SPEECH
             - transition:
                 name: failed
-                state: ANSWER_QUESTION
+                state: PROCESS_SPEECH
             - transition:
                 name: failed_after_retrying
                 state: FAILED
