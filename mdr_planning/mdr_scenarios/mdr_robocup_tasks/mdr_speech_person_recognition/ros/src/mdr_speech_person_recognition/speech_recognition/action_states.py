@@ -28,7 +28,7 @@ class RequestOperator(smach.State):
 
 class ProcessSpeech(smach.State):
     def __init__(self, **kwargs):
-        smach.State.__init__(self, outcomes=['succeded', 'failed',
+        smach.State.__init__(self, outcomes=['succeeded', 'failed',
                              'failed_after_retrying'],
                              output_keys=['question', 'source_pos',
                                           'question_count'])
@@ -51,7 +51,7 @@ class ProcessSpeech(smach.State):
         if self.question and self.question_count <= 5:
             userdata.question = self.question
             userdata.question_count = self.question_count
-            return 'succedeed'
+            return 'succeeded'
         elif self.localized_sound and self.question_count > 5:
             # userdata.source_pos = random_pose
             if self.retry_count == self.number_of_retries:
@@ -83,23 +83,3 @@ class ProcessSpeech(smach.State):
         else:
             self.question = msg.data
             self.question_count = self.question_count + 1
-
-
-class AnswerQuestion(smach.State):
-    def __init__(self, **kwargs):
-        smach.State.__init__(self, outcomes=['succeded', 'failed'],
-                             input_keys=['question', 'source_pose'])
-        self.timeout = kwargs.get('timeout', 20)
-        self.say_topic = kwargs.get('say_topic', '/say')
-        self.answer_client = SimpleActionClient('mdr_actions/answer_server',
-                                                AnswerAction)
-        self.answer_client.wait_for_server()
-        self.say_pub = rospy.Publisher(self.say_topic, String, queue_size=1)
-
-    def execute(self, userdata):
-        answer_goal = AnswerGoal()
-        answer_goal.question = userdata.question
-        self.answer_client.send_goal(answer_goal)
-        result = self.answer_client.wait_for_result()
-
-        say(self.say_pub, result.answer_message)
