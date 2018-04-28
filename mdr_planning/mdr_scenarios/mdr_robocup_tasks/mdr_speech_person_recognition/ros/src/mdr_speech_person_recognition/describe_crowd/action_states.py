@@ -28,7 +28,7 @@ class FindCrowd(smach.State):
                                           'number_of_faces'])
 
         self.timeout = kwargs.get('timeout', 3)
-        self.image_topic = kwargs.get('image_topic', 'some/topic')
+        self.image_topic = kwargs.get('image_topic', '/camd3d/image_raw')
         self.say_topic = kwargs.get('say_topic', '/say')
         self.number_of_retries = kwargs.get('number_of_retries', 3)
         self.retry_count = 0
@@ -40,7 +40,7 @@ class FindCrowd(smach.State):
                                                        DetectPersonAction)
         self.detect_person_client.wait_for_server()
 
-        self.turn_base_client = SimpleActionClient('mdr_actions/turn_to_server',
+        self.turn_base_client = SimpleActionClient('mdr_actions/turn_base_to_server',
                                                    TurnBaseToAction)
         self.turn_base_client.wait_for_server()
 
@@ -60,7 +60,8 @@ class FindCrowd(smach.State):
         userdata.image = goal.image
 
         self.detect_person_client.send_goal(goal)
-        result = self.detect_person_client.wait_for_result()
+        self.detect_person_client.wait_for_result()
+        result = self.detect_person_client.get_result()
 
         if result.number_of_faces > 0:
             # Say how many there are
@@ -74,8 +75,10 @@ class FindCrowd(smach.State):
 
         if self.retry_count == self.number_of_retries:
             rospy.loginfo('Failed to find crowd')
+            say(self.say_pub, 'I could not find the crowd')
             return 'failed_after_retrying'
-        rospy.loginfo('Retrying to fild crowd')
+        rospy.loginfo('Retrying to find crowd')
+        say(self.say_pub, "I'm still trying to find the crowd")
         self.retry_count += 1
         # TODO Turn a bit? How to handle failures?
         return 'failed'
