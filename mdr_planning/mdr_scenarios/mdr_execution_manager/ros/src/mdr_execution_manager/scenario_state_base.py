@@ -22,6 +22,8 @@ class ScenarioStateBase(smach.State):
         self.retry_count = 0
         self.executing = False
         self.succeeded = False
+        self.knowledge_storing_enabled = rospy.get_param('/store_knowledge', False)
+        self.say_pub = rospy.Publisher('/say', String, latch=True, queue_size=1)
 
         self.action_dispatch_pub = rospy.Publisher('/kcl_rosplan/action_dispatch',
                                                    plan_dispatch_msgs.ActionDispatch,
@@ -31,21 +33,36 @@ class ScenarioStateBase(smach.State):
                          plan_dispatch_msgs.ActionFeedback,
                          self.get_action_feedback)
 
-        rospy.wait_for_service('/kcl_rosplan/get_current_knowledge')
-        self.attribute_fetching_client = rospy.ServiceProxy('/kcl_rosplan/get_current_knowledge',
-                                                            rosplan_srvs.GetAttributeService)
-
-        self.msg_store_client = MessageStoreProxy()
         self.robot_name = ''
-        request = rosplan_srvs.GetAttributeServiceRequest()
-        request.predicate_name = 'robot_name'
-        result = self.attribute_fetching_client(request)
-        for item in result.attributes:
-            for param in item.values:
-                if param.key == 'bot':
-                    self.robot_name = param.value
+        self.attribute_fetching_client = None
+        self.msg_store_client = None
+        print('Knowledge storing enabled: %s' % str(self.knowledge_storing_enabled))
+        if self.knowledge_storing_enabled:
+            try:
+                rospy.wait_for_service('/kcl_rosplan/get_current_knowledge', 5.)
+                self.attribute_fetching_client = rospy.ServiceProxy('/kcl_rosplan/get_current_knowledge',
+                                                                    rosplan_srvs.GetAttributeService)
+                self.robot_name = ''
+                request = rosplan_srvs.GetAttributeServiceRequest()
+                request.predicate_name = 'robot_name'
+                result = self.attribute_fetching_client(request)
+                for item in result.attributes:
+                    for param in item.values:
+                        if param.key == 'bot':
+                            self.robot_name = param.value
+                            break
                     break
-            break
+            except (rospy.ServiceException, rospy.ROSException), exc:
+                rospy.logwarn('Service /kcl_rosplan/get_current_knowledge does not appear to exist.\n' +
+                              'If you intend to use the knowledge base, please spawn ' +
+                              'rosplan_knowledge_base/knowledgeBase')
+
+            try:
+                self.msg_store_client = MessageStoreProxy()
+            except Exception, exc:
+                rospy.logwarn('Could not create a mongodb_store proxy.\n' +
+                              'If you intend to store online knowledge, please spawn\n' +
+                              'mongodb_store/message_store_node.py')
 
     def execute(self, userdata):
         pass
@@ -69,8 +86,7 @@ class ScenarioStateBase(smach.State):
             self.executing = False
             self.succeeded = msg.status == 'action achieved'
 
-    def say(self, say_enabled, publisher, sentence):
-        if say_enabled:
-            say_msg = String()
-            say_msg.data = sentence
-            publisher.publish(say_msg)
+    def say(self, sentence):
+        say_msg = String()
+        say_msg.data = sentence
+        self.say_pub.publish(say_msg)

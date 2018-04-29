@@ -2,7 +2,7 @@ import rospy
 
 from std_msgs.msg import String
 
-from mdr_robot_inspection.scenario_states.scenario_state_base import ScenarioStateBase
+from mdr_execution_manager.scenario_state_base import ScenarioStateBase
 
 class WaitForCmd(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
@@ -12,10 +12,6 @@ class WaitForCmd(ScenarioStateBase):
                                    output_keys=['command'])
         self.timeout = rospy.Duration.from_sec(kwargs.get('timeout', 120.))
         self.state_check_rate = rospy.Rate(5)
-
-        self.say_topic = kwargs.get('say_topic', '')
-        self.say_enabled = self.say_topic != ''
-        self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
 
         self.speech_sub = rospy.Subscriber(kwargs.get('speech_topic', '/recognized_speech'),
                                            String, self.command_cb)
@@ -31,8 +27,7 @@ class WaitForCmd(ScenarioStateBase):
         if (rospy.Time.now() - self.start_time) < self.timeout:
             if self.command:
                 rospy.loginfo('Received command: %s' % self.command)
-                self.say(self.say_enabled, self.say_pub,
-                         'Received command ' + self.command)
+                self.say('Received command ' + self.command)
                 userdata.command = self.command
                 self.restart_state = True
                 return 'succeeded'

@@ -9,7 +9,7 @@ import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
 
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
-from mdr_store_groceries.scenario_states.scenario_state_base import ScenarioStateBase
+from mdr_execution_manager.scenario_state_base import ScenarioStateBase
 
 class MoveBase(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
@@ -28,10 +28,6 @@ class MoveBase(ScenarioStateBase):
         self.move_base_client = actionlib.SimpleActionClient(self.move_base_server,
                                                              MoveBaseAction)
         self.move_base_client.wait_for_server()
-
-        self.say_topic = kwargs.get('say_topic', '/say')
-        self.say_enabled = self.say_topic != ''
-        self.say_pub = rospy.Publisher(self.say_topic, String, latch=True, queue_size=1)
 
     def execute(self, userdata):
         if self.save_sm_state:
@@ -56,12 +52,12 @@ class MoveBase(ScenarioStateBase):
 
         for destination_location in self.destination_locations:
             if destination_location.lower().find('table') != -1:
-                self.say(self.say_enabled, self.say_pub, 'Moving to table')
+                self.say('Moving to table')
 
                 table_pose = self.get_table_pose()
                 if table_pose is None:
                     rospy.loginfo('Could not get table pose')
-                    self.say(self.say_enabled, self.say_pub, 'Could not move to table')
+                    self.say('Could not move to table')
                     return 'failed'
 
                 move_base_goal = MoveBaseGoal()
@@ -77,7 +73,7 @@ class MoveBase(ScenarioStateBase):
                                                      destination_location)
 
                 rospy.loginfo('Sending the base to %s' % destination_location)
-                self.say(self.say_enabled, self.say_pub, 'Going to ' + destination_location)
+                self.say('Going to ' + destination_location)
                 self.action_dispatch_pub.publish(dispatch_msg)
 
                 self.executing = True
@@ -93,10 +89,9 @@ class MoveBase(ScenarioStateBase):
                 original_location = destination_location
             else:
                 rospy.logerr('Could not reach %s' % destination_location)
-                self.say(self.say_enabled, self.say_pub,
-                         'Could not reach ' + destination_location)
+                self.say('Could not reach ' + destination_location)
                 if self.retry_count == self.number_of_retries:
-                    self.say(self.say_enabled, self.say_pub, 'Aborting operation')
+                    self.say('Aborting operation')
                     return 'failed_after_retrying'
                 self.retry_count += 1
                 return 'failed'
