@@ -1,4 +1,0 @@
-- git:
-    local-name: mas_common_robotics
-    uri: git@github.com:b-it-bots/mas_common_robotics.git
-    version: kinetic
