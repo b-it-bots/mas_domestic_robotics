@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import rospy
+from std_msgs.msg import String
 from tf import TransformListener
 
 from geometry_msgs.msg import PointStamped
@@ -10,7 +11,7 @@ import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
 
 from mcr_perception_msgs.msg import Object
-from mdr_store_groceries.scenario_states.scenario_state_base import ScenarioStateBase
+from mdr_execution_manager.scenario_state_base import ScenarioStateBase
 
 class Pick(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
@@ -23,9 +24,10 @@ class Pick(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', 'mdr_store_groceries')
         self.state_name = kwargs.get('state_name', 'pick')
         self.timeout = kwargs.get('timeout', 120.)
+        self.tf_listener = TransformListener()
+
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
-        self.tf_listener = TransformListener()
 
     def execute(self, userdata):
         if self.save_sm_state:
@@ -39,10 +41,12 @@ class Pick(ScenarioStateBase):
             obj_to_grasp = surface_objects[surface][obj_to_grasp_idx]
         else:
             rospy.logerr('Could not find an object to grasp')
+            self.say('Could not find an object to grasp')
             return 'find_objects_before_picking'
 
         dispatch_msg = self.get_dispatch_msg(obj_to_grasp, surface)
         rospy.loginfo('Picking %s from %s' % (obj_to_grasp, surface))
+        self.say('Picking ' + obj_to_grasp + ' from ' + surface)
         self.action_dispatch_pub.publish(dispatch_msg)
 
         self.executing = True
@@ -55,12 +59,15 @@ class Pick(ScenarioStateBase):
 
         if self.succeeded:
             rospy.loginfo('%s grasped successfully' % obj_to_grasp)
+            self.say('Successfully grasped ' + obj_to_grasp)
             userdata.grasped_object = obj_to_grasp
             return 'succeeded'
 
         rospy.loginfo('Could not grasp %s' % obj_to_grasp)
+        self.say('Could not grasp ' + obj_to_grasp)
         if self.retry_count == self.number_of_retries:
             rospy.loginfo('Failed to grasp %s' % obj_to_grasp)
+            self.say('Aborting operation')
             return 'failed_after_retrying'
         rospy.loginfo('Retrying to grasp %s' % obj_to_grasp)
         self.retry_count += 1
@@ -105,21 +112,27 @@ class Pick(ScenarioStateBase):
         '''Returns the index of the object whose distance is closest to the robot
         '''
         object_surfaces = list()
-        distances = list()
+        distances = dict()
         robot_position = np.zeros(3)
         for surface, poses in object_poses.items():
+            object_surfaces.append(surface)
+            distances[surface] = list()
             for pose in poses:
                 base_link_pose = self.tf_listener.transformPose('base_link', pose)
-                distances.append(self.distance(robot_position, np.array([base_link_pose.pose.position.x,
-                                                                         base_link_pose.pose.position.y,
-                                                                         base_link_pose.pose.position.z])))
-                object_surfaces.append(surface)
+                distances[surface].append(self.distance(robot_position, np.array([base_link_pose.pose.position.x,
+                                                                                  base_link_pose.pose.position.y,
+                                                                                  base_link_pose.pose.position.z])))
 
+        min_dist = 1e100
         min_dist_obj_idx = -1
         obj_surface = ''
-        if distances:
-            min_dist_obj_idx = np.argmin(distances)
-            obj_surface = object_surfaces[min_dist_obj_idx]
+        for surface, distance_list in distances.items():
+            if distance_list:
+                surface_min_dist = np.min(distance_list)
+                if surface_min_dist < min_dist:
+                    min_dist = surface_min_dist
+                    min_dist_obj_idx = np.argmin(distance_list)
+                    obj_surface = surface
         return obj_surface, min_dist_obj_idx
 
     def get_robot_pose(self, map_frame='map', base_link_frame='base_link'):

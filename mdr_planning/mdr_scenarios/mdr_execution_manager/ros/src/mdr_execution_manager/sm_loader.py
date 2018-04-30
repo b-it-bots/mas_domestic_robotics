@@ -23,13 +23,22 @@ class SMLoader(object):
 
         '''
         sm_params = StateMachineParams()
-        parent_sm_data = None
-        if parent_sm_file != '':
-            parent_sm_data = SMLoader.__load_sm_file(parent_sm_file)
-            sm_params = SMLoader.__load_parent_config(parent_sm_data)
 
         # we load the state machine file
         sm_data = SMLoader.__load_sm_file(sm_file)
+
+        # we add any new arguments that are defined in the child config
+        # to the list of global state machine arguments
+        if SMFileKeys.ARGS in sm_data:
+            for arg in sm_data[SMFileKeys.ARGS]:
+                arg_data = arg[SMFileKeys.ARG]
+                sm_params.global_params[arg_data[SMFileKeys.ARG_NAME]] = \
+                arg_data[SMFileKeys.ARG_VALUE]
+
+        parent_sm_data = None
+        if parent_sm_file != '':
+            parent_sm_data = SMLoader.__load_sm_file(parent_sm_file)
+            sm_params = SMLoader.__load_parent_config(parent_sm_data, sm_params)
 
         # we replace the state machine ID if it's redefined in the child config
         if SMFileKeys.ID in sm_data:
@@ -82,6 +91,10 @@ class SMLoader(object):
                         state_params.args[arg_data[SMFileKeys.ARG_NAME]] = \
                         arg_data[SMFileKeys.ARG_VALUE]
 
+                for arg_name, arg_value in sm_params.global_params.items():
+                    arg_data = arg[SMFileKeys.ARG]
+                    state_params.args[arg_name] = arg_value
+
                 # we add the state machine ID and the state name as additional state arguments
                 state_params.args['sm_id'] = sm_params.id
                 state_params.args['state_name'] = state_params.name
@@ -103,7 +116,7 @@ class SMLoader(object):
         return sm_data
 
     @staticmethod
-    def __load_parent_config(parent_sm_data):
+    def __load_parent_config(parent_sm_data, sm_params):
         '''Returns an 'mdr_execution_manager.sm_params.StateMachineParams'
         object containing description parameters for a generic state machine description
 
@@ -111,10 +124,14 @@ class SMLoader(object):
         parent_sm_data -- an 'mdr_execution_manager.sm_params.StateMachineParams' object
 
         '''
-        sm_params = StateMachineParams()
         sm_params.id = parent_sm_data[SMFileKeys.ID]
         sm_params.states = parent_sm_data[SMFileKeys.STATES]
         sm_params.outcomes = parent_sm_data[SMFileKeys.OUTCOMES]
+        if SMFileKeys.ARGS in parent_sm_data:
+            for arg in parent_sm_data[SMFileKeys.ARGS]:
+                arg_data = arg[SMFileKeys.ARG]
+                sm_params.global_params[arg_data[SMFileKeys.ARG_NAME]] = \
+                arg_data[SMFileKeys.ARG_VALUE]
 
         for state_description in parent_sm_data[SMFileKeys.STATE_DESCRIPTIONS]:
             state_data = state_description[SMFileKeys.STATE]
@@ -133,6 +150,10 @@ class SMLoader(object):
                     arg_data = arg[SMFileKeys.ARG]
                     state_params.args[arg_data[SMFileKeys.ARG_NAME]] = \
                     arg_data[SMFileKeys.ARG_VALUE]
+
+            for arg_name, arg_value in sm_params.global_params.items():
+                arg_data = arg[SMFileKeys.ARG]
+                state_params.args[arg_name] = arg_value
 
             sm_params.state_params[state_params.name] = state_params
         return sm_params

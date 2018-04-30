@@ -12,6 +12,7 @@ class StateMachineParams(object):
         self.states = list()
         self.outcomes = list()
         self.state_params = OrderedDict()
+        self.global_params = dict()
 
 class StateParams(object):
     '''Defines parameters for a single state machine state

@@ -1,0 +1,30 @@
+shower gel
+salt
+sponge
+kinder
+toothpaste
+malz
+water
+tomato
+peppermint_tea
+lemon
+apple
+box
+nuts
+fork
+spoon
+knife
+bowl
+cup
+pepper
+noodles
+cacao
+mixdrink
+orange_juice
+soap
+kiwi
+fruit bar
+green_paprika
+wiper
+cookies
+coke
