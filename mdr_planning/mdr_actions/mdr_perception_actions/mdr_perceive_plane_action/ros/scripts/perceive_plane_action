@@ -9,7 +9,8 @@ from mdr_perceive_plane_action.action_states import SetActionLibResult, DetectOb
 
 
 class PerceivePlaneSkill(smach.StateMachine):
-    def __init__(self, detection_service_proxy_class, target_frame):
+    def __init__(self, detection_service_proxy_class, target_frame, recog_service_name, recog_model_name,
+                 preprocess_input_module):
         smach.StateMachine.__init__(self, outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
                                     input_keys=['perceive_plane_goal'],
                                     output_keys=['perceive_plane_feedback', 'perceive_plane_result'])
@@ -21,7 +22,8 @@ class PerceivePlaneSkill(smach.StateMachine):
                                                 Constant.TIMEOUT: 'SET_ACTION_LIB_FAILURE',
                                                 Constant.FAILURE: 'SET_ACTION_LIB_FAILURE'})
 
-            smach.StateMachine.add('RECOGNIZE_OBJECTS', RecognizeObjects(),
+            smach.StateMachine.add('RECOGNIZE_OBJECTS', RecognizeObjects(recog_service_name, recog_model_name,
+                                                                         preprocess_input_module),
                                    transitions={Constant.SUCCESS: 'SET_ACTION_LIB_SUCCESS',
                                                 Constant.FAILURE: 'SET_ACTION_LIB_FAILURE'})
 
@@ -33,15 +35,22 @@ class PerceivePlaneSkill(smach.StateMachine):
 
 
 def main():
-    rospy.init_node('perceive_plane_server')
-    service_module = rospy.get_param('detection_service_module', 'mdr_object_recognition')
-    service_class_name = rospy.get_param('detection_service_class', 'DetectionServiceProxyTest')
-
-    target_frame = rospy.get_param("~target_frame")
+    rospy.init_node('~perceive_plane_server')
+    # detection
+    service_module = rospy.get_param('~detection_service_module', 'mdr_object_recognition')
+    service_class_name = rospy.get_param('~detection_service_class', 'DetectionServiceProxyTest')
     service_class = getattr(import_module(service_module), service_class_name)
 
+    # recognition
+    recognition_service_name = rospy.get_param('~recognition_service_name', '/mdr_perception/recognize_image')
+    recognition_model_name = rospy.get_param('~recognition_model_name', 'athome_xception_v1')
+    preprocess_input_module = rospy.get_param('~preprocess_input_module', None)
+
+    target_frame = rospy.get_param("~target_frame")
+
     # Construct state machine
-    sm = PerceivePlaneSkill(service_class, target_frame)
+    sm = PerceivePlaneSkill(service_class, target_frame, recognition_service_name, recognition_model_name,
+                            preprocess_input_module)
 
     # smach viewer
     sis = IntrospectionServer('perceive_plane_smach_viewer', sm, '/PERCEIVE_PLANE_SMACH_VIEWER')

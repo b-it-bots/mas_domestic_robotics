@@ -87,7 +87,7 @@ def question_answer_matching(recognized_phrase):
 
     if not questions_answers[winner]:
         # print("Unknown question!")
-        answer = "I wasn't able to recognize your question!"  # random answer
+        answer = "Sorry, I wasn't able to recognize your question!"  # random answer
 
     elif questions_answers[winner]:
         # print(questions_answers[winner])
@@ -95,7 +95,7 @@ def question_answer_matching(recognized_phrase):
 
     else:
         print("Something bad happened...")
-        answer = "I wasn't able to recognize your question!"  # random answer
+        answer = "Sorry, I wasn't able to recognize your question!"  # random answer
 
     return answer
 
@@ -107,6 +107,6 @@ def recognized_text_callback(recognized_phrase):
 
 def main():
     rospy.init_node('question_matcher', anonymous=True)
-    sub = rospy.Subscriber('~recognized_speech', std_msgs.msg.String,
+    sub = rospy.Subscriber('/recognized_speech', std_msgs.msg.String,
                            recognized_text_callback)
     rospy.spin()

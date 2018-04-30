@@ -38,6 +38,7 @@ class Pickup(smach.State):
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  base_elbow_offset=-1.,
+                 object_offset=1.,
                  grasping_orientation=list()):
         smach.State.__init__(self, input_keys=['pickup_goal'],
                              output_keys=['pickup_feedback'],
@@ -53,6 +54,7 @@ class Pickup(smach.State):
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
         self.base_elbow_offset = base_elbow_offset
+        self.object_offset = object_offset
         self.grasping_orientation = grasping_orientation
         self.tf_listener = tf.TransformListener()
 
@@ -77,6 +79,7 @@ class Pickup(smach.State):
 
             # the base is now correctly aligned with the pose, so we set the
             # y position of the goal pose to the elbow offset
+            pose_base_link.pose.position.x = self.object_offset
             pose_base_link.pose.position.y = self.base_elbow_offset
 
         if self.grasping_orientation:
@@ -130,7 +133,7 @@ class Pickup(smach.State):
         aligned_base_pose = PoseStamped()
         aligned_base_pose.header.frame_id = 'base_link'
         aligned_base_pose.header.stamp = rospy.Time.now()
-        aligned_base_pose.pose.position.x = 0.
+        aligned_base_pose.pose.position.x = pose_base_link.pose.position.x - self.object_offset
         aligned_base_pose.pose.position.y = pose_base_link.pose.position.y - self.base_elbow_offset
         aligned_base_pose.pose.position.z = 0.
         aligned_base_pose.pose.orientation.x = 0.

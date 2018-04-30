@@ -1,0 +1,66 @@
+# Description: Defines a state machine for a RoboCup@Home speech and person recognition scenario
+# Authors: Alex Mitrevski, Argentina Ortega
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_speech_person_recognition
+states: [FIND_CROWD, RECOGNIZE_GENDERS, REQUEST_OPERATOR, PROCESS_SPEECH, ANSWER_QUESTION]
+outcomes: [DONE, FAILED, TIMEOUT]
+state_descriptions:
+    - state:
+        name: FIND_CROWD
+        state_module_name: mdr_speech_person_recognition.describe_crowd.action_states
+        state_class_name: FindCrowd
+        transitions:
+            - transition:
+                name: succeeded
+                state: RECOGNIZE_GENDERS
+            - transition:
+                name: failed
+                state: FIND_CROWD
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: RECOGNIZE_GENDERS
+        state_module_name: mdr_speech_person_recognition.describe_crowd.action_states
+        state_class_name: RecognizeGenders
+        transitions:
+            - transition:
+                name: succeeded
+                state: REQUEST_OPERATOR
+            - transition:
+                name: failed
+                state: RECOGNIZE_GENDERS
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: REQUEST_OPERATOR
+        state_module_name: mdr_speech_person_recognition.speech_recognition.action_states
+        state_class_name: RequestOperator
+        transitions:
+            - transition:
+                name: succeeded
+                state: PROCESS_SPEECH
+    - state:
+        name: PROCESS_SPEECH
+        state_module_name: mdr_speech_person_recognition.speech_recognition.action_states
+        state_class_name: ProcessSpeech
+        transitions:
+            - transition:
+                name: succeeded
+                state: PROCESS_SPEECH
+            - transition:
+                name: failed
+                state: PROCESS_SPEECH
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
