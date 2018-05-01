@@ -53,7 +53,7 @@
     <include file="$(find mdr_place_action)/ros/launch/place_client.launch" />
 
     <!-- State machine -->
-    <param name="sm_config_file" type="str" value="$(find mdr_store_groceries)/config/store_groceries_sm.yaml" />
-    <param name="store_knowledge" value="true" />
+    <param name="/sm_config_file" type="str" value="$(find mdr_store_groceries)/config/store_groceries_sm.yaml" />
+    <param name="/store_knowledge" value="true" />
     <node pkg="mas_execution_manager" type="state_machine_creator" name="store_groceries" output="screen" />
 </launch>
