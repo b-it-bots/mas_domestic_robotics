@@ -5,7 +5,7 @@ from std_msgs.msg import String
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import diagnostic_msgs.msg as diag_msgs
 
-from mdr_execution_manager.scenario_state_base import ScenarioStateBase
+from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class PerceivePlanes(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):

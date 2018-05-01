@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
-    <param name="/store_knowledge" value="true" />
 
     <!-- ROSPlan -->
     <!-- data paths -->
@@ -54,6 +53,8 @@
     <include file="$(find mdr_place_action)/ros/launch/place_client.launch" />
 
     <!-- State machine -->
-    <param name="sm_config_file" type="str" value="$(find mdr_store_groceries)/config/store_groceries_sm.yaml" />
-    <node pkg="mdr_execution_manager" type="state_machine_creator" name="store_groceries" output="screen" />
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="store_groceries" output="screen">
+        <param name="sm_config_file" type="str" value="$(find mdr_store_groceries)/config/store_groceries_sm.yaml" />
+        <param name="store_knowledge" value="true" />
+    </node>
 </launch>

@@ -9,7 +9,7 @@ import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
 
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
-from mdr_execution_manager.scenario_state_base import ScenarioStateBase
+from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class MoveBase(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):

@@ -2,7 +2,7 @@ import rospy
 
 from std_msgs.msg import String
 
-from mdr_execution_manager.scenario_state_base import ScenarioStateBase
+from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class WaitForQR(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):

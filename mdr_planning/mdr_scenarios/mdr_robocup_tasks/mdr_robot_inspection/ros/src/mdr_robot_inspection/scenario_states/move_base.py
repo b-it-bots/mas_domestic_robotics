@@ -3,7 +3,7 @@ import actionlib
 from std_msgs.msg import String
 
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
-from mdr_execution_manager.scenario_state_base import ScenarioStateBase
+from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class MoveBase(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
