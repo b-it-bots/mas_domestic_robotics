@@ -23,6 +23,6 @@
         <param name="throttle_repeated_barcodes" type="double" value="2.0" />
     </node>
 
-    <param name="sm_config_file" type="str" value="$(find mdr_speech_person_recognition)/config/speech_person_recognition_sm.yaml" />
+    <param name="/sm_config_file" type="str" value="$(find mdr_speech_person_recognition)/config/speech_person_recognition_sm.yaml" />
     <node pkg="mas_execution_manager" type="state_machine_creator" name="speech_person" output="screen" />
 </launch>
