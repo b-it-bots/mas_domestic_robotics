@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   mcr_door_status
   mdr_enter_door_action
   mdr_move_base_action
+  mas_execution_manager
 )
 
 catkin_package(
@@ -24,6 +25,7 @@ catkin_package(
     mcr_door_status
     mdr_move_base_action
     mdr_enter_door_action
+    mas_execution_manager
 )
 
 catkin_python_setup()

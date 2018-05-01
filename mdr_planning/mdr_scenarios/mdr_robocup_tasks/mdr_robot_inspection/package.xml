@@ -13,6 +13,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>rospy</build_depend>
+  <build_depend>roslint</build_depend>
   <build_depend>smach</build_depend>
   <build_depend>smach_ros</build_depend>
   <build_depend>actionlib</build_depend>
@@ -20,7 +21,7 @@
   <build_depend>mcr_door_status</build_depend>
   <build_depend>mdr_enter_door_action</build_depend>
   <build_depend>mdr_move_base_action</build_depend>
-  <build_depend>roslint</build_depend>
+  <build_depend>mas_execution_manager</build_depend>
 
   <run_depend>rospy</run_depend>
   <run_depend>smach</run_depend>
@@ -31,6 +32,7 @@
   <run_depend>mcr_door_status</run_depend>
   <run_depend>mdr_enter_door_action</run_depend>
   <run_depend>mdr_move_base_action</run_depend>
+  <run_depend>mas_execution_manager</run_depend>
 
   <test_depend>roslaunch</test_depend>
 </package>

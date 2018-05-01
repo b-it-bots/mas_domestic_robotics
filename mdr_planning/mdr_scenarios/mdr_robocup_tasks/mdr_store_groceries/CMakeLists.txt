@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   mongodb_store
   mdr_rosplan_interface
-  mdr_execution_manager
+  mas_execution_manager
   mdr_move_base_action
   mdr_move_arm_action
   mdr_pickup_action
@@ -26,7 +26,7 @@ catkin_package(
     actionlib
     mongodb_store
     mdr_rosplan_interface
-    mdr_execution_manager
+    mas_execution_manager
     mdr_move_base_action
     mdr_move_arm_action
     mdr_pickup_action
