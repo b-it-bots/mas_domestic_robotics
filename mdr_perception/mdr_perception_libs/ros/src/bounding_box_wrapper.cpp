@@ -3,7 +3,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <geometry_msgs/PoseArray.h>
 #include <geometry_msgs/PoseStamped.h>
-#include <mcr_scene_segmentation/bounding_box.h>
+#include <mdr_perception_libs/bounding_box.h>
 #include <mcr_perception_msgs/BoundingBox.h>
 #include "mdr_perception_libs/impl/ros_message_serialization.hpp"
 #include "mdr_perception_libs/bounding_box_wrapper.h"
