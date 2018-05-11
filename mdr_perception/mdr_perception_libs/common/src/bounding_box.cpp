@@ -12,6 +12,9 @@
 #include <limits>
 #include <algorithm>
 
+namespace mdr_perception_libs
+{
+
 BoundingBox BoundingBox::create(const PointCloud::ConstPtr& cloud,
                                 const Eigen::Vector3f& normal)
 {
@@ -90,3 +93,4 @@ BoundingBox BoundingBox::create(const PointCloud::VectorType& points,
     return create(cloud, normal);
 }
 
+}  // namespace mdr_perception_libs

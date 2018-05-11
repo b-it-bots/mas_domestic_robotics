@@ -78,6 +78,17 @@ target_link_libraries(_cpp_wrapper
 )
 
 #############
+## Testing ##
+#############
+roslint_python()
+roslint_cpp()
+
+if(CATKIN_ENABLE_TESTING)
+  find_package(roslaunch REQUIRED)
+  roslaunch_add_file_check(ros/launch)
+endif()
+
+#############
 ## Install ##
 #############
 # includes
@@ -104,10 +115,3 @@ install(PROGRAMS
   ros/scripts/image_recognition_server
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
-#############
-## Testing ##
-#############
-
-roslint_python()
-roslint_cpp()

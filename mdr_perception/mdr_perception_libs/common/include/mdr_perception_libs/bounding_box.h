@@ -7,7 +7,11 @@
 #ifndef MDR_PERCEPTION_LIBS_BOUNDING_BOX_H
 #define MDR_PERCEPTION_LIBS_BOUNDING_BOX_H
 
+#include <vector>
 #include <mdr_perception_libs/aliases.h>
+
+namespace mdr_perception_libs
+{
 
 class BoundingBox
 {
@@ -52,5 +56,7 @@ private:
     Points vertices_;
     Eigen::Vector3f dimensions_;
 };
+
+}  // namespace mdr_perception_libs
 
 #endif  // MDR_PERCEPTION_LIBS_BOUNDING_BOX_H

@@ -32,5 +32,5 @@ def process_image_message(rgb_image, cv_bridge, target_size=None, func_preproces
 
 def case_insensitive_glob(pattern):
     def either(c):
-        return '[%s%s]'%(c.lower(),c.upper()) if c.isalpha() else c
-    return glob.glob(''.join(map(either,pattern)))
+        return '[%s%s]' % (c.lower(), c.upper()) if c.isalpha() else c
+    return glob.glob(''.join(map(either, pattern)))
