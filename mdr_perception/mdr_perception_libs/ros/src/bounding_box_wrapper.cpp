@@ -1,3 +1,11 @@
+/*
+ * Copyright 2018 Bonn-Rhein-Sieg University
+ *
+ * Author: Minh Nguyen
+ *
+ */
+#include <string>
+#include <vector>
 #include <utility>
 #include <boost/python.hpp>
 #include <pcl_conversions/pcl_conversions.h>
@@ -9,6 +17,8 @@
 #include "mdr_perception_libs/bounding_box_wrapper.h"
 
 namespace bp = boost::python;
+using BoundingBox = mdr_perception_libs::BoundingBox;
+using BoundingBoxMsg = mcr_perception_msgs::BoundingBox;
 
 namespace mdr_perception_libs
 {
@@ -80,7 +90,7 @@ namespace mdr_perception_libs
 
     std::string BoundingBoxWrapper::getRosMsg()
     {
-        mcr_perception_msgs::BoundingBox boxMsg;
+        BoundingBoxMsg boxMsg;
         boxMsg.center = mPose.pose.position;
 
         Eigen::Vector3f dimensions = mBox.getDimensions();
@@ -99,13 +109,12 @@ namespace mdr_perception_libs
         }
         return to_python(boxMsg);
     }
-}
+}  // namespace mdr_perception_libs
 
 BOOST_PYTHON_MODULE(_cpp_wrapper)
 {
-    using namespace mdr_perception_libs;
+    using mdr_perception_libs::BoundingBoxWrapper;
     bp::class_<BoundingBoxWrapper>("BoundingBoxWrapper", bp::init<std::string, bp::list&>())
             .def("get_pose", &BoundingBoxWrapper::getPose)
-            .def("get_ros_message", &BoundingBoxWrapper::getRosMsg)
-    ;
+            .def("get_ros_message", &BoundingBoxWrapper::getRosMsg);
 }
