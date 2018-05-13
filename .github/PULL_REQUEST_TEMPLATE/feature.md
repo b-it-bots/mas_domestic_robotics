@@ -1,3 +1,8 @@
+---
+name: New feature
+about: Adding a new feature
+---
+
 <!--- Provide a general summary of your changes in the Title above -->
 
 ## Description
