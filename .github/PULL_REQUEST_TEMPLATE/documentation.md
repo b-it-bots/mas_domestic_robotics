@@ -1,3 +1,8 @@
+---
+name: Documentation
+about: Adding or improving documentation
+---
+
 # Description
 <!-- Briefly describe what this MR is about, where the changes occurred-->
 
