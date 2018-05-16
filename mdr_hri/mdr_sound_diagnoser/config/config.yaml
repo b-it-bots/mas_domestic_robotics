@@ -1,0 +1,12 @@
+Hey1:
+  topic: /test
+  folder: A
+  file_name: AHey.wav
+Start:
+  topic: /test1
+  folder: K
+  file_name: KHmm.wav
+Stop:
+  topic: /test2
+  folder: E
+  file_name: E02.wav
