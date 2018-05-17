@@ -5,7 +5,6 @@
   <description>Human Robot Interface packages for domestic service robots.</description>
   <license>GPLv3</license>
 
-  <author email="jose.mayoral@smail.inf.h-brs.de">Jose Mayoral</author>
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
