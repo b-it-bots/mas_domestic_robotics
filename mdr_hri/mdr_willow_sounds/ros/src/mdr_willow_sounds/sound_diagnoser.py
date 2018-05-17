@@ -12,7 +12,7 @@ from mdr_willow_sounds.cfg import soundDiagnoserConfig
 
 class SoundDiagnoser:
     def __init__(self, config_file):
-        package_name = "mdr_sound_diagnoser"
+        package_name = "mdr_willow_sounds"
         rospy.init_node(package_name + '_node', anonymous = False)
 
         self.package_path = rospkg.RosPack().get_path(package_name) + '/'
