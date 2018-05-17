@@ -2,10 +2,10 @@
 <package>
   <name>mdr_hri</name>
   <version>1.0.0</version>
-  <description>Human Robot Interface packages for domestic service robots.</description>
-  <license>GPLv3</license>
+  <description>Meta package for human-robot interaction packages</description>
 
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+  <license>GPLv3</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 
