@@ -7,7 +7,7 @@ import yaml
 import rospy
 import rospkg
 from dynamic_reconfigure.server import Server
-from mdr_sound_diagnoser.cfg import soundDiagnoserConfig
+from mdr_willow_sounds.cfg import soundDiagnoserConfig
 
 
 class SoundDiagnoser:

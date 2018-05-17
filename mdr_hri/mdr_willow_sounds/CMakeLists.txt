@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_sound_diagnoser)
+project(mdr_willow_sounds)
 
 find_package(catkin REQUIRED
   COMPONENTS
@@ -35,6 +35,6 @@ install(DIRECTORY ros/launch
 )
 
 install(PROGRAMS
-  ros/scripts/sound_diagnoser
+  ros/scripts/willow_sounds
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
