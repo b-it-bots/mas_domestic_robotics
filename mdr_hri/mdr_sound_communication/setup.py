@@ -4,8 +4,8 @@ from distutils.core import setup
 from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup(
-    packages=['mdr_willow_sounds'],
-    package_dir={'mdr_willow_sounds': 'ros/src/mdr_willow_sounds'}
+    packages=['mdr_sound_communication'],
+    package_dir={'mdr_sound_communication': 'ros/src/mdr_sound_communication'}
 )
 
 setup(**d)
