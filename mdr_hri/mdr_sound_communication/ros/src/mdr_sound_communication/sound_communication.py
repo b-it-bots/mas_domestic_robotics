@@ -7,12 +7,12 @@ import yaml
 import rospy
 import rospkg
 from dynamic_reconfigure.server import Server
-from mdr_willow_sounds.cfg import soundDiagnoserConfig
+from mdr_sound_communication.cfg import soundCommunicationConfig
 from std_msgs.msg import String
 
-class SoundDiagnoser:
+class SoundCommunication:
     def __init__(self, config_file):
-        package_name = "mdr_willow_sounds"
+        package_name = "mdr_sound_communication"
         rospy.init_node(package_name + '_node', anonymous = False)
 
         self.package_path = rospkg.RosPack().get_path(package_name) + '/'
@@ -27,7 +27,7 @@ class SoundDiagnoser:
             rospy.Subscriber(self.sound_dictionary[sound]['topic'], rospy.AnyMsg, self.mainCB, sound_file)
 
         rospy.Subscriber('sound_monitor', String, self.soundCB)
-        self.dyn_reconfigure_srv = Server(soundDiagnoserConfig, self.dynamic_reconfigureCB)
+        self.dyn_reconfigure_srv = Server(soundCommunicationConfig, self.dynamic_reconfigureCB)
 
         rospy.spin()
 

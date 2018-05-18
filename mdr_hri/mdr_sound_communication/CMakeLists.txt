@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_willow_sounds)
+project(mdr_sound_communication)
 
 find_package(catkin REQUIRED
   COMPONENTS
@@ -11,7 +11,7 @@ find_package(catkin REQUIRED
 catkin_python_setup()
 
 generate_dynamic_reconfigure_options(
-   ros/cfg/soundDiagnoser.cfg
+   ros/cfg/soundCommunication.cfg
 )
 
 catkin_package(
