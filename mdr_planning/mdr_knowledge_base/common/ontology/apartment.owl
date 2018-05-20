@@ -12,6 +12,7 @@
 
     <!--************* Class definitions ************-->
     <owl:Class rdf:about="Plane"/>
+    <owl:Class rdf:about="Location"/>
     <owl:Class rdf:about="Object"/>
 
     <!-- Furniture items -->
@@ -29,13 +30,35 @@
     <owl:Class rdf:about="KitchenUtensil"/>
     <owl:Class rdf:about="Fork"/>
     <owl:Class rdf:about="Knife"/>
+    <owl:Class rdf:about="BreadKnife"/>
     <owl:Class rdf:about="TableSpoon"/>
     <owl:Class rdf:about="TeaSpoon"/>
 
+    <!-- Kitchen appliances -->
+    <owl:Class rdf:about="KitchenAppliance"/>
+    <owl:Class rdf:about="Oven"/>
+    <owl:Class rdf:about="MicrowaveOven"/>
+    <owl:Class rdf:about="WaterBoiler"/>
+    <owl:Class rdf:about="Mixer"/>
+    <owl:Class rdf:about="Dishwasher"/>
+
+    <!-- Drinkware -->
     <owl:Class rdf:about="Drinkware"/>
     <owl:Class rdf:about="Cup"/>
     <owl:Class rdf:about="Mug"/>
     <owl:Class rdf:about="DrinkingGlass"/>
+
+    <!-- Food containers -->
+    <owl:Class rdf:about="FoodContainer"/>
+    <owl:Class rdf:about="Bowl"/>
+    <owl:Class rdf:about="Plate"/>
+    <owl:Class rdf:about="SoupPlate"/>
+    <owl:Class rdf:about="LunchBox"/>
+
+    <!-- Cooking utensils -->
+    <owl:Class rdf:about="CookingUtensil"/>
+    <owl:Class rdf:about="FryingPan"/>
+    <owl:Class rdf:about="Pot"/>
     <!--*********************************************-->
 
 
@@ -49,6 +72,12 @@
         <rdf:type rdf:resource="&owl;FunctionalProperty" />
         <rdfs:domain rdf:resource="Object"/>
         <rdfs:range rdf:resource="Furniture"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="furnitureLocatedAt">
+        <rdf:type rdf:resource="&owl;FunctionalProperty" />
+        <rdfs:domain rdf:resource="Furniture"/>
+        <rdfs:range rdf:resource="Location"/>
     </owl:ObjectProperty>
     <!--*********************************************-->
 
@@ -89,6 +118,9 @@
     <owl:Class rdf:about="Knife">
       <rdfs:subClassOf rdf:resource="KitchenUtensil"/>
     </owl:Class>
+    <owl:Class rdf:about="BreadKnife">
+      <rdfs:subClassOf rdf:resource="KitchenUtensil"/>
+    </owl:Class>
     <owl:Class rdf:about="TableSpoon">
       <rdfs:subClassOf rdf:resource="KitchenUtensil"/>
     </owl:Class>
@@ -96,6 +128,24 @@
       <rdfs:subClassOf rdf:resource="KitchenUtensil"/>
     </owl:Class>
 
+    <!-- Kitchen appliance subclass definitions -->
+    <owl:Class rdf:about="Oven">
+      <rdfs:subClassOf rdf:resource="KitchenAppliance"/>
+    </owl:Class>
+    <owl:Class rdf:about="MicrowaveOven">
+      <rdfs:subClassOf rdf:resource="KitchenAppliance"/>
+    </owl:Class>
+    <owl:Class rdf:about="WaterBoiler">
+      <rdfs:subClassOf rdf:resource="KitchenAppliance"/>
+    </owl:Class>
+    <owl:Class rdf:about="Mixer">
+      <rdfs:subClassOf rdf:resource="KitchenAppliance"/>
+    </owl:Class>
+    <owl:Class rdf:about="Dishwasher">
+      <rdfs:subClassOf rdf:resource="KitchenAppliance"/>
+    </owl:Class>
+
+    <!-- Drinkware subclass definitions -->
     <owl:Class rdf:about="Cup">
       <rdfs:subClassOf rdf:resource="Drinkware"/>
     </owl:Class>
@@ -105,15 +155,48 @@
     <owl:Class rdf:about="DrinkingGlass">
       <rdfs:subClassOf rdf:resource="Drinkware"/>
     </owl:Class>
+
+    <!-- Food container subclass definitions -->
+    <owl:Class rdf:about="Bowl">
+      <rdfs:subClassOf rdf:resource="FoodContainer"/>
+    </owl:Class>
+    <owl:Class rdf:about="Plate">
+      <rdfs:subClassOf rdf:resource="FoodContainer"/>
+    </owl:Class>
+    <owl:Class rdf:about="SoupPlate">
+      <rdfs:subClassOf rdf:resource="FoodContainer"/>
+    </owl:Class>
+    <owl:Class rdf:about="LunchBox">
+      <rdfs:subClassOf rdf:resource="FoodContainer"/>
+    </owl:Class>
+
+    <!-- Cooking utensil subclass definitions -->
+    <owl:Class rdf:about="FryingPan">
+      <rdfs:subClassOf rdf:resource="CookingUtensil"/>
+    </owl:Class>
+    <owl:Class rdf:about="Pot">
+      <rdfs:subClassOf rdf:resource="CookingUtensil"/>
+    </owl:Class>
     <!--*********************************************-->
 
 
     <!--****** Class disjointness definitions *******-->
     <owl:AllDisjointClasses>
         <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="Plane"/>
+            <owl:Class rdf:about="Location"/>
+            <owl:Class rdf:about="Object"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
             <owl:Class rdf:about="Furniture"/>
-            <owl:Class rdf:about="Drinkware"/>
             <owl:Class rdf:about="KitchenUtensil"/>
+            <owl:Class rdf:about="KitchenAppliance"/>
+            <owl:Class rdf:about="Drinkware"/>
+            <owl:Class rdf:about="Foodcontainer"/>
+            <owl:Class rdf:about="CookingUtensil"/>
         </owl:members>
     </owl:AllDisjointClasses>
 
@@ -130,9 +213,45 @@
 
     <owl:AllDisjointClasses>
         <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="Fork"/>
+            <owl:Class rdf:about="Knife"/>
+            <owl:Class rdf:about="BreadKnife"/>
+            <owl:Class rdf:about="TableSpoon"/>
+            <owl:Class rdf:about="TeaSpoon"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="Oven"/>
+            <owl:Class rdf:about="MicrowaveOven"/>
+            <owl:Class rdf:about="WaterBoiler"/>
+            <owl:Class rdf:about="Mixer"/>
+            <owl:Class rdf:about="Dishwasher"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
             <owl:Class rdf:about="Cup"/>
             <owl:Class rdf:about="Mug"/>
             <owl:Class rdf:about="DrinkingGlass"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="Bowl"/>
+            <owl:Class rdf:about="Plate"/>
+            <owl:Class rdf:about="SoupPlate"/>
+            <owl:Class rdf:about="LunchBox"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="FryingPan"/>
+            <owl:Class rdf:about="Pot"/>
         </owl:members>
     </owl:AllDisjointClasses>
     <!--*********************************************-->
