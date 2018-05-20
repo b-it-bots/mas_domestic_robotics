@@ -1,0 +1,139 @@
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#">
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#">
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#">
+]>
+
+<rdf:RDF
+    xmlns:owl="http://www.w3.org/2002/07/owl#"
+    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+
+    <!--************* Class definitions ************-->
+    <owl:Class rdf:about="Plane"/>
+    <owl:Class rdf:about="Object"/>
+
+    <!-- Furniture items -->
+    <owl:Class rdf:about="Furniture"/>
+    <owl:Class rdf:about="Table"/>
+    <owl:Class rdf:about="DiningTable"/>
+    <owl:Class rdf:about="WorkTable"/>
+    <owl:Class rdf:about="Bed"/>
+    <owl:Class rdf:about="Chair"/>
+    <owl:Class rdf:about="Sofa"/>
+    <owl:Class rdf:about="Cupboard"/>
+    <owl:Class rdf:about="Sink"/>
+
+    <!-- Kitchen items -->
+    <owl:Class rdf:about="KitchenUtensil"/>
+    <owl:Class rdf:about="Fork"/>
+    <owl:Class rdf:about="Knife"/>
+    <owl:Class rdf:about="TableSpoon"/>
+    <owl:Class rdf:about="TeaSpoon"/>
+
+    <owl:Class rdf:about="Drinkware"/>
+    <owl:Class rdf:about="Cup"/>
+    <owl:Class rdf:about="Mug"/>
+    <owl:Class rdf:about="DrinkingGlass"/>
+    <!--*********************************************-->
+
+
+    <!--************ Property definitions ***********-->
+    <owl:ObjectProperty rdf:about="canPlaceOn">
+      <rdfs:domain rdf:resource="Object"/>
+      <rdfs:range rdf:resource="Plane"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="defaultStoringLocation">
+        <rdf:type rdf:resource="&owl;FunctionalProperty" />
+        <rdfs:domain rdf:resource="Object"/>
+        <rdfs:range rdf:resource="Furniture"/>
+    </owl:ObjectProperty>
+    <!--*********************************************-->
+
+
+    <!--*********** Subclass definitions ************-->
+
+    <!-- Furniture subclass definitions -->
+    <owl:Class rdf:about="DiningTable">
+      <rdfs:subClassOf rdf:resource="Table"/>
+    </owl:Class>
+    <owl:Class rdf:about="WorkTable">
+      <rdfs:subClassOf rdf:resource="Table"/>
+    </owl:Class>
+    <owl:Class rdf:about="Table">
+      <rdfs:subClassOf rdf:resource="Furniture"/>
+    </owl:Class>
+    <owl:Class rdf:about="Table">
+      <rdfs:subClassOf rdf:resource="Plane"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="Bed">
+      <rdfs:subClassOf rdf:resource="Furniture"/>
+    </owl:Class>
+    <owl:Class rdf:about="Chair">
+      <rdfs:subClassOf rdf:resource="Furniture"/>
+    </owl:Class>
+    <owl:Class rdf:about="Sofa">
+      <rdfs:subClassOf rdf:resource="Furniture"/>
+    </owl:Class>
+    <owl:Class rdf:about="Cupboard">
+      <rdfs:subClassOf rdf:resource="Furniture"/>
+    </owl:Class>
+
+    <!-- Kitchen item subclass definitions -->
+    <owl:Class rdf:about="Fork">
+      <rdfs:subClassOf rdf:resource="KitchenUtensil"/>
+    </owl:Class>
+    <owl:Class rdf:about="Knife">
+      <rdfs:subClassOf rdf:resource="KitchenUtensil"/>
+    </owl:Class>
+    <owl:Class rdf:about="TableSpoon">
+      <rdfs:subClassOf rdf:resource="KitchenUtensil"/>
+    </owl:Class>
+    <owl:Class rdf:about="TeaSpoon">
+      <rdfs:subClassOf rdf:resource="KitchenUtensil"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="Cup">
+      <rdfs:subClassOf rdf:resource="Drinkware"/>
+    </owl:Class>
+    <owl:Class rdf:about="Mug">
+      <rdfs:subClassOf rdf:resource="Drinkware"/>
+    </owl:Class>
+    <owl:Class rdf:about="DrinkingGlass">
+      <rdfs:subClassOf rdf:resource="Drinkware"/>
+    </owl:Class>
+    <!--*********************************************-->
+
+
+    <!--****** Class disjointness definitions *******-->
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="Furniture"/>
+            <owl:Class rdf:about="Drinkware"/>
+            <owl:Class rdf:about="KitchenUtensil"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="Bed"/>
+            <owl:Class rdf:about="Chair"/>
+            <owl:Class rdf:about="Sofa"/>
+            <owl:Class rdf:about="Cupboard"/>
+            <owl:Class rdf:about="DiningTable"/>
+            <owl:Class rdf:about="WorkTable"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="Cup"/>
+            <owl:Class rdf:about="Mug"/>
+            <owl:Class rdf:about="DrinkingGlass"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+    <!--*********************************************-->
+</rdf:RDF>
