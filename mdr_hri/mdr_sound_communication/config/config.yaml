@@ -1,12 +1,9 @@
 Hey1:
   topic: /test
-  folder: A
-  file_name: AHey.wav
+  file: A/AHey.wav
 Start:
   topic: /test1
-  folder: K
-  file_name: KHmm.wav
+  file: K/KHmm.wav
 Stop:
   topic: /test2
-  folder: E
-  file_name: E02.wav
+  file: E/E02.wav

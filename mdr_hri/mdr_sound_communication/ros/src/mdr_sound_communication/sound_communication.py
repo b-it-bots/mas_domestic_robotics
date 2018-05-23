@@ -23,7 +23,7 @@ class SoundCommunication:
         self.audio_manager = pyaudio.PyAudio()
 
         for sound in self.sound_dictionary:
-            sound_file = self.sound_dictionary[sound]['folder']+'/'+ self.sound_dictionary[sound]['file_name']
+            sound_file = self.sound_dictionary[sound]['file']
             rospy.Subscriber(self.sound_dictionary[sound]['topic'], rospy.AnyMsg, self.mainCB, sound_file)
 
         rospy.Subscriber('sound_monitor', String, self.soundCB)
@@ -39,7 +39,7 @@ class SoundCommunication:
         sound = msg.data
 
         try:
-            sound_file = self.sound_dictionary[sound]['folder']+'/'+ self.sound_dictionary[sound]['file_name']
+            sound_file = self.sound_dictionary[sound]['file']
             sound_file_path = self.package_path + 'willow-sound/'+ sound_file
             if self.is_enable:
                 self.playSound(sound_file_path)
@@ -52,17 +52,21 @@ class SoundCommunication:
             self.playSound(sound_file_path)
 
     def playSound(self,sound_file):
-        wf = wave.open(sound_file, 'rb')
-        data = wf.readframes(self.CHUNK)
-        stream = self.audio_manager.open(format=self.audio_manager.get_format_from_width(wf.getsampwidth()),
-                      channels=wf.getnchannels(),
-                      rate=wf.getframerate(),
-                      output=True)
-
-        while len(data) > 0:
-            stream.write(data)
+        try:
+            wf = wave.open(sound_file, 'rb')
             data = wf.readframes(self.CHUNK)
+            stream = self.audio_manager.open(format=self.audio_manager.get_format_from_width(wf.getsampwidth()),
+                          channels=wf.getnchannels(),
+                          rate=wf.getframerate(),
+                          output=True)
 
-        # stop stream (4)
-        stream.stop_stream()
-        stream.close()
+            while len(data) > 0:
+                stream.write(data)
+                data = wf.readframes(self.CHUNK)
+
+            # stop stream (4)
+            stream.stop_stream()
+            stream.close()
+
+        except Exception:
+            rospy.logerr('Required Sound does not exists')
