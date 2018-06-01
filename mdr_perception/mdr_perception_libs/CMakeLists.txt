@@ -38,9 +38,6 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS
     ros/include
-    common/include
-  LIBRARIES
-    perception_libs
   CATKIN_DEPENDS
     mcr_perception_msgs
 )
