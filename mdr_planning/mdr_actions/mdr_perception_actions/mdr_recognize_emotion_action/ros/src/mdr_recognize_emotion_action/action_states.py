@@ -78,7 +78,7 @@ class RecognizeEmotion(smach.State):
                                     (0, 0, 255), 2)
             cv2.putText(rgb_image, predicted_emotion, (x, y - 30),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0),
-                        1, cv2.CV_AA)
+                        1, cv2.LINE_AA)
         output_ros_image = self.bridge.cv2_to_imgmsg(rgb_image, 'bgr8')
         self.image_publisher.publish(output_ros_image)
         return 'succeeded'
