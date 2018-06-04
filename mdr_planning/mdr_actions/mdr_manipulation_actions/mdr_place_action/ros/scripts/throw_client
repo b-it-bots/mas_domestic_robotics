@@ -78,7 +78,7 @@ class ThrowClient(ActionClientBase):
 
         obj_to_throw = self.get_object_by_name(self.obj)
         obj_to_throw.pose.header.frame_id = self.frame_id
-        manipulated_obj = ConverterFactory.convert_ros_msg(manipulated_obj)
+        manipulated_obj = ConverterFactory.convert_ros_msg(obj_to_throw)
 
         action_model = Action(action_name='throw')
         number_of_samples = 10

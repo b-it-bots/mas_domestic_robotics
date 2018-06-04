@@ -1,0 +1,146 @@
+#!/usr/bin/env python
+import rospy
+from std_msgs.msg import Header
+from geometry_msgs.msg import Point, Quaternion, Pose, PoseStamped
+import rosplan_knowledge_msgs.srv as rosplan_srvs
+import diagnostic_msgs.msg as diag_msgs
+from mongodb_store.message_store import MessageStoreProxy
+
+from mcr_perception_msgs.msg import Object, Plane
+
+class C069ScenarioInitialiser(object):
+    def __init__(self, objects=list(), obj_names=list()):
+        self.objects = list(objects)
+        self.obj_names = list(obj_names)
+        self.knowledge_update_client = rospy.ServiceProxy('/kcl_rosplan/update_knowledge_base',
+                                                          rosplan_srvs.KnowledgeUpdateService)
+
+        self.msg_store_client = MessageStoreProxy()
+        self.update_knowledge_base()
+
+    def update_knowledge_base(self):
+        for i, obj in enumerate(self.objects):
+            obj = self.set_bbox_vertices(obj)
+
+            obj_name = obj.name
+
+            # we add the surface on which the object is to the knowledge base
+            request = rosplan_srvs.KnowledgeUpdateServiceRequest()
+            request.update_type = 0
+            request.knowledge.knowledge_type = 1
+            request.knowledge.attribute_name = 'on'
+
+            arg_msg = diag_msgs.KeyValue()
+            arg_msg.key = 'obj'
+            arg_msg.value = obj_name
+            request.knowledge.values.append(arg_msg)
+
+            arg_msg = diag_msgs.KeyValue()
+            arg_msg.key = 'plane'
+            arg_msg.value = self.obj_names[i]
+            request.knowledge.values.append(arg_msg)
+
+            self.knowledge_update_client(request)
+
+            # we add the object category to the knowledge base
+            request = rosplan_srvs.KnowledgeUpdateServiceRequest()
+            request.update_type = 0
+            request.knowledge.knowledge_type = 1
+            request.knowledge.attribute_name = 'object_category'
+
+            arg_msg = diag_msgs.KeyValue()
+            arg_msg.key = 'obj'
+            arg_msg.value = obj_name
+            request.knowledge.values.append(arg_msg)
+
+            arg_msg = diag_msgs.KeyValue()
+            arg_msg.key = 'cat'
+            arg_msg.value = obj.category
+            request.knowledge.values.append(arg_msg)
+
+            self.knowledge_update_client(request)
+            self.msg_store_client.insert_named(obj_name, obj)
+
+    def set_bbox_vertices(self, obj):
+        lower_left_front = Point()
+        lower_left_front.x = obj.bounding_box.center.x - (obj.bounding_box.dimensions.x / 2.)
+        lower_left_front.y = obj.bounding_box.center.y - (obj.bounding_box.dimensions.y / 2.)
+        lower_left_front.z = obj.bounding_box.center.z - (obj.bounding_box.dimensions.z / 2.)
+        obj.bounding_box.vertices.append(lower_left_front)
+
+        lower_right_front = Point()
+        lower_right_front.x = obj.bounding_box.center.x - (obj.bounding_box.dimensions.x / 2.)
+        lower_right_front.y = obj.bounding_box.center.y + (obj.bounding_box.dimensions.y / 2.)
+        lower_right_front.z = obj.bounding_box.center.z - (obj.bounding_box.dimensions.z / 2.)
+        obj.bounding_box.vertices.append(lower_right_front)
+
+        lower_left_back = Point()
+        lower_left_back.x = obj.bounding_box.center.x + (obj.bounding_box.dimensions.x / 2.)
+        lower_left_back.y = obj.bounding_box.center.y - (obj.bounding_box.dimensions.y / 2.)
+        lower_left_back.z = obj.bounding_box.center.z - (obj.bounding_box.dimensions.z / 2.)
+        obj.bounding_box.vertices.append(lower_left_back)
+
+        lower_right_back = Point()
+        lower_right_back.x = obj.bounding_box.center.x + (obj.bounding_box.dimensions.x / 2.)
+        lower_right_back.y = obj.bounding_box.center.y + (obj.bounding_box.dimensions.y / 2.)
+        lower_right_back.z = obj.bounding_box.center.z - (obj.bounding_box.dimensions.z / 2.)
+        obj.bounding_box.vertices.append(lower_right_back)
+
+        upper_left_front = Point()
+        upper_left_front.x = obj.bounding_box.center.x - (obj.bounding_box.dimensions.x / 2.)
+        upper_left_front.y = obj.bounding_box.center.y - (obj.bounding_box.dimensions.y / 2.)
+        upper_left_front.z = obj.bounding_box.center.z + (obj.bounding_box.dimensions.z / 2.)
+        obj.bounding_box.vertices.append(upper_left_front)
+
+        upper_right_front = Point()
+        upper_right_front.x = obj.bounding_box.center.x - (obj.bounding_box.dimensions.x / 2.)
+        upper_right_front.y = obj.bounding_box.center.y + (obj.bounding_box.dimensions.y / 2.)
+        upper_right_front.z = obj.bounding_box.center.z + (obj.bounding_box.dimensions.z / 2.)
+        obj.bounding_box.vertices.append(upper_right_front)
+
+        upper_left_back = Point()
+        upper_left_back.x = obj.bounding_box.center.x + (obj.bounding_box.dimensions.x / 2.)
+        upper_left_back.y = obj.bounding_box.center.y - (obj.bounding_box.dimensions.y / 2.)
+        upper_left_back.z = obj.bounding_box.center.z + (obj.bounding_box.dimensions.z / 2.)
+        obj.bounding_box.vertices.append(upper_left_back)
+
+        upper_right_back = Point()
+        upper_right_back.x = obj.bounding_box.center.x + (obj.bounding_box.dimensions.x / 2.)
+        upper_right_back.y = obj.bounding_box.center.y + (obj.bounding_box.dimensions.y / 2.)
+        upper_right_back.z = obj.bounding_box.center.z + (obj.bounding_box.dimensions.z / 2.)
+        obj.bounding_box.vertices.append(upper_right_back)
+        return obj
+
+if __name__ == '__main__':
+    rospy.init_node('c069_scenario_initialiser')
+
+    objects = list()
+    obj_names = ['trash_can']
+
+    # pringles can 1
+    trash_can = Object()
+
+    trash_can.pose.header.frame_id = 'base_link'
+    trash_can.pose.header.stamp = rospy.Time.now()
+    trash_can.pose.pose.position.x = 0.488
+    trash_can.pose.pose.position.y = 0.228
+    trash_can.pose.pose.position.z = 0.4
+    trash_can.pose.pose.orientation.x = 0.758
+    trash_can.pose.pose.orientation.y = 0.000
+    trash_can.pose.pose.orientation.z = 0.652
+    trash_can.pose.pose.orientation.w = 0.000
+
+    trash_can.bounding_box.center.x = trash_can.pose.pose.position.x
+    trash_can.bounding_box.center.y = trash_can.pose.pose.position.y
+    trash_can.bounding_box.center.z = trash_can.pose.pose.position.z
+    trash_can.bounding_box.dimensions.x = 0.070
+    trash_can.bounding_box.dimensions.y = 0.070
+    trash_can.bounding_box.dimensions.z = 0.025
+
+    trash_can.name = 'trash_can'
+    trash_can.category = 'trash_can'
+    trash_can.database_id = 1
+    objects.append(trash_can)
+
+    test_scenario_initialiser = C069ScenarioInitialiser(objects=objects,
+                                                        obj_names=obj_names)

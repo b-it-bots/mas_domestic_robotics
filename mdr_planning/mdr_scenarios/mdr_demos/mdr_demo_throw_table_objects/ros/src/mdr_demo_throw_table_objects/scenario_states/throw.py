@@ -45,9 +45,7 @@ class Throw(ScenarioStateBase):
         if self.succeeded:
             rospy.loginfo('Object discarded successfully')
             self.say('Successfully discarded ' + grasped_object)
-            if self.surface_empty(surface_name='table'):
-                return 'finished'
-            return 'pick_new_object'
+            return 'succeeded'
 
         rospy.loginfo('Could not discard object %s' % grasped_object)
         self.say('Could not discard ' + grasped_object)
