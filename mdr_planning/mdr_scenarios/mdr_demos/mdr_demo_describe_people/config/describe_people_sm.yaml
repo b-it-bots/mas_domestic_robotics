@@ -1,0 +1,88 @@
+# Description: Defines a state machine for a scenario in which a robot describes the people that are in its field of view by their visual characteristics (gender, emotion)
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_demo_describe_people
+states: [WAIT_FOR_NAME, GIVE_POSITIONING_INSTRUCTIONS, DESCRIBE_PEOPLE, THANK_PEOPLE]
+outcomes: [DONE, TIMEOUT, FAILED]
+state_descriptions:
+    - state:
+        name: WAIT_FOR_NAME
+        state_module_name: mdr_demo_describe_people.scenario_states.wait_for_name
+        state_class_name: WaitForName
+        transitions:
+            - transition:
+                name: succeeded
+                state: GIVE_POSITIONING_INSTRUCTIONS
+            - transition:
+                name: failed
+                state: WAIT_FOR_NAME
+        arguments:
+            - argument:
+                name: speech_topic
+                value: /recognized_speech
+            - argument:
+                name: name
+                value: bot
+    - state:
+        name: GIVE_POSITIONING_INSTRUCTIONS
+        state_module_name: mdr_demo_describe_people.scenario_states.say
+        state_class_name: Say
+        transitions:
+            - transition:
+                name: succeeded
+                state: DESCRIBE_PEOPLE
+            - transition:
+                name: failed
+                state: GIVE_POSITIONING_INSTRUCTIONS
+        arguments:
+            - argument:
+                name: sentence
+                value: 'Please stand in front of my camera so that I can see you'
+            - argument:
+                name: sound_topic
+                value: /say
+            - argument:
+                name: waiting_time_sec
+                value: 5
+    - state:
+        name: DESCRIBE_PEOPLE
+        state_module_name: mdr_demo_describe_people.scenario_states.describe_people
+        state_class_name: DescribePeople
+        transitions:
+            - transition:
+                name: succeeded
+                state: THANK_PEOPLE
+            - transition:
+                name: failed
+                state: DESCRIBE_PEOPLE
+            - transition:
+                name: no_image_received
+                state: WAIT_FOR_NAME
+        arguments:
+            - argument:
+                name: image_topic
+                value: /camera/image
+            - argument:
+                name: timeout
+                value: 20
+    - state:
+        name: THANK_PEOPLE
+        state_module_name: mdr_demo_describe_people.scenario_states.say
+        state_class_name: Say
+        transitions:
+            - transition:
+                name: succeeded
+                state: WAIT_FOR_NAME
+            - transition:
+                name: failed
+                state: THANK_PEOPLE
+        arguments:
+            - argument:
+                name: sentence
+                value: 'Hope you have a nice day'
+            - argument:
+                name: sound_topic
+                value: /say
+            - argument:
+                name: waiting_time_sec
+                value: 5

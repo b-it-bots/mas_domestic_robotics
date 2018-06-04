@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+
+    <node name="scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
+        <param name="database_path" value="$(find mdr_knowledge_base)/common/mongoDB" />
+    </node>
+    <node name="message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log" />
+
+    <include file="$(find mdr_speech_recognition)/ros/launch/speech_recognition.launch" />
+
+    <include file="$(find mdr_detect_person)/ros/launch/detect_person.launch" />
+    <include file="$(find mdr_recognize_emotion_action)/ros/launch/recognize_emotion.launch" />
+    <include file="$(find mdr_gender_recognition)/ros/launch/gender_recognition.launch" />
+
+    <!-- State machine -->
+    <param name="/sm_config_file" type="str" value="$(find mdr_demo_describe_people)/config/describe_people_sm.yaml" />
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="describe_people" output="screen" />
+</launch>
