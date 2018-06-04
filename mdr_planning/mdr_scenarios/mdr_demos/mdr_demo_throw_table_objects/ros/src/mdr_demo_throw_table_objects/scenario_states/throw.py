@@ -18,7 +18,7 @@ class Throw(ScenarioStateBase):
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'])
         self.sm_id = kwargs.get('sm_id', 'mdr_demo_throw_table_objects')
         self.state_name = kwargs.get('state_name', 'throw')
-        self.throwing_target_name = kwargs.get('state_name', 'throwing_target_name')
+        self.throwing_target_name = kwargs.get('throwing_target_name', 'trash_can')
         self.timeout = kwargs.get('timeout', 120.)
 
         self.number_of_retries = kwargs.get('number_of_retries', 0)
