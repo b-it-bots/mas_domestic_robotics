@@ -69,6 +69,7 @@ class DescribePeople(ScenarioStateBase):
         if face_count == 0:
             self.say('I could not see anyone. Could you please stand in front of my camera?')
             rospy.logerr('Could not find any people in the image; retrying')
+            rospy.sleep(5.)
             return 'failed'
 
         # recognizing emotions
@@ -102,25 +103,50 @@ class DescribePeople(ScenarioStateBase):
         self.say(sentence)
         rospy.loginfo(sentence)
 
+        emotions_recognized = len(emotion_result.emotions) > 0
+        genders_recognized = len(gender_result.genders) > 0
+
         # say the emotion and gender of the first person
-        sentence = 'I see one ' + str(emotion_result.emotions[0]) + ' ' \
-                   + str(gender_result.genders[0])
+        sentence = 'I see one '
+        if emotions_recognized:
+            sentence += str(emotion_result.emotions[0])
+            if genders_recognized:
+                sentence += ' ' + str(gender_result.genders[0])
+            else:
+                sentence += ' person'
+        else:
+            sentence += ' person'
         self.say(sentence)
         rospy.loginfo(sentence)
 
         # say the emotion and gender of the other people (except for the last one)
         # adding 'also' to the sentence for a more engaging feedback
-        for i in xrange(1, face_count-1):
-            sentence = 'I also see one ' + str(emotion_result.emotions[i]) + ' ' \
-                        + str(gender_result.genders[i])
+        face_counter = 0
+        for face_counter in xrange(1, face_count-1):
+            sentence = 'I also see one '
+            if face_counter < len(emotion_result.emotions):
+                sentence += str(emotion_result.emotions[face_counter])
+                if face_counter < len(gender_result.genders):
+                    sentence += ' ' + str(gender_result.genders[face_counter])
+                else:
+                    sentence += ' person'
+            else:
+                sentence += ' person'
             self.say(sentence)
             rospy.loginfo(sentence)
 
         # if more than two people have been detected, say the emotion and gender
         # of the last person, but add 'finally' to the sentence for a more engaging feedback
         if face_count > 2:
-            sentence = 'Finally, I see one ' + str(emotion_result.emotions[face_count-1]) \
-                       + ' ' + str(gender_result.genders[face_count-1])
+            sentence = 'Finally, I see one '
+            if face_counter == len(emotion_result.emotions):
+                sentence += str(emotion_result.emotions[face_count-1])
+                if face_counter == len(gender_result.genders):
+                    sentence += ' ' + str(gender_result.genders[face_count-1])
+                else:
+                    sentence += ' person'
+            else:
+                sentence += ' person'
             self.say(sentence)
             rospy.loginfo(sentence)
 
