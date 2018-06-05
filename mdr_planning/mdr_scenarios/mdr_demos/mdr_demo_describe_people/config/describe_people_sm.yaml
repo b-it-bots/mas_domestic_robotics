@@ -56,6 +56,9 @@ state_descriptions:
                 name: failed
                 state: DESCRIBE_PEOPLE
             - transition:
+                name: failed_after_retrying
+                state: WAIT_FOR_NAME
+            - transition:
                 name: no_image_received
                 state: WAIT_FOR_NAME
         arguments:
@@ -65,6 +68,9 @@ state_descriptions:
             - argument:
                 name: timeout
                 value: 20
+            - argument:
+                name: number_of_retries
+                value: 5
     - state:
         name: THANK_PEOPLE
         state_module_name: mdr_demo_describe_people.scenario_states.say

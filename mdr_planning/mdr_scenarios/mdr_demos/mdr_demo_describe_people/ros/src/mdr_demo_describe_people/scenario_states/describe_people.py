@@ -12,9 +12,11 @@ class DescribePeople(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'describe_people',
                                    save_sm_state=save_sm_state,
-                                   outcomes=['succeeded', 'failed', 'no_image_received'])
+                                   outcomes=['succeeded', 'failed',
+                                             'no_image_received', 'failed_after_retrying'])
 
         self.timeout = rospy.Duration.from_sec(kwargs.get('timeout', 10.))
+        self.no_detection_waiting_time = kwargs.get('no_detection_waiting_time', 5.)
         self.image_topic = kwargs.get('image_topic', '/image')
         self.detect_person_server = kwargs.get('detect_person_server',
                                                '/mdr_actions/detect_person_server')
@@ -23,6 +25,9 @@ class DescribePeople(ScenarioStateBase):
         self.recognize_gender_server = kwargs.get('recognize_gender_server',
                                                   '/mdr_actions/gender_recognition_server')
         self.sound_topic = kwargs.get('sound_topic', '/say')
+
+        self.number_of_retries = kwargs.get('number_of_retries', 0)
+        self.retry_count = 0
 
         self.image_sub = rospy.Subscriber(self.image_topic, Image, self.get_image)
         self.image_received = False
@@ -67,9 +72,16 @@ class DescribePeople(ScenarioStateBase):
 
         face_count = detect_person_result.number_of_faces
         if face_count == 0:
+            if self.retry_count == self.number_of_retries:
+                self.say('I could not see anyone. Please say my name when you need me again.')
+                rospy.logerr('Could not find any people in the image; waiting for name again')
+                self.retry_count = 0
+                return 'failed_after_retrying'
+
             self.say('I could not see anyone. Could you please stand in front of my camera?')
             rospy.logerr('Could not find any people in the image; retrying')
-            rospy.sleep(5.)
+            rospy.sleep(self.no_detection_waiting_time)
+            self.retry_count += 1
             return 'failed'
 
         # recognizing emotions
@@ -152,6 +164,7 @@ class DescribePeople(ScenarioStateBase):
 
         self.image_received = False
         self.image = None
+        self.retry_count = 0
         return 'succeeded'
 
     def get_image(self, image_msg):
