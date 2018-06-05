@@ -115,6 +115,9 @@ class DescribePeople(ScenarioStateBase):
         self.say(sentence)
         rospy.loginfo(sentence)
 
+        # we sleep for a while so that there's time for the sentence to be said
+        rospy.sleep(0.5)
+
         emotions_recognized = len(emotion_result.emotions) > 0
         genders_recognized = len(gender_result.genders) > 0
 
@@ -130,6 +133,9 @@ class DescribePeople(ScenarioStateBase):
             sentence += ' person'
         self.say(sentence)
         rospy.loginfo(sentence)
+
+        # we sleep for a while so that there's time for the sentence to be said
+        rospy.sleep(0.5)
 
         # say the emotion and gender of the other people (except for the last one)
         # adding 'also' to the sentence for a more engaging feedback
@@ -147,6 +153,9 @@ class DescribePeople(ScenarioStateBase):
             self.say(sentence)
             rospy.loginfo(sentence)
 
+            # we sleep for a while so that there's time for the sentence to be said
+            rospy.sleep(0.5)
+
         # if more than two people have been detected, say the emotion and gender
         # of the last person, but add 'finally' to the sentence for a more engaging feedback
         if face_count > 2:
@@ -161,6 +170,10 @@ class DescribePeople(ScenarioStateBase):
                 sentence += ' person'
             self.say(sentence)
             rospy.loginfo(sentence)
+
+            # we sleep for a while so that there's time for the sentence to be said
+            rospy.sleep(0.5)
+
 
         self.image_received = False
         self.image = None
