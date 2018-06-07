@@ -36,7 +36,7 @@
   <run_depend>rosplan_planning_system</run_depend>
 
   <run_depend>mdr_rosplan_interface</run_depend>
-  <run_depend>mdr_execution_manager</run_depend>
+  <run_depend>mas_execution_manager</run_depend>
   <run_depend>mdr_move_base_action</run_depend>
   <run_depend>mdr_move_arm_action</run_depend>
   <run_depend>mdr_pickup_action</run_depend>
