@@ -1,0 +1,16 @@
+OnLine: C/C2BeepsFast.wav
+OffLine: C/C2LowBeepsFast.wav
+Confirm: C/C3BeepFast.wav
+Attention: C/CAttention.wav
+Call: C/CBeep2Tone.wav
+Abort: C/CBeepVary.wav
+CallTo: C/CBmmmm.wav
+MsgReceived: C/CDeBeep.wav
+MsgConfirmed: C/CFastPulse.wav
+Ring: C/CKaching2.wav
+Catch: CKaching3
+HangOn: C/CKachingFailed.wav
+RequestReceived: C/CMrnful2.wav
+BatteryLevel1: C/CPlugMeIn1.wav
+BatteryLevel2: C/CPlugMeIn2.wav
+BatteryLevel3: C/CPlugMeIn3.wav
