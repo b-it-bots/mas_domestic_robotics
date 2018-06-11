@@ -23,8 +23,8 @@ class SoundCommunication:
         self.sound_dictionary = dict()
 
         for config_file in list_config_files:
-            print config_file
             self.sound_dictionary.update(yaml.load(open(self.package_path + "config/" + config_file+".yaml")))
+
         self.CHUNK = 1024 #TODO
 
         self.is_enable = True
@@ -53,18 +53,18 @@ class SoundCommunication:
 
         try:
             sound_file = self.sound_dictionary[sound]['file']
-            sound_file_path = self.package_path + 'willow-sound/'+ sound_file
-            if self.is_enable:
-                self.playSound(sound_file_path)
 
         except Exception:
             sound_file = self.sound_dictionary[sound]
-            sound_file_path = self.package_path + 'willow-sound/'+ sound_file
-            if self.is_enable:
-                self.playSound(sound_file_path)
 
         except:
             rospy.logerr('Required Sound does not exists')
+            return
+
+        sound_file_path = self.package_path + 'willow-sound/'+ sound_file
+        if self.is_enable:
+            self.playSound(sound_file_path)
+
 
     def mainCB(self, msg, sound_file):
         sound_file_path = self.package_path + 'willow-sound/'+ sound_file
