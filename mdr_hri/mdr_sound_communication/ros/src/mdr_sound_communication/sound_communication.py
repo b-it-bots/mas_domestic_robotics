@@ -16,15 +16,25 @@ class SoundCommunication:
         rospy.init_node(package_name + '_node', anonymous = False)
 
         self.package_path = rospkg.RosPack().get_path(package_name) + '/'
-        self.sound_dictionary = yaml.load(open(self.package_path + "config/" + config_file+".yaml"))
+
+        list_config_files = rospy.get_param("~config_files", ["topic_config"])
+        self.sound_dictionary = dict()
+
+        for config_file in list_config_files:
+            print config_file
+            self.sound_dictionary.update(yaml.load(open(self.package_path + "config/" + config_file+".yaml")))
         self.CHUNK = 1024 #TODO
 
         self.is_enable = True
         self.audio_manager = pyaudio.PyAudio()
 
+        print "dict ", self.sound_dictionary
         for sound in self.sound_dictionary:
-            sound_file = self.sound_dictionary[sound]['file']
-            rospy.Subscriber(self.sound_dictionary[sound]['topic'], rospy.AnyMsg, self.mainCB, sound_file)
+            if self.sound_dictionary[sound]['file']:
+                sound_file = self.sound_dictionary[sound]['file']
+                sound_topic = self.sound_dictionary[sound]['topic']
+                rospy.Subscriber(sound_topic, rospy.AnyMsg, self.mainCB, sound_file)
+                rospy.loginfo("Sound %s linked to topic %s", sound_file, sound_topic)
 
         rospy.Subscriber('sound_monitor', String, self.soundCB)
         self.dyn_reconfigure_srv = Server(soundCommunicationConfig, self.dynamic_reconfigureCB)
