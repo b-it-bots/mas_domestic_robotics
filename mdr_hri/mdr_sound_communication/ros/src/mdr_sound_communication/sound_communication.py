@@ -18,6 +18,8 @@ class SoundCommunication:
         self.package_path = rospkg.RosPack().get_path(package_name) + '/'
 
         list_config_files = rospy.get_param("~config_files", ["topic_config"])
+        self.sound_collection = rospy.get_param("~sound_collection", ["willow-sound"])
+
         print list_config_files
         list_config_files = list_config_files.split(" ")
         self.sound_dictionary = dict()
@@ -61,13 +63,13 @@ class SoundCommunication:
             rospy.logerr('Required Sound does not exists')
             return
 
-        sound_file_path = self.package_path + 'willow-sound/'+ sound_file
+        sound_file_path = self.package_path + self.sound_collection + '/'+ sound_file
         if self.is_enable:
             self.playSound(sound_file_path)
 
 
     def mainCB(self, msg, sound_file):
-        sound_file_path = self.package_path + 'willow-sound/'+ sound_file
+        sound_file_path = self.package_path + self.sound_collection + '/'+ sound_file
         if self.is_enable:
             self.playSound(sound_file_path)
 

@@ -181,6 +181,7 @@ mdr_sound_communication
 ## Launch file parameters
 
 * ``config_files``: A string with the names of the configuration files which will be loaded to the sound_communication
+* ``sound_collection``: Specify a sound collection, default is willow-sound. All sounds must be contained inside the sound_collection folder. If additional sound collections are added, the sound collection folders must be located on the mdr_sound_communication folder.
 
 ## Config files examples:
 
@@ -188,8 +189,8 @@ mdr_sound_communication
 
 <sound_id>:
   topic: <topic_name>
-  file: <path_to_sound>
+  file: <path_to_sound_in_sound_collection_folder>
 
 * Loading Sound Id without a topic:
 
-<sound_id>: <path_to_sound>
+<sound_id>: <path_to_sound_in_sound_collection_folder>
