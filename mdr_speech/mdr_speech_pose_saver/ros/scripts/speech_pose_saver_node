@@ -5,5 +5,5 @@ from mdr_speech_pose_saver.speech_pose_saver import SpeechPoseSaver
 if __name__ == "__main__":
     pose_saver = SpeechPoseSaver("navigation_goals.yaml")
 
-    while not pose_saver.isExitRequested():
+    while not pose_saver.is_exit_requested():
         pass

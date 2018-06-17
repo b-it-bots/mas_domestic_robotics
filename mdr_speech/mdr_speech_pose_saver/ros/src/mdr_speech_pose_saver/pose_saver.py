@@ -1,22 +1,23 @@
 #!/usr/bin/env python
-import roslib; roslib.load_manifest('mcr_navigation_tools')
 import sys
 import rospy
 import tf
 
 class PoseSaver():
-    def __init__(self, file_name):
+    def __init__(self, file_name, map_frame = 'map', robot_frame='base_link'):
         self.file_name = file_name
+        self.map_frame = map_frame
+        self.robot_frame = robot_frame
         tf_received = False
         self.pose_name = "Default"
 
-    def setPoseName(self, pose_name):
+    def set_pose_name(self, pose_name):
         self.pose_name = pose_name
 
-    def isExitRequested(self):
+    def is_exit_requested(self):
         pass
 
-    def savePose(self):
+    def save_pose(self):
         tf_received = False
         print "Saving Pose"
         # get transformation between map and base_link
@@ -24,7 +25,7 @@ class PoseSaver():
             tf_listener = tf.TransformListener()
 
             try:
-                tf_listener.waitForTransform('map', '/base_link', rospy.Time.now(), rospy.Duration(1))
+                tf_listener.waitForTransform(self.map_frame, self.robot_frame, rospy.Time.now(), rospy.Duration(1))
                 (trans, rot) = tf_listener.lookupTransform('/map', '/base_link', rospy.Time(0));
 
                 (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(rot)
