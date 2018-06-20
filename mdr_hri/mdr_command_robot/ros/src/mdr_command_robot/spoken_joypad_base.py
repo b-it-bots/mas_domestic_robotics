@@ -25,6 +25,7 @@ class SpokenJoypadBase(object):
         self.base_angular_vel = float(rospy.get_param('~base_angular_vel', 0.05))
         self.move_base_keywords = rospy.get_param('~move_base_keywords', ['move', 'go'])
         self.turn_base_keywords = rospy.get_param('~turn_base_keywords', ['turn'])
+        self.move_head_keywords = rospy.get_param('~move_head_keywords', ['look'])
 
         self.recognized_speech_topic = rospy.get_param('~recognized_speech_topic',
                                                        '/recognized_speech')
@@ -38,9 +39,9 @@ class SpokenJoypadBase(object):
 
         self.current_base_cmd = Twist()
 
-        self.publish_commands = False
+        self.publish_base_commands = False
         while not rospy.is_shutdown():
-            if self.publish_commands:
+            if self.publish_base_commands:
                 self.base_vel_pub.publish(self.current_base_cmd)
         self.move_base(GenericMotionCommands.STOP)
         self.turn_base(GenericMotionCommands.STOP)
@@ -53,7 +54,7 @@ class SpokenJoypadBase(object):
             self.move_base(GenericMotionCommands.STOP)
             self.turn_base(GenericMotionCommands.STOP)
             self.move_head(GenericMotionCommands.STOP)
-            self.publish_commands = False
+            self.publish_base_commands = False
             return
 
         if command.find(self.robot_name) == -1:
@@ -69,7 +70,7 @@ class SpokenJoypadBase(object):
                     self.move_base(MoveBaseDirections.LEFT)
                 elif command.find(MoveBaseDirections.RIGHT) != -1:
                     self.move_base(MoveBaseDirections.RIGHT)
-                self.publish_commands = True
+                self.publish_base_commands = True
 
         for turn_base_keyword in self.turn_base_keywords:
             if command.find(turn_base_keyword) != -1:
@@ -77,7 +78,18 @@ class SpokenJoypadBase(object):
                     self.turn_base(MoveBaseDirections.LEFT)
                 elif command.find(MoveBaseDirections.RIGHT) != -1:
                     self.turn_base(MoveBaseDirections.RIGHT)
-                self.publish_commands = True
+                self.publish_base_commands = True
+
+        for move_head_keyword in self.move_head_keywords:
+            if command.find(move_head_keyword) != -1:
+                if command.find(MoveHeadDirections.UP) != -1:
+                    self.move_head(MoveHeadDirections.UP)
+                elif command.find(MoveHeadDirections.DOWN) != -1:
+                    self.move_head(MoveHeadDirections.DOWN)
+                elif command.find(MoveHeadDirections.LEFT) != -1:
+                    self.move_head(MoveHeadDirections.LEFT)
+                elif command.find(MoveHeadDirections.RIGHT) != -1:
+                    self.move_head(MoveHeadDirections.RIGHT)
 
     def move_base(self, command):
         if command == GenericMotionCommands.STOP:
