@@ -1,12 +1,13 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="mdr_command_robot" type="spoken_joypad" name="mdr_spoken_joypad" output="screen">
+        <param name="robot_name" value="bot" />
         <param name="recognized_speech_topic" value="/recognized_speech" />
         <param name="base_vel_topic" value="/cmd_vel" />
-        <param name="robot_name" value="bot" />
         <param name="base_linear_vel" value="0.05" />
         <param name="base_angular_vel" value="0.05" />
         <rosparam param="move_base_keywords">[go, move]</rosparam>
         <rosparam param="turn_base_keywords">[turn]</rosparam>
+        <rosparam param="move_head_keywords">[look]</rosparam>
     </node>
 </launch>
