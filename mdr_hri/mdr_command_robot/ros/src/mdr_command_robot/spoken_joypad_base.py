@@ -48,14 +48,16 @@ class SpokenJoypadBase(object):
 
     def parse_command(self, msg):
         command = msg.data.lower()
-        if command.find(self.robot_name) == -1:
-            return
 
         if command.find(GenericMotionCommands.STOP) != -1:
             self.move_base(GenericMotionCommands.STOP)
             self.turn_base(GenericMotionCommands.STOP)
             self.move_head(GenericMotionCommands.STOP)
             self.publish_commands = False
+            return
+
+        if command.find(self.robot_name) == -1:
+            return
 
         for move_base_keyword in self.move_base_keywords:
             if command.find(move_base_keyword) != -1:
