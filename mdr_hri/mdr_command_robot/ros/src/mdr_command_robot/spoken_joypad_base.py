@@ -40,20 +40,12 @@ class SpokenJoypadBase(object):
         self.current_base_cmd = Twist()
 
         self.publish_base_commands = False
-        while not rospy.is_shutdown():
-            if self.publish_base_commands:
-                self.base_vel_pub.publish(self.current_base_cmd)
-        self.move_base(GenericMotionCommands.STOP)
-        self.turn_base(GenericMotionCommands.STOP)
-        self.move_head(GenericMotionCommands.STOP)
 
     def parse_command(self, msg):
         command = msg.data.lower()
 
         if command.find(GenericMotionCommands.STOP) != -1:
-            self.move_base(GenericMotionCommands.STOP)
-            self.turn_base(GenericMotionCommands.STOP)
-            self.move_head(GenericMotionCommands.STOP)
+            self.stop_motion()
             self.publish_base_commands = False
             return
 
@@ -133,3 +125,12 @@ class SpokenJoypadBase(object):
 
     def move_head(self, command):
         rospy.loginfo('[JOY_MOVE_HEAD] Ignoring request')
+
+    def send_motion_commands(self):
+        if self.publish_base_commands:
+            self.base_vel_pub.publish(self.current_base_cmd)
+
+    def stop_motion(self):
+        self.move_base(GenericMotionCommands.STOP)
+        self.turn_base(GenericMotionCommands.STOP)
+        self.move_head(GenericMotionCommands.STOP)

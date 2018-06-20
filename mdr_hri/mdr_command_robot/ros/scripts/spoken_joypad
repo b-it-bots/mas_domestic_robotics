@@ -5,8 +5,10 @@ from mdr_command_robot.spoken_joypad_base import SpokenJoypadBase
 
 if __name__ == '__main__':
     rospy.init_node('mdr_spoken_joypad')
+    spoken_joypad = SpokenJoypadBase()
     try:
-        SpokenJoypadBase()
-        rospy.spin()
+        while not rospy.is_shutdown():
+            spoken_joypad.send_motion_commands()
     except rospy.ROSInterruptException:
         pass
+    spoken_joypad.stop_motion()
