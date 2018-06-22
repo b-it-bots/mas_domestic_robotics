@@ -51,19 +51,12 @@ class ProcessSpeech(smach.State):
                 userdata.question_count = self.question_count
                 say(self.say_pub, self.answer)
             elif self.localized_sound and self.question_count > 5:
-                if self.retry_count == self.number_of_retries:
-                    rospy.loginfo('Failed to understand')
-                    return 'failed_after_retrying'
-                elif not self.answer:
+                if not self.answer:
                     say(self.say_pub, 'Can you repeat the question, please?')
-                    self.number_of_retries = 1
                 else:
                     userdata.question = self.answer
                     userdata.question_count = self.question_count
-                    self.number_of_retries = 0
-            elif not self.answer:
-                self.number_of_retries = 1
-                return 'failed'
+                    say(self.say_pub, self.answer)
             else:
                 rospy.logerr('Something went wrong')
 
