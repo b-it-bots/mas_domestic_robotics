@@ -50,6 +50,7 @@ class ProcessSpeech(smach.State):
                 userdata.question = self.answer
                 userdata.question_count = self.question_count
                 say(self.say_pub, self.answer)
+                self.answer = None
             elif self.localized_sound and self.question_count > 5:
                 if not self.answer:
                     say(self.say_pub, 'Can you repeat the question, please?')
@@ -57,6 +58,7 @@ class ProcessSpeech(smach.State):
                     userdata.question = self.answer
                     userdata.question_count = self.question_count
                     say(self.say_pub, self.answer)
+                    self.answer = None
             else:
                 rospy.logerr('Something went wrong')
 
