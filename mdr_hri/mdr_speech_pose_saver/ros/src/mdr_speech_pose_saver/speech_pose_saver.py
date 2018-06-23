@@ -4,12 +4,13 @@ import rospy
 
 class SpeechPoseSaver(PoseSaver):
     def __init__(self, file_name):
-        rospy.init_node("speech_pose_saver")
         map_frame = rospy.get_param('~map_frame', 'map')
         robot_frame = rospy.get_param('~robot_frame', 'base_link')
         speech_input_topic = rospy.get_param('~speech_input_topic', 'speech_recognizing')
         PoseSaver.__init__(self, file_name, map_frame, robot_frame)
         rospy.Subscriber(speech_input_topic, String, self.recognizerCB)
+        print ("End")
+        #rospy.spinOnce()
 
     def recognizerCB (self, msg):
         #String must be filter Here
