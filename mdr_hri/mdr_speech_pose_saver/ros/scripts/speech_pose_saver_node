@@ -1,16 +1,8 @@
 #!/usr/bin/env python
-import importlib
-import rospy
+from mdr_speech_pose_saver.speech_pose_saver import SpeechPoseSaver
 
 if __name__ == "__main__":
-    rospy.init_node("speech_robot_command")
-    module = rospy.get_param('module', 'speech_pose_saver')
-    class_name = rospy.get_param('class_name', 'SpeechPoseSaver')
-    params = rospy.get_param('params', 'navigation_goals.yaml')
-    #This  is an idea to implement an idea for a common script server for speech_recognition packages
-    speech_actions_pkg = importlib.import_module('.'+ module,  package = 'mdr_speech_pose_saver') #Package must be constant to mdr_command_robot TODO
-    speech_actions_class = getattr(speech_actions_pkg, class_name)
-    speech_class = speech_actions_class(params)
+    speech_saver = SpeechPoseSaver()
 
-    while not speech_class.is_exit_requested():
+    while not speech_saver.is_exit_requested():
         pass
