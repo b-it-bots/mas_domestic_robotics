@@ -14,6 +14,9 @@ class PoseSaver():
     def set_pose_name(self, pose_name):
         self.pose_name = pose_name
 
+    def get_pose_name(self):
+        return self.pose_name
+
     def is_exit_requested(self):
         pass
 
