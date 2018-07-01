@@ -24,6 +24,7 @@ class SpeechPoseSaver(PoseSaver):
         if "confirm" in msg.data and self.is_pose_requested:
             if not self.is_exit_requested():
                 self.save_pose()
+                self.is_pose_requested = False
                 return
         else:
             if self.is_pose_requested:
@@ -32,7 +33,8 @@ class SpeechPoseSaver(PoseSaver):
 
         #String must be filter
         if "save pose" in msg.data and not self.is_pose_requested:
-            self.set_pose_name(msg.data)
+            pose_name = msg.data.split("save pose ",1)[1]
+            self.set_pose_name(pose_name)
             rospy.loginfo("set pose to save as %s", self.get_pose_name())
             self.is_pose_requested = True
 
