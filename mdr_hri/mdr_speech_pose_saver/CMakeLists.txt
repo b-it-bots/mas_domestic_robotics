@@ -7,3 +7,17 @@ find_package(catkin REQUIRED
 )
 
 catkin_python_setup()
+
+install(PROGRAMS
+  ros/scripts/speech_pose_saver_node
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(PROGRAMS
+  ros/scripts/speech_pose_saver_node
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY ros/launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/launch
+)
