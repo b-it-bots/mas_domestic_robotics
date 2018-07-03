@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_speech_pose_saver" type="speech_pose_saver_node" name="mdr_speech_pose_saver" output="screen">
+        <param name="map_frame" value="map" />
+        <param name="robot_frame" value="base_link" />
+        <param name="file_name" value="navigation_goals.yaml" />
+        <param name="speech_input_topic" value="/speech_recognizing" />
+      </node>
+</launch>
