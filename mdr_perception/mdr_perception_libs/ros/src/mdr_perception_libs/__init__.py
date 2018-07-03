@@ -3,4 +3,6 @@ from constants import Constant
 from keras_image_classifier import KerasImageClassifier
 from image_classifier import ImageClassifier, ImageClassifierTest
 from image_recognition_service_proxy import ImageRecognitionServiceProxy
+from rgb_detector import RgbDetector, RgbDetectionKey
 import utils
+import visualization
