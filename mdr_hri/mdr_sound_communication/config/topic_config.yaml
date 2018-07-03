@@ -1,9 +1,9 @@
 Hey1:
   topic: /test
-  file: A/AHey.wav
+  file: BHmm.wav
 Start:
   topic: /test1
-  file: K/KDuh.wav
+  file: BPleaseHelp2.wav
 Stop:
   topic: /test2
-  file: E/E12.wav
+  file: E01.wav
