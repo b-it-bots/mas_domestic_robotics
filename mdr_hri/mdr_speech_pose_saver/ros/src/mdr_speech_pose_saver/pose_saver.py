@@ -22,7 +22,7 @@ class PoseSaver():
 
     def save_pose(self):
         tf_received = False
-        print "Saving Pose"
+        rospy.loginfo("Saving Pose %s ", self.get_pose_name())
         # get transformation between map and base_link
         while(not tf_received):
             tf_listener = tf.TransformListener()
@@ -34,7 +34,7 @@ class PoseSaver():
                 (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(rot)
 
                 pose_description = "%s: [%lf, %lf, %lf]\n" % (self.pose_name, trans[0], trans[1], yaw)
-                print pose_description
+                rospy.loginfo("Pose Description %s", pose_description)
                 tf_received = True
             except Exception, e:
                 rospy.sleep(1)
