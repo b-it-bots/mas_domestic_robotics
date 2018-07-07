@@ -30,19 +30,6 @@ mdr_sound_communication/
 │           ├── __init__.py
 │           ├── sound_communication.py
 ├── setup.py
-└── willow-sound
-    ├── BBeepSuccess.wav
-    ├── BBeepThinking.wav
-    ├── BGoAhead.wav
-    ├── BHmm.wav
-    ├── BPleaseHelp2.wav
-    ├── E01.wav
-    ├── E06.wav
-    ├── E07.wav
-    ├── E09.wav
-    ├── E12.wav
-    ├── LICENSE
-    └── README.md
 ```
 
 ## Launch file parameters
