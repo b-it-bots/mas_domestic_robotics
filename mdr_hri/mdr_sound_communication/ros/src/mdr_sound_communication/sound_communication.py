@@ -36,21 +36,21 @@ class SoundCommunication:
             try:
                 sound_file = self.sound_dictionary[sound]['file']
                 sound_topic = self.sound_dictionary[sound]['topic']
-                rospy.Subscriber(sound_topic, rospy.AnyMsg, self.mainCB, sound_file)
+                rospy.Subscriber(sound_topic, rospy.AnyMsg, self.main_cb, sound_file)
                 rospy.loginfo("Sound %s linked to topic %s", sound_file, sound_topic)
             except Exception:
                 rospy.logdebug("Ignoring Topic Linking of sound %s", self.sound_dictionary[sound])
 
-        rospy.Subscriber('sound_monitor', String, self.soundCB)
-        self.dyn_reconfigure_srv = Server(soundCommunicationConfig, self.dynamic_reconfigureCB)
+        rospy.Subscriber('sound_monitor', String, self.sound_cb)
+        self.dyn_reconfigure_srv = Server(soundCommunicationConfig, self.dynamic_reconfigure_cb)
 
         rospy.spin()
 
-    def dynamic_reconfigureCB(self,config, level):
+    def dynamic_reconfigure_cb(self,config, level):
         self.is_enable = config["allow_sound"]
         return config
 
-    def soundCB(self,msg):
+    def sound_cb(self,msg):
         sound = msg.data
 
         try:
@@ -65,15 +65,15 @@ class SoundCommunication:
 
         sound_file_path = self.sound_collection + '/'+ sound_file
         if self.is_enable:
-            self.playSound(sound_file_path)
+            self.play_sound(sound_file_path)
 
 
-    def mainCB(self, msg, sound_file):
+    def main_cb(self, msg, sound_file):
         sound_file_path = self.sound_collection + '/'+ sound_file
         if self.is_enable:
-            self.playSound(sound_file_path)
+            self.play_sound(sound_file_path)
 
-    def playSound(self,sound_file):
+    def play_sound(self,sound_file):
         try:
             wf = wave.open(sound_file, 'rb')
             data = wf.readframes(self.CHUNK)
