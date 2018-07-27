@@ -32,10 +32,6 @@ class MoveArm(smach.State):
         self.timeout = timeout
         self.arm = moveit_commander.MoveGroupCommander(arm_name)
 
-        self.dmp_name = "../data/weights/weights_grasp_2.yaml"
-        self.tau = 30
-        self.dmp_traj_executor = DMPExecutor(self.dmp_name, self.tau)
-
     def execute(self, userdata):
         self.arm.clear_pose_targets()
         success = False
@@ -45,7 +41,11 @@ class MoveArm(smach.State):
             pose = userdata.move_arm_goal.end_effector_pose
             goal = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
             initial_pos = np.array([0.287, 0.078, 0.673])
-            self.dmp_traj_executor.execute(goal, initial_pos)
+
+            dmp_name = userdata.move_arm_goal.dmp_name + '.yaml'
+            tau = userdata.move_arm_goal.dmp_tau
+            dmp_traj_executor = DMPExecutor(dmp_name, tau)
+            dmp_traj_executor.execute(goal, initial_pos)
         elif userdata.move_arm_goal.goal_type == MoveArmGoal.JOINT_VALUES:
             joint_values = userdata.move_arm_goal.joint_values
             self.arm.set_joint_value_target(joint_values)
