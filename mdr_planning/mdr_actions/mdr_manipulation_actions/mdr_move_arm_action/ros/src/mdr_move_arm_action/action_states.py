@@ -42,7 +42,7 @@ class MoveArm(smach.State):
             goal = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
             initial_pos = np.array([0.287, 0.078, 0.673])
 
-            dmp_name = userdata.move_arm_goal.dmp_name + '.yaml'
+            dmp_name = userdata.move_arm_goal.dmp_name
             tau = userdata.move_arm_goal.dmp_tau
             dmp_traj_executor = DMPExecutor(dmp_name, tau)
             dmp_traj_executor.execute(goal, initial_pos)
