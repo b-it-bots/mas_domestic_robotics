@@ -1,10 +1,12 @@
 #!/usr/bin/python
+import numpy as np
 
 import rospy
 import smach
 import moveit_commander
 
 from mdr_move_arm_action.msg import MoveArmGoal, MoveArmFeedback, MoveArmResult
+from mdr_move_arm_action.dmp import DMPExecutor
 
 class SetupMoveArm(smach.State):
     def __init__(self):
@@ -30,6 +32,10 @@ class MoveArm(smach.State):
         self.timeout = timeout
         self.arm = moveit_commander.MoveGroupCommander(arm_name)
 
+        self.dmp_name = "../data/weights/weights_grasp_2.yaml"
+        self.tau = 30
+        self.dmp_traj_executor = DMPExecutor(self.dmp_name, self.tau)
+
     def execute(self, userdata):
         self.arm.clear_pose_targets()
         success = False
@@ -37,8 +43,9 @@ class MoveArm(smach.State):
             self.arm.set_named_target(userdata.move_arm_goal.named_target)
         elif userdata.move_arm_goal.goal_type == MoveArmGoal.END_EFFECTOR_POSE:
             pose = userdata.move_arm_goal.end_effector_pose
-            self.arm.set_pose_reference_frame(pose.header.frame_id)
-            self.arm.set_pose_target(pose.pose)
+            goal = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
+            initial_pos = np.array([0.287, 0.078, 0.673])
+            self.dmp_traj_executor.execute(goal, initial_pos)
         elif userdata.move_arm_goal.goal_type == MoveArmGoal.JOINT_VALUES:
             joint_values = userdata.move_arm_goal.joint_values
             self.arm.set_joint_value_target(joint_values)
@@ -51,9 +58,8 @@ class MoveArm(smach.State):
         if not success:
             rospy.logerr('[move_arm] Arm motion unsuccessful')
             return 'failed'
-        else:
-            rospy.loginfo('[move_arm] Arm motion successful')
-            return 'succeeded'
+        rospy.loginfo('[move_arm] Arm motion successful')
+        return 'succeeded'
 
 class SetActionLibResult(smach.State):
     def __init__(self, result):
