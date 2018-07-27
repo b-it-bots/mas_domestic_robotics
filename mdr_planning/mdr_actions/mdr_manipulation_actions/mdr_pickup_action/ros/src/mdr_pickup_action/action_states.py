@@ -39,7 +39,9 @@ class Pickup(smach.State):
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  base_elbow_offset=-1.,
-                 grasping_orientation=list()):
+                 grasping_orientation=list(),
+                 grasping_dmp='',
+                 dmp_tau=1.):
         smach.State.__init__(self, input_keys=['pickup_goal'],
                              output_keys=['pickup_feedback'],
                              outcomes=['succeeded', 'failed'])
@@ -56,6 +58,9 @@ class Pickup(smach.State):
         self.move_base_server = move_base_server
         self.base_elbow_offset = base_elbow_offset
         self.grasping_orientation = grasping_orientation
+        self.grasping_dmp = grasping_dmp
+        self.dmp_tau = dmp_tau
+
         self.tf_listener = tf.TransformListener()
 
         self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
@@ -173,6 +178,8 @@ class Pickup(smach.State):
             move_arm_goal.named_target = goal
         elif goal_type == MoveArmGoal.END_EFFECTOR_POSE:
             move_arm_goal.end_effector_pose = goal
+            move_arm_goal.dmp_name = self.grasping_dmp
+            move_arm_goal.dmp_tau = self.dmp_tau
         self.move_arm_client.send_goal(move_arm_goal)
         self.move_arm_client.wait_for_result()
         result = self.move_arm_client.get_result()
