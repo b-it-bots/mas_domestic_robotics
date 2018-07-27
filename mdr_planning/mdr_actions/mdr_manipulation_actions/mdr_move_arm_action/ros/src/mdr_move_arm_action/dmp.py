@@ -12,13 +12,13 @@ from mdr_move_arm_action.roll_dmp import RollDMP
 class DMPExecutor(object):
     def __init__(self, dmp_name, tau):
         self.tf_listener = tf.TransformListener()
-        self.cartesian_velocity_topic = rospy.get_param('cartesian_velocity_topic',
+        self.cartesian_velocity_topic = rospy.get_param('~cartesian_velocity_topic',
                                                         '/arm_controller/cartesian_velocity_command')
-        self.base_vel_topic = rospy.get_param('base_vel_topic', '/cmd_vel')
-        self.arm_controller_sigma_values_topic = rospy.get_param('arm_controller_sigma_values_topic',
+        self.base_vel_topic = rospy.get_param('~base_vel_topic', '/cmd_vel')
+        self.arm_controller_sigma_values_topic = rospy.get_param('~arm_controller_sigma_values_topic',
                                                                  '/arm_controller/sigma_values')
-        self.dmp_executor_path_topic = rospy.get_param('path_topic', '/dmp_executor/path')
-        self.move_base_server = rospy.get_param('move_base_server', 'move_base/move')
+        self.dmp_executor_path_topic = rospy.get_param('~path_topic', '/dmp_executor/path')
+        self.move_base_server = rospy.get_param('~move_base_server', 'move_base/move')
 
         self.number_of_sampling_points = 30
         self.goal_tolerance = 0.02
