@@ -2,5 +2,10 @@
 <launch>
     <node pkg="mdr_move_arm_action" type="move_arm_action" name="move_arm_server" output="screen">
         <param name="arm_name" value="arm" />
+        <param name="cartesian_velocity_topic" value="/arm_1/arm_controller/cartesian_velocity_command" />
+        <param name="base_vel_topic" value="/cmd_vel" />
+        <param name="arm_controller_sigma_values_topic" value="/arm_1/arm_controller/sigma_values" />
+        <param name="path_topic" value="/dmp_executor/path" />
+        <param name="move_base_server" value="move_base" />
     </node>
 </launch>
