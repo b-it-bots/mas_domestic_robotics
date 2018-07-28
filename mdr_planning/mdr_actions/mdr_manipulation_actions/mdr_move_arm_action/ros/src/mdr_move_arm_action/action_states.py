@@ -37,6 +37,8 @@ class MoveArm(smach.State):
         success = False
         if userdata.move_arm_goal.goal_type == MoveArmGoal.NAMED_TARGET:
             self.arm.set_named_target(userdata.move_arm_goal.named_target)
+            rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
+            success = self.arm.go(wait=True)
         elif userdata.move_arm_goal.goal_type == MoveArmGoal.END_EFFECTOR_POSE:
             pose = userdata.move_arm_goal.end_effector_pose
             goal = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
@@ -45,16 +47,18 @@ class MoveArm(smach.State):
             dmp_name = userdata.move_arm_goal.dmp_name
             tau = userdata.move_arm_goal.dmp_tau
             dmp_traj_executor = DMPExecutor(dmp_name, tau)
+
+            rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
             dmp_traj_executor.execute(goal, initial_pos)
         elif userdata.move_arm_goal.goal_type == MoveArmGoal.JOINT_VALUES:
             joint_values = userdata.move_arm_goal.joint_values
             self.arm.set_joint_value_target(joint_values)
+            rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
+            success = self.arm.go(wait=True)
         else:
             rospy.logerr('[move_arm] Invalid target specified; ignoring request')
             return 'failed'
 
-        rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
-        success = self.arm.go(wait=True)
         if not success:
             rospy.logerr('[move_arm] Arm motion unsuccessful')
             return 'failed'
