@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+
+    <arg name="config_files" default="actions_config topic_config" />
+    <arg name="sound_collections_package" default="$(find mdr_sound_collections)" />
+    <arg name="sound_collection" default="willow-sound" />
+
+    <node pkg="mdr_sound_communication" type="sound_communication" respawn="false" name="mdr_sound_communication" output="screen">
+       <param name="config_files" value="$(arg config_files)"/>
+       <param name="sound_collection" value="$(arg sound_collections_package)/collections/$(arg sound_collection)"/>
+    </node>
+
+</launch>
