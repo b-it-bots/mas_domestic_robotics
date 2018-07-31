@@ -1,6 +1,0 @@
-#!/usr/bin/env python
-
-import mdr_pickup_and_place.pickup_and_place
-
-if __name__ == '__main__':
-    mdr_pickup_and_place.pickup_and_place.main()

@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-
-	<node pkg="mdr_pickup_and_place" type="restrict_arm_workspace.py" name="restricter" respawn="false" output="screen">
-	</node>
-
-</launch>
