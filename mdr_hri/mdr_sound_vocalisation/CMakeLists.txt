@@ -21,6 +21,6 @@ if(CATKIN_ENABLE_TESTING)
 endif()
 
 install(PROGRAMS
-  ros/scripts/question_matcher
+  ros/scripts/sound_vocaliser
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
