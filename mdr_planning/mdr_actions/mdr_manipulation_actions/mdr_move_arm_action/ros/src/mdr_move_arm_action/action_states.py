@@ -41,15 +41,21 @@ class MoveArm(smach.State):
             success = self.arm.go(wait=True)
         elif userdata.move_arm_goal.goal_type == MoveArmGoal.END_EFFECTOR_POSE:
             pose = userdata.move_arm_goal.end_effector_pose
-            goal = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
-            initial_pos = np.array([0.287, 0.078, 0.673])
 
             dmp_name = userdata.move_arm_goal.dmp_name
             tau = userdata.move_arm_goal.dmp_tau
-            dmp_traj_executor = DMPExecutor(dmp_name, tau)
-
             rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
-            dmp_traj_executor.execute(goal, initial_pos)
+
+            # we use a dynamic motion primitive for moving the arm if one is specified;
+            # otherwise, we just use moveit for planning a trajectory and moving the arm
+            if dmp_name is not None:
+                dmp_traj_executor = DMPExecutor(dmp_name, tau)
+                goal = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
+                dmp_traj_executor.execute(goal)
+            else:
+                self.arm.set_pose_reference_frame(pose.header.frame_id)
+                self.arm.set_pose_target(pose.pose)
+                success = self.arm.go(wait=True)
         elif userdata.move_arm_goal.goal_type == MoveArmGoal.JOINT_VALUES:
             joint_values = userdata.move_arm_goal.joint_values
             self.arm.set_joint_value_target(joint_values)

@@ -36,7 +36,6 @@ class DMPExecutor(object):
                          Float32MultiArray, self.sigma_values_cb)
         self.path_pub = rospy.Publisher(self.dmp_executor_path_topic, Path, queue_size=1)
         self.goal = None
-        self.initial_pos = None
         self.dmp_name = dmp_name
         self.tau = tau
 
@@ -55,14 +54,11 @@ class DMPExecutor(object):
         move_base_goal.target_pose.header.frame_id = 'map'
         print self.move_base_client.send_goal(move_base_goal)
 
-    def set_initial_pos_cb(self, msg):
-        self.initial_pos = msg.data
-
     def generate_trajectory(self, goal, initial_pos):
         goal = np.array([goal[0], goal[1], goal[2], 0.0, 0.0, 0.0])
         initial_pos = np.array([initial_pos[0], initial_pos[1], initial_pos[2], 0.0, 0.0, 0.0])
         self.roll = RollDMP(self.dmp_name, n_bfs=150)
-        self.pos, self.vel, self.acc = self.roll.roll(goal,initial_pos, self.tau)
+        self.pos, self.vel, self.acc = self.roll.roll(goal, initial_pos, self.tau)
 
     def tranform_pose(self, pose):
         #transform goals to odom frame
@@ -211,7 +207,14 @@ class DMPExecutor(object):
         if self.deploy_wbc:
             self.vel_publisher_base.publish(message_base)
 
-    def execute(self, goal, initial_pos):
+    def execute(self, goal):
+        initial_pos = None
+        try:
+            (trans, rot) = self.tf_listener.lookupTransform('/base_link', self.palm_link_name, rospy.Time(0))
+            initial_pos = np.array(trans)
+        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+            initial_pos = np.zeros(3)
+
         self.generate_trajectory(goal, initial_pos)
         pos = []
         for i in range(self.pos.shape[0]):
