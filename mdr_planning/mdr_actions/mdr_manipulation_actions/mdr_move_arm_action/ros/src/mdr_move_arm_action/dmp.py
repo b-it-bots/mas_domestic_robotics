@@ -12,6 +12,7 @@ from mdr_move_arm_action.roll_dmp import RollDMP
 class DMPExecutor(object):
     def __init__(self, dmp_name, tau):
         self.tf_listener = tf.TransformListener()
+        self.palm_link_name = rospy.get_param('~palm_link_name', '/palm_link')
         self.cartesian_velocity_topic = rospy.get_param('~cartesian_velocity_topic',
                                                         '/arm_controller/cartesian_velocity_command')
         self.base_vel_topic = rospy.get_param('~base_vel_topic', '/cmd_vel')
@@ -100,7 +101,7 @@ class DMPExecutor(object):
         path_z = path[2, :]
         while not rospy.is_shutdown():
             try:
-                (trans, rot) = self.tf_listener.lookupTransform('/odom', '/hand_palm_link', rospy.Time(0))
+                (trans, rot) = self.tf_listener.lookupTransform('/odom', self.palm_link_name, rospy.Time(0))
                 break
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
@@ -112,7 +113,7 @@ class DMPExecutor(object):
         old_pos_index = 0
         while distance > self.goal_tolerance and not rospy.is_shutdown():
             try:
-                (trans, rot) = self.tf_listener.lookupTransform('/odom', '/hand_palm_link', rospy.Time(0))
+                (trans, rot) = self.tf_listener.lookupTransform('/odom', self.palm_link_name, rospy.Time(0))
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
             current_pos = np.array([trans[0], trans[1], trans[2]])
