@@ -60,6 +60,9 @@ The following parameters may be passed when launching the action server:
 * ``intermediate_grasp_offset``: An optional pose offset that creates an intermediate trajectory goal following the pregrasp configuration (default: -1)
 * ``safe_arm_joint_config``: The name of a configuration in which the robot can safely move around the environment (default: 'folded')
 * ``base_elbow_offset``: An optional offset between `base_link` and the manipulator's elbow; used for aligning the base with the object to be grasped so that the manipulator can easily reach the object (default: -1)
+* ``grasping_dmp``:  Path to a YAML file containing the weights of a dynamic motion primitive used for grasping (default: '')
+* ``dmp_tau``: The value of the temporal dynamic motion primitive parameter (default: 1)
+* ``open_gripper_joint_values``: A list of joint values at which a robot's gripper is considered open (default: [1], assuming a parallel jaw gripper)
 * ``grasping_orientation``: For more constrained manipulators, it might make sense to use a fixed grasping orientation (expressed as an (x, y, z, w) quaternion) to ensure easier reachability (default: [], in which case the argument is ignored)
 
 ### Action client
@@ -83,7 +86,7 @@ The action performs grasping with respect to the `base_link` frame (even if the 
 1. If ``base_elbow_offset`` is greater than 0, the base is aligned with the object so that the origin of `base_link` is ``base_elbow_offset`` units away from the object's pose
 2. The manipulator is moved to a predefined pregrasp configuration
 3. If ``intermediate_grasp_offset`` is greater than 0, the end-effector is sent to an intermediate goal pose that is ``intermediate_grasp_offset`` meters away (along `base_link`'s x-axis) from the grasping goal
-4. The end-effector is then sent to its grasping goal and the gripper is closed
+4. The end-effector is then sent to its grasping goal and the gripper is closed; if a path to a dynamic motion primitive file is passed as a parameter to the action, the grasping trajectory is represented by the motion primitive
 5. The manipulator is moved to a configuration in which the robot can safely move around in the environment
 
 ## Dependencies
