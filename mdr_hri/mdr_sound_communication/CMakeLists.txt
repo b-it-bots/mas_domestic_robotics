@@ -35,6 +35,6 @@ install(DIRECTORY ros/launch
 )
 
 install(PROGRAMS
-  ros/scripts/willow_sounds
+  ros/scripts/sound_communication
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
