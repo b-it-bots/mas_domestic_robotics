@@ -48,7 +48,7 @@ class MoveArm(smach.State):
 
             # we use a dynamic motion primitive for moving the arm if one is specified;
             # otherwise, we just use moveit for planning a trajectory and moving the arm
-            if dmp_name is not None:
+            if dmp_name:
                 dmp_traj_executor = DMPExecutor(dmp_name, tau)
                 goal = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
                 dmp_traj_executor.execute(goal)

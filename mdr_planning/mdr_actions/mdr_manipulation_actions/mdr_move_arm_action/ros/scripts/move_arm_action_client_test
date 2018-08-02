@@ -54,7 +54,7 @@ if __name__ == '__main__':
                 pose.pose.orientation.w = params[7]
 
                 goal.end_effector_pose = pose
-                goal.dmp_name = None
+                goal.dmp_name = ''
             elif goal.goal_type == MoveArmGoal.JOINT_VALUES:
                 params = ast.literal_eval(sys.argv[2])
                 goal.joint_values = params
