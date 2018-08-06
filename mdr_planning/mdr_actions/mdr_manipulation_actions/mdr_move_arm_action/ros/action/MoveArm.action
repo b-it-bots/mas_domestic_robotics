@@ -16,6 +16,8 @@ int32 goal_type
 string named_target
 geometry_msgs/PoseStamped end_effector_pose
 float64[] joint_values
+string dmp_name
+float64 dmp_tau
 ---
 # result
 bool success

@@ -9,6 +9,9 @@
         <param name="intermediate_grasp_offset" value="0.1" />
         <param name="safe_arm_joint_config" value="folded" />
         <param name="base_elbow_offset" value="-1." />
+        <param name="grasping_dmp" value="$(find mdr_pickup_action)/config/trajectory_weights/weights_table_grasp.yaml" />
+        <param name="dmp_tau" value="30" />
+        <rosparam param="open_gripper_joint_values">[1.0]</rosparam>
         <rosparam param="grasping_orientation">[0, 0, 0, 1]</rosparam>
     </node>
 </launch>

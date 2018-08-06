@@ -1,25 +1,32 @@
-//
-// Created by minh on 02.04.18.
-//
+/*
+ * Copyright 2018 Bonn-Rhein-Sieg University
+ *
+ * Author: Minh Nguyen
+ *
+ */
+#ifndef MDR_PERCEPTION_LIBS_BOUNDING_BOX_WRAPPER_H
+#define MDR_PERCEPTION_LIBS_BOUNDING_BOX_WRAPPER_H
 
-#ifndef MDR_PERCEPTION_LIBS_BOUNDING_BOX_PY_WRAPPER_H
-#define MDR_PERCEPTION_LIBS_BOUNDING_BOX_PY_WRAPPER_H
+#include <string>
+
 namespace mdr_perception_libs
 {
-    class BoundingBoxWrapper
-    {
-    public:
-        BoundingBoxWrapper(std::string, boost::python::list&);
-        ~BoundingBoxWrapper();
 
-        std::string getPose();
-        std::string getRosMsg();
+class BoundingBoxWrapper
+{
+public:
+    BoundingBoxWrapper(std::string, boost::python::list&);
+    ~BoundingBoxWrapper();
 
-    private:
-        BoundingBox mBox;
-        geometry_msgs::PoseStamped mPose;
+    std::string getPose();
+    std::string getRosMsg();
 
-        void calculatePose(std_msgs::Header);
-    };
-}
-#endif //MDR_PERCEPTION_LIBS_BOUNDING_BOX_PY_WRAPPER_H
+private:
+    BoundingBox mBox;
+    geometry_msgs::PoseStamped mPose;
+
+    void calculatePose(std_msgs::Header);
+};
+
+}  // namespace mdr_perception_libs
+#endif  // MDR_PERCEPTION_LIBS_BOUNDING_BOX_WRAPPER_H

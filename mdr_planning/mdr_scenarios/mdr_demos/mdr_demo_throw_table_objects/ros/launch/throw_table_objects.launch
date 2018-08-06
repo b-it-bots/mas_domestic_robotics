@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+
+    <!-- ROSPlan -->
+    <!-- data paths -->
+    <param name="/rosplan/data_path" value="$(find mdr_demo_throw_table_objects)/config/" />
+    <param name="/rosplan/planner_path" value="$(find rosplan_planning_system)/common/bin/" />
+
+    <!-- domain file -->
+    <param name="/rosplan/domain_path" value="$(find mdr_demo_throw_table_objects)/config/domain.pddl" />
+
+    <!-- knowledge base -->
+    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen" />
+
+    <!-- scene database (MongoDB) -->
+    <node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
+        <param name="database_path" value="$(find rosplan_knowledge_base)/common/mongoDB" />
+    </node>
+    <node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log" />
+
+    <!-- planning system -->
+    <node name="rosplan_planning_system" pkg="rosplan_planning_system" type="planner" respawn="false" output="screen">
+        <!-- directory for generated files -->
+        <param name="data_path" value="$(find mdr_demo_throw_table_objects)/config/" />
+        <param name="problem_path" value="$(find mdr_demo_throw_table_objects)/config/problem.pddl" />
+        <param name="strl_file_path" value="$(find mdr_demo_throw_table_objects)/config/plan.strl" />
+
+        <!-- to run the planner -->
+        <param name="planner_command" value="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n DOMAIN PROBLEM" />
+        <param name="generate_default_problem" value="true" />
+        <param name="max_dispatch_attempts" value="2" />
+    </node>
+
+    <!-- Actions -->
+    <include file="$(find mdr_move_arm_action)/ros/launch/move_arm.launch" />
+
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" />
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
+
+    <include file="$(find mdr_perceive_plane_action)/ros/launch/perceive_plane.launch" />
+    <include file="$(find mdr_perceive_plane_action)/ros/launch/perceive_plane_client.launch" />
+
+    <include file="$(find mdr_pickup_action)/ros/launch/pickup_action.launch" />
+    <include file="$(find mdr_pickup_action)/ros/launch/pickup_client.launch" />
+
+    <include file="$(find mdr_place_action)/ros/launch/place_action.launch" />
+    <include file="$(find mdr_place_action)/ros/launch/place_client.launch" />
+
+    <!-- State machine -->
+    <param name="/sm_config_file" type="str" value="$(find mdr_demo_throw_table_objects)/config/store_groceries_sm.yaml" />
+    <param name="/store_knowledge" value="true" />
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="store_groceries" output="screen" />
+</launch>

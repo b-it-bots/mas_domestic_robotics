@@ -59,6 +59,8 @@ The following parameters may be passed when launching the action server:
 * ``preplace_config_name``: Name of the preplace configuration (default: 'pregrasp')
 * ``safe_arm_joint_config``: Name of a configuration in which the robot can safely move around the environment (default: 'folded')
 * ``base_elbow_offset``: An optional offset between `base_link` and the manipulator's elbow; used for aligning the base with the placing pose so that the manipulator can easily reach it (default: -1)
+* ``placing_dmp``:  Path to a YAML file containing the weights of a dynamic motion primitive used for placing (default: '')
+* ``dmp_tau``: The value of the temporal dynamic motion primitive parameter (default: 1)
 * ``placing_orientation``: For more constrained manipulators, it might make sense to use a fixed placing orientation (expressed as an (x, y, z, w) quaternion) to ensure easier reachability; for instance, we might want to keep the orientation with which an object was grasped instead of allowing arbitrary orientations (default: [], in which case the argument is ignored)
 
 ### Action client
@@ -80,7 +82,7 @@ The following parameters need to be passed when launching the action client:
 The action performs placing with respect to the `base_link` frame (even if the goal pose is expressed in another frame) and is executed in a few steps:
 1. If ``base_elbow_offset`` is greater than 0, the base is aligned with the goal pose so that the origin of `base_link` is ``base_elbow_offset`` units away from it along the y-axis
 2. The manipulator is moved to a predefined manipulator configuration
-3. The end-effector is then sent to its placing goal and the gripper is opened
+3. The end-effector is then sent to its placing goal and the gripper is opened; if a path to a dynamic motion primitive file is passed as a parameter to the action, the placing trajectory is represented by the motion primitive
 4. The manipulator is moved back to a configuration in which the robot can safely move around in the environment
 
 ## Dependencies

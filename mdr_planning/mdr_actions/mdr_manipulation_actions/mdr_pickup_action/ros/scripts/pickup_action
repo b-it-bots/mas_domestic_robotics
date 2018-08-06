@@ -21,11 +21,14 @@ class PickupSkill(smach.StateMachine):
         move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
         gripper_cmd_topic = rospy.get_param('~gripper_cmd_topic', 'gripper_controller')
         gripper_joint_names = rospy.get_param('~gripper_joint_names', ['gripper'])
+        open_gripper_joint_values = rospy.get_param('~open_gripper_joint_values', [1.])
         pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp')
         grasp_offset = float(rospy.get_param('~intermediate_grasp_offset', -1.))
         safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
         base_elbow_offset = float(rospy.get_param('~base_elbow_offset', -1.))
         grasping_orientation = rospy.get_param('~grasping_orientation', list())
+        grasping_dmp = rospy.get_param('~grasping_dmp', '')
+        dmp_tau = float(rospy.get_param('~dmp_tau', 1.))
 
         with self:
             smach.StateMachine.add('SETUP_PICKUP', SetupPickup(),
@@ -35,12 +38,15 @@ class PickupSkill(smach.StateMachine):
             smach.StateMachine.add('PICKUP', Pickup(move_arm_server=move_arm_server,
                                                     move_base_server=move_base_server,
                                                     gripper_joint_names=gripper_joint_names,
+                                                    open_gripper_joint_values=open_gripper_joint_values,
                                                     gripper_cmd_topic=gripper_cmd_topic,
                                                     pregrasp_config_name=pregrasp_config_name,
                                                     intermediate_grasp_offset=grasp_offset,
                                                     safe_arm_joint_config=safe_arm_joint_config,
                                                     base_elbow_offset=base_elbow_offset,
-                                                    grasping_orientation=grasping_orientation),
+                                                    grasping_orientation=grasping_orientation,
+                                                    grasping_dmp=grasping_dmp,
+                                                    dmp_tau=dmp_tau),
                                    transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
                                                 'failed': 'SET_ACTION_LIB_FAILED'})
 

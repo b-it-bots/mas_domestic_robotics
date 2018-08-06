@@ -28,8 +28,10 @@ class SetupMoveForward(smach.State):
 
 
 class MoveForward(smach.State):
-    def __init__(self, timeout=120.0, velocity_topic='/base/twist_mux/command_navigation'):
-        smach.State.__init__(self, input_keys=['move_forward_goal'], outcomes=['succeeded', 'failed'])
+    def __init__(self, timeout=120.0,
+                 velocity_topic='/cmd_vel'):
+        smach.State.__init__(self, input_keys=['move_forward_goal'],
+                             outcomes=['succeeded', 'failed'])
         self.timeout = timeout
         self.velocity_pub = rospy.Publisher(velocity_topic, Twist)
 

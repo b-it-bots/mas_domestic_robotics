@@ -10,24 +10,26 @@ from mdr_move_forward_action.action_states import SetupMoveForward, MoveForward,
 class MoveForwardSkill(smach.StateMachine):
     def __init__(self, timeout=10):
         smach.StateMachine.__init__(self,
-                outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
-                input_keys=['move_forward_goal'],
-                output_keys=['move_forward_feedback', 'move_forward_result'])
+                                    outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
+                                    input_keys=['move_forward_goal'],
+                                    output_keys=['move_forward_feedback', 'move_forward_result'])
+
+        velocity_topic = rospy.get_param('~velocity_topic', '/cmd_vel')
 
         with self:
             smach.StateMachine.add('SETUP_MOVE_FORWARD', SetupMoveForward(),
-                                   transitions = {'succeeded': 'MOVE_FORWARD',
+                                   transitions={'succeeded': 'MOVE_FORWARD',
                                                 'failed': 'SETUP_MOVE_FORWARD'})
 
-            smach.StateMachine.add('MOVE_FORWARD', MoveForward(),
-                                   transitions = {'succeeded': 'SET_ACTION_LIB_SUCCESS',
+            smach.StateMachine.add('MOVE_FORWARD', MoveForward(velocity_topic=velocity_topic),
+                                   transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
                                                 'failed': 'SET_ACTION_LIB_FAILED'})
 
             smach.StateMachine.add('SET_ACTION_LIB_FAILED', SetActionLibResult(False),
-                                   transitions = {'succeeded': 'OVERALL_FAILED'})
+                                   transitions={'succeeded': 'OVERALL_FAILED'})
 
             smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
-                                   transitions = {'succeeded': 'OVERALL_SUCCESS'})
+                                   transitions={'succeeded': 'OVERALL_SUCCESS'})
 
 if __name__ == '__main__':
     rospy.init_node('move_forward_server')
@@ -36,19 +38,20 @@ if __name__ == '__main__':
     sm = MoveForwardSkill()
 
     # smach viewer
-    sis = IntrospectionServer('move_forward_smach_viewer', sm, '/MOVE_forward_SMACH_VIEWER')
+    sis = IntrospectionServer('move_forward_smach_viewer', sm,
+                              '/MOVE_FORWARD_SMACH_VIEWER')
     sis.start()
 
     asw = ActionServerWrapper(
-        server_name = 'move_forward_server',
-        action_spec = MoveForwardAction,
-        wrapped_container = sm,
-        succeeded_outcomes = ['OVERALL_SUCCESS'],
-        aborted_outcomes = ['OVERALL_FAILED'],
-        preempted_outcomes = ['PREEMPTED'],
-        goal_key = 'move_forward_goal',
-        feedback_key = 'move_forward_feedback',
-        result_key = 'move_forward_result')
+        server_name='move_forward_server',
+        action_spec=MoveForwardAction,
+        wrapped_container=sm,
+        succeeded_outcomes=['OVERALL_SUCCESS'],
+        aborted_outcomes=['OVERALL_FAILED'],
+        preempted_outcomes=['PREEMPTED'],
+        goal_key='move_forward_goal',
+        feedback_key='move_forward_feedback',
+        result_key='move_forward_result')
 
     # Run the server in a background thread
     asw.run_server()

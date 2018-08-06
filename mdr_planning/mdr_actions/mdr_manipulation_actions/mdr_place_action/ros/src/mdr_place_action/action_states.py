@@ -38,7 +38,9 @@ class Place(smach.State):
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  base_elbow_offset=-1.,
-                 placing_orientation=list()):
+                 placing_orientation=list(),
+                 placing_dmp='',
+                 dmp_tau=1.):
         smach.State.__init__(self, input_keys=['place_goal'],
                              output_keys=['place_feedback'],
                              outcomes=['succeeded', 'failed'])
@@ -53,6 +55,9 @@ class Place(smach.State):
         self.move_base_server = move_base_server
         self.base_elbow_offset = base_elbow_offset
         self.placing_orientation = placing_orientation
+        self.placing_dmp = placing_dmp
+        self.dmp_tau = dmp_tau
+
         self.tf_listener = tf.TransformListener()
 
         self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
@@ -153,6 +158,8 @@ class Place(smach.State):
             move_arm_goal.named_target = goal
         elif goal_type == MoveArmGoal.END_EFFECTOR_POSE:
             move_arm_goal.end_effector_pose = goal
+            move_arm_goal.dmp_name = self.placing_dmp
+            move_arm_goal.dmp_tau = self.dmp_tau
         self.move_arm_client.send_goal(move_arm_goal)
         self.move_arm_client.wait_for_result()
         result = self.move_arm_client.get_result()

@@ -29,8 +29,8 @@ class DetectionServiceProxy(object):
         if not isinstance(plane_list, PlaneList):
             raise ValueError('"_get_objects_and_planes_from_response()" did not return a "PlaneList" instance')
 
-        for i in range(len(plane_list.planes)):
-            rospy.loginfo('plane [{0}] has[{1}] object(s)'.format(i, len(plane_list.planes[i].object_list.objects)))
+        #for i in range(len(plane_list.planes)):
+        #    rospy.loginfo('plane [{0}] has[{1}] object(s)'.format(i, len(plane_list.planes[i].object_list.objects)))
 
         return plane_list
 

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mdr_speech_pose_saver</name>
+  <version>0.0.1</version>
+  <description>The mdr_speech_pose_saver package</description>
+
+  <author email="jose.mayoral@smail.inf.h-brs.de">Jose Mayoral</author>
+
+  <maintainer email="robotics@inf.h-brs.de"> MAS robotics</maintainer>
+
+  <license>GPLv3</license>
+
+  <build_depend>rospy</build_depend>
+  <buildtool_depend>catkin</buildtool_depend>
+
+</package>

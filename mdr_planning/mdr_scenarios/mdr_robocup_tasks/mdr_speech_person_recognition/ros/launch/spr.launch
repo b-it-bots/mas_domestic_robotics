@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- Actions -->
+    <include  file= "$(find mdr_turn_base_to_action)/ros/launch/turn_base_to_server.launch" />
+    <include  file= "$(find mdr_detect_person)/ros/launch/detect_person.launch" />
+    <include  file= "$(find mdr_gender_recognition)/ros/launch/gender_recognition.launch" />
+
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+
+    <node pkg="mdr_move_base_action" type="move_base_action" name="move_base_server" output="screen">
+        <param name="move_base_server" value="/move_base" />
+        <param name="pose_description_file" value="$(find mcr_default_env_config)/$(arg robot_env)/navigation_goals.yaml" />
+        <param name="pose_frame" value="map" />
+        <param name="safe_arm_joint_config" value="folded" />
+        <param name="move_arm_server" value="move_arm_server" />
+    </node>
+
+
+    <node pkg="zbar_ros" type="barcode_reader_node" name="barcode_reader" output="screen">
+        <remap from="image" to="/rgb/image_raw"/>
+        <remap from="barcode" to="/mcr_perception/qr_reader/output"/>
+        <param name="throttle_repeated_barcodes" type="double" value="2.0" />
+    </node>
+
+    <param name="/sm_config_file" type="str" value="$(find mdr_speech_person_recognition)/config/speech_person_recognition_sm.yaml" />
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="speech_person" output="screen" />
+</launch>

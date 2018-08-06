@@ -1,0 +1,9 @@
+Hey1:
+  topic: /test
+  file: failure.wav
+Start:
+  topic: /test1
+  file: help.wav
+Stop:
+  topic: /test2
+  file: alarm.wav

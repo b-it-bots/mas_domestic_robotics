@@ -2,7 +2,7 @@ import rospy
 
 from std_msgs.msg import String
 
-from mdr_robot_inspection.scenario_states.scenario_state_base import ScenarioStateBase
+from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class WaitForQR(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
@@ -16,17 +16,25 @@ class WaitForQR(ScenarioStateBase):
                                                        '/mcr_perception/qr_reader/output'),
                                             String, self.register_qr_code)
         self.qr_message = None
+
         self.start_time = rospy.Time.now()
         self.restart_state = False
+        self.asked_for_qr = False
 
     def execute(self, userdata):
         if self.restart_state:
             self.start_time = rospy.Time.now()
             self.restart_state = False
+            self.say('Please show me a continue QR code')
+
+        if not self.asked_for_qr:
+            self.say('Please show me a continue QR code')
+            self.asked_for_qr = True
 
         if (rospy.Time.now() - self.start_time) < self.timeout:
             if self.qr_message and "continue" in self.qr_message.lower():
                 rospy.loginfo('QR message: %s' % self.qr_message)
+                self.say('Continuing operation')
                 userdata.command = self.qr_message
                 self.restart_state = True
                 return 'succeeded'

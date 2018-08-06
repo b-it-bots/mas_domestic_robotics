@@ -16,22 +16,28 @@ class ObjectDetector(object):
         self._tf_listener = tf.TransformListener()
         pass
 
-    def start_detect_objects(self, plane_frame_prefix, done_callback, target_frame=None):
+    def start_detect_objects(self, plane_frame_prefix, done_callback, target_frame=None, group_planes=True):
         self._plane_list = self._detection_service_proxy.get_objects_and_planes()
         if not isinstance(self._plane_list, PlaneList):
             raise ValueError('get_objects_and_planes() did not return a PlaneList instance')
 
-        plane_index = 0
-        for plane in self._plane_list.planes:
-            # transform if target_frame is specified
-            if target_frame is not None:
+        # transform if target_frame is specified
+        if target_frame is not None:
+            for plane in self._plane_list.planes:
                 # assuming only mcr_perception_msgs/Plane.pose is used
                 plane.pose = self._transform_plane(plane.pose, target_frame)
 
-            # publish plane frame
+        if group_planes:
+            planes = ObjectDetector.group_planes_by_height(self._plane_list.planes)
+        else:
+            planes = self._plane_list.planes
+
+        plane_index = 0
+        for plane in planes:
+            # write plane frame as name
             plane_frame = '{0}_{1}'.format(plane_frame_prefix, plane_index)
             plane.name = plane_frame
-            plane_index = plane_index + 1
+            plane_index += 1
             plane_quart = plane.pose.pose.orientation
 
             # make bounding boxes
@@ -45,6 +51,10 @@ class ObjectDetector(object):
 
                 detected_obj.pose = obj_pose
                 detected_obj.bounding_box = bounding_box_msg
+
+            rospy.loginfo('found plane "{0}", height {1} in frame_id {2}, with {3} objects'
+                          .format(plane_frame, plane.pose.pose.position.z, plane.pose.header.frame_id,
+                                  len(plane.object_list.objects)))
 
         done_callback()
         return
@@ -92,3 +102,47 @@ class ObjectDetector(object):
     @property
     def plane_list(self):
         return self._plane_list
+
+    @staticmethod
+    def group_planes_by_height(planes, group_threshold=0.1):
+        plane_index = 0
+        plane_group_heights = {}    # index: height
+        plane_groups = {}           # index: list of indices
+
+        for plane in planes:
+            if len(plane_group_heights) == 0:
+                plane_group_heights[0] = [plane.pose.pose.position.z]
+                plane_groups[0] = [plane_index]
+            else:
+                grouped = False
+                for index in plane_group_heights:
+                    avg_height = sum(plane_group_heights[index])/len(plane_group_heights[index])
+                    if abs(plane.pose.pose.position.z - avg_height) < group_threshold:
+                        rospy.loginfo('grouping plane {0} with planes {1}'
+                                      .format(plane_index, plane_groups[index]))
+                        plane_groups[index].append(plane_index)
+                        plane_group_heights[index].append(plane.pose.pose.position.z)
+                        grouped = True
+                        break
+                    pass
+
+                if not grouped:
+                    new_index = max(plane_group_heights.keys()) + 1
+                    plane_group_heights[new_index] = [plane.pose.pose.position.z]
+                    plane_groups[new_index] = [plane_index]
+                    pass
+                pass
+            plane_index += 1
+            pass
+
+        grouped_planes = []
+        for index in plane_groups:
+            plane = planes[plane_groups[index][0]]
+            avg_height = sum(plane_group_heights[index])/len(plane_group_heights[index])
+            plane.pose.pose.position.z = avg_height
+            for plane_index in plane_groups[index][1:]:
+                plane.object_list.objects.extend(planes[plane_index].object_list.objects)
+
+            grouped_planes.append(plane)
+
+        return grouped_planes

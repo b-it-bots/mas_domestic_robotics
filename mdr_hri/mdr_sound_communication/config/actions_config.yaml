@@ -1,0 +1,8 @@
+Success: success.wav
+Error: error.wav
+Continue: continue.wav
+Failure: failure.wav
+Help: help.wav
+Alarm: alarm.wav
+Warning: warning.wav
+Retry: retry.wav

@@ -1,0 +1,7 @@
+sensor_msgs/Image[] images  # images to be classified
+string model_name           # assume model_name + '.h5' to be filename of model/weights
+                            # and model_name + '.txt' to be text file containing class names
+---
+uint32[] indices            # indices of successfully classified images
+string[] classes            # recognized classes
+float32[] probabilities     # confidence

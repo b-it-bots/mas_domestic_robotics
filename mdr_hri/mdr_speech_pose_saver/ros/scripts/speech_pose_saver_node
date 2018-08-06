@@ -1,0 +1,8 @@
+#!/usr/bin/env python
+from mdr_speech_pose_saver.speech_pose_saver import SpeechPoseSaver
+
+if __name__ == "__main__":
+    speech_saver = SpeechPoseSaver()
+
+    while not speech_saver.is_exit_requested():
+        pass

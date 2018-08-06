@@ -2,6 +2,8 @@
 
 An action for moving the arm of a robot.
 
+The action uses MoveIt! for moving the arm to named targets and specified joint values; motion to arbitrary 3D poses can be performed either using a dynamic motion primitives or using MoveIt!.
+
 ## Action definition
 
 ### Goal constants:
@@ -28,6 +30,8 @@ An action for moving the arm of a robot.
 * ``int32 goal_type``: The type of motion goal (one of the allowed goal types defined above)
 * ``string named_target``: Motion goal if ``goal_type`` is ``NAMED_TARGET``
 * ``geometry_msgs/PoseStamped end_effector_pose``: Motion goal if ``goal_type`` is ``END_EFFECTOR_POSE``
+* ``string dmp_name``: Path to a YAML file containing the weights of a dynamic motion primitive if ``goal_type`` is ``END_EFFECTOR_POSE`` (if the value is an empty string, MoveIt! is used for planning a trajectory and moving the arm)
+* ``float64 dmp_tau``: The value of the temporal dynamic motion primitive parameter if ``goal_type`` is ``END_EFFECTOR_POSE``
 * ``float64[] joint_values``: Motion goal if ``goal_type`` is ``JOINT_VALUES``
 
 ### Result:
@@ -61,7 +65,9 @@ mdr_move_arm_action
      |____src
           |____mdr_move_arm_action
                |    __init__.py
-               |____action_states.py
+               |    action_states.py
+               |    dmp.py
+               |____roll_dmp.py
 ```
 
 ## Dependencies
