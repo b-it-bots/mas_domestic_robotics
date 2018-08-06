@@ -37,7 +37,7 @@ For external users, the following instructions should get you a working system:
   ```
   mkdir -p ~/catkin_ws/src && cd ~/catkin_ws
   wstool init src
-  wstool merge -t src https://github.com/b-it-bots/mas_domestic_robotics/mas-domestic.rosinstall
+  wstool merge -t src https://raw.githubusercontent.com/b-it-bots/mas_domestic_robotics/devel/mas-domestic.rosinstall 
   ```
 2. Get the code and dependencies
 
