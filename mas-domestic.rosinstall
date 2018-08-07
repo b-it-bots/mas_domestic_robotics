@@ -1,36 +1,36 @@
 - git:
     local-name: mas_common_robotics
-    uri: git@github.com:b-it-bots/mas_common_robotics.git
+    uri: https://github.com/b-it-bots/mas_common_robotics.git
     version: kinetic
 
 - git:
     local-name: mas_domestic_robotics
-    uri: git@github.com:b-it-bots/mas_domestic_robotics.git
+    uri: https://github.com/b-it-bots/mas_domestic_robotics.git
     version: kinetic
 
 - git:
     local-name: mas_navigation
-    uri: git@github.com:b-it-bots/mas_navigation.git
+    uri: https://github.com/b-it-bots/mas_navigation.git
     version: kinetic
 
 - git:
     local-name: mas_perception
-    uri: git@github.com:b-it-bots/mas_perception.git
+    uri: https://github.com/b-it-bots/mas_perception.git
     version: kinetic
 
 - git:
     local-name: mas_execution_manager
-    uri: git@github.com:b-it-bots/mas_execution_manager.git
+    uri: https://github.com/b-it-bots/mas_execution_manager.git
     version: master
 
 - git:
     local-name: zbar_ros
-    uri: git@github.com:b-it-bots/zbar_ros.git
+    uri: https://github.com/b-it-bots/zbar_ros.git
     version: kinetic
 
 - git:
     local-name: dmp
-    uri: git@github.com:b-it-bots/dmp.git
+    uri: https://github.com/b-it-bots/dmp.git
     version: master
 
 - git:
@@ -40,15 +40,15 @@
 
 - git:
     local-name: occupancy_grid_utils
-    uri: git@github.com:b-it-bots/occupancy_grid_utils.git
+    uri: https://github.com/b-it-bots/occupancy_grid_utils.git
     version: indigo-devel
 
 - git:
     local-name: orocos_kinematics_dynamics
-    uri: git@github.com:orocos/orocos_kinematics_dynamics.git
+    uri: https://github.com/orocos/orocos_kinematics_dynamics.git
     version: master
 
 - git:
     local-name: kdl_parser
-    uri: git@github.com:ros/kdl_parser.git
+    uri: https://github.com/ros/kdl_parser.git
     version: kinetic-devel
