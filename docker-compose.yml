@@ -1,0 +1,13 @@
+version: '2'
+services:
+  travis:
+    build:
+      dockerfile: .travis/Dockerfile
+      context: .
+    volumes:
+      - ./:/catkin_ws/src/mas_domestic_robotics
+    image: bitbots-travis
+    command: ["bash", "-c", "cd /catkin_ws && catkin build -c"]
+  domestic:
+    build: .
+    image: bitbots-domestic

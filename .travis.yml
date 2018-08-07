@@ -1,0 +1,23 @@
+sudo: required
+
+services:
+  - docker
+
+language: cpp
+
+env:
+  - COMPOSE_VERSION: 1.22.0
+
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - sudo curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+  - sudo chmod +x /usr/local/bin/docker-compose
+  - docker-compose -v
+  - docker-compose build
+
+script:
+  - docker-compose run travis
+
+notifications:
+  slack:
+    secure: RUiplbRX8scnvplFZhBIvSJxPDs/qCcBiMmSZnocILQsHrZMCIhv0eNoAT6FWIkXpJbS4l56BFbSdZH25/qNl/cdNwbn/YCc4N4fketeYduLcWNpwOfbf41vjFIXEbzo6wboFjlIPJDZgQFbtMThoJ2Gx6J2nBLB719j4Skj5C58yx6/ScioXZZ1LIXEE1aeOwRnju+OqX/o0dvUNrnP+6XnMtuYSicml10JV5tj3r9IJQuSAD6Bv0l/2eMparJ5UboRMwtCy5GVLfetky6WARmESJP+bKhvYE1+FR3AdRmzA47rmE+c7fZzyybSRKeUlhWPUVatTLbWxpB4ivXxKfRWqe1RiYUIAQz8U2EhWgiuR47/1qYvQ4Lefq2pgZzbCTy4Z8rL4+CjuQqRrweAIS2AQuyWfcnv01BuJX7mmdR+jA0FYWSBxdTgrJLJ70y6ZiV6QGWYFW4x9mot3E6O+vh1LfI56ctpJfwHgIFwc0xN8rMhhkTNzEG911QAZPLsNp1+v18vXF5StHXc4sTM62IagVEifTjoVkJCTytKtqBIn+ZrAcxIBBZk8Mre9doT3ulCjRtzmGLEmGGHN429jY0ufjw1pdAml/a6FDKlKwp7/QZ49qeg23/OkkZCJ1MQ3kducjtO0qCV2DcCS7dS2b8q7ZJGH+gcWGc82XAsFgs=
