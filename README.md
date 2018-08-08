@@ -55,6 +55,34 @@ For external users, the following instructions should get you a working system:
   catkin build
   ```
 
+## Docker images
+To test locally, you need to install [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) and [docker-compose](https://docs.docker.com/compose/install/),
+
+You can pull the image for this repository:
+
+```
+docker pull b-it-bots/bitbots-domestic
+```
+
+
+### Building the bitbots-domestic image
+
+To manually build this image, first cd into this repository, then:
+
+```
+docker build -t bitbots-domestic:kinetic .
+
+```
+
+### Travis
+
+To check locally if your changes will pass the tests:
+
+```
+docker-compose build
+docker-compose run travis
+```
+
 ## License
 
 This project is licensed under the GPLv3 License - see the [LICENSE.md](LICENSE.md) file for details
