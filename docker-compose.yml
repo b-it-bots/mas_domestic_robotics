@@ -5,9 +5,9 @@ services:
       dockerfile: .travis/Dockerfile
       context: .
     volumes:
-      - ./:/catkin_ws/src/mas_domestic_robotics
+      - ./:/kinetic/src/mas_domestic_robotics
     image: bitbots-travis
-    command: ["bash", "-c", "cd /catkin_ws && catkin build -c"]
+    command: ["bash", "-c", "cd /kinetic && catkin build -c"]
   domestic:
     build: .
     image: bitbots-domestic
