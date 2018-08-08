@@ -1,8 +1,9 @@
-FROM ros:kinetic
-RUN apt-get update && apt-get install -y python-catkin-tools \
-    python-wstools
+FROM argenos/bitbots-base
+
+WORKDIR /kinetic
+
 RUN rosdep update
 
-ADD catkin_ws /catkin_ws/
-
-RUN cd /catkin_ws && rosdep install --from-paths src --ignore-src --rosdistro=kinetic -y
+RUN wstool init src && wstool merge -t src https://raw.githubusercontent.com/b-it-bots/mas_domestic_robotics/devel/mas-domestic.rosinstall
+RUN wstool update -t src
+RUN rosdep install --from-paths src --ignore-src --rosdistro=kinetic -y
