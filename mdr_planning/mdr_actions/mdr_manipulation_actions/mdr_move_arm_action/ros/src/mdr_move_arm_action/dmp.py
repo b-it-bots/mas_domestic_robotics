@@ -12,6 +12,9 @@ from mdr_move_arm_action.roll_dmp import RollDMP
 class DMPExecutor(object):
     def __init__(self, dmp_name, tau):
         self.tf_listener = tf.TransformListener()
+        self.base_link_frame_name = rospy.get_param('~base_link_frame_name', '/base_link')
+        self.odom_frame_name = rospy.get_param('~odom_frame_name', '/odom')
+        self.map_frame_name = rospy.get_param('~map_frame_name', '/map')
         self.palm_link_name = rospy.get_param('~palm_link_name', '/palm_link')
         self.cartesian_velocity_topic = rospy.get_param('~cartesian_velocity_topic',
                                                         '/arm_controller/cartesian_velocity_command')
@@ -51,7 +54,7 @@ class DMPExecutor(object):
 
     def move_base(self):
         move_base_goal = MoveBaseGoal()
-        move_base_goal.target_pose.header.frame_id = 'map'
+        move_base_goal.target_pose.header.frame_id = self.map_frame_name
         print self.move_base_client.send_goal(move_base_goal)
 
     def generate_trajectory(self, goal, initial_pos):
@@ -63,14 +66,14 @@ class DMPExecutor(object):
     def tranform_pose(self, pose):
         #transform goals to odom frame
         pose_msg = PoseStamped()
-        pose_msg.header.frame_id = 'base_link'
+        pose_msg.header.frame_id = self.base_link_frame_name
         pose_msg.pose.position.x = pose[0]
         pose_msg.pose.position.y = pose[1]
         pose_msg.pose.position.z = pose[2]
 
         while not rospy.is_shutdown():
             try:
-                pose_ = self.tf_listener.transformPose('odom', pose_msg)
+                pose_ = self.tf_listener.transformPose(self.odom_frame_name, pose_msg)
                 break
             except:
                 continue
@@ -78,7 +81,7 @@ class DMPExecutor(object):
 
     def publish_path(self):
         path = Path()
-        path.header.frame_id = "/odom"
+        path.header.frame_id = self.odom_frame_name
         for itr in range(self.pos.shape[0]):
             pose_stamped = PoseStamped()
             pose_stamped.pose.position.x = self.pos[itr, 0]
@@ -97,7 +100,7 @@ class DMPExecutor(object):
         path_z = path[2, :]
         while not rospy.is_shutdown():
             try:
-                (trans, rot) = self.tf_listener.lookupTransform('/odom', self.palm_link_name, rospy.Time(0))
+                (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame_name, self.palm_link_name, rospy.Time(0))
                 break
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
@@ -109,7 +112,7 @@ class DMPExecutor(object):
         old_pos_index = 0
         while distance > self.goal_tolerance and not rospy.is_shutdown():
             try:
-                (trans, rot) = self.tf_listener.lookupTransform('/odom', self.palm_link_name, rospy.Time(0))
+                (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame_name, self.palm_link_name, rospy.Time(0))
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
             current_pos = np.array([trans[0], trans[1], trans[2]])
@@ -168,12 +171,12 @@ class DMPExecutor(object):
                 # Publish base velocity inside the if consition
                 vector_ = Vector3Stamped()
                 vector_.header.seq = count
-                vector_.header.frame_id = "/odom"
+                vector_.header.frame_id = self.odom_frame_name
                 vector_.vector.x = vel_x_base
                 vector_.vector.y = vel_y_base
                 vector_.vector.z = vel_z_base
 
-                vector_ = self.tf_listener.transformVector3('base_link', vector_)
+                vector_ = self.tf_listener.transformVector3(self.base_link_frame_name, vector_)
 
                 message_base = Twist()
                 message_base.linear.x = vector_.vector.x
@@ -183,7 +186,7 @@ class DMPExecutor(object):
 
             message_arm = TwistStamped()
             message_arm.header.seq = count
-            message_arm.header.frame_id = '/odom'
+            message_arm.header.frame_id = self.odom_frame_name
             message_arm.twist.linear.x = vel_x_arm
             message_arm.twist.linear.y = vel_y_arm
             message_arm.twist.linear.z = vel_z_arm
@@ -198,7 +201,7 @@ class DMPExecutor(object):
 
         message_arm = TwistStamped()
         message_arm.header.seq = count
-        message_arm.header.frame_id = '/odom'
+        message_arm.header.frame_id = self.odom_frame_name
         message_arm.twist.linear.x = 0
         message_arm.twist.linear.y = 0
         message_arm.twist.linear.z = 0
@@ -210,7 +213,7 @@ class DMPExecutor(object):
     def execute(self, goal):
         initial_pos = None
         try:
-            (trans, rot) = self.tf_listener.lookupTransform('/base_link', self.palm_link_name, rospy.Time(0))
+            (trans, rot) = self.tf_listener.lookupTransform(self.base_link_frame_name, self.palm_link_name, rospy.Time(0))
             initial_pos = np.array(trans)
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             initial_pos = np.zeros(3)
@@ -225,14 +228,14 @@ class DMPExecutor(object):
 
         # transform pose to base link
         start_pose = PoseStamped()
-        start_pose.header.frame_id = 'odom'
+        start_pose.header.frame_id = self.odom_frame_name
         start_pose.pose.position.x = self.pos[0, 0]
         start_pose.pose.position.y = self.pos[0, 1]
         start_pose.pose.position.z = self.pos[0, 2]
 
         while not rospy.is_shutdown():
             try:
-                start_pose = self.tf_listener.transformPose('base_link', start_pose)
+                start_pose = self.tf_listener.transformPose(self.base_link_frame_name, start_pose)
                 break
             except:
                 continue
