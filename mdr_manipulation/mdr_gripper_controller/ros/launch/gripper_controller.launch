@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_gripper_controller" type="gripper_controller" name="mdr_gripper_controller" output="screen">
+    </node>
+</launch>
