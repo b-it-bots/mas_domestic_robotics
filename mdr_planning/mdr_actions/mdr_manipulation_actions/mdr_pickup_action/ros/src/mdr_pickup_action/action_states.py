@@ -6,7 +6,6 @@ import smach
 import tf
 import actionlib
 from geometry_msgs.msg import PoseStamped
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
