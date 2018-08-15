@@ -53,9 +53,7 @@ mdr_place_action
 The following parameters may be passed when launching the action server:
 * ``move_arm_server``: Name of the `move_arm` action server (default: 'move_arm_server')
 * ``move_base_server``: Name of the `move_base` action server (default: 'move_base_server')
-* ``gripper_cmd_topic``: Name of a topic that the gripper controller listens to for gripper commands (default: 'gripper_controller')
-* ``gripper_joint_names``: A list of names of end-effector joints as expected by the gripper controller (default: ['gripper'])
-* ``gripper_joint_values``: A list of gripper joint values at which the gripper is considered open (default: [1])
+* ``gripper_controller_pkg_name``: The name of a package that implements functionalities for controlling a robot's gripper (default: 'mdr_gripper_controller')
 * ``preplace_config_name``: Name of the preplace configuration (default: 'pregrasp')
 * ``safe_arm_joint_config``: Name of a configuration in which the robot can safely move around the environment (default: 'folded')
 * ``base_elbow_offset``: An optional offset between `base_link` and the manipulator's elbow; used for aligning the base with the placing pose so that the manipulator can easily reach it (default: -1)
@@ -106,7 +104,7 @@ The action performs placing with respect to the `base_link` frame (even if the g
 
 1. Run the robot simulation: ``roslaunch mas_<robot>_bringup_sim robot.launch``
 2. Run the moveit interface for the robot: ``roslaunch mas_<robot>_moveit move_group.launch``
-3. Run the ``move_arm`` action server: ``roslaunch mdr_move_arm_action move_arm.launch``
-4. Run the ``move_base`` action server: ``roslaunch mdr_move_base_action move_base_action.launch``
-5. Run the action server: ``roslaunch mdr_place_action place_action.launch``
+3. Run the ``move_arm`` action server: ``roslaunch mas_<robot>_move_arm_action move_arm.launch``
+4. Run the ``move_base`` action server: ``roslaunch mas_<robot>_move_base_action move_base.launch``
+5. Run the action server: ``roslaunch mas_<robot>_place_action place_action.launch``
 6. Run the client example: ``rosrun mdr_place_action place_action_client_test``; the client example uses a predefined placing pose
