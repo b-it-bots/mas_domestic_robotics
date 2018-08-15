@@ -23,8 +23,6 @@ if __name__ == '__main__':
     goal.pose.pose.orientation.z = 0.652
     goal.pose.pose.orientation.w = 0.000
 
-    goal.closed_gripper_joint_values = [0]
-
     client.send_goal(goal)
     client.wait_for_result()
 
