@@ -11,6 +11,7 @@ A base implementation of a sound vocalisation functionality that can be used for
 The base class defines the following methods for reacting to sound requests:
 * `say`: Receives a sentence request and processes it so that speech is generated
 * `make_sound`: Receives a sound request and processes it so that the requested sound is produced
+
 Robot-specific implementations need to override both methods.
 
 A script that starts a `sound_vocaliser` node is also included in the package as an example, but a robot-specific implementation should start its own node.
