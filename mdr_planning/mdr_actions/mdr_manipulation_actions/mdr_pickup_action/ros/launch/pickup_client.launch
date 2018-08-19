@@ -14,6 +14,5 @@
         <remap from="knowledge_update_service" to="$(arg knowledge_update_service)" />
         <remap from="attribute_fetching_service" to="$(arg attribute_fetching_service)" />
         <param name="grasping_pose_frame" type="str" value="base_link" />
-        <rosparam param="closed_gripper_joint_values">[0]</rosparam>
     </node>
 </launch>
