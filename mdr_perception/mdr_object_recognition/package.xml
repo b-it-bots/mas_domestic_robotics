@@ -19,7 +19,5 @@
   <depend>sensor_msgs</depend>
   <depend>mas_perception_libs</depend>
 
-  <build_depend>roslint</build_depend>
-
   <exec_depend>mcr_object_recognition_mean_circle</exec_depend>
 </package>
