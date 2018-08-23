@@ -17,5 +17,7 @@
         <param name="preprocess_input_module" type="string" value="$(arg preprocess_input_module)" />
     </node>
 
-    <include file="$(find mdr_object_recognition)/ros/launch/object_recognition.launch" />
+    <include file="$(find mdr_object_recognition)/ros/launch/object_recognition.launch">
+        <arg name="service_name" value="$(arg recognition_service_name)"/>
+    </include>
 </launch>
