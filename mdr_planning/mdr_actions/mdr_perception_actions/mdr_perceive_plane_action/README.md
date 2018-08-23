@@ -1,18 +1,18 @@
 # ``mdr_perceive_plane_action``
 
-An action for recognizing objects on a plane.
-The action includes an action server as well as an action client that interacts with ROSPlan.
+An action for recognizing objects on a plane. The action includes an action server as well as an action client that
+interacts with ROSPlan.
 
 ## Action definition
 
 ### Goal:
 
-* ``string plane_config``: Name of the configuration set for setting up the dynamic parameter server.
- Each plane should have a set of configurations, and all configuration sets should be listed in
- ``config/perceive_plane_configurations.yaml``. This is necessary for configuring the scene segmentation
- node in ``mas_common_robotics``
+* ``string plane_config``: Name of the configuration set for setting up the dynamic parameter server.  Each plane should
+  have a set of configurations, and all configuration sets should be listed in
+  ``config/perceive_plane_configurations.yaml``. This is necessary for configuring the scene segmentation  node in
+  ``mas_common_robotics``
 * ``string plane_frame_prefix``: prefix to the plane names which will be written to the ``Plane`` objects in
- ``action_states.DetectObjects``
+  ``action_states.DetectObjects``
 
 ### Result:
 
@@ -56,11 +56,15 @@ The action includes an action server as well as an action client that interacts 
 
 The following arguments may be passed when launching the action server:
 * ``target_frame``: name of the reference frame the object and plane poses will be transformed to
-(default: '/base_link')
-* ``service_module``: name of the module where an extension of ``mas_perception_libs.DetectionServiceProxy`` class is
-defined, used for dynamically loading the extended class definition. See ``mas_perception_libs`` documentation for details
-on how to use the extension class. (default: ``mdr_object_recognition``)
-* ``service_class_name``: the name of the extended class (default: ``DetectionServiceProxyTest``)
+  (default: '/base_link')
+* ``detection_action_name``: name of the action server used for object detection.
+  Action file: `mcr_perception_msgs/DetectScene.action`.
+* ``recognition_service_name``: the name of the image recognition service for classifying object.
+  Service file: `mcr_perception_msgs/ImageRecognition.srv`.
+* ``recognition_model_name``: the name of the image classification model located in the `mdr_object_recognition`
+  package.
+* ``preprocess_input_module``: the name of the module containing the image preprocessing function to be executed on
+  images before inference.
 
 ### Action client
 
