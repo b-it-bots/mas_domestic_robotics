@@ -1,9 +1,8 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="target_frame" default="/base_link"/>
-    <!-- detection -->
-    <arg name="detection_service_module" default="mdr_object_recognition"/>
-    <arg name="detection_service_class" default="DetectionServiceProxyTest"/>
+    <!-- detection TODO(minhnh): replace default with SSD based action server -->
+    <arg name="detection_action_name" default=""/>
     <!-- recognition -->
     <arg name="recognition_service_name" default="/mdr_perception/recognize_image"/>
     <arg name="recognition_model_name" default="athome_xception"/>
@@ -12,8 +11,7 @@
     <node pkg="mdr_perceive_plane_action" type="perceive_plane_action" name="perceive_plane_server" output="screen"
           ns="mdr_actions">
         <param name="target_frame" type="string" value="$(arg target_frame)" />
-        <param name="detection_service_module" type="string" value="$(arg detection_service_module)" />
-        <param name="detection_service_class" type="string" value="$(arg detection_service_class)" />
+        <param name="detection_action_name" type="string" value="$(arg detection_action_name)" />
         <param name="recognition_service_name" type="string" value="$(arg recognition_service_name)" />
         <param name="recognition_model_name" type="string" value="$(arg recognition_model_name)" />
         <param name="preprocess_input_module" type="string" value="$(arg preprocess_input_module)" />

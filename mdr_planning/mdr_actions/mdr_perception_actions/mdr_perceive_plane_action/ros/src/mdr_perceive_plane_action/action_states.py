@@ -5,8 +5,7 @@ import std_msgs.msg
 import sensor_msgs.msg
 from mdr_perceive_plane_action.msg import PerceivePlaneResult, PerceivePlaneFeedback
 from mcr_perception_msgs.msg import PlaneList
-from mdr_object_recognition import ObjectDetector
-from mdr_perception_libs import Constant, ImageRecognitionServiceProxy
+from mas_perception_libs import ObjectDetector, Constant, ImageRecognitionServiceProxy
 
 
 class DetectObjects(smach.State):

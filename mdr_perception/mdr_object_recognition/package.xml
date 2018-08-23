@@ -17,7 +17,7 @@
   <depend>rospy</depend>
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
-  <depend>mdr_perception_libs</depend>
+  <depend>mas_perception_libs</depend>
 
   <build_depend>roslint</build_depend>
 
