@@ -8,7 +8,7 @@ find_package(catkin REQUIRED
     std_msgs
     sensor_msgs
     mcr_object_recognition_mean_circle
-    mdr_perception_libs
+    mas_perception_libs
 )
 
 catkin_python_setup()

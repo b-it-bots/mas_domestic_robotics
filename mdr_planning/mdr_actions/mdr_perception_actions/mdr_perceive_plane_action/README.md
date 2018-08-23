@@ -57,8 +57,8 @@ The action includes an action server as well as an action client that interacts 
 The following arguments may be passed when launching the action server:
 * ``target_frame``: name of the reference frame the object and plane poses will be transformed to
 (default: '/base_link')
-* ``service_module``: name of the module where an extension of ``mdr_perception_libs.DetectionServiceProxy`` class is
-defined, used for dynamically loading the extended class definition. See ``mdr_perception_libs`` documentation for details
+* ``service_module``: name of the module where an extension of ``mas_perception_libs.DetectionServiceProxy`` class is
+defined, used for dynamically loading the extended class definition. See ``mas_perception_libs`` documentation for details
 on how to use the extension class. (default: ``mdr_object_recognition``)
 * ``service_class_name``: the name of the extended class (default: ``DetectionServiceProxyTest``)
 
@@ -80,7 +80,7 @@ about the world
 ## Dependencies
 
 * ``mdr_object_recognition_mean_circle``
-* ``mdr_perception_libs``
+* ``mas_perception_libs``
 * ``mdr_object_recognition``
 * ``mcr_dynamic_reconfigure_client``
 * ``mcr_perception_msgs``
