@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+
+  <node name="follow_person" pkg="mcr_follow_person" type="follow_person_node" ns="mcr_behaviors" output="screen">		
+    <param name="max_translational_velocity" value="0.5" />	
+    <param name="max_rotational_velocity" value="1.0" />
+		
+    <param name="translational_deacceleration_factor" value="1.0" />
+    <param name="rotational_deacceleration_factor" value="1.0" />
+		
+    <param name="minimum_distance_to_person" value="1.15" />	<!-- in meter -->
+    <param name="allowed_angular_variance" value="5.0" />   <!-- in degree !-->
+		
+    <param name="driving_backward_enabled" value="true" />   <!-- bool !-->
+    <param name="distance_when_driving_backward" value="1.0" />	<!-- in meter -->
+	
+    <remap from="~people_positions" to="/mcr_perception/waist_tracking/people_positions" />
+    <remap from="~odometry" to="/base_controller/odometry" />
+    <remap from="~cmd_vel" to="/base_controller/command_direct" />
+
+  </node>
+
+</launch>
