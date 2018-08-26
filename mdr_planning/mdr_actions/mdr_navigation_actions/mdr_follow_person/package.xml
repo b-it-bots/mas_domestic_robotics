@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_follow_person</name>
+  <version>0.0.1</version>
+  <description>behavior which follows a tracked person</description>
+
+  <maintainer email="frederik.hegger@h-brs.de">Frederik Hegger</maintainer>
+
+  <license>GPLv3</license>
+
+  <author email="frederik.hegger@h-brs.de">Frederik Hegger</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>nav_msgs</build_depend>
+  <build_depend>mcr_algorithms</build_depend>
+  <build_depend>mcr_perception_msgs</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>std_srvs</build_depend>
+
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>nav_msgs</run_depend>
+  <run_depend>mcr_algorithms</run_depend>
+  <run_depend>mcr_perception_msgs</run_depend>
+  <run_depend>std_srvs</run_depend>
+
+  <test_depend>roslaunch</test_depend>
+
+</package>
