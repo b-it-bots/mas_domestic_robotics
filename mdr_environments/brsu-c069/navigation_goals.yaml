@@ -1,0 +1,14 @@
+#[x,y,theta]
+
+exit: [0.0, 0.0, 0.0]
+charge: [0.0, 0.0, 0.0]
+
+kitchen: [4.116, -2.075, 0.115]
+living_room: [1.294, -0.655, 1.674]
+dinner_table: [1.564, 0.416, -1.497]
+couch_table: [1.223, -2.640, 0.056]
+
+# poses for introduction
+second_intro: [0.205, 0.486, 0.488]
+
+home: [1.294, -0.655, 1.674]
