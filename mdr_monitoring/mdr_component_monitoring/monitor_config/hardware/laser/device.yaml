@@ -1,0 +1,8 @@
+name: laser_device_monitor
+mappings:
+    - mapping:
+        inputs: [/dev/laser]
+        outputs:
+            - output:
+                name: laser_connected
+                type: bool

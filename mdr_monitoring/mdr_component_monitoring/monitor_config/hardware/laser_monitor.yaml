@@ -1,0 +1,8 @@
+# name: string | required
+# submonitors: list<string> | optional
+# dependencies: list<string> | optional
+#
+
+name: laser_monitor
+modes: [laser/device.yaml]
+dependencies: []

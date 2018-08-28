@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_component_monitoring" type="component_monitoring" name="mdr_component_monitoring" output="screen">
+        <param name="hw_monitor_config_dir" value="$(find mdr_component_monitoring)/monitor_config/hardware" />
+        <param name="sw_monitor_config_dir" value="$(find mdr_component_monitoring)/monitor_config/software" />
+    </node>
+</launch>
