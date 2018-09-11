@@ -4,9 +4,6 @@ services:
     build:
       dockerfile: .travis/Dockerfile
       context: .
-    volumes:
-      - ./:/kinetic/src/mas_domestic_robotics
-    command: ["bash", "-c", "cd /kinetic && catkin build -c"]
     image: bitbots/bitbots-domestic:${TRAVIS_COMMIT}
   domestic:
     build: .
