@@ -1,10 +1,13 @@
-FROM argenos/bitbots-base
+FROM bitbots/bitbots-domestic:kinetic
 
-RUN rosdep update
+WORKDIR /travis
+ADD ./ /travis/src/mas_domestic_robotics
 
-ADD ./ /kinetic/src/mas_domestic_robotics
-WORKDIR /kinetic
-
-RUN wstool init src && wstool merge -t src src/mas_domestic_robotics/.travis/travis.rosinstall
-RUN wstool update -t src
-RUN rosdep install --from-paths src --ignore-src --rosdistro=kinetic -y
+RUN . /opt/ros/mas_stable/setup.sh && \
+    catkin config --init && \
+    catkin config --extend /opt/ros/mas_stable && \
+    apt-get update -qq && \
+    rosdep update -qq && \
+    rosdep install -q --from-paths src --ignore-src --rosdistro=kinetic -y && \
+    rm -rf /var/lib/apt/lists/* && \
+    catkin build --no-status

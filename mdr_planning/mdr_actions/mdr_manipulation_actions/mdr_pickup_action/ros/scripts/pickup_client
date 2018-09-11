@@ -19,7 +19,6 @@ class PickupClient(ActionClientBase):
         self.obj_plane = None
         self.obj = None
         self.frame_id = rospy.get_param('~grasping_pose_frame', 'base_link')
-        self.closed_gripper_joint_values = rospy.get_param('~closed_gripper_joint_values', [0.])
         self.tf_listener = tf.TransformListener()
 
         while not rospy.is_shutdown():
@@ -70,9 +69,6 @@ class PickupClient(ActionClientBase):
         object_pose_in_grasp_frame = self.tf_listener.transformPose(self.frame_id,
                                                                     object_pose)
         goal.pose = object_pose_in_grasp_frame
-
-        # a grasp planner should determine this on the fly
-        goal.closed_gripper_joint_values = self.closed_gripper_joint_values
         return goal
 
     def get_object_pose(self, object_name):

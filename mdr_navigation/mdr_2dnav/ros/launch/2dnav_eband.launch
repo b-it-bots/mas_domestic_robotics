@@ -30,25 +30,25 @@
         <param name="base_local_planner" value="eband_local_planner/EBandPlannerROS" />
 
         <!-- move_base parameters -->
-        <rosparam file="$(find $(arg robot_pkg))/config/navigation/eband/move_base_params.yaml" command="load" />
-        <rosparam file="$(find $(arg robot_pkg))/config/navigation/common/robot_footprint.yaml" command="load" />
+        <rosparam file="$(eval find(arg('robot_pkg')) + '/config/navigation/eband/move_base_params.yaml')" command="load" />
+        <rosparam file="$(eval find(arg('robot_pkg')) + '/config/navigation/common/robot_footprint.yaml')" command="load" />
 
         <!-- local planner parameters (Elastic Band) -->
-        <rosparam file="$(find $(arg robot_pkg))/config/navigation/eband/eband_local_planner_params.yaml" command="load" ns="EBandPlannerROS"/>
+        <rosparam file="$(eval find(arg('robot_pkg')) + '/config/navigation/eband/eband_local_planner_params.yaml')" command="load" ns="EBandPlannerROS"/>
 
         <!-- global costmap parameters -->
-        <rosparam file="$(find $(arg robot_pkg))/config/navigation/common/robot_footprint.yaml" command="load" ns="global_costmap"/>
-        <rosparam file="$(find $(arg robot_pkg))/config/navigation/eband/costmap_common_params.yaml" command="load" ns="global_costmap" />
-        <rosparam file="$(find $(arg robot_pkg))/config/navigation/eband/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(eval find(arg('robot_pkg')) + '/config/navigation/common/robot_footprint.yaml')" command="load" ns="global_costmap"/>
+        <rosparam file="$(eval find(arg('robot_pkg')) + '/config/navigation/eband/costmap_common_params.yaml')" command="load" ns="global_costmap" />
+        <rosparam file="$(eval find(arg('robot_pkg')) + '/config/navigation/eband/global_costmap_params.yaml')" command="load" />
 
         <!-- local costmap parameters -->
-        <rosparam file="$(find $(arg robot_pkg))/config/navigation/common/robot_footprint.yaml" command="load" ns="local_costmap"/>
-        <rosparam file="$(find $(arg robot_pkg))/config/navigation/eband/costmap_common_params.yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find $(arg robot_pkg))/config/navigation/eband/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(eval find(arg('robot_pkg')) + '/config/navigation/common/robot_footprint.yaml')" command="load" ns="local_costmap"/>
+        <rosparam file="$(eval find(arg('robot_pkg')) + '/config/navigation/eband/costmap_common_params.yaml')" command="load" ns="local_costmap" />
+        <rosparam file="$(eval find(arg('robot_pkg')) + '/config/navigation/eband/local_costmap_params.yaml')" command="load" />
 
         <!-- recovery behavior parameters-->
-        <rosparam file="$(find $(arg robot_pkg))/config/navigation/recovery_behaviors/force_field_parameters.yaml" command="load" ns="force_field_recovery"/>
-        <rosparam file="$(find $(arg robot_pkg))/config/navigation/recovery_behaviors/clear_costmap_parameters.yaml" command="load" ns="clear_costmap_recovery"/>
+        <rosparam file="$(eval find(arg('robot_pkg')) + '/config/navigation/recovery_behaviors/force_field_parameters.yaml')" command="load" ns="force_field_recovery"/>
+        <rosparam file="$(eval find(arg('robot_pkg')) + '/config/navigation/recovery_behaviors/clear_costmap_parameters.yaml')" command="load" ns="clear_costmap_recovery"/>
     </node>
 
 </launch>

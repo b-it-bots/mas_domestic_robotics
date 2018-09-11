@@ -19,9 +19,8 @@ class PlaceSkill(smach.StateMachine):
 
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
         move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
-        gripper_cmd_topic = rospy.get_param('~gripper_cmd_topic', 'gripper_controller')
-        gripper_joint_names = rospy.get_param('~gripper_joint_names', ['gripper'])
-        gripper_joint_values = rospy.get_param('~gripper_joint_values', [1.])
+        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name',
+                                                      'mdr_gripper_controller')
         preplace_config_name = rospy.get_param('~preplace_config_name', 'pregrasp')
         safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
         base_elbow_offset = float(rospy.get_param('~base_elbow_offset', -1.))
@@ -36,9 +35,7 @@ class PlaceSkill(smach.StateMachine):
 
             smach.StateMachine.add('PLACE', Place(move_arm_server=move_arm_server,
                                                   move_base_server=move_base_server,
-                                                  gripper_joint_names=gripper_joint_names,
-                                                  gripper_joint_values=gripper_joint_values,
-                                                  gripper_cmd_topic=gripper_cmd_topic,
+                                                  gripper_controller_pkg_name=gripper_controller_pkg_name,
                                                   preplace_config_name=preplace_config_name,
                                                   safe_arm_joint_config=safe_arm_joint_config,
                                                   base_elbow_offset=base_elbow_offset,

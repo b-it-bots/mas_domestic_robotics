@@ -1,11 +1,11 @@
 #!/usr/bin/python
+from importlib import import_module
 
 import rospy
 import smach
 import tf
 import actionlib
 from geometry_msgs.msg import PoseStamped
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
@@ -30,9 +30,7 @@ class SetupPlace(smach.State):
 
 class Place(smach.State):
     def __init__(self, timeout=120.0,
-                 gripper_joint_names=list(),
-                 gripper_joint_values=list(),
-                 gripper_cmd_topic='/gripper/command',
+                 gripper_controller_pkg_name='mdr_gripper_controller',
                  preplace_config_name='pregrasp',
                  safe_arm_joint_config='folded',
                  move_arm_server='move_arm_server',
@@ -45,10 +43,12 @@ class Place(smach.State):
                              output_keys=['place_feedback'],
                              outcomes=['succeeded', 'failed'])
         self.timeout = timeout
-        self.gripper_joint_names = gripper_joint_names
-        self.gripper_joint_values = gripper_joint_values
-        self.gripper_traj_pub = rospy.Publisher(gripper_cmd_topic, JointTrajectory,
-                                                queue_size=10)
+
+        gripper_controller_module_name = '{0}.gripper_controller'.format(gripper_controller_pkg_name)
+        GripperControllerClass = getattr(import_module(gripper_controller_module_name),
+                                         'GripperController')
+        self.gripper = GripperControllerClass()
+
         self.preplace_config_name = preplace_config_name
         self.safe_arm_joint_config = safe_arm_joint_config
         self.move_arm_server = move_arm_server
@@ -99,17 +99,8 @@ class Place(smach.State):
             return 'failed'
 
         rospy.loginfo('[PLACE] Arm motion successful')
-        rospy.loginfo('[PLACE] Opening the gripper')
-
-        # we move the gripper joints to a suitable position
-        traj = JointTrajectory()
-        traj.joint_names = self.gripper_joint_names
-        trajectory_point = JointTrajectoryPoint()
-        trajectory_point.positions = self.gripper_joint_values
-        trajectory_point.time_from_start = rospy.Time(5.)
-        traj.points = [trajectory_point]
-        self.gripper_traj_pub.publish(traj)
-        rospy.sleep(3.)
+        rospy.loginfo('[PLACE] Opening the gripper...')
+        self.gripper.open()
 
         rospy.loginfo('[PLACE] Moving the arm back')
         self.move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)

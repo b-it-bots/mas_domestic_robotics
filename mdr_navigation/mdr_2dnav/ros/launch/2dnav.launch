@@ -9,7 +9,7 @@
   <include file="$(find mdr_2dnav)/ros/launch/2dnav_$(arg nav_mode).launch">
     <arg name="robot" value="$(arg robot)" />
     <arg name="robot_env" value="$(arg robot_env)" />
-    <arg name="robot_pkg" value="$(arg robot_pkg)"
+    <arg name="robot_pkg" value="$(arg robot_pkg)" />
   </include>
 
 </launch>

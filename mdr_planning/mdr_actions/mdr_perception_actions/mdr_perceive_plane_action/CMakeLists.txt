@@ -10,7 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   roslaunch
   mcr_perception_msgs
-  mdr_perception_libs
+  mas_perception_libs
 )
 
 catkin_python_setup()

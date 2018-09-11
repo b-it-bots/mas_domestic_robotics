@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="mdr_object_recognition" type="object_detection_test_server" name="object_detection_test_server"
+    <node pkg="mas_perception_libs" type="object_detection_test_server" name="object_detection_test_server"
           output="screen" />
-    <include file="$(find mdr_perceive_plane_action)/ros/launch/perceive_plane.launch" />
+    <include file="$(find mdr_perceive_plane_action)/ros/launch/perceive_plane.launch">
+        <arg name="detection_action_name" value="/object_detection_test_server"/>
+    </include>
 </launch>

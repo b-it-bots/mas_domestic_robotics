@@ -1,11 +1,11 @@
 #!/usr/bin/python
+from importlib import import_module
 
 import rospy
 import smach
 import tf
 import actionlib
 from geometry_msgs.msg import PoseStamped
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
@@ -30,9 +30,7 @@ class SetupPickup(smach.State):
 
 class Pickup(smach.State):
     def __init__(self, timeout=120.0,
-                 gripper_joint_names=list(),
-                 open_gripper_joint_values=list(),
-                 gripper_cmd_topic='/gripper/command',
+                 gripper_controller_pkg_name='mdr_gripper_controller',
                  pregrasp_config_name='pregrasp',
                  intermediate_grasp_offset=-1,
                  safe_arm_joint_config='folded',
@@ -46,11 +44,12 @@ class Pickup(smach.State):
                              output_keys=['pickup_feedback'],
                              outcomes=['succeeded', 'failed'])
         self.timeout = timeout
-        self.gripper_joint_names = gripper_joint_names
-        self.open_gripper_joint_values = open_gripper_joint_values
-        self.gripper_traj_pub = rospy.Publisher(gripper_cmd_topic,
-                                                JointTrajectory,
-                                                queue_size=10)
+
+        gripper_controller_module_name = '{0}.gripper_controller'.format(gripper_controller_pkg_name)
+        GripperControllerClass = getattr(import_module(gripper_controller_module_name),
+                                         'GripperController')
+        self.gripper = GripperControllerClass()
+
         self.pregrasp_config_name = pregrasp_config_name
         self.intermediate_grasp_offset = intermediate_grasp_offset
         self.safe_arm_joint_config = safe_arm_joint_config
@@ -92,15 +91,8 @@ class Pickup(smach.State):
             pose_base_link.pose.orientation.z = self.grasping_orientation[2]
             pose_base_link.pose.orientation.w = self.grasping_orientation[3]
 
-        # we open the gripper
-        traj = JointTrajectory()
-        traj.joint_names = self.gripper_joint_names
-        trajectory_point = JointTrajectoryPoint()
-        trajectory_point.positions = self.open_gripper_joint_values
-        trajectory_point.time_from_start = rospy.Time(5.)
-        traj.points = [trajectory_point]
-        self.gripper_traj_pub.publish(traj)
-        rospy.sleep(3.)
+        rospy.loginfo('[PICKUP] Opening the gripper...')
+        self.gripper.open()
 
         rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
         self.move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
@@ -120,16 +112,7 @@ class Pickup(smach.State):
 
         rospy.loginfo('[PICKUP] Arm motion successful')
         rospy.loginfo('[PICKUP] Closing the gripper')
-
-        # we move the gripper joints to a suitable position
-        traj = JointTrajectory()
-        traj.joint_names = self.gripper_joint_names
-        trajectory_point = JointTrajectoryPoint()
-        trajectory_point.positions = userdata.pickup_goal.closed_gripper_joint_values
-        trajectory_point.time_from_start = rospy.Time(5.)
-        traj.points = [trajectory_point]
-        self.gripper_traj_pub.publish(traj)
-        rospy.sleep(3.)
+        self.gripper.close()
 
         rospy.loginfo('[PICKUP] Moving the arm back')
         self.move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)

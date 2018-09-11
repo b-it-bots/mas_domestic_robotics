@@ -16,7 +16,7 @@ class SoundVocaliserBase(object):
                                                   String,
                                                   self.make_sound)
 
-    def say(self, mgs):
+    def say(self, msg):
         rospy.loginfo('[SAY] Ignoring request')
 
     def make_sound(self, msg):
