@@ -61,7 +61,7 @@ To test locally, you need to install [docker](https://docs.docker.com/install/li
 You can pull the image for this repository:
 
 ```
-docker pull b-it-bots/bitbots-domestic
+docker pull bitbots/bitbots-domestic:kinetic
 ```
 
 
@@ -70,7 +70,7 @@ docker pull b-it-bots/bitbots-domestic
 To manually build this image, first cd into this repository, then:
 
 ```
-docker build -t bitbots-domestic:kinetic .
+docker build -t bitbots/bitbots-domestic:kinetic .
 
 ```
 
