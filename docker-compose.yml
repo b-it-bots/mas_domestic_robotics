@@ -6,8 +6,8 @@ services:
       context: .
     volumes:
       - ./:/kinetic/src/mas_domestic_robotics
-    image: bitbots-travis
     command: ["bash", "-c", "cd /kinetic && catkin build -c"]
+    image: bitbots/bitbots-domestic:${TRAVIS_COMMIT}
   domestic:
     build: .
-    image: bitbots-domestic
+    image: bitbots/bitbots-domestic:kinetic

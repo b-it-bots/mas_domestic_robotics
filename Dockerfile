@@ -1,4 +1,4 @@
-FROM argenos/bitbots-base
+FROM bitbots/bitbots-common:kinetic
 
 WORKDIR /kinetic
 

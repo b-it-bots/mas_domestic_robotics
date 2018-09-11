@@ -1,4 +1,4 @@
-FROM argenos/bitbots-base
+FROM bitbots/bitbots-domestic:kinetic
 
 RUN rosdep update
 
