@@ -6,17 +6,30 @@ services:
 language: cpp
 
 env:
-  - COMPOSE_VERSION: 1.22.0
+  global:
+    - COMPOSE_VERSION: 1.22.0
+    - CONTAINER_RELEASE_IMAGE: bitbots/bitbots-domestic:$TRAVIS_BRANCH
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
   - sudo curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
   - sudo chmod +x /usr/local/bin/docker-compose
   - docker-compose -v
-  - docker-compose build travis
 
 script:
-  - docker-compose run travis
+  - docker-compose build travis
+
+deploy:
+  provider: script
+  skip_cleanup: true
+  script:
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker build -t $CONTAINER_RELEASE_IMAGE .
+    - docker images
+    - docker push $CONTAINER_RELEASE_IMAGE
+  on:
+    all_branches: true
+    condition: $TRAVIS_BRANCH =~ ^kinetic|devel$ OR tag = true
 
 notifications:
   slack:
