@@ -1,5 +1,5 @@
 # goal
-int32 listen_duration
+bool recognize_speech
 ---
 # result
 string message

@@ -10,38 +10,39 @@ from random import randint
 
 import rospy
 import smach
+import speech_recognition as sr
 
 from std_msgs.msg import String
-from tmc_rosjulius_msgs.msg import RecognitionResult
 from smach_ros import ActionServerWrapper, IntrospectionServer
 from mdr_listen_action.msg import ListenAction, ListenResult, ListenFeedback
-from mdr_listen_action.SpeechVerifier import SpeechVerifier
-
 
 class InitializeListen(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'failed'],
+        smach.State.__init__(self, outcomes=['succeeded', 'failed', 'processing'],
                              input_keys=['error_message', 'listen_feedback'],
                              output_keys=['listen_feedback', 'init_error_message'])
+        self.feedback_given = False
 
     def execute(self, userdata):
         rospy.loginfo("Executing state InitializeListen")
 
+        # Give some feedback.
+        while not self.feedback_given:
+            userdata.listen_feedback = ListenFeedback()
+            userdata.listen_feedback.status_initialization = "in_progess"
+            userdata.listen_feedback.status_wait_for_user_input = "pending"
+            userdata.listen_feedback.status_process_input = "pending"
+            userdata.listen_feedback.error_detected = False
+            self.feedback_given = True
+            return 'processing'
+
         initialization_successful = True
-
-        # give some feedback
-        userdata.listen_feedback = ListenFeedback()
-        userdata.listen_feedback.status_initialization = "in_progess"
-        userdata.listen_feedback.status_wait_for_user_input = "pending"
-        userdata.listen_feedback.status_process_input = "pending"
-        userdata.listen_feedback.error_detected = False
-
         if initialization_successful:
             rospy.loginfo("Initialization successful!")
             return 'succeeded'
         else:
-            # example for a possible error message
+            # Example for a possible error message.
             userdata.init_error_message = "Microphones could not be initialized."
             rospy.logerr("Microphones could not be initialized.")
             return 'failed'
@@ -50,26 +51,26 @@ class InitializeListen(smach.State):
 class WaitForUserInput(smach.State):
 
     def __init__(self):
-        smach.State.__init__(self, outcomes=['input_received', 'no_input_received', 'processing'],
-                             input_keys=['listen_goal', 'listen_feedback', 'accoustic_input'],
+        smach.State.__init__(self, outcomes=['input_received', 'input_not_understood', 'no_input_received', 'processing'],
+                             input_keys=['listen_feedback', 'accoustic_input'],
                              output_keys=['listen_feedback', 'accoustic_input',
                                           'input_error_message'])
         self.feedback_given = False
         self.input_received = False
 
     def callback(self, data, userdata):
-        rospy.loginfo(rospy.get_caller_id() + " I heard %s ", data.sentences)
-        
-        # TODO: Call the method that verifies the data from Julius even more.
+        rospy.loginfo("I heard: " + data)
+
         # TODO: SpeechVerifier, here!
-        sv = SpeechVerifier("../../../common/config/dict", "../../../common/config/sentence_pool.txt", data.sentences)
+        #sv = SpeechVerifier("../../../common/config/dict", "../../../common/config/sentence_pool.txt", data.sentences)
+        #userdata.accoustic_input = sv.find_best_match()
         self.input_received = True
-        userdata.accoustic_input = sv.find_best_match()
+        userdata.accoustic_input = data
 
     def execute(self, userdata):
         rospy.loginfo("Executing state WaitForUserInput")
 
-        # give some feedback
+        # Give some feedback.
         while not self.feedback_given:
             userdata.listen_feedback.status_initialization = "completed"
             userdata.listen_feedback.status_wait_for_user_input = "in_progress"
@@ -78,16 +79,30 @@ class WaitForUserInput(smach.State):
             self.feedback_given = True
             return 'processing'
 
-        timer = 0
-        duration = userdata.listen_goal.listen_duration
-        while not timer == duration:
-            # in order to provide some input: publish to /wait_for_user_input
+        recognizer = sr.Recognizer()
+        microphone = sr.Microphone()
 
-            # TODO: Subscribe to hsrb/voice/text and get the output from there.
-            #rospy.Subscriber("wait_for_user_input", String[], self.callback, userdata)
-            rospy.Subscriber("hsrb/voice/text", RecognitionResult, self.callback, userdata)
-            if self.input_received:
-                return 'input_received'
+        with microphone as source:
+            recognizer.adjust_for_ambient_noise(source)
+
+        with microphone as source:
+            rospy.loginfo("Listening...")
+            audio = recognizer.listen(source)
+        rospy.loginfo("Got a sound; recognizing...")
+        try:
+            recognized_speech = recognizer.recognize_google(audio)
+            self.callback(recognized_speech, userdata)
+        except sr.UnknownValueError:
+            userdata.input_error_message = "Input not understood."
+            rospy.logerr("Input not understood.")
+            return 'input_not_understood'
+        except sr.RequestError as e:
+            userdata.input_error_message = "No input received."
+            rospy.logerr("No input received")
+            return 'no_input_received'
+
+        if self.input_received:
+            return 'input_received'
             rospy.sleep(rospy.Duration(1))
             timer += 1
 
@@ -107,7 +122,7 @@ class InitializationError(smach.State):
     def execute(self, userdata):
         rospy.loginfo("Executing state InitializationError")
 
-        # give some feedback
+        # Give some feedback.
         while not self.feedback_given:
             userdata.listen_feedback.status_initialization = "aborted"
             userdata.listen_feedback.status_wait_for_user_input = "pending"
@@ -126,8 +141,6 @@ class InitializationError(smach.State):
 
 class ProcessInput(smach.State):
 
-    # TODO: Publisher here?! Or publisher in "wait_for_user_input"?
-
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'input_not_understood', 'processing'],
                              input_keys=['accoustic_input', 'listen_feedback',
@@ -139,9 +152,9 @@ class ProcessInput(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo("Executing state ProcessInput")
-        rospy.loginfo("This was the input %s: ", userdata.accoustic_input)
+        rospy.loginfo("This is what I think you meant: %s", userdata.accoustic_input)
 
-        # give some feedback
+        # Give some feedback.
         while not self.feedback_given:
             userdata.listen_feedback.status_initialization = "completed"
             userdata.listen_feedback.status_wait_for_user_input = "completed"
@@ -150,9 +163,6 @@ class ProcessInput(smach.State):
             self.feedback_given = True
             return 'processing'
 
-        pub = rospy.Publisher('talker', String, queue_size=10)
-        pub.publish(userdata.accoustic_input)
-       
         result = ListenResult()
         result.success = True
         result.message = userdata.accoustic_input
@@ -172,7 +182,7 @@ class InputError(smach.State):
     def execute(self, userdata):
         rospy.loginfo("Executing state InputError")
 
-        # give some feedback
+        # Give some feedback.
         while not self.feedback_given:
             userdata.listen_feedback.status_initialization = "completed"
             userdata.listen_feedback.status_wait_for_user_input = "completed"
