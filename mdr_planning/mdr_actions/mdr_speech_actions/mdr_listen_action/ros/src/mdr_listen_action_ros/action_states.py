@@ -10,6 +10,7 @@ from random import randint
 
 import rospy
 import smach
+import urllib2
 import speech_recognition as sr
 
 from std_msgs.msg import String
@@ -89,17 +90,35 @@ class WaitForUserInput(smach.State):
             rospy.loginfo("Listening...")
             audio = recognizer.listen(source)
         rospy.loginfo("Got a sound; recognizing...")
-        try:
-            recognized_speech = recognizer.recognize_google(audio)
-            self.callback(recognized_speech, userdata)
-        except sr.UnknownValueError:
-            userdata.input_error_message = "Input not understood."
-            rospy.logerr("Input not understood.")
-            return 'input_not_understood'
-        except sr.RequestError as e:
-            userdata.input_error_message = "No input received."
-            rospy.logerr("No input received")
-            return 'no_input_received'
+
+        """
+        Google over PocketSphinx: In case there is a internet connection
+        use google, otherwise use pocketsphinx for speech recognition.
+        """
+        if self.check_internet_connection():
+            try:
+                recognized_speech = recognizer.recognize_google(audio)
+            except sr.UnknownValueError:
+                userdata.input_error_message = "Input not understood."
+                rospy.logerr("Input not understood.")
+                return 'input_not_understood'
+            except sr.RequestError as e:
+                userdata.input_error_message = "No input received."
+                rospy.logerr("No input received")
+                return 'no_input_received'
+        else:
+            try:
+                recognized_speech = recognizer.recognize_sphinx(audio)
+            except sr.UnknownValueError:
+                userdata.input_error_message = "Input not understood."
+                rospy.logerr("Input not understood.")
+                return 'input_not_understood'
+            except sr.RequestError as e:
+                userdata.input_error_message = "No input received."
+                rospy.logerr("No input received")
+                return 'no_input_received'
+
+        self.callback(recognized_speech, userdata)
 
         if self.input_received:
             return 'input_received'
@@ -109,6 +128,13 @@ class WaitForUserInput(smach.State):
         userdata.input_error_message = "No input received."
         rospy.logerr("No input received.")
         return 'no_input_received'
+
+    def check_internet_connection(self):
+        try:
+            urllib2.urlopen("http://172.217.21.238", timeout=1)
+            return True
+        except urllib2.URLError as err:
+            return False
 
 
 class InitializationError(smach.State):
@@ -152,8 +178,7 @@ class ProcessInput(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo("Executing state ProcessInput")
-        rospy.loginfo("This is what I think you meant: %s", userdata.accoustic_input)
-
+        
         # Give some feedback.
         while not self.feedback_given:
             userdata.listen_feedback.status_initialization = "completed"
@@ -162,6 +187,8 @@ class ProcessInput(smach.State):
             userdata.listen_feedback.error_detected = False
             self.feedback_given = True
             return 'processing'
+
+        rospy.loginfo("This is what I think you meant: %s", userdata.accoustic_input)
 
         result = ListenResult()
         result.success = True
