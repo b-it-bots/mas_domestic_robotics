@@ -1,30 +1,64 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import rospy
+import urllib2
 from std_msgs.msg import String
 import speech_recognition as sr
 
+"""
+Currently 172.217.21.238 is one of IP addresses of google.com.
+It might happen, that this IP expires. In this case it has to be changed manually.
+Use the following command to find a current IP address for google.com:
+    $ dig google.com  +trace
+"""
+def check_internet_connection():
+    try:
+        urllib2.urlopen("http://172.217.21.238", timeout=1)
+        return True
+    except urllib2.URLError as err:
+        return False
+
 if __name__ == '__main__':
     rospy.init_node("speech_recognizer")
+
     recognizer = sr.Recognizer()
     microphone = sr.Microphone()
+
     with microphone as source:
         recognizer.adjust_for_ambient_noise(source)
+
     pub = rospy.Publisher("recognized_speech", String, latch=True, queue_size=1)
+
     try:
         while not rospy.is_shutdown():
-            print('Listening...')
+            rospy.loginfo('Listening...')
             with microphone as source:
                 audio = recognizer.listen(source)
-            print('Got a sound; recognizing...')
-            try:
-                recognized_speech = recognizer.recognize_google(audio)
-                print("You said: " + recognized_speech)
-                pub.publish(recognized_speech)
-            except sr.UnknownValueError:
-                print("Could not understand audio")
-            except sr.RequestError as e:
-                print("Could not request results; {0}".format(e))
+            rospy.loginfo('Got a sound; recognizing...')
+
+            """
+            Google over PocketSphinx: In case there is a internet connection
+            use google, otherwise use pocketsphinx for speech recognition.
+            """
+            if check_internet_connection():
+                try:
+                    recognized_speech = recognizer.recognize_google(audio)
+                except sr.UnknownValueError:
+                    rospy.logerr("Could not understand audio.")
+                except sr.RequestError as e:
+                    rospy.logerr("Could not request results; {0}".format(e))
+            else:
+                try:
+                    recognized_speech = recognizer.recognize_sphinx(audio)
+                except sr.UnknownValueError:
+                    rospy.logerr("Could not understand audio.")
+                except sr.RequestError as e:
+                    rospy.logerr("Could not request results; {0}".format(e))
+
+            rospy.loginfo("You said: " + recognized_speech)
+            pub.publish(recognized_speech)
+
         rospy.spin()
+
     except Exception as exc:
-        print(exc)
+        rospy.logerr(exc)

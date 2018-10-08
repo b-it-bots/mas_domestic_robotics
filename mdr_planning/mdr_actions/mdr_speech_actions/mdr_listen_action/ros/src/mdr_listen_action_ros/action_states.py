@@ -131,6 +131,12 @@ class WaitForUserInput(smach.State):
 
     def check_internet_connection(self):
         try:
+            """
+            Currently 172.217.21.238 is one of IP addresses of google.com.
+            It might happen, that this IP expires. In this case it has to be changed manually.
+            Use the following command to find a current IP address for google.com:
+                $ dig google.com  +trace
+            """
             urllib2.urlopen("http://172.217.21.238", timeout=1)
             return True
         except urllib2.URLError as err:
@@ -178,7 +184,7 @@ class ProcessInput(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo("Executing state ProcessInput")
-        
+
         # Give some feedback.
         while not self.feedback_given:
             userdata.listen_feedback.status_initialization = "completed"
