@@ -27,7 +27,7 @@ if __name__ == '__main__':
     with microphone as source:
         recognizer.adjust_for_ambient_noise(source)
 
-    pub = rospy.Publisher("recognized_speech", String, latch=True, queue_size=1)
+    pub = rospy.Publisher("speech_recognizer", String, latch=True, queue_size=1)
 
     try:
         while not rospy.is_shutdown():
@@ -40,6 +40,7 @@ if __name__ == '__main__':
             Google over PocketSphinx: In case there is a internet connection
             use google, otherwise use pocketsphinx for speech recognition.
             """
+            recognized_speech = ""
             if check_internet_connection():
                 try:
                     recognized_speech = recognizer.recognize_google(audio)
@@ -55,8 +56,9 @@ if __name__ == '__main__':
                 except sr.RequestError as e:
                     rospy.logerr("Could not request results; {0}".format(e))
 
-            rospy.loginfo("You said: " + recognized_speech)
-            pub.publish(recognized_speech)
+            if recognized_speech != "":
+                rospy.loginfo("You said: " + recognized_speech)
+                pub.publish(recognized_speech)
 
         rospy.spin()
 
