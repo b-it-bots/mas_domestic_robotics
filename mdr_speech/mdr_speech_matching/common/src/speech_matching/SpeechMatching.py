@@ -28,7 +28,9 @@ class SpeechMatching():
 
     """
     The following method loads a sentence pool and returns a list of tuples,
-    containing the readable sentence and the sentence in phonemes.
+    containing the readable sentence and the sentence in phonemes. This method
+    is similar to the method used in question_responder (TODO: export this
+    method and use it in both.)
     """
     def load_pool(self, filename):
         file = open(filename, "r")

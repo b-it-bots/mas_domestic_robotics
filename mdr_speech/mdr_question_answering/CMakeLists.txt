@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_speech_recognition)
+project(mdr_question_answering)
 
 find_package(catkin REQUIRED
   COMPONENTS
@@ -7,7 +7,6 @@ find_package(catkin REQUIRED
 )
 
 catkin_python_setup()
-
 
 ###################################
 ## catkin specific configuration ##

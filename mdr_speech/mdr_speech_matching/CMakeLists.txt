@@ -4,16 +4,31 @@ project(mdr_speech_matching)
 find_package(catkin REQUIRED
   COMPONENTS
     rospy
+    std_msgs
+    message_generation
 )
 
 catkin_python_setup()
+
+################################################
+## Declare ROS messages, services and actions ##
+################################################
+
+add_message_files(
+  FILES
+    MatchedSentence.msg
+)
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 ###################################
 ## catkin specific configuration ##
 ###################################
 
 catkin_package(
-
+  CATKIN_DEPENDS message_runtime
 )
 
 #############
