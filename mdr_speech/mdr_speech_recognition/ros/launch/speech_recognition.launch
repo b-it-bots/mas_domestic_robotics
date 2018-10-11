@@ -1,4 +1,4 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="mdr_speech_recognition" type="speech_recognizer" name="speech_recognizer" output="screen" />
+    <node pkg="mdr_speech_recognition" type="speech_recognition_node" name="speech_recognition_node" output="screen" />
 </launch>

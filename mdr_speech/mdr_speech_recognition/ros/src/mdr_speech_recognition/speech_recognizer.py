@@ -12,17 +12,19 @@ class SpeechRecognizer:
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
 
+
     """
     Currently 172.217.21.238 is one of IP addresses of google.com.
     It might happen, that this IP expires. In this case it has to be changed manually.
     Use the following command to find a current IP address for google.com:
         $ dig google.com  +trace
     """
-    def check_internet_connection(self):
+    @staticmethod
+    def check_internet_connection():
         try:
             urllib2.urlopen("http://172.217.21.238", timeout=1)
             return True
-        except urllib2.URLError as err:
+        except urllib2.URLError:
             return False
 
     def recognize(self):
@@ -41,20 +43,20 @@ class SpeechRecognizer:
                 use google, otherwise use pocketsphinx for speech recognition.
                 """
                 recognized_speech = ""
-                if self.check_internet_connection():
+                if SpeechRecognizer.check_internet_connection():
                     try:
                         recognized_speech = self.recognizer.recognize_google(audio)
                     except sr.UnknownValueError:
                         rospy.logerr("Could not understand audio.")
-                    except sr.RequestError as e:
-                        rospy.logerr("Could not request results; {0}".format(e))
+                    except sr.RequestError:
+                        rospy.logerr("Could not request results.")
                 else:
                     try:
                         recognized_speech = self.recognizer.recognize_sphinx(audio)
                     except sr.UnknownValueError:
                         rospy.logerr("Could not understand audio.")
-                    except sr.RequestError as e:
-                        rospy.logerr("Could not request results; {0}".format(e))
+                    except sr.RequestError:
+                        rospy.logerr("Could not request results.")
 
                 if recognized_speech != "":
                     rospy.loginfo("You said: " + recognized_speech)

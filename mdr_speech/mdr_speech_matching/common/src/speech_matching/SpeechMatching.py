@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os
-from fuzzywuzzy import fuzz, process
+from fuzzywuzzy import process
 
 """
 In order to match the input coming from speech recognition with a sentence in
@@ -18,11 +18,11 @@ class SpeechMatching():
         question_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '../..', 'config/questions.txt'))
         command_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '../..', 'config/commands.txt'))
 
-        self.question_pool = self.load_pool(question_dir)
+        self.question_pool = SpeechMatching.load_pool(question_dir)
         self.question_sentences = [i[0].strip() for i in self.question_pool]
         self.question_phonemes = [i[1].strip() for i in self.question_pool]
 
-        self.command_pool = self.load_pool(command_dir)
+        self.command_pool = SpeechMatching.load_pool(command_dir)
         self.command_sentences = [i[0].strip() for i in self.command_pool]
         self.command_phonemes = [i[1].strip() for i in self.command_pool]
 
@@ -32,7 +32,8 @@ class SpeechMatching():
     is similar to the method used in question_responder (TODO: export this
     method and use it in both.)
     """
-    def load_pool(self, filename):
+    @staticmethod
+    def load_pool(filename):
         file = open(filename, "r")
         sentences_and_phonemes = []
         for line in file:

@@ -13,16 +13,16 @@ class SpeechMatcher:
         self.result = MatchedSentence()
 
     def match(self, data):
-        input_sentence = str(data).strip()
+        input_sentence = data.data.strip()
         matching_result = self.sm.match_sentence(input_sentence)
 
-        type = matching_result[0]
-        if type == "nothing":
+        sentence_type = matching_result[0]
+        if sentence_type == "nothing":
             rospy.logerr("No match found.")
             return
-        elif type == "question":
+        elif sentence_type == "question":
             self.result.type = MatchedSentence.TYPE_QUESTION
-        elif type == "command":
+        elif sentence_type == "command":
             self.result.type = MatchedSentence.TYPE_COMMAND
 
         self.result.matched_sentence = matching_result[1][0]

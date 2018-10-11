@@ -95,14 +95,14 @@ class WaitForUserInput(smach.State):
         Google over PocketSphinx: In case there is a internet connection
         use google, otherwise use pocketsphinx for speech recognition.
         """
-        if self.check_internet_connection():
+        if WaitForUserInput.check_internet_connection():
             try:
                 recognized_speech = recognizer.recognize_google(audio)
             except sr.UnknownValueError:
                 userdata.input_error_message = "Input not understood."
                 rospy.logerr("Input not understood.")
                 return 'input_not_understood'
-            except sr.RequestError as e:
+            except sr.RequestError:
                 userdata.input_error_message = "No input received."
                 rospy.logerr("No input received")
                 return 'no_input_received'
@@ -113,7 +113,7 @@ class WaitForUserInput(smach.State):
                 userdata.input_error_message = "Input not understood."
                 rospy.logerr("Input not understood.")
                 return 'input_not_understood'
-            except sr.RequestError as e:
+            except sr.RequestError:
                 userdata.input_error_message = "No input received."
                 rospy.logerr("No input received")
                 return 'no_input_received'
@@ -129,7 +129,8 @@ class WaitForUserInput(smach.State):
         rospy.logerr("No input received.")
         return 'no_input_received'
 
-    def check_internet_connection(self):
+    @staticmethod
+    def check_internet_connection():
         try:
             """
             Currently 172.217.21.238 is one of IP addresses of google.com.
@@ -139,7 +140,7 @@ class WaitForUserInput(smach.State):
             """
             urllib2.urlopen("http://172.217.21.238", timeout=1)
             return True
-        except urllib2.URLError as err:
+        except urllib2.URLError:
             return False
 
 
