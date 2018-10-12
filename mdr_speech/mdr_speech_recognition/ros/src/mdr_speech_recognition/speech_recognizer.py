@@ -12,7 +12,6 @@ class SpeechRecognizer:
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
 
-
     """
     Currently 172.217.21.238 is one of IP addresses of google.com.
     It might happen, that this IP expires. In this case it has to be changed manually.

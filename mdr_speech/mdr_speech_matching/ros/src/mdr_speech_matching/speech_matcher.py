@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import rospy
-from speech_matching.SpeechMatching import SpeechMatching
+from speech_matching.speech_matching import SpeechMatching
 from std_msgs.msg import String
 from mdr_speech_matching.msg import MatchedSentence
 
@@ -9,6 +9,7 @@ class SpeechMatcher:
 
     def __init__(self):
         self.sm = SpeechMatching()
+        self.sub = rospy.Subscriber("speech_recognizer", String, self.match)
         self.pub = rospy.Publisher("speech_matcher", MatchedSentence, latch=True, queue_size=1)
         self.result = MatchedSentence()
 
@@ -35,5 +36,4 @@ class SpeechMatcher:
 def main():
     rospy.init_node("speech_matcher")
     speech_matcher = SpeechMatcher()
-    sub = rospy.Subscriber("speech_recognizer", String, speech_matcher.match)
     rospy.spin()

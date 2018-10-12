@@ -12,7 +12,7 @@ class QuestionResponder():
         self.question_answer_pool = QuestionResponder.load_pool(answer_dir)
         self.questions = [i[0].strip() for i in self.question_answer_pool]
         self.answers = [i[1].strip() for i in self.question_answer_pool]
-
+        self.sub = rospy.Subscriber("speech_matcher", MatchedSentence, self.respond)
         self.pub = rospy.Publisher("/talk_request", Voice, latch=True, queue_size=1)
 
     @staticmethod
@@ -43,5 +43,4 @@ class QuestionResponder():
 def main():
     rospy.init_node("question_responder")
     question_responder = QuestionResponder()
-    sub = rospy.Subscriber("speech_matcher", MatchedSentence, question_responder.respond)
     rospy.spin()
