@@ -2,8 +2,8 @@
 <launch>
     <arg name="action_dispatch_topic" default="/kcl_rosplan/action_dispatch"/>
     <arg name="action_feedback_topic" default="/kcl_rosplan/action_feedback"/>
-    <arg name="knowledge_update_service" default="/kcl_rosplan/update_knowledge_base"/>
-    <arg name="attribute_fetching_service" default="/kcl_rosplan/get_current_knowledge"/>
+    <arg name="knowledge_update_service" default="/rosplan_knowledge_base/update"/>
+    <arg name="attribute_fetching_service" default="/rosplan_knowledge_base/state/propositions"/>
 
     <node pkg="mdr_place_action" type="place_client" name="place_client" output="screen">
         <param name="action_name" type="str" value="place" />
