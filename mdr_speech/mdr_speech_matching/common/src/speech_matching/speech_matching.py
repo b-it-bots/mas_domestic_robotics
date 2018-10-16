@@ -10,7 +10,7 @@ our database, we are going to use a mix of the following methods:
 - Double Metaphone (not implemented yet - probably fuzzy library)
 """
 
-class SpeechMatching():
+class SpeechMatching(object):
 
     def __init__(self, threshold=90):
         self.threshold = threshold

@@ -3,7 +3,6 @@ This package contains the action `listen`. It is used to be attentive to the env
 
 ## listen action - characteristics
 ### goal
-bool recognize_speech
 
 ### result
 string message

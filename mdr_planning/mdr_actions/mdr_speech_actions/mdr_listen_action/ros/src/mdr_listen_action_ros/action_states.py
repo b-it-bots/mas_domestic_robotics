@@ -6,16 +6,13 @@ Created on 2018.10.09
 @author: Patrick Nagel
 """
 
-from random import randint
-
 import rospy
 import smach
-import urllib2
 import speech_recognition as sr
 
-from std_msgs.msg import String
-from smach_ros import ActionServerWrapper, IntrospectionServer
-from mdr_listen_action.msg import ListenAction, ListenResult, ListenFeedback
+from mdr_listen_action.msg import ListenResult, ListenFeedback
+from speech_matching.speech_matching import SpeechMatching
+from mdr_speech_recognition.speech_recognizer import SpeechRecognizer
 
 class InitializeListen(smach.State):
 
@@ -95,7 +92,7 @@ class WaitForUserInput(smach.State):
         Google over PocketSphinx: In case there is a internet connection
         use google, otherwise use pocketsphinx for speech recognition.
         """
-        if WaitForUserInput.check_internet_connection():
+        if SpeechRecognizer.check_internet_connection():
             try:
                 recognized_speech = recognizer.recognize_google(audio)
             except sr.UnknownValueError:
@@ -122,26 +119,10 @@ class WaitForUserInput(smach.State):
 
         if self.input_received:
             return 'input_received'
-            rospy.sleep(rospy.Duration(1))
-            timer += 1
 
         userdata.input_error_message = "No input received."
         rospy.logerr("No input received.")
         return 'no_input_received'
-
-    @staticmethod
-    def check_internet_connection():
-        try:
-            """
-            Currently 172.217.21.238 is one of IP addresses of google.com.
-            It might happen, that this IP expires. In this case it has to be changed manually.
-            Use the following command to find a current IP address for google.com:
-                $ dig google.com  +trace
-            """
-            urllib2.urlopen("http://172.217.21.238", timeout=1)
-            return True
-        except urllib2.URLError:
-            return False
 
 
 class InitializationError(smach.State):
@@ -195,12 +176,19 @@ class ProcessInput(smach.State):
             self.feedback_given = True
             return 'processing'
 
-        rospy.loginfo("This is what I think you meant: %s", userdata.accoustic_input)
+        sm = SpeechMatching()
+        matching_result = sm.match_sentence(userdata.accoustic_input)
 
         result = ListenResult()
-        result.success = True
-        result.message = userdata.accoustic_input
-        result.message_type = "String"
+        if matching_result[1][1] != 0:
+            rospy.loginfo("This is what I think you meant: %s", matching_result[1][0])
+            result.success = True
+        else:
+            rospy.loginfo("I'm sorry, I don't know what you said. ")
+            return 'input_not_understood'
+
+        result.message = matching_result[1][0]
+        result.message_type = matching_result[0]
         userdata.listen_result = result
         return 'succeeded'
 

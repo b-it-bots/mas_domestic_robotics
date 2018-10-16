@@ -5,9 +5,10 @@ from speech_matching.speech_matching import SpeechMatching
 from std_msgs.msg import String
 from mdr_speech_matching.msg import MatchedSentence
 
-class SpeechMatcher:
+class SpeechMatcher(object):
 
     def __init__(self):
+        rospy.init_node("speech_matcher")
         self.sm = SpeechMatching()
         self.sub = rospy.Subscriber("speech_recognizer", String, self.match)
         self.pub = rospy.Publisher("speech_matcher", MatchedSentence, latch=True, queue_size=1)
@@ -34,6 +35,5 @@ class SpeechMatcher:
 
 
 def main():
-    rospy.init_node("speech_matcher")
     speech_matcher = SpeechMatcher()
     rospy.spin()

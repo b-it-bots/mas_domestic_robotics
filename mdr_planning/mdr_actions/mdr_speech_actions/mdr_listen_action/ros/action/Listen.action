@@ -1,5 +1,3 @@
-# goal
-bool recognize_speech
 ---
 # result
 string message

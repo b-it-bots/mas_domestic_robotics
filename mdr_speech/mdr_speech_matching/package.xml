@@ -4,8 +4,10 @@
   <version>0.0.1</version>
   <description>The mdr_speech_matching package</description>
 
-  <maintainer email="patrick.nagel@smail.inf.h-brs.de">Patrick Nagel</maintainer>
-  <maintainer email="roberto.cai@smail.inf.h-brs.de">Roberto Cai</maintainer>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <author email="patrick.nagel@smail.inf.h-brs.de">Patrick Nagel</author>
+  <author email="roberto.cai@smail.inf.h-brs.de">Roberto Cai</author>
 
   <license>GPLv3</license>
 

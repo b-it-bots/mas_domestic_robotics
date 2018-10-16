@@ -1,29 +1,27 @@
 #!/usr/bin/env python
 from __future__ import print_function
 import rospy
-import urllib2
+import httplib
 from std_msgs.msg import String
 import speech_recognition as sr
 
-class SpeechRecognizer:
+class SpeechRecognizer(object):
 
     def __init__(self):
+        rospy.init_node("speech_recognizer")
         self.pub = rospy.Publisher("speech_recognizer", String, latch=True, queue_size=1)
         self.recognizer = sr.Recognizer()
         self.microphone = sr.Microphone()
 
-    """
-    Currently 172.217.21.238 is one of IP addresses of google.com.
-    It might happen, that this IP expires. In this case it has to be changed manually.
-    Use the following command to find a current IP address for google.com:
-        $ dig google.com  +trace
-    """
     @staticmethod
     def check_internet_connection():
+        connection = httplib.HTTPConnection("www.google.com", timeout=5)
         try:
-            urllib2.urlopen("http://172.217.21.238", timeout=1)
+            connection.request("HEAD", "/")
+            connection.close()
             return True
-        except urllib2.URLError:
+        except:
+            connection.close()
             return False
 
     def recognize(self):
@@ -65,7 +63,6 @@ class SpeechRecognizer:
             rospy.logerr(exc)
 
 def main():
-    rospy.init_node("speech_recognizer")
     speech_recognizer = SpeechRecognizer()
     speech_recognizer.recognize()
     rospy.spin()
