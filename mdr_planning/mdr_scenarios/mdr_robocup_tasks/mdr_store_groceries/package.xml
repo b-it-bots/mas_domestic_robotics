@@ -19,6 +19,8 @@
 
   <build_depend>mdr_rosplan_interface</build_depend>
   <build_depend>mas_execution_manager</build_depend>
+  <build_depend>mdr_listen_action</build_depend>
+  <build_depend>mdr_execute_command_action</build_depend>
   <build_depend>mdr_move_base_action</build_depend>
   <build_depend>mdr_move_arm_action</build_depend>
   <build_depend>mdr_pickup_action</build_depend>
@@ -37,6 +39,8 @@
 
   <run_depend>mdr_rosplan_interface</run_depend>
   <run_depend>mas_execution_manager</run_depend>
+  <run_depend>mdr_listen_action</run_depend>
+  <run_depend>mdr_execute_command_action</run_depend>
   <run_depend>mdr_move_base_action</run_depend>
   <run_depend>mdr_move_arm_action</run_depend>
   <run_depend>mdr_pickup_action</run_depend>
