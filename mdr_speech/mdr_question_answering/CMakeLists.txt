@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_speech_recognition)
+project(mdr_question_answering)
 
 find_package(catkin REQUIRED
   COMPONENTS
@@ -7,7 +7,6 @@ find_package(catkin REQUIRED
 )
 
 catkin_python_setup()
-
 
 ###################################
 ## catkin specific configuration ##
@@ -24,9 +23,12 @@ catkin_package(
 ## Install ##
 #############
 
-install(DIRECTORY ros/launch/
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/launch
-)
+## Mark executable scripts (Python etc.) for installation
+## in contrast to setup.py, you can choose the destination
+# install(PROGRAMS
+#   scripts/my_python_script
+#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+# )
 
 #############
 ## Testing ##

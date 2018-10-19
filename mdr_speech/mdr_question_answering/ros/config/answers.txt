@@ -1,0 +1,26 @@
+where are you : sankt augustin
+what is the capital of germany : berlin
+how is the weather : sunny
+the sky is considered to be blue true of false : true
+what is robotics: the scientific study of robot
+who is considered as the father of industrial robot : joseph engelberger
+give one example for a computer programming language that can be used for robot programming : aml a manufacturing language
+what is the major disadvantage of using a robot : heavy investment
+name the language used in expert system : lisp and prolog
+name one of the most important parts in expert system : Knowledge Base
+which system was designed for diagnosis and therapy recommendation for infectious disease : mycin
+what is the importance of ai : human intelligence have certain limit in speed and accuracy. It is interrupted due to the lack of presence of mind, mood, etc. Bu AI systems have their own superb abilities
+weaving the web was written by : tim burners lee
+what is beta test : trial test of a computer or software before the commercial launch
+what is the extension of PDF : portable document format
+expand rdbms : relational data base management system
+difference engine was developed by : charles babbage
+orkut.com is now owned by : google
+worlds first microprocessor is : intel 4004
+what is SQL : structured query language
+what is the expansion of sms : short message service
+which it company's nickname is the big blue : ibm
+what is the full form of ieee : institute of electric and electronic engineers
+email was developed by : raymond samuel tomlinson ray tomlinson
+who is netizen : net citizen citizen who uses internet
+what is scareware : fake antivirus softwares

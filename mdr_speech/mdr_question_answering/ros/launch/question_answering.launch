@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_question_answering" type="question_answering_node" name="question_answering_node" output="screen" />
+</launch>

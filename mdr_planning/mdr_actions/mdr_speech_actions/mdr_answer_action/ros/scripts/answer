@@ -25,7 +25,8 @@ class AnswerSkill(smach.StateMachine):
         with self:
             smach.StateMachine.add('INITIALIZE_ANSWER', InitializeAnswer(),
                                    transitions={'succeeded':'MATCH_ANSWER',
-                                                'failed':'INITIALIZATION_ERROR'})
+                                                'failed':'INITIALIZATION_ERROR',
+                                                'processing':'INITIALIZE_ANSWER'})
             smach.StateMachine.add('INITIALIZATION_ERROR', InitializationError(),
                                    transitions={'error_detected':'OVERALL_FAILED',
                                                 'processing':'INITIALIZATION_ERROR'})
@@ -38,7 +39,7 @@ class AnswerSkill(smach.StateMachine):
                                                 'processing':'MATCH_ERROR'})
 
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     rospy.init_node('answer_server')
 
     # construct state machine

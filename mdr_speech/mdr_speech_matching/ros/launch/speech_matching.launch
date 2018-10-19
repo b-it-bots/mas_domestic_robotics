@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_speech_matching" type="speech_matching_node" name="speech_matching_node" output="screen" />
+</launch>
