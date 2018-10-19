@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_execute_command_action" type="execute" name="process_command_server" output="screen" ns="mdr_actions" />
+</launch>
