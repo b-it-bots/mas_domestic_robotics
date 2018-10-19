@@ -5,7 +5,7 @@ import tf
 import actionlib
 
 from std_msgs.msg import Header
-from geometry_msgs.msg import Point, Quaternion, Pose, PoseStamped
+from geometry_msgs.msg import Point, Quaternion, Pose, PoseStamped, PointStamped
 
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
@@ -87,8 +87,44 @@ class PlaceClient(ActionClientBase):
         obj_config.manipulated_obj = ConverterFactory.convert_ros_msg(manipulated_obj)
 
         surface_plane = self.get_surface_by_name(self.obj_plane)
-        surface_plane.pose.header.stamp = rospy.Time(0)
-        surface_plane.pose = self.tf_listener.transformPose(self.frame_id, surface_plane.pose)
+
+        # we convert the surface center point to the desired frame
+        surface_plane_point = PointStamped()
+        surface_plane_point.header.frame_id = surface_plane.header.frame_id
+        surface_plane_point.header.stamp = rospy.Time(0)
+        surface_plane_point.point.x = surface_plane.plane_point.x
+        surface_plane_point.point.y = surface_plane.plane_point.y
+        surface_plane_point.point.z = surface_plane.plane_point.z
+
+        surface_plane_point = self.tf_listener.transformPoint(self.frame_id, surface_plane_point)
+        surface_plane.plane_point.x = surface_plane_point.point.x
+        surface_plane.plane_point.y = surface_plane_point.point.y
+        surface_plane.plane_point.z = surface_plane_point.point.z
+
+        # we convert the min point of the surface to the desired frame
+        surface_plane_min_point = PointStamped()
+        surface_plane_min_point.header.frame_id = surface_plane.header.frame_id
+        surface_plane_min_point.header.stamp = rospy.Time(0)
+        surface_plane_min_point.point.x = surface_plane.limits.min_y
+        surface_plane_min_point.point.y = surface_plane.limits.min_y
+        surface_plane_min_point.point.z = surface_plane.plane_point.z
+
+        surface_plane_min_point = self.tf_listener.transformPoint(self.frame_id, surface_plane_min_point)
+        surface_plane.limits.min_x = surface_plane_min_point.point.x
+        surface_plane.limits.min_y = surface_plane_min_point.point.y
+
+        # we convert the max point of the surface to the desired frame
+        surface_plane_max_point = PointStamped()
+        surface_plane_max_point.header.frame_id = surface_plane.header.frame_id
+        surface_plane_max_point.header.stamp = rospy.Time(0)
+        surface_plane_max_point.point.x = surface_plane.limits.max_y
+        surface_plane_max_point.point.y = surface_plane.limits.max_y
+        surface_plane_max_point.point.z = surface_plane.plane_point.z
+
+        surface_plane_max_point = self.tf_listener.transformPoint(self.frame_id, surface_plane_max_point)
+        surface_plane.limits.max_x = surface_plane_max_point.point.x
+        surface_plane.limits.max_y = surface_plane_max_point.point.y
+
         obj_config.surface = ConverterFactory.convert_ros_msg(surface_plane)
 
         # TODO: find the right action context for executing the action
