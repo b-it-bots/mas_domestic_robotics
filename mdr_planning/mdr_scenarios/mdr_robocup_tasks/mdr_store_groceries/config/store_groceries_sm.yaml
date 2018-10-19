@@ -2,9 +2,28 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_store_groceries
-states: [ENTER, GO_TO_SCANNING_POSE, FIND_TABLE, GO_TO_CUPBOARD, OPEN_DOOR, SCAN_CUPBOARD, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_CUPBOARD, PLACE_OBJECT, GO_BACK_TO_TABLE, EXIT]
+states: [LISTEN, PROCESS_COMMAND, ENTER, GO_TO_SCANNING_POSE, FIND_TABLE, GO_TO_CUPBOARD, OPEN_DOOR, SCAN_CUPBOARD, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_CUPBOARD, PLACE_OBJECT, GO_BACK_TO_TABLE, EXIT]
 outcomes: [DONE, TIMEOUT]
 state_descriptions:
+    - state:
+        name: LISTEN
+        state_module_name: mdr_store_groceries.scenario_states.listen
+        state_class_name: Listen
+        transitions:
+          - transition:
+              name: received_command
+              state: EXECUTE_COMMAND
+    - state:
+        name: PROCESS_COMMAND
+        state_module_name: mdr_store_groceries.scenario_states.process_command
+        state_class_name: ProcessCommand
+        transitions:
+          - transition:
+              name: start_store_groceries
+              state: ENTER
+          - transition:
+              name: continue_waiting
+              state: LISTEN
     - state:
         name: ENTER
         state_module_name: mdr_store_groceries.scenario_states.move_base
