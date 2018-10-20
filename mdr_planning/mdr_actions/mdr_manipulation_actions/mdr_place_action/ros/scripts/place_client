@@ -10,7 +10,7 @@ from geometry_msgs.msg import Point, Quaternion, Pose, PoseStamped, PointStamped
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
-from mcr_perception_msgs.msg import Object
+from mcr_perception_msgs.msg import Object, Plane
 
 from action_execution.action import Action
 from action_execution.utils.configuration import Configuration
@@ -181,7 +181,7 @@ class PlaceClient(ActionClientBase):
 
     def get_surface_by_name(self, surface_name):
         try:
-            surface = self.msg_store_client.query_named(surface_name, Object._type)[0]
+            surface = self.msg_store_client.query_named(surface_name, Plane._type)[0]
             return surface
         except:
             rospy.logerr('Error retriving knowledge about %s', surface_name)
