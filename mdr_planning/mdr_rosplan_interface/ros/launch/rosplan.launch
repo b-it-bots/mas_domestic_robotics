@@ -16,10 +16,17 @@
     <param name="/rosplan/domain_path" value="$(arg domain_path)" />
 
     <!-- knowledge base -->
-    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen" />
-    <node name="rosplan_scene_database" pkg="mongodb_store" type="mongodb_server.py" respawn="false" output="log">
+    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+        <param name="domain_path" value="$(arg domain_path)" />
+        <param name="problem_path" value="$(arg problem_path)" />
         <param name="database_path" value="$(arg knowledge_base_path)" />
     </node>
+
+    <!-- scene database -->
+    <include file="$(find mongodb_store)/launch/mongodb_store.launch">
+        <arg name="db_path" value="$(arg knowledge_base_path)" />
+        <arg name="port" value="27018" />
+    </include>
     <node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log" />
 
     <!-- planning system -->
