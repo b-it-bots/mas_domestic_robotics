@@ -90,8 +90,7 @@ class PlaceClient(ActionClientBase):
 
         # we convert the surface center point to the desired frame
         surface_plane_point = PointStamped()
-        surface_plane_point.header.frame_id = surface_plane.header.frame_id
-        surface_plane_point.header.stamp = rospy.Time(0)
+        surface_plane_point.header = surface_plane.header
         surface_plane_point.point.x = surface_plane.plane_point.x
         surface_plane_point.point.y = surface_plane.plane_point.y
         surface_plane_point.point.z = surface_plane.plane_point.z
@@ -103,9 +102,8 @@ class PlaceClient(ActionClientBase):
 
         # we convert the min point of the surface to the desired frame
         surface_plane_min_point = PointStamped()
-        surface_plane_min_point.header.frame_id = surface_plane.header.frame_id
-        surface_plane_min_point.header.stamp = rospy.Time(0)
-        surface_plane_min_point.point.x = surface_plane.limits.min_y
+        surface_plane_min_point.header = surface_plane.header
+        surface_plane_min_point.point.x = surface_plane.limits.min_x
         surface_plane_min_point.point.y = surface_plane.limits.min_y
         surface_plane_min_point.point.z = surface_plane.plane_point.z
 
@@ -115,9 +113,8 @@ class PlaceClient(ActionClientBase):
 
         # we convert the max point of the surface to the desired frame
         surface_plane_max_point = PointStamped()
-        surface_plane_max_point.header.frame_id = surface_plane.header.frame_id
-        surface_plane_max_point.header.stamp = rospy.Time(0)
-        surface_plane_max_point.point.x = surface_plane.limits.max_y
+        surface_plane_max_point.header = surface_plane.header
+        surface_plane_max_point.point.x = surface_plane.limits.max_x
         surface_plane_max_point.point.y = surface_plane.limits.max_y
         surface_plane_max_point.point.z = surface_plane.plane_point.z
 
