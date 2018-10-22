@@ -1,7 +1,5 @@
 import rospy
 
-from std_msgs.msg import String
-
 from mdr_move_base_action.msg import ListenAction, ListenGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 

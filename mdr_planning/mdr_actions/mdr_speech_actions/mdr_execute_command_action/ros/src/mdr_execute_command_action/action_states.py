@@ -6,10 +6,8 @@ Created on 2018.10.19
 @author: Patrick Nagel, Roberto Cai
 """
 
-import os
 import rospy
 import smach
-import rospkg
 
 from mdr_execute_command_action.msg import ExecutionFeedback, ExecutionResult
 
