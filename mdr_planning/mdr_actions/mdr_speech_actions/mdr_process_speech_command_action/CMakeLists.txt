@@ -15,7 +15,7 @@ roslint_python()
 
 add_action_files(DIRECTORY ros/action
   FILES
-  Execution.action
+  ProcessSpeech.action
 )
 
 generate_messages(
@@ -35,7 +35,7 @@ include_directories(
 )
 
 install(PROGRAMS
-  ros/scripts/execute
-  ros/scripts/execute_client_test
+  ros/scripts/process_speech_command
+  ros/scripts/process_speech_command_client_test
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )
