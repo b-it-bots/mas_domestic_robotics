@@ -11,7 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   mdr_rosplan_interface
   mas_execution_manager
   mdr_listen_action
-  mdr_execute_command_action
+  mdr_process_speech_command_action
   mdr_move_base_action
   mdr_move_arm_action
   mdr_pickup_action
@@ -30,7 +30,7 @@ catkin_package(
     mdr_rosplan_interface
     mas_execution_manager
     mdr_listen_action
-    mdr_execute_command_action
+    mdr_process_speech_command_action
     mdr_move_base_action
     mdr_move_arm_action
     mdr_pickup_action
