@@ -82,9 +82,9 @@ class PerceivePlaneClient(ActionClientBase):
 
             # we add the detected objects to the knowledge base
             for obj in plane.object_list.objects:
-                # we add the surface on which the object is to the knowledge base
-                obj.name = plane.name + '_' + str(i)
-                obj_name = obj.name#obj.name + '_' + str(obj.database_id)
+                # we set a unique name for each object
+                obj_name = obj.name + '_' + str(i)
+                obj.name = obj_name
 
                 request = rosplan_srvs.KnowledgeUpdateServiceRequest()
                 request.update_type = 0
@@ -120,6 +120,8 @@ class PerceivePlaneClient(ActionClientBase):
                 request.knowledge.values.append(arg_msg)
 
                 self.knowledge_update_client(request)
+
+                # we add the object instance to the world model
                 self.msg_store_client.insert_named(obj_name, obj)
 
 if __name__ == '__main__':
