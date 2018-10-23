@@ -10,23 +10,23 @@ import rospy
 import smach
 
 from smach_ros import ActionServerWrapper, IntrospectionServer
-from mdr_execute_command_action.msg import ExecutionAction, ExecutionResult, ExecutionFeedback
-from mdr_execute_command_action.action_states import InitializeExecuteCommand, InitializationError,\
+from mdr_process_speech_command_action.msg import ProcessSpeechAction, ProcessSpeechResult, ProcessSpeechFeedback
+from mdr_process_speech_command_action.action_states import InitializeProcessSpeechCommand, InitializationError,\
                                     MatchCommand, MatchError
 
 
-class ExecutionSkill(smach.StateMachine):
+class ProcessSpeechCommandSkill(smach.StateMachine):
 
     def __init__(self):
         smach.StateMachine.__init__(self,
                                     outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
-                                    input_keys=['execution_goal'],
-                                    output_keys=['execution_feedback', 'execution_result'])
+                                    input_keys=['process_speech_command_goal'],
+                                    output_keys=['process_speech_command_feedback', 'process_speech_command__result'])
         with self:
-            smach.StateMachine.add('INITIALIZE_EXECUTE_COMMAND', InitializeExecuteCommand(),
+            smach.StateMachine.add('INITIALIZE_PROCESS_SPEECH_COMMAND', InitializeProcessSpeechCommand(),
                                    transitions={'succeeded':'MATCH_COMMAND',
                                                 'failed':'INITIALIZATION_ERROR',
-                                                'processing':'INITIALIZE_EXECUTE_COMMAND'})
+                                                'processing':'INITIALIZE_PROCESS_SPEECH_COMMAND'})
             smach.StateMachine.add('INITIALIZATION_ERROR', InitializationError(),
                                    transitions={'error_detected':'OVERALL_FAILED',
                                                 'processing':'INITIALIZATION_ERROR'})
@@ -40,26 +40,26 @@ class ExecutionSkill(smach.StateMachine):
 
 
 if __name__ == '__main__':
-    rospy.init_node('execute_command_server')
+    rospy.init_node('process_speech_command_server')
 
     # construct state machine
-    sm = ExecutionSkill()
+    sm = ProcessSpeechCommandSkill()
 
     # smach viewer
-    sis = IntrospectionServer('execute_command_smach_viewer', sm, '/EXECUTE_COMMAND_SMACH_VIEWER')
+    sis = IntrospectionServer('process_speech_command_smach_viewer', sm, '/PROCESS_SPEECH_COMMAND_SMACH_VIEWER')
     sis.start()
 
     # construct the action server wrapper
     asw = ActionServerWrapper(
-        server_name='execute_command_server',
-        action_spec=ExecutionAction,
+        server_name='process_speech_command_server',
+        action_spec=ProcessSpeechAction,
         wrapped_container=sm,
         succeeded_outcomes=['OVERALL_SUCCESS'],
         aborted_outcomes=['OVERALL_FAILED'],
         preempted_outcomes=['PREEMPTED'],
-        goal_key='execution_goal',
-        feedback_key='execution_feedback',
-        result_key='execution_result')
+        goal_key='process_speech_command_goal',
+        feedback_key='process_speech_command_feedback',
+        result_key='process_speech_command_result')
 
     # Run the server in the background thread
     asw.run_server()

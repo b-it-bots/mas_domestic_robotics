@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>mdr_execute_command_action</name>
+  <name>mdr_process_speech_command_action</name>
   <version>0.0.0</version>
-  <description>The mdr_execute_command_action package</description>
+  <description>The mdr_process_speech_command_action package</description>
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
   <author email="patrick.nagel@smail.inf.h-brs.de">Patrick Nagel</author>
   <author email="roberto.cai@smail.inf.h-brs.de">Roberto Cai</author>
