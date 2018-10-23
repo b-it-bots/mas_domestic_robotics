@@ -117,7 +117,7 @@ class Place(ScenarioStateBase):
                     surface_name = param.value
                     # we don't want to place items on the table, so we
                     # don't consider the table as a placing surface
-                    if surface_name not in surface_category_counts and surface_name != 'table':
+                    if surface_name not in surface_category_counts and surface_name.find('table') == -1:
                         surface_category_counts[surface_name] = dict()
 
         # we collect a dictionary of object category counts for each surface
@@ -133,7 +133,7 @@ class Place(ScenarioStateBase):
                 elif param.key == 'plane':
                     obj_surface = param.value
 
-            if obj_surface != 'table':
+            if obj_surface.find('table') == -1:
                 obj_category = obj_category_map[obj_name]
                 if obj_category not in surface_category_counts[obj_surface]:
                     surface_category_counts[obj_surface][obj_category] = 1
