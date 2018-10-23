@@ -21,7 +21,7 @@ class ProcessSpeechCommandSkill(smach.StateMachine):
         smach.StateMachine.__init__(self,
                                     outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
                                     input_keys=['process_speech_command_goal'],
-                                    output_keys=['process_speech_command_feedback', 'process_speech_command__result'])
+                                    output_keys=['process_speech_command_feedback', 'process_speech_command_result'])
         with self:
             smach.StateMachine.add('INITIALIZE_PROCESS_SPEECH_COMMAND', InitializeProcessSpeechCommand(),
                                    transitions={'succeeded':'MATCH_COMMAND',
