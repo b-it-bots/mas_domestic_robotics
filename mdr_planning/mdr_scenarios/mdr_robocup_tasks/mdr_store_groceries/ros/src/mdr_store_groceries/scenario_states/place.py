@@ -102,11 +102,28 @@ class Place(ScenarioStateBase):
         each key represents a surface in the environment and the value
         is a dictionary of object counts for each category
         '''
+        surface_category_counts = dict()
+
+        # we take all explored surfaces and populate 'surface_category_counts'
+        # with an empty dictionary for each surface; each such dictionary
+        # will store the object category count for the respective surface
+        request = rosplan_srvs.GetAttributeServiceRequest()
+        request.predicate_name = 'explored'
+        explored_result = self.attribute_fetching_client(request)
+        for item in explored_result.attributes:
+            surface_name = ''
+            for param in item.values:
+                if param.key == 'plane':
+                    surface_name = param.value
+                    # we don't want to place items on the table, so we
+                    # don't consider the table as a placing surface
+                    if surface_name not in surface_category_counts and surface_name != 'table':
+                        surface_category_counts[surface_name] = dict()
+
+        # we collect a dictionary of object category counts for each surface
         request = rosplan_srvs.GetAttributeServiceRequest()
         request.predicate_name = 'on'
         on_result = self.attribute_fetching_client(request)
-
-        surface_category_counts = dict()
         for item in on_result.attributes:
             obj_name = ''
             obj_surface = ''
@@ -115,10 +132,6 @@ class Place(ScenarioStateBase):
                     obj_name = param.value
                 elif param.key == 'plane':
                     obj_surface = param.value
-                    # we don't want to place items on the table, so we
-                    # don't consider the table as a placing surface
-                    if obj_surface not in surface_category_counts and obj_surface != 'table':
-                        surface_category_counts[obj_surface] = dict()
 
             if obj_surface != 'table':
                 obj_category = obj_category_map[obj_name]
