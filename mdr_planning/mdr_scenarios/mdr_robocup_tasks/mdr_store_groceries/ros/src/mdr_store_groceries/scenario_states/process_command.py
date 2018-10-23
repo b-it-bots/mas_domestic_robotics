@@ -1,4 +1,5 @@
 import rospy
+import actionlib
 
 from mdr_execute_command_action.msg import ExecutionAction, ExecutionGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase

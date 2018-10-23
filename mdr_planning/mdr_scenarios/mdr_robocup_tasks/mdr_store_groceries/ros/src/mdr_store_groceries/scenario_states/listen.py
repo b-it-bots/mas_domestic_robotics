@@ -1,6 +1,7 @@
 import rospy
+import actionlib
 
-from mdr_move_base_action.msg import ListenAction, ListenGoal
+from mdr_listen_action.msg import ListenAction, ListenGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class Listen(ScenarioStateBase):
