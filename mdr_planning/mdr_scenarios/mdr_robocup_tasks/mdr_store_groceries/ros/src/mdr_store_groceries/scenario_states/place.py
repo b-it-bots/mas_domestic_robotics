@@ -47,7 +47,7 @@ class Place(ScenarioStateBase):
         if self.succeeded:
             rospy.loginfo('Object placed successfully')
             self.say('Successfully placed ' + grasped_object)
-            if self.surface_empty(surface_name='table'):
+            if self.surface_empty(surface_prefix='table'):
                 return 'finished'
             return 'pick_new_object'
 
@@ -163,7 +163,7 @@ class Place(ScenarioStateBase):
             surface_idx = np.random.randint(0, len(surfaces))
         return surfaces[surface_idx]
 
-    def surface_empty(self, surface_name='table'):
+    def surface_empty(self, surface_prefix='table'):
         no_objects_on_surface = True
         request = rosplan_srvs.GetAttributeServiceRequest()
         request.predicate_name = 'on'
@@ -172,7 +172,7 @@ class Place(ScenarioStateBase):
             object_on_desired_surface = False
             if not item.is_negative:
                 for param in item.values:
-                    if param.key == 'plane' and param.value == surface_name:
+                    if param.key == 'plane' and param.value.find(surface_prefix) != -1:
                         object_on_desired_surface = True
             if object_on_desired_surface:
                 no_objects_on_surface = False
