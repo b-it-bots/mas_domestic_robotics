@@ -84,8 +84,7 @@ class MatchCommand(smach.State):
             self.feedback_given = True
             return 'processing'
 
-        starting_command = "store groceries"
-        if userdata.process_speech_command_goal.command == starting_command:
+        if userdata.process_speech_command_goal.command == userdata.process_speech_command_goal.start_command:
             #Do something
             result = ProcessSpeechResult()
             result.success = True

@@ -1,5 +1,6 @@
 # goal
 string command
+string start_command
 ---
 # result
 bool success
