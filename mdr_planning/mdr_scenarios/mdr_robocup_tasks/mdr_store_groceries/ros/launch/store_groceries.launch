@@ -14,6 +14,11 @@
     </node>
 
     <!-- Actions -->
+
+    <include file="$(find mdr_listen_action)/ros/launch/listen.launch" />
+
+    <include file="$(find mdr_process_speech_command_action)/ros/launch/process_speech_command.launch" />
+
     <include file="$(find mdr_move_arm_action)/ros/launch/move_arm.launch" />
 
     <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" />

@@ -1,0 +1,11 @@
+# goal
+string command
+string start_command
+---
+# result
+bool success
+---
+# feedback
+string status_initialization
+string status_match_command
+bool error_detected

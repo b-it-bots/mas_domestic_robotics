@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>mdr_store_groceries</name>
+  <name>mdr_demo_simple_pick_and_place</name>
   <version>1.0.0</version>
-  <description>State machine and launch files for a store groceries scenario</description>
+  <description>State machine and launch files for a simple pick and place scenario (picking an object and placing it back on the same surface)</description>
   <license>GPLv3</license>
 
   <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
@@ -19,8 +19,6 @@
 
   <build_depend>mdr_rosplan_interface</build_depend>
   <build_depend>mas_execution_manager</build_depend>
-  <build_depend>mdr_listen_action</build_depend>
-  <build_depend>mdr_process_speech_command_action</build_depend>
   <build_depend>mdr_move_base_action</build_depend>
   <build_depend>mdr_move_arm_action</build_depend>
   <build_depend>mdr_pickup_action</build_depend>
@@ -39,8 +37,6 @@
 
   <run_depend>mdr_rosplan_interface</run_depend>
   <run_depend>mas_execution_manager</run_depend>
-  <run_depend>mdr_listen_action</run_depend>
-  <run_depend>mdr_process_speech_command_action</run_depend>
   <run_depend>mdr_move_base_action</run_depend>
   <run_depend>mdr_move_arm_action</run_depend>
   <run_depend>mdr_pickup_action</run_depend>

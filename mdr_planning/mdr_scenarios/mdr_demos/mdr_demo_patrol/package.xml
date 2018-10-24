@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>mdr_store_groceries</name>
+  <name>mdr_demo_patrol</name>
   <version>1.0.0</version>
-  <description>State machine and launch files for a store groceries scenario</description>
+  <description>A package for a scenario in which a robot patrols a certain area</description>
   <license>GPLv3</license>
 
   <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
@@ -16,36 +16,23 @@
   <build_depend>smach_ros</build_depend>
   <build_depend>actionlib</build_depend>
   <build_depend>mongodb_store</build_depend>
-
   <build_depend>mdr_rosplan_interface</build_depend>
   <build_depend>mas_execution_manager</build_depend>
-  <build_depend>mdr_listen_action</build_depend>
-  <build_depend>mdr_process_speech_command_action</build_depend>
   <build_depend>mdr_move_base_action</build_depend>
   <build_depend>mdr_move_arm_action</build_depend>
-  <build_depend>mdr_pickup_action</build_depend>
-  <build_depend>mdr_place_action</build_depend>
-  <build_depend>mdr_perceive_plane_action</build_depend>
 
   <run_depend>rospy</run_depend>
   <run_depend>roslint</run_depend>
   <run_depend>smach</run_depend>
   <run_depend>smach_ros</run_depend>
   <run_depend>actionlib</run_depend>
-
   <run_depend>mongodb_store</run_depend>
   <run_depend>rosplan_knowledge_base</run_depend>
   <run_depend>rosplan_planning_system</run_depend>
-
   <run_depend>mdr_rosplan_interface</run_depend>
   <run_depend>mas_execution_manager</run_depend>
-  <run_depend>mdr_listen_action</run_depend>
-  <run_depend>mdr_process_speech_command_action</run_depend>
   <run_depend>mdr_move_base_action</run_depend>
   <run_depend>mdr_move_arm_action</run_depend>
-  <run_depend>mdr_pickup_action</run_depend>
-  <run_depend>mdr_place_action</run_depend>
-  <run_depend>mdr_perceive_plane_action</run_depend>
 
   <test_depend>roslaunch</test_depend>
 </package>

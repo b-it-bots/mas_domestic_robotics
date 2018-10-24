@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>mdr_listen_action</name>
-  <version>1.0.1</version>
-  <description>The mdr_listen_action package</description>
+  <name>mdr_process_speech_command_action</name>
+  <version>0.0.0</version>
+  <description>The mdr_process_speech_command_action package</description>
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
   <author email="patrick.nagel@smail.inf.h-brs.de">Patrick Nagel</author>
   <author email="roberto.cai@smail.inf.h-brs.de">Roberto Cai</author>
@@ -22,5 +22,4 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>std_msgs</run_depend>
 
-  <export></export>
-</package>
+  </package>

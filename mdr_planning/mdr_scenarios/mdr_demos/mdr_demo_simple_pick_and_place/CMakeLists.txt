@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_store_groceries)
+project(mdr_demo_simple_pick_and_place)
 
 find_package(catkin REQUIRED COMPONENTS
   roslint
@@ -10,8 +10,6 @@ find_package(catkin REQUIRED COMPONENTS
   mongodb_store
   mdr_rosplan_interface
   mas_execution_manager
-  mdr_listen_action
-  mdr_process_speech_command_action
   mdr_move_base_action
   mdr_move_arm_action
   mdr_pickup_action
@@ -29,8 +27,6 @@ catkin_package(
     mongodb_store
     mdr_rosplan_interface
     mas_execution_manager
-    mdr_listen_action
-    mdr_process_speech_command_action
     mdr_move_base_action
     mdr_move_arm_action
     mdr_pickup_action
