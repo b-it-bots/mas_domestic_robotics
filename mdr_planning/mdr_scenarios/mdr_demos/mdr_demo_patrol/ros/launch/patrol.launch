@@ -3,6 +3,9 @@
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
     <include file="$(find mdr_rosplan_interface)/ros/launch/rosplan.launch">
         <arg name="data_path" value="$(find mdr_demo_patrol)/config/" />
+        <arg name="domain_path" value="$(find mdr_demo_patrol)/config/domain.pddl" />
+        <arg name="problem_path" value="$(find mdr_demo_patrol)/config/problem.pddl" />
+        <arg name="strl_file_path" value="$(find mdr_demo_patrol)/config/plan.strl" />
     </include>
 
     <!-- Actions -->
