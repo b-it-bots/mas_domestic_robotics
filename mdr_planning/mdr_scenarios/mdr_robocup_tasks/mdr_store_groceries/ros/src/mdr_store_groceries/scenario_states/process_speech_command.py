@@ -16,7 +16,7 @@ class ProcessCommand(ScenarioStateBase):
         self.process_speech_command_client.wait_for_server()
 
     def execute(self, userdata):
-        process_speech_command_goal = ExecutionGoal()
+        process_speech_command_goal = ProcessSpeechGoal()
         process_speech_command_goal.command = userdata.listen_result.message
         process_speech_command_goal.start_command = self.start_command
         self.process_speech_command_client.send_goal(process_speech_command_goal)
