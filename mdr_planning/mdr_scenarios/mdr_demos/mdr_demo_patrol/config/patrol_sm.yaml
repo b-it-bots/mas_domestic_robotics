@@ -1,0 +1,28 @@
+# Description: Defines a state machine for a scenario in which a robot patrols a certain area
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_demo_patrol
+states: [GO_TO]
+outcomes: [DONE, TIMEOUT, FAILED]
+state_descriptions:
+    - state:
+        name: GO_TO
+        state_module_name: mdr_demo_patrol.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO
+            - transition:
+                name: failed
+                state: GO_TO
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [KITCHEN, LIVING_ROOM, TABLE, SHELF, TABLE]
+            - argument:
+                name: number_of_retries
+                value: 3
