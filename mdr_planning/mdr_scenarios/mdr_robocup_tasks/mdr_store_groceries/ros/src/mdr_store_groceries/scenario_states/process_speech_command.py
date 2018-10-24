@@ -11,13 +11,14 @@ class ProcessCommand(ScenarioStateBase):
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'])
 
 
-
+        self.start_command = kwargs.get('start_command', 'store groceries')
         self.process_speech_command_client = actionlib.SimpleActionClient('process_speech_command_server', ProcessSpeechAction)
         self.process_speech_command_client.wait_for_server()
 
     def execute(self, userdata):
         process_speech_command_goal = ExecutionGoal()
         process_speech_command_goal.command = userdata.listen_result.message
+        process_speech_command_goal.start_command = self.start_command
         self.process_speech_command_client.send_goal(process_speech_command_goal)
 
         timeout = 15.0

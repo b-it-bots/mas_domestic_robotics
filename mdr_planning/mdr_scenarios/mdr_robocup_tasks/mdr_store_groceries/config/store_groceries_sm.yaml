@@ -24,6 +24,10 @@ state_descriptions:
           - transition:
               name: continue_waiting
               state: LISTEN
+        arguments:
+            - argument:
+                name: start_command
+                value: "store groceries"
     - state:
         name: ENTER
         state_module_name: mdr_store_groceries.scenario_states.move_base
