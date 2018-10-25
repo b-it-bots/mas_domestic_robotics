@@ -75,7 +75,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: PICK
+                state: PICK_OBJECT
             - transition:
                 name: failed
                 state: FIND_OBJECTS_BEFORE_PICKING
