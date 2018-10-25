@@ -101,7 +101,7 @@ class Pick(ScenarioStateBase):
             object_poses[surface] = list()
             for obj_name in objects:
                 try:
-                    obj = self.msg_store_client.query_named(obj_name, Object._type)[-1]
+                    obj = self.msg_store_client.query_named(obj_name, Object._type)[0]
                     object_poses[surface].append(obj.pose)
                 except:
                     rospy.logerr('Error retriving knowledge about %s', obj_name)
