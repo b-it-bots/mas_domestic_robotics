@@ -11,8 +11,9 @@ A base implementation of a high-level gripper controller for performing basic gr
 The base class defines the following methods for controlling a gripper:
 * `open`: Opens a robot's gripper
 * `close`: Closes a robot's gripper
+* `verify_grasp`: Verifies that there is an object in the gripper
 
-Robot-specific implementations need to override both methods.
+Robot-specific implementations need to override all methods. The methods return a Boolean describing the outcome of the performed action.
 
 A script that starts a `gripper_controller` node is also included in the package as an example, but a robot-specific implementation should start its own node.
 
