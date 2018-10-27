@@ -118,9 +118,15 @@ class Pickup(smach.State):
                 rospy.logerr('[PICKUP] Arm motion unsuccessful')
                 return 'failed'
 
+            rospy.loginfo('[PICKUP] Preparing for grasp verification')
+            self.gripper.init_grasp_verification()
+
             rospy.loginfo('[PICKUP] Arm motion successful')
             rospy.loginfo('[PICKUP] Closing the gripper')
             self.gripper.close()
+
+            rospy.loginfo('[PICKUP] Moving the arm back')
+            self.move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
 
             rospy.loginfo('[PICKUP] Verifying the grasp...')
             grasp_successful = self.gripper.verify_grasp()
@@ -129,9 +135,6 @@ class Pickup(smach.State):
             else:
                 rospy.loginfo('[PICKUP] Grasp unsuccessful')
                 retry_count += 1
-
-            rospy.loginfo('[PICKUP] Moving the arm back')
-            self.move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
 
         if grasp_successful:
             return 'succeeded'
