@@ -9,11 +9,12 @@ A package for functionalities related to controlling a robot's gripper.
 A base implementation of a high-level gripper controller for performing basic gripper commands, such as opening and closing a gripper.
 
 The base class defines the following methods for controlling a gripper:
-* `open`: Opens a robot's gripper
-* `close`: Closes a robot's gripper
-* `verify_grasp`: Verifies that there is an object in the gripper
+* `open`: Opens a robot's gripper. Returns a Boolean indicating whether the operation was successful.
+* `close`: Closes a robot's gripper. Returns a Boolean indicating whether the operation was successful.
+* `init_grasp_verification`: Performs any necessary initialisation procedures for verifying grasps (e.g. pre-grasp force measurements)
+* `verify_grasp`: Returns a Boolean indicating whether there is an object in the gripper.
 
-Robot-specific implementations need to override all methods. The methods return a Boolean describing the outcome of the performed action.
+Robot-specific implementations need to override all methods.
 
 A script that starts a `gripper_controller` node is also included in the package as an example, but a robot-specific implementation should start its own node.
 
