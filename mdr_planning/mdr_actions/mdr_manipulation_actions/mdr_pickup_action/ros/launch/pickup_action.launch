@@ -11,5 +11,6 @@
         <param name="grasping_dmp" value="$(find mdr_pickup_action)/config/trajectory_weights/weights_table_grasp.yaml" />
         <param name="dmp_tau" value="30" />
         <rosparam param="grasping_orientation">[0, 0, 0, 1]</rosparam>
+        <param name="number_of_retries" value="0" />
     </node>
 </launch>
