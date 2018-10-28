@@ -102,6 +102,9 @@ class Pickup(smach.State):
             rospy.loginfo('[PICKUP] Opening the gripper...')
             self.gripper.open()
 
+            rospy.loginfo('[PICKUP] Preparing for grasp verification')
+            self.gripper.init_grasp_verification()
+
             rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
             self.move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
 
@@ -117,9 +120,6 @@ class Pickup(smach.State):
             if not arm_motion_success:
                 rospy.logerr('[PICKUP] Arm motion unsuccessful')
                 return 'failed'
-
-            rospy.loginfo('[PICKUP] Preparing for grasp verification')
-            self.gripper.init_grasp_verification()
 
             rospy.loginfo('[PICKUP] Arm motion successful')
             rospy.loginfo('[PICKUP] Closing the gripper')
