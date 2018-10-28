@@ -81,6 +81,27 @@
         <rdfs:range rdf:resource="apartment:Location"/>
     </owl:ObjectProperty>
 
+    <!-- Geometric properties -->
+    <owl:TransitiveProperty rdf:about="apartment:above">
+        <rdfs:domain rdf:resource="apartment:Object"/>
+        <rdfs:range rdf:resource="apartment:Object"/>
+    </owl:TransitiveProperty>
+
+    <owl:TransitiveProperty rdf:about="apartment:below">
+        <rdfs:domain rdf:resource="apartment:Object"/>
+        <rdfs:range rdf:resource="apartment:Object"/>
+    </owl:TransitiveProperty>
+
+    <owl:ObjectProperty rdf:about="apartment:onTopOf">
+        <rdfs:domain rdf:resource="apartment:Object"/>
+        <rdfs:range rdf:resource="apartment:Object"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="apartment:inside">
+        <rdfs:domain rdf:resource="apartment:Object"/>
+        <rdfs:range rdf:resource="apartment:Object"/>
+    </owl:ObjectProperty>
+
     <!--*********************************************-->
 
 
