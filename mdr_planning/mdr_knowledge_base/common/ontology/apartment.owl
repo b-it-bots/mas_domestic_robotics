@@ -80,10 +80,36 @@
         <rdfs:domain rdf:resource="apartment:Furniture"/>
         <rdfs:range rdf:resource="apartment:Location"/>
     </owl:ObjectProperty>
+
     <!--*********************************************-->
 
 
     <!--*********** Subclass definitions ************-->
+
+    <!-- Object subclass definitions -->
+    <owl:Class rdf:about="apartment:Furniture">
+        <rdfs:subClassOf rdf:resource="apartment:Object"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="apartment:KitchenUtensil">
+        <rdfs:subClassOf rdf:resource="apartment:Object"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="apartment:KitchenAppliance">
+        <rdfs:subClassOf rdf:resource="apartment:Object"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="apartment:Drinkware">
+        <rdfs:subClassOf rdf:resource="apartment:Object"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="apartment:FoodContainer">
+        <rdfs:subClassOf rdf:resource="apartment:Object"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="apartment:CookingUtensil">
+        <rdfs:subClassOf rdf:resource="apartment:Object"/>
+    </owl:Class>
 
     <!-- Furniture subclass definitions -->
     <owl:Class rdf:about="apartment:DiningTable">
