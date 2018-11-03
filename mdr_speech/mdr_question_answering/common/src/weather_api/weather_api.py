@@ -17,25 +17,25 @@ class WeatherApi:
         return WeatherApi.YAHOO_API_URL.format(urllib.quote_plus(query))
 
     @staticmethod
-    def find_location(input):
+    def find_location(searchstring):
         """
         Retrieves location info for a given search string using some undocumented(?) yahoo maps api
-        :param input: Any search string, e.g. city name, address, zip code, coordinates, ...
+        :param searchstring: Any search string, e.g. city name, address, zip code, coordinates, ...
         :returns: A dict containing the address details (e.g. 'country', 'city', 'woeid')
                   or None if no location could be found or an exception occured
         """
         query_string = "select * from xml where url = 'http://gws2.maps.yahoo.com/findlocation?pf=1&locale=en_US&offset=15&flags=&gflags=R&q={}'"
-        request_url = WeatherApi.build_url(query_string.format(input))
+        request_url = WeatherApi.build_url(query_string.format(urllib.quote_plus(searchstring)))
 
         try:
             response = requests.get(request_url).json()
             if response['query']['count'] == 1 and int(response['query']['results']['ResultSet']['Found']) >= 1:
                 result = response['query']['results']['ResultSet']['Result']
-                return result[0] if type(result) is list else result
+                return result[0] if isinstance(result, list) else result
             else:
                 # Location not found
                 return None
-        except Exception as e:
+        except Exception:
             # Something went wrong
             return None
 
@@ -57,11 +57,11 @@ class WeatherApi:
             result = requests.get(request_url).json()
             if result['query']['count'] == 1:
                 weather_data = result['query']['results']['channel']['item']
-                return (weather_data['condition']['text'], weather_data['condition']['temp'])
+                return (weather_data['condition']['text'], int(weather_data['condition']['temp']))
             else:
                 # No weather data for woeid?
                 return None
-        except Exception as e:
+        except Exception:
             # Something went wrong
             return None
 

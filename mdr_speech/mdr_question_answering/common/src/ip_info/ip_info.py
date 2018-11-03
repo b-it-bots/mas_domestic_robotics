@@ -11,7 +11,7 @@ class IPInfo:
     def get():
         try:
             return requests.get("http://ip-api.com/json").json()
-        except Exception as e:
+        except Exception:
             # Something went wrong
             return None
 
