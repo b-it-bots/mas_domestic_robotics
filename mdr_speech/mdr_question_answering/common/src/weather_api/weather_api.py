@@ -2,7 +2,7 @@ import requests
 import urllib
 
 
-class WeatherApi:
+class WeatherApi(object):
     """
     Provides functions for retrieving location and weather information from
     the yahoo APIs
@@ -34,9 +34,11 @@ class WeatherApi:
                 return result[0] if isinstance(result, list) else result
             else:
                 # Location not found
+                print("[WeatherApi] Location not found!")
                 return None
-        except Exception:
+        except Exception as e:
             # Something went wrong
+            print("[WeatherApi] Could not retrieve location: " + str(e))
             return None
 
     @staticmethod
@@ -60,9 +62,11 @@ class WeatherApi:
                 return (weather_data['condition']['text'], int(weather_data['condition']['temp']))
             else:
                 # No weather data for woeid?
+                print("[WeatherApi] Response didn't contain weather data for woeid " + str(woeid))
                 return None
-        except Exception:
+        except Exception as e:
             # Something went wrong
+            print("[WeatherApi] Could not retrieve weather data: " + str(e))
             return None
 
     @staticmethod
@@ -78,4 +82,4 @@ class WeatherApi:
         """
         Converts a given temperature from fahrenheit to celsius
         """
-        return (temperature - 32) * (5/9)
+        return (temperature - 32) * (5. / 9.)
