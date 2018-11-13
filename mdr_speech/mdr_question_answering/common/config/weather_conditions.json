@@ -1,0 +1,61 @@
+{
+  "replacements": {
+    "drizzle": "drizzling",
+    "hail": "hailing",
+    "sleet": "sleeting",
+    "haze": "foggy",
+    "dust": "dusty",
+    "snow": "snowy",
+    "heavy snow": "snowing heavily"
+  },
+  "conditions": {
+    "adjectives": [
+      "drizzling",
+      "hailing",
+      "foggy",
+      "smoky",
+      "blustery",
+      "windy",
+      "cold",
+      "cloudy",
+      "mostly cloudy",
+      "partly cloudy",
+      "clear",
+      "sunny",
+      "fair",
+      "hot",
+      "snowy",
+      "snowing heavily",
+      "sleeting",
+      "dusty"
+    ],
+    "substantives": [
+      "mixed rain and snow",
+      "mixed rain and sleet",
+      "mixed snow and sleet",
+      "freezing drizzle",
+      "freezing rain",
+      "blowing snow",
+      "mixed rain and hail"
+    ],
+    "substantives_sg": [
+      "tornado",
+      "tropical storm",
+      "hurricane"
+    ],
+    "substantives_pl": [
+      "severe thunderstorms",
+      "thunderstorms",
+      "showers",
+      "snow flurries",
+      "light snow showers",
+      "isolated thunderstorms",
+      "scattered thunderstorms",
+      "scattered showers",
+      "scattered snow showers",
+      "thundershowers",
+      "snow showers",
+      "isolated thundershowers"
+    ]
+  }
+}

@@ -35,7 +35,7 @@ class QuestionResponder(object):
                 weather = WeatherApi.get_weather(coords)
                 if weather is not None:
                     # Successfully retrieved weather data
-                    response = "It's {} at {} degrees".format(weather[0], weather[1])
+                    response = WeatherApi.condition_to_phrase(weather[0], weather[1])
                     rospy.loginfo("Found weather data: " + response)
 
                     respond = String()
