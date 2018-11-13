@@ -1,5 +1,8 @@
 import requests
 import urllib
+import os
+import re
+import json
 
 
 class WeatherApi(object):
@@ -83,3 +86,34 @@ class WeatherApi(object):
         Converts a given temperature from fahrenheit to celsius
         """
         return (temperature - 32) * (5. / 9.)
+
+    @staticmethod
+    def condition_to_phrase(condition, temperature):
+        # load all possible conditions from file
+        cond_path = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '../../config/weather_conditions.json'))
+        with open(cond_path, 'r') as cond_file:
+            cond_data = json.loads(cond_file.read())
+            replacements = cond_data['replacements']
+            cond_adj = cond_data['conditions']['adjectives']
+            cond_subs = cond_data['conditions']['substantives']
+            cond_subs_sg = cond_data['conditions']['substantives_sg']
+            sond_subs_pl = cond_data['conditions']['substantives_pl']
+
+        # format condition: remove parentheses and whitespace, make lowercase
+        condition = re.sub(r'\([^)]*\)', '', condition).strip().lower()
+        if condition in replacements:
+            condition = replacements[condition]
+
+        # build a phrase
+        if condition in cond_adj:
+            phrase = "it's {} and {} degrees".format(condition, temperature)
+        elif condition in cond_subs:
+            phrase = "there is {} and it's {} degrees".format(condition, temperature)
+        elif condition in cond_subs_sg:
+            phrase = "there is a {} and it's {} degrees".format(condition, temperature)
+        elif condition in cond_subs_pl:
+            phrase = "there are {} and it's {} degrees".format(condition, temperature)
+        else:
+            phrase = "it's {} degrees".format(temperature)
+
+        return phrase
