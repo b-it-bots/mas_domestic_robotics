@@ -6,3 +6,4 @@
 .idea/
 *.*~
 *.swp
+/mdr_speech/mdr_rasa/models/*/generated/

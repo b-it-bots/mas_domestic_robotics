@@ -1,0 +1,13 @@
+Python dependencies:
+sudo pip2 install sklearn_crfsuite spacy sklearn
+
+Afterwards run:
+sudo python -m spacy download en
+
+Further dependencies may be needed:
+wget https://raw.githubusercontent.com/RasaHQ/starter-pack-rasa-nlu/master/requirements.txt
+sudo pip2 install -r requirements.txt
+
+If you have a really old laptop (like I do) you might need to uninstall tensorflow.
+It crashes rasa if required CPU instruction sets are missing and isn't needed
+for training with spacy anyway.
