@@ -14,11 +14,8 @@
     </node>
 
     <!-- Actions -->
-
     <include file="$(find mdr_listen_action)/ros/launch/listen.launch" />
-
-    <include file="$(find mdr_process_speech_command_action)/ros/launch/process_speech_command.launch" />
-
+    <include file="$(find mdr_process_speech_command_action)/ros/launch/process_command.launch" />
     <include file="$(find mdr_move_arm_action)/ros/launch/move_arm.launch" />
 
     <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" />
@@ -34,7 +31,7 @@
     <include file="$(find mdr_place_action)/ros/launch/place_client.launch" />
 
     <!-- State machine -->
-    <param name="/sm_config_file" type="str" value="$(find mdr_store_groceries)/config/store_groceries_sm.yaml" />
-    <param name="/store_knowledge" value="true" />
-    <node pkg="mas_execution_manager" type="state_machine_creator" name="store_groceries" output="screen" />
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="store_groceries" output="screen">
+        <param name="sm_config_file" type="str" value="$(find mdr_store_groceries)/config/store_groceries_sm.yaml" />
+    </node>
 </launch>

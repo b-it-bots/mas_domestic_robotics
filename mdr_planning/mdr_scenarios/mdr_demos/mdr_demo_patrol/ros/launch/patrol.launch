@@ -15,6 +15,7 @@
     <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
 
     <!-- State machine -->
-    <param name="/sm_config_file" type="str" value="$(find mdr_demo_patrol)/config/patrol_sm.yaml" />
-    <node pkg="mas_execution_manager" type="state_machine_creator" name="patrol" output="screen" />
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="patrol" output="screen">
+        <param name="sm_config_file" type="str" value="$(find mdr_demo_patrol)/config/patrol_sm.yaml" />
+    </node>
 </launch>
