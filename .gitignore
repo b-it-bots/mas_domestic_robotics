@@ -6,3 +6,10 @@
 .idea/
 *.*~
 *.swp
+
+# MongoDB
+prealloc.*
+mongod.lock
+local.0
+local.ns
+message_store.*
