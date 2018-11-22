@@ -40,4 +40,11 @@
         <param name="generate_default_problem" value="$(arg generate_default_problem)" />
         <param name="max_dispatch_attempts" value="$(arg max_dispatch_attempts)" />
     </node>
+
+    <!-- we reset the message store before using it -->
+    <include file="$(find mdr_rosplan_interface)/ros/launch/clear_message_store.launch">
+        <arg name="db_name" default="message_store" />
+        <arg name="collection_name" default="message_store" />
+        <arg name="db_port" default="27018" />
+    </include>
 </launch>
