@@ -25,8 +25,8 @@ class PerceivePlanes(ScenarioStateBase):
             self.save_current_state()
 
         dispatch_msg = self.get_dispatch_msg(self.plane_prefix)
-        rospy.loginfo('Perceiving plane %s' % self.plane_prefix)
-        self.say('Perceiving plane ' + self.plane_prefix)
+        rospy.loginfo('Perceiving %s' % self.plane_prefix)
+        self.say('Perceiving ' + self.plane_prefix)
         self.action_dispatch_pub.publish(dispatch_msg)
 
         self.executing = True
@@ -38,6 +38,7 @@ class PerceivePlanes(ScenarioStateBase):
             duration = time.time() - start_time
 
         if self.succeeded:
+            self.say('%s perceived' % self.plane_prefix)
             rospy.loginfo('%s perceived successfully' % self.plane_prefix)
             return 'succeeded'
 

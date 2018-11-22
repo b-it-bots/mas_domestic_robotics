@@ -1,4 +1,4 @@
-image: groundfloor.pgm
+image: map.pgm
 resolution: 0.050000
 origin: [-100.000000, -144.800000, 0.000000]
 negate: 0

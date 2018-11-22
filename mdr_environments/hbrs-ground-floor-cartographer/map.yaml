@@ -1,4 +1,4 @@
-image: /home/danny/bagfiles/groundfloor.filtered.bag_map.pgm
+image: map.pgm
 resolution: 0.050000
 origin: [-171.050000, -103.900000, 0.0]
 negate: 0

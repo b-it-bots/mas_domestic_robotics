@@ -1,0 +1,4 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_process_speech_command_action" type="process_speech_command" name="process_speech_command_server" output="screen" ns="mdr_actions" />
+</launch>

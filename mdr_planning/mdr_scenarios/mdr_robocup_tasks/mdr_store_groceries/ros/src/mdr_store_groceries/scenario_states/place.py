@@ -47,7 +47,8 @@ class Place(ScenarioStateBase):
         if self.succeeded:
             rospy.loginfo('Object placed successfully')
             self.say('Successfully placed ' + grasped_object)
-            if self.surface_empty(surface_name='table'):
+            if self.surface_empty(surface_prefix='table'):
+                self.say('I am finally done storing the groceries')
                 return 'finished'
             return 'pick_new_object'
 
@@ -102,11 +103,28 @@ class Place(ScenarioStateBase):
         each key represents a surface in the environment and the value
         is a dictionary of object counts for each category
         '''
+        surface_category_counts = dict()
+
+        # we take all explored surfaces and populate 'surface_category_counts'
+        # with an empty dictionary for each surface; each such dictionary
+        # will store the object category count for the respective surface
+        request = rosplan_srvs.GetAttributeServiceRequest()
+        request.predicate_name = 'explored'
+        explored_result = self.attribute_fetching_client(request)
+        for item in explored_result.attributes:
+            surface_name = ''
+            for param in item.values:
+                if param.key == 'plane':
+                    surface_name = param.value
+                    # we don't want to place items on the table, so we
+                    # don't consider the table as a placing surface
+                    if surface_name not in surface_category_counts and surface_name.find('table') == -1:
+                        surface_category_counts[surface_name] = dict()
+
+        # we collect a dictionary of object category counts for each surface
         request = rosplan_srvs.GetAttributeServiceRequest()
         request.predicate_name = 'on'
         on_result = self.attribute_fetching_client(request)
-
-        surface_category_counts = dict()
         for item in on_result.attributes:
             obj_name = ''
             obj_surface = ''
@@ -115,12 +133,8 @@ class Place(ScenarioStateBase):
                     obj_name = param.value
                 elif param.key == 'plane':
                     obj_surface = param.value
-                    # we don't want to place items on the table, so we
-                    # don't consider the table as a placing surface
-                    if obj_surface not in surface_category_counts and obj_surface != 'table':
-                        surface_category_counts[obj_surface] = dict()
 
-            if obj_surface != 'table':
+            if obj_surface.find('table') == -1:
                 obj_category = obj_category_map[obj_name]
                 if obj_category not in surface_category_counts[obj_surface]:
                     surface_category_counts[obj_surface][obj_category] = 1
@@ -150,7 +164,7 @@ class Place(ScenarioStateBase):
             surface_idx = np.random.randint(0, len(surfaces))
         return surfaces[surface_idx]
 
-    def surface_empty(self, surface_name='table'):
+    def surface_empty(self, surface_prefix='table'):
         no_objects_on_surface = True
         request = rosplan_srvs.GetAttributeServiceRequest()
         request.predicate_name = 'on'
@@ -159,7 +173,7 @@ class Place(ScenarioStateBase):
             object_on_desired_surface = False
             if not item.is_negative:
                 for param in item.values:
-                    if param.key == 'plane' and param.value == surface_name:
+                    if param.key == 'plane' and param.value.find(surface_prefix) != -1:
                         object_on_desired_surface = True
             if object_on_desired_surface:
                 no_objects_on_surface = False

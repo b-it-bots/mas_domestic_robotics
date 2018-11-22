@@ -61,6 +61,7 @@ The following parameters may be passed when launching the action server:
 * ``grasping_dmp``:  Path to a YAML file containing the weights of a dynamic motion primitive used for grasping (default: '')
 * ``dmp_tau``: The value of the temporal dynamic motion primitive parameter (default: 1)
 * ``grasping_orientation``: For more constrained manipulators, it might make sense to use a fixed grasping orientation (expressed as an (x, y, z, w) quaternion) to ensure easier reachability (default: [], in which case the argument is ignored)
+* ``number_of_retries``: Number of times a grasp should be repeated in case it fails the first time.
 
 ### Action client
 

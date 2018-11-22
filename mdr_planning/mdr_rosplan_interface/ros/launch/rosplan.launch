@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="knowledge_base_path" default="$(find mdr_knowledge_base)/common/mongoDB" />
+    <arg name="planner_path" default="$(find rosplan_planning_system)/common/bin/" />
+    <arg name="data_path" default="" />
+    <arg name="domain_path" default="" />
+    <arg name="problem_path" default="" />
+    <arg name="strl_file_path" default="" />
+    <arg name="planner_command" default="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n DOMAIN PROBLEM" />
+    <arg name="generate_default_problem" default="true" />
+    <arg name="max_dispatch_attempts" default="2" />
+
+    <!-- data paths -->
+    <param name="/rosplan/data_path" value="$(arg data_path)" />
+    <param name="/rosplan/planner_path" value="%(arg planner_path)" />
+    <param name="/rosplan/domain_path" value="$(arg domain_path)" />
+
+    <!-- knowledge base -->
+    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+        <param name="domain_path" value="$(arg domain_path)" />
+        <param name="problem_path" value="$(arg problem_path)" />
+        <param name="database_path" value="$(arg knowledge_base_path)" />
+    </node>
+
+    <!-- scene database -->
+    <include file="$(find mongodb_store)/launch/mongodb_store.launch">
+        <arg name="db_path" value="$(arg knowledge_base_path)" />
+        <arg name="port" value="27018" />
+    </include>
+    <node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log" />
+
+    <!-- planning system -->
+    <node name="rosplan_planner_interface" pkg="rosplan_planning_system" type="popf_planner_interface" respawn="false" output="screen">
+        <param name="data_path" value="$(arg data_path)" />
+        <param name="domain_path" value="$(arg domain_path)" />
+        <param name="problem_path" value="$(arg problem_path)" />
+        <param name="strl_file_path" value="$(arg strl_file_path)" />
+
+        <param name="planner_command" value="$(arg planner_command)" />
+        <param name="generate_default_problem" value="$(arg generate_default_problem)" />
+        <param name="max_dispatch_attempts" value="$(arg max_dispatch_attempts)" />
+    </node>
+</launch>
