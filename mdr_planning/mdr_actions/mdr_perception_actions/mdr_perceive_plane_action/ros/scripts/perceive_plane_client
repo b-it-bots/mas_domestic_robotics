@@ -2,6 +2,7 @@
 import rospy
 import actionlib
 
+from mcr_perception_msgs.msg import Plane, Object
 from mdr_rosplan_interface.action_client_base import ActionClientBase
 from mdr_perceive_plane_action.msg import PerceivePlaneAction, PerceivePlaneGoal
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
@@ -136,12 +137,12 @@ class PerceivePlaneClient(ActionClientBase):
 
         '''
         # we delete the plane from the knowledge base
-        self.msg_store_client.delete_named(plane_name)
+        self.msg_store_client.delete_named(plane_name, Plane._type)
 
         # we delete all objects on the plane from the knowledge base
         plane_objects = self.__get_plane_objects(plane_name)
         for obj in plane_objects:
-            self.msg_store_client.delete_named(obj)
+            self.msg_store_client.delete_named(obj, Object._type)
 
     def __get_plane_objects(self, plane_name):
         '''Returns a list with the names of all objects on the plane with the given name
