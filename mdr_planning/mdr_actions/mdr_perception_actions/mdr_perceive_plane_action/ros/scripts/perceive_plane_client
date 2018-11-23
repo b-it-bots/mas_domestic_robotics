@@ -130,19 +130,47 @@ class PerceivePlaneClient(ActionClientBase):
                 self.msg_store_client.insert_named(obj_name, obj)
 
     def __delete_plane_from_kb(self, plane_name):
-        '''Removes the plane with the given name and all objects on it from the message store
+        '''Removes the plane with the given name and all objects on it from the
+        knowledge base (both the ROSPlan knowledge base and the message store)
 
         Keyword arguments:
         plane_name -- string indicating the name of a plane
 
         '''
+        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
+        request.update_type = 2
+        request.knowledge.knowledge_type = 1
+        request.knowledge.attribute_name = 'explored'
+
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'plane'
+        arg_msg.value = plane_name
+        request.knowledge.values.append(arg_msg)
+
         # we delete the plane from the knowledge base
+        self.knowledge_update_client(request)
         self.msg_store_client.delete_named(plane_name, Plane._type)
 
         # we delete all objects on the plane from the knowledge base
         plane_objects = self.__get_plane_objects(plane_name)
-        for obj in plane_objects:
-            self.msg_store_client.delete_named(obj, Object._type)
+        for obj_name in plane_objects:
+            request = rosplan_srvs.KnowledgeUpdateServiceRequest()
+            request.update_type = 2
+            request.knowledge.knowledge_type = 1
+            request.knowledge.attribute_name = 'on'
+
+            arg_msg = diag_msgs.KeyValue()
+            arg_msg.key = 'obj'
+            arg_msg.value = obj_name
+            request.knowledge.values.append(arg_msg)
+
+            arg_msg = diag_msgs.KeyValue()
+            arg_msg.key = 'plane'
+            arg_msg.value = plane_name
+            request.knowledge.values.append(arg_msg)
+
+            self.knowledge_update_client(request)
+            self.msg_store_client.delete_named(obj_name, Object._type)
 
     def __get_plane_objects(self, plane_name):
         '''Returns a list with the names of all objects on the plane with the given name
