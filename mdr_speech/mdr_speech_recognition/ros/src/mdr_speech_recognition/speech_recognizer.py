@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
+import os
 import rospy
 import httplib
 from std_msgs.msg import String
@@ -10,7 +11,15 @@ class SpeechRecognizer(object):
     def __init__(self):
         rospy.init_node("speech_recognizer")
         self.pub = rospy.Publisher("speech_recognizer", String, latch=True, queue_size=1)
+        self.model_directory = '{0}/speech/py-kaldi-asr/data/models/nnet3_en_f' \
+            .format(os.path.expanduser('~'))
         self.recognizer = sr.Recognizer()
+        try:
+            self.recognizer.load_kaldi_model(model_directory=self.model_directory, language='en-US')
+            self.use_kaldi = True
+        except:
+            self.use_kaldi = False
+            rospy.logerr('Unable to load Kaldi model. Using PocketSphinx as offline speech recognition')
         self.microphone = sr.Microphone()
 
     @staticmethod
@@ -49,7 +58,10 @@ class SpeechRecognizer(object):
                         rospy.logerr("Could not request results.")
                 else:
                     try:
-                        recognized_speech = self.recognizer.recognize_sphinx(audio)
+                        if self.use_kaldi:
+                            recognized_speech = self.recognizer.recognize_kaldi(audio)[0]
+                        else:
+                            recognized_speech = self.recognizer.recognize_sphinx(audio)
                     except sr.UnknownValueError:
                         rospy.logerr("Could not understand audio.")
                     except sr.RequestError:
