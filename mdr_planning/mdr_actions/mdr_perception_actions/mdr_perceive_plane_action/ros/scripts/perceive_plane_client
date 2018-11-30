@@ -2,6 +2,7 @@
 import rospy
 import actionlib
 
+from mcr_perception_msgs.msg import Plane, Object
 from mdr_rosplan_interface.action_client_base import ActionClientBase
 from mdr_perceive_plane_action.msg import PerceivePlaneAction, PerceivePlaneGoal
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
@@ -11,6 +12,7 @@ import diagnostic_msgs.msg as diag_msgs
 class PerceivePlaneClient(ActionClientBase):
     def __init__(self):
         super(PerceivePlaneClient, self).__init__()
+        self.clear_plane_memory = rospy.get_param('~clear_plane_memory', False)
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
 
@@ -53,6 +55,9 @@ class PerceivePlaneClient(ActionClientBase):
 
     def update_knowledge_base(self, plane_prefix, plane_list):
         for i, plane in enumerate(plane_list.planes):
+            if self.clear_plane_memory:
+                self.__delete_plane_from_kb(plane.name)
+
             # we remove the fact that the plane is unexplored from the knowledge base
             request = rosplan_srvs.KnowledgeUpdateServiceRequest()
             request.update_type = 2
@@ -123,6 +128,45 @@ class PerceivePlaneClient(ActionClientBase):
 
                 # we add the object instance to the world model
                 self.msg_store_client.insert_named(obj_name, obj)
+
+    def __delete_plane_from_kb(self, plane_name):
+        '''Removes the plane with the given name and all objects on it from the message store
+
+        Keyword arguments:
+        plane_name -- string indicating the name of a plane
+
+        '''
+        # we delete the plane from the knowledge base
+        self.msg_store_client.delete_named(plane_name, Plane._type)
+
+        # we delete all objects on the plane from the knowledge base
+        plane_objects = self.__get_plane_objects(plane_name)
+        for obj in plane_objects:
+            self.msg_store_client.delete_named(obj, Object._type)
+
+    def __get_plane_objects(self, plane_name):
+        '''Returns a list with the names of all objects on the plane with the given name
+
+        Keyword arguments:
+        plane_name -- string indicating the name of a plane
+
+        '''
+        plane_objects = list()
+        request = rosplan_srvs.GetAttributeServiceRequest()
+        request.predicate_name = 'on'
+        result = self.attribute_fetching_client(request)
+        for item in result.attributes:
+            object_on_desired_surface = False
+            object_name = ''
+            if not item.is_negative:
+                for param in item.values:
+                    if param.key == 'plane' and param.value == plane_name:
+                        object_on_desired_surface = True
+                    elif param.key == 'obj':
+                        object_name = param.value
+            if object_on_desired_surface:
+                plane_objects.append(object_name)
+        return plane_objects
 
 if __name__ == '__main__':
     rospy.init_node('perceive_plane_client')

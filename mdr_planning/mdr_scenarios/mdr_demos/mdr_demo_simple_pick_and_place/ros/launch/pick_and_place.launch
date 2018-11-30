@@ -11,7 +11,7 @@
     <!-- Actions -->
     <include file="$(find mdr_move_arm_action)/ros/launch/move_arm.launch" />
 
-    <include file="$(find mdr_move_base_action)/ros/launch/move_base.launch" />
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" />
     <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
 
     <include file="$(find mdr_perceive_plane_action)/ros/launch/perceive_plane.launch" />
@@ -24,6 +24,7 @@
     <include file="$(find mdr_place_action)/ros/launch/place_client.launch" />
 
     <!-- State machine -->
-    <param name="/sm_config_file" type="str" value="$(find mdr_demo_simple_pick_and_place)/config/store_groceries_sm.yaml" />
-    <node pkg="mas_execution_manager" type="state_machine_creator" name="store_groceries" output="screen" />
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="pick_and_place" output="screen">
+        <param name="sm_config_file" type="str" value="$(find mdr_demo_simple_pick_and_place)/config/pick_and_place_sm.yaml" />
+    </node>
 </launch>

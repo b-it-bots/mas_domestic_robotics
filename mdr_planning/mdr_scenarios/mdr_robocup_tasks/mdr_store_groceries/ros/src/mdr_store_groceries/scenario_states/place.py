@@ -48,6 +48,7 @@ class Place(ScenarioStateBase):
             rospy.loginfo('Object placed successfully')
             self.say('Successfully placed ' + grasped_object)
             if self.surface_empty(surface_prefix='table'):
+                self.say('I am finally done storing the groceries')
                 return 'finished'
             return 'pick_new_object'
 

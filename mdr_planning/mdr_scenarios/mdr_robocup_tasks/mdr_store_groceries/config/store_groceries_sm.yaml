@@ -16,7 +16,7 @@ state_descriptions:
     - state:
         name: PROCESS_COMMAND
         state_module_name: mdr_store_groceries.scenario_states.process_speech_command
-        state_class_name: ProcessSpeechCommand
+        state_class_name: ProcessCommand
         transitions:
           - transition:
               name: start_store_groceries
@@ -27,7 +27,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: start_command
-                value: "store groceries"
+                value: store groceries
     - state:
         name: ENTER
         state_module_name: mdr_store_groceries.scenario_states.move_base

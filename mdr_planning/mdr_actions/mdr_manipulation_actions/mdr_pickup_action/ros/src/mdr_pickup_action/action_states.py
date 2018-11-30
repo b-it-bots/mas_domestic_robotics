@@ -39,7 +39,8 @@ class Pickup(smach.State):
                  base_elbow_offset=-1.,
                  grasping_orientation=list(),
                  grasping_dmp='',
-                 dmp_tau=1.):
+                 dmp_tau=1.,
+                 number_of_retries=0):
         smach.State.__init__(self, input_keys=['pickup_goal'],
                              output_keys=['pickup_feedback'],
                              outcomes=['succeeded', 'failed'])
@@ -59,6 +60,7 @@ class Pickup(smach.State):
         self.grasping_orientation = grasping_orientation
         self.grasping_dmp = grasping_dmp
         self.dmp_tau = dmp_tau
+        self.number_of_retries = number_of_retries
 
         self.tf_listener = tf.TransformListener()
 
@@ -91,33 +93,54 @@ class Pickup(smach.State):
             pose_base_link.pose.orientation.z = self.grasping_orientation[2]
             pose_base_link.pose.orientation.w = self.grasping_orientation[3]
 
-        rospy.loginfo('[PICKUP] Opening the gripper...')
-        self.gripper.open()
+        grasp_successful = False
+        retry_count = 0
+        while (not grasp_successful) and (retry_count <= self.number_of_retries):
+            if retry_count > 0:
+                rospy.loginfo('[PICKUP] Retrying grasp')
 
-        rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
-        self.move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+            rospy.loginfo('[PICKUP] Opening the gripper...')
+            self.gripper.open()
 
-        if self.intermediate_grasp_offset > 0:
-            rospy.loginfo('[PICKUP] Moving to intermediate grasping pose...')
-            pose_base_link.pose.position.x -= self.intermediate_grasp_offset
-            self.move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+            rospy.loginfo('[PICKUP] Preparing for grasp verification')
+            self.gripper.init_grasp_verification()
 
-        rospy.loginfo('[PICKUP] Grasping...')
-        if self.intermediate_grasp_offset > 0:
-            pose_base_link.pose.position.x += self.intermediate_grasp_offset
-        success = self.move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-        if not success:
-            rospy.logerr('[pickup] Arm motion unsuccessful')
-            return 'failed'
+            rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
+            self.move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
 
-        rospy.loginfo('[PICKUP] Arm motion successful')
-        rospy.loginfo('[PICKUP] Closing the gripper')
-        self.gripper.close()
+            if self.intermediate_grasp_offset > 0:
+                rospy.loginfo('[PICKUP] Moving to intermediate grasping pose...')
+                pose_base_link.pose.position.x -= self.intermediate_grasp_offset
+                self.move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
 
-        rospy.loginfo('[PICKUP] Moving the arm back')
-        self.move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
+            rospy.loginfo('[PICKUP] Grasping...')
+            if self.intermediate_grasp_offset > 0:
+                pose_base_link.pose.position.x += self.intermediate_grasp_offset
+            arm_motion_success = self.move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+            if not arm_motion_success:
+                rospy.logerr('[PICKUP] Arm motion unsuccessful')
+                return 'failed'
 
-        return 'succeeded'
+            rospy.loginfo('[PICKUP] Arm motion successful')
+            rospy.loginfo('[PICKUP] Closing the gripper')
+            self.gripper.close()
+
+            rospy.loginfo('[PICKUP] Moving the arm back')
+            self.move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
+
+            rospy.loginfo('[PICKUP] Verifying the grasp...')
+            grasp_successful = self.gripper.verify_grasp()
+            if grasp_successful:
+                rospy.loginfo('[PICKUP] Successfully grasped object')
+            else:
+                rospy.loginfo('[PICKUP] Grasp unsuccessful')
+                retry_count += 1
+
+        if grasp_successful:
+            return 'succeeded'
+
+        rospy.loginfo('[PICKUP] Grasp could not be performed successfully')
+        return 'failed'
 
     def align_base_with_pose(self, pose_base_link):
         '''Moves the base so that the elbow is aligned with the goal pose.

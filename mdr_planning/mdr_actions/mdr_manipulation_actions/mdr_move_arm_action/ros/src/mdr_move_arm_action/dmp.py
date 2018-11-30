@@ -213,7 +213,13 @@ class DMPExecutor(object):
     def execute(self, goal):
         initial_pos = None
         try:
-            (trans, rot) = self.tf_listener.lookupTransform(self.base_link_frame_name, self.palm_link_name, rospy.Time(0))
+            self.tf_listener.waitForTransform(self.base_link_frame_name,
+                                              self.palm_link_name,
+                                              rospy.Time.now(),
+                                              rospy.Duration(30))
+            (trans, rot) = self.tf_listener.lookupTransform(self.base_link_frame_name,
+                                                            self.palm_link_name,
+                                                            rospy.Time(0))
             initial_pos = np.array(trans)
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             initial_pos = np.zeros(3)
