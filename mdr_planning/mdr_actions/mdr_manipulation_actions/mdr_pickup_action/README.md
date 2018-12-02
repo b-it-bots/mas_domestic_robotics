@@ -9,6 +9,11 @@ The action includes an action server as well as an action client that interacts 
 ### Goal:
 
 * ``geometry_msgs/PoseStamped pose``: An end-effector goal pose
+* ``uint32 strategy``: Grasping strategy
+
+The following constants are also defined in the action goal:
+* ``uint32 SIDEWAYS_GRASP=0``
+* ``uint32 TOP_GRASP=1``
 
 ### Result:
 
