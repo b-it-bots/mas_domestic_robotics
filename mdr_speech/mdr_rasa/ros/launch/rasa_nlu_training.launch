@@ -1,4 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <node pkg="mdr_rasa" type="rasa_nlu_training_node" name="rasa_nlu_training_node" output="screen" />
-</launch>

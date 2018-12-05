@@ -33,8 +33,8 @@ class RasaNluWrapper(object):
 
     def process_msg(self, data):
         # Run message through rasa and get returned json
-        result = json.dumps(self.interpreter.parse(unicode(data.data, 'utf-8')))
-        rospy.loginfo("rasa parsed message: {}".format(result))
+        result = json.dumps(self.interpreter.parse(unicode(data.data, 'utf-8')), indent=4, separators=(',', ': '))
+        rospy.loginfo("rasa_nlu output: \n" + result)
 
         # Publish result
         response = String()
