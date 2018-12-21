@@ -31,12 +31,17 @@ class RasaNluWrapper(object):
         # Wait until killed
         rospy.spin()
 
+    def get_result(self, data):
+        # Parse message with rasa nlu
+        return self.interpreter.parse(unicode(data.data, 'utf-8'))
+
     def process_msg(self, data):
-        # Run message through rasa and get returned json
-        result = json.dumps(self.interpreter.parse(unicode(data.data, 'utf-8')), indent=4, separators=(',', ': '))
-        rospy.loginfo("rasa_nlu output: \n" + result)
+        # Process message and return result as json
+        result = self.get_result(data)
+        result_json = json.dumps(result, indent=4, separators=(',', ': '))
+        rospy.loginfo("rasa_nlu output: \n" + result_json)
 
         # Publish result
         response = String()
-        response.data = result
+        response.data = result_json
         self.pub.publish(response)
