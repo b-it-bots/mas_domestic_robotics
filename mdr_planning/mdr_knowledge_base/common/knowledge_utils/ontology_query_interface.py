@@ -3,7 +3,7 @@
 
 import rdflib
 
-class OntologyQueryManager(object):
+class OntologyQueryInterface(object):
     '''Defines an interface for interacting with an OWL knowledge base.
 
     Constructor arguments:
