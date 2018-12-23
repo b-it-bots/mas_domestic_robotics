@@ -15,12 +15,14 @@
     <owl:Class rdf:about="apartment:Plane"/>
     <owl:Class rdf:about="apartment:Location"/>
     <owl:Class rdf:about="apartment:Object"/>
+    <owl:Class rdf:about="apartment:ObjectContainer"/>
 
     <!-- Furniture items -->
     <owl:Class rdf:about="apartment:Furniture"/>
     <owl:Class rdf:about="apartment:Table"/>
     <owl:Class rdf:about="apartment:DiningTable"/>
     <owl:Class rdf:about="apartment:WorkTable"/>
+    <owl:Class rdf:about="apartment:Drawer"/>
     <owl:Class rdf:about="apartment:Bed"/>
     <owl:Class rdf:about="apartment:Chair"/>
     <owl:Class rdf:about="apartment:Sofa"/>
@@ -108,10 +110,6 @@
     <!--*********** Subclass definitions ************-->
 
     <!-- Object subclass definitions -->
-    <owl:Class rdf:about="apartment:Furniture">
-        <rdfs:subClassOf rdf:resource="apartment:Object"/>
-    </owl:Class>
-
     <owl:Class rdf:about="apartment:KitchenUtensil">
         <rdfs:subClassOf rdf:resource="apartment:Object"/>
     </owl:Class>
@@ -132,6 +130,15 @@
         <rdfs:subClassOf rdf:resource="apartment:Object"/>
     </owl:Class>
 
+    <!-- Object container subclass definitions -->
+    <owl:Class rdf:about="apartment:Drawer">
+        <rdfs:subClassOf rdf:resource="apartment:ObjectContainer"/>
+    </owl:Class>
+
+    <owl:Class rdf:about="apartment:Cupboard">
+        <rdfs:subClassOf rdf:resource="apartment:ObjectContainer"/>
+    </owl:Class>
+
     <!-- Furniture subclass definitions -->
     <owl:Class rdf:about="apartment:DiningTable">
       <rdfs:subClassOf rdf:resource="apartment:Table"/>
@@ -146,6 +153,9 @@
       <rdfs:subClassOf rdf:resource="apartment:Plane"/>
     </owl:Class>
 
+    <owl:Class rdf:about="apartment:Drawer">
+        <rdfs:subClassOf rdf:resource="apartment:Furniture"/>
+    </owl:Class>
     <owl:Class rdf:about="apartment:Bed">
       <rdfs:subClassOf rdf:resource="apartment:Furniture"/>
     </owl:Class>
@@ -234,6 +244,7 @@
             <owl:Class rdf:about="apartment:Plane"/>
             <owl:Class rdf:about="apartment:Location"/>
             <owl:Class rdf:about="apartment:Object"/>
+            <owl:Class rdf:about="apartment:ObjectContainer"/>
         </owl:members>
     </owl:AllDisjointClasses>
 
@@ -250,6 +261,7 @@
 
     <owl:AllDisjointClasses>
         <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="apartment:Drawer"/>
             <owl:Class rdf:about="apartment:Bed"/>
             <owl:Class rdf:about="apartment:Chair"/>
             <owl:Class rdf:about="apartment:Sofa"/>
