@@ -5,7 +5,7 @@ import abc
 import rospy
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import diagnostic_msgs.msg as diag_msgs
-from mdr_knowledge_base.domestic_kb_interface import DomesticKBInterface
+from mas_knowledge_base.domestic_kb_interface import DomesticKBInterface
 
 class ActionClientBase(object):
     '''An abstract base class for knowledge-enabled action clients.

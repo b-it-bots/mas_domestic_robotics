@@ -5,6 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   rosplan_knowledge_msgs
   rospy
   roslint
+  mas_knowledge_base
 )
 
 catkin_python_setup()

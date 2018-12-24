@@ -12,9 +12,6 @@ catkin_package(
     rospy
 )
 
-catkin_python_setup()
-roslint_python()
-
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
