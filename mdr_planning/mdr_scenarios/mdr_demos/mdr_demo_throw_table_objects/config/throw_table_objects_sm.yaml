@@ -7,7 +7,7 @@ outcomes: [DONE, TIMEOUT, FAILED]
 state_descriptions:
     - state:
         name: GO_TO_OBSERVATION_POSE
-        state_module_name: mdr_demo_throw_table_objects.scenario_states.move_base
+        state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -28,7 +28,7 @@ state_descriptions:
                 value: 3
     - state:
         name: PERCEIVE_TABLE
-        state_module_name: mdr_demo_throw_table_objects.scenario_states.perceive_planes
+        state_module_name: mdr_perception_behaviours.perceive_planes
         state_class_name: PerceivePlanes
         transitions:
             - transition:
@@ -49,7 +49,7 @@ state_descriptions:
                 value: table
     - state:
         name: GO_TO_TABLE
-        state_module_name: mdr_demo_throw_table_objects.scenario_states.move_base
+        state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -70,7 +70,7 @@ state_descriptions:
                 value: 3
     - state:
         name: PERCEIVE_TABLE_BEFORE_PICKING
-        state_module_name: mdr_demo_throw_table_objects.scenario_states.perceive_planes
+        state_module_name: mdr_perception_behaviours.perceive_planes
         state_class_name: PerceivePlanes
         transitions:
             - transition:
@@ -91,8 +91,8 @@ state_descriptions:
                 value: table
     - state:
         name: PICK_OBJECT
-        state_module_name: mdr_demo_throw_table_objects.scenario_states.pick
-        state_class_name: Pick
+        state_module_name: mdr_manipulation_behaviours.pick_closest_from_surface
+        state_class_name: PickClosestFromSurface
         transitions:
             - transition:
                 name: succeeded
@@ -110,9 +110,12 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 3
+            - argument:
+                name: picking_surface_prefix
+                value: table
     - state:
         name: GO_TO_TRASH_CAN
-        state_module_name: mdr_demo_throw_table_objects.scenario_states.move_base
+        state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -133,8 +136,8 @@ state_descriptions:
                 value: 3
     - state:
         name: THROW_OBJECT
-        state_module_name: mdr_demo_throw_table_objects.scenario_states.throw
-        state_class_name: Throw
+        state_module_name: mdr_manipulation_behaviours.throw_object_in
+        state_class_name: ThrowObjectIn
         transitions:
             - transition:
                 name: succeeded
