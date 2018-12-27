@@ -78,9 +78,6 @@ The following parameters need to be passed when launching the action client:
 * ``clear_plane_memory``: If set to true, all objects previously seen on a plane will be deleted from the knowledge base before new objects are added to it (default false)
 * ``action_dispatch_topic``: Name of the topic at which the plan dispatcher sends action requests
 * ``action_feedback_topic``: Name of the topic at which the action sends feedback to the plan dispatcher
-* ``knowledge_update_service``: Name of a service used for updating the planning problem as the world changes
-* ``attribute_fetching_service``: Name of a service used for retrieving attributes representing the current knowledge
-about the world
 
 ## Dependencies
 
