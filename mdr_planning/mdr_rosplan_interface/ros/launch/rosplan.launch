@@ -3,7 +3,7 @@
     <arg name="knowledge_base_path" default="$(find mdr_knowledge_base)/common/mongoDB" />
     <arg name="planner_path" default="$(find rosplan_planning_system)/common/bin/" />
     <arg name="data_path" default="" />
-    <arg name="domain_path" default="" />
+    <arg name="domain_path" default="$(find mdr_rosplan_interface)/config/default_domain.pddl" />
     <arg name="problem_path" default="" />
     <arg name="strl_file_path" default="" />
     <arg name="planner_command" default="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n DOMAIN PROBLEM" />
