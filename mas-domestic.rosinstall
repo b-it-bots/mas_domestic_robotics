@@ -29,6 +29,11 @@
     version: master
 
 - git:
+    local-name: action-execution
+    uri: https://github.com/b-it-bots/action-execution.git
+    version: master
+
+- git:
     local-name: zbar_ros
     uri: https://github.com/b-it-bots/zbar_ros.git
     version: kinetic
