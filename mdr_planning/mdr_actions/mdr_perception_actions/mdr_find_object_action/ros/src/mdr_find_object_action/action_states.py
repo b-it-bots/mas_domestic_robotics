@@ -29,19 +29,47 @@ class FindObject(smach.State):
                 userdata.obj_location = location
                 userdata.relation = predicate
                 return 'succeeded'
-            else:
-                rospy.loginfo('[FIND_OBJECT] %s not found in the knowledge base; querying the ontology', obj_name)
-                location = self.ontology_interface.get_default_storing_location(obj_name=obj_name)
-                if location:
-                    predicate = 'in'
-                    rospy.loginfo('[FIND_OBJECT] %s is usually %s %s', obj_name, predicate, location)
-                    # TODO: check if the object is at the default location
-                    userdata.obj_location = location
-                    userdata.relation = predicate
-                    return 'succeeded'
 
-                rospy.loginfo('[FIND_OBJECT] %s not found', obj_name)
+            rospy.loginfo('[FIND_OBJECT] %s not found in the knowledge base; querying the ontology', obj_name)
+            location = self.ontology_interface.get_default_storing_location(obj_name=obj_name)
+            if location:
+                predicate = 'in'
+                rospy.loginfo('[FIND_OBJECT] %s is usually %s %s', obj_name, predicate, location)
+                # TODO: check if the object is at the default location
+                userdata.obj_location = location
+                userdata.relation = predicate
+                return 'succeeded'
+
+            rospy.loginfo('[FIND_OBJECT] %s not found', obj_name)
+            userdata.obj_location = None
+            userdata.relation = None
+            return 'failed'
         elif userdata.find_object_goal.goal_type == FindObjectGoal.OBJECT_CATEGORY:
+            obj_category = userdata.find_object_goal.object_name
+            category_objects = self.kb_interface.get_category_objects(obj_category)
+            if category_objects:
+                for obj_name in category_objects:
+                    location, predicate = self.kb_interface.get_object_location(obj_name)
+                    if location:
+                        rospy.loginfo('[FIND_OBJECT] Found %s %s %s', obj_name, predicate, location)
+                        # TODO: verify that the object is still at that location
+                        userdata.obj_location = location
+                        userdata.relation = predicate
+                        return 'succeeded'
+                    else:
+                        rospy.loginfo('[FIND_OBJECT] The location of %s is unknown', obj_name)
+            else:
+                rospy.loginfo('[FIND_OBJECT] No object of category %s was found in the knowledge base; querying the ontology', obj_category)
+
+            location = self.ontology_interface.get_default_storing_location(obj_category=obj_category)
+            if location:
+                predicate = 'in'
+                rospy.loginfo('[FIND_OBJECT] Objects of %s are usually %s %s', obj_category, predicate, location)
+                # TODO: check if an object of the desired category is at the default location
+                userdata.obj_location = location
+                userdata.relation = predicate
+                return 'succeeded'
+
             return 'failed'
 
 class SetActionLibResult(smach.State):
