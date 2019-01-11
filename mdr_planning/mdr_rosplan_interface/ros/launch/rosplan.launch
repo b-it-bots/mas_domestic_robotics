@@ -33,6 +33,7 @@
         <param name="domain_path" value="$(arg domain_path)" />
         <param name="problem_path" value="$(arg problem_path)" />
         <param name="problem_topic" value="/rosplan_problem_interface/problem_instance" />
+        <param name="planning_language" value="PDDL" />
     </node>
 
     <!-- planning system -->
