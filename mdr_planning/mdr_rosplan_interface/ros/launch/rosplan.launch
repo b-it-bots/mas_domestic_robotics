@@ -13,6 +13,12 @@
     <param name="/rosplan/planner_path" value="$(arg planner_path)" />
     <param name="/rosplan/domain_path" value="$(arg domain_path)" />
 
+    <!-- planner interface parameters -->
+    <param name="/planner/problem_generation_srv" value="/rosplan_problem_interface/problem_generation_server" />
+    <param name="/planner/planner_srv" value="/rosplan_planner_interface/planning_server" />
+    <param name="/planner/plan_parsing_srv" value="/rosplan_parsing_interface/parse_plan" />
+    <param name="/planner/plan_dispatch_srv" value="/rosplan_plan_dispatcher/dispatch_plan" />
+
     <!-- knowledge base -->
     <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="true" output="screen">
         <param name="domain_path" value="$(arg domain_path)" />
