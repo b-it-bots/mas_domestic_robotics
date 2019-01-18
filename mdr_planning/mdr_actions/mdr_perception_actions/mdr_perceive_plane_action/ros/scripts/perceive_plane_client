@@ -82,7 +82,7 @@ class PerceivePlaneClient(ActionClientBase):
 
                 facts_to_add.append(('on', [('obj', obj_name), ('plane', plane.name)]))
                 facts_to_add.append(('object_category', [('obj', obj_name), ('cat', obj.category)]))
-                object_to_add.append((obj_name, obj))
+                objects_to_add.append((obj_name, obj))
 
         # we finally update the knowledge base
         self.kb_interface.update_kb(facts_to_add, facts_to_remove)
@@ -103,7 +103,7 @@ class PerceivePlaneClient(ActionClientBase):
         # with the objects that on the plane
         plane_objects = self.kb_interface.get_surface_object_names(plane_name)
         for obj_name in plane_objects:
-            fact = [('on', [('obj', obj_name), ('plane', plane_name)])]
+            fact = ('on', [('obj', obj_name), ('plane', plane_name)])
             facts_to_remove.append(fact)
             objects_to_remove.append((obj_name, Object._type))
 
