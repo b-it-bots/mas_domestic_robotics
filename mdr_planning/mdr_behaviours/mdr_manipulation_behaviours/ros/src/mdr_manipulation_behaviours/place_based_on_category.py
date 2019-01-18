@@ -9,7 +9,7 @@ from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class PlaceBasedOnCategory(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
-        ScenarioStateBase.__init__(self, 'place_based_on_category',
+        ScenarioStateBase.__init__(self, 'place',
                                    save_sm_state=save_sm_state,
                                    input_keys=['grasped_object'],
                                    outcomes=['succeeded', 'failed',
