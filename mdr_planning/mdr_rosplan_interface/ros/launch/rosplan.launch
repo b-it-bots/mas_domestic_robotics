@@ -7,6 +7,8 @@
     <arg name="problem_path" default="" />
     <arg name="strl_file_path" default="" />
     <arg name="planner_command" default="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n DOMAIN PROBLEM" />
+    <arg name="action_dispatch_topic" default="/kcl_rosplan/action_dispatch" />
+    <arg name="action_feedback_topic" default="/kcl_rosplan/action_feedback" />
 
     <!-- data paths -->
     <param name="/rosplan/data_path" value="$(arg data_path)" />
@@ -18,6 +20,8 @@
     <param name="/planner/planner_srv" value="/rosplan_planner_interface/planning_server" />
     <param name="/planner/plan_parsing_srv" value="/rosplan_parsing_interface/parse_plan" />
     <param name="/planner/plan_dispatch_srv" value="/rosplan_plan_dispatcher/dispatch_plan" />
+    <param name="/planner/action_dispatch_topic" value="$(arg action_dispatch_topic)" />
+    <param name="/planner/action_feedback_topic" value="$(arg action_feedback_topic)" />
 
     <!-- knowledge base -->
     <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="true" output="screen">
@@ -65,8 +69,8 @@
     <include file="$(find rosplan_planning_system)/launch/includes/dispatch_interface.launch">
         <arg name="knowledge_base" value="rosplan_knowledge_base" />
         <arg name="plan_topic" value="/rosplan_parsing_interface/complete_plan" />
-        <arg name="action_dispatch_topic" value="/kcl_rosplan/action_dispatch" />
-        <arg name="action_feedback_topic" value="/kcl_rosplan/action_feedback" />
+        <arg name="action_dispatch_topic" value="$(arg action_dispatch_topic)" />
+        <arg name="action_feedback_topic" value="$(arg action_feedback_topic)" />
     </include>
 
     <!-- we reset the message store before using it -->
