@@ -2,7 +2,7 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_store_groceries
-states: [LISTEN, PROCESS_SPEECH_COMMAND, ENTER, GO_TO_SCANNING_POSE, FIND_TABLE, GO_TO_CUPBOARD, OPEN_DOOR, SCAN_CUPBOARD, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_CUPBOARD, PLACE_OBJECT, GO_BACK_TO_TABLE, EXIT]
+states: [LISTEN, PROCESS_SPEECH_COMMAND, ENTER, GO_TO_SCANNING_POSE, FIND_TABLE, GO_TO_CUPBOARD, OPEN_DOOR, SCAN_CUPBOARD, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_CUPBOARD, PLACE_OBJECT, CHECK_EMPTY_TABLE, GO_BACK_TO_TABLE, EXIT]
 outcomes: [DONE, TIMEOUT]
 state_descriptions:
     - state:
@@ -16,7 +16,7 @@ state_descriptions:
     - state:
         name: PROCESS_COMMAND
         state_module_name: mdr_store_groceries.scenario_states.process_speech_command
-        state_class_name: ProcessSpeechCommand
+        state_class_name: ProcessCommand
         transitions:
           - transition:
               name: start_store_groceries
@@ -27,10 +27,10 @@ state_descriptions:
         arguments:
             - argument:
                 name: start_command
-                value: "store groceries"
+                value: store groceries
     - state:
         name: ENTER
-        state_module_name: mdr_store_groceries.scenario_states.move_base
+        state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -51,7 +51,7 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_TO_SCANNING_POSE
-        state_module_name: mdr_store_groceries.scenario_states.move_base
+        state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -93,7 +93,7 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_TO_CUPBOARD
-        state_module_name: mdr_store_groceries.scenario_states.move_base
+        state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -150,7 +150,7 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_TO_TABLE
-        state_module_name: mdr_store_groceries.scenario_states.move_base
+        state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -171,7 +171,7 @@ state_descriptions:
                 value: 3
     - state:
         name: PERCEIVE_TABLE
-        state_module_name: mdr_store_groceries.scenario_states.perceive_planes
+        state_module_name: mdr_perception_behaviours.perceive_planes
         state_class_name: PerceivePlanes
         transitions:
             - transition:
@@ -192,8 +192,8 @@ state_descriptions:
                 value: table
     - state:
         name: PICK_OBJECT
-        state_module_name: mdr_store_groceries.scenario_states.pick
-        state_class_name: Pick
+        state_module_name: mdr_manipulation_behaviours.pick_closest_from_surface
+        state_class_name: PickClosestFromSurface
         transitions:
             - transition:
                 name: succeeded
@@ -211,9 +211,12 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 3
+            - argument:
+                name: picking_surface_prefix
+                value: table
     - state:
         name: FIND_OBJECTS_BEFORE_PICKING
-        state_module_name: mdr_store_groceries.scenario_states.perceive_planes
+        state_module_name: mdr_perception_behaviours.perceive_planes
         state_class_name: PerceivePlanes
         transitions:
             - transition:
@@ -234,7 +237,7 @@ state_descriptions:
                 value: table
     - state:
         name: GO_BACK_TO_CUPBOARD
-        state_module_name: mdr_store_groceries.scenario_states.move_base
+        state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -255,15 +258,12 @@ state_descriptions:
                 value: 3
     - state:
         name: PLACE_OBJECT
-        state_module_name: mdr_store_groceries.scenario_states.place
-        state_class_name: Place
+        state_module_name: mdr_manipulation_behaviours.place_based_on_category
+        state_class_name: PlaceBasedOnCategory
         transitions:
             - transition:
-                name: pick_new_object
-                state: GO_BACK_TO_TABLE
-            - transition:
-                name: finished
-                state: EXIT
+                name: succeeded
+                state: CHECK_EMPTY_TABLE
             - transition:
                 name: failed
                 state: PLACE_OBJECT
@@ -274,9 +274,27 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 3
+            - argument:
+                name: placing_surface_prefix
+                value: shelf
+    - state:
+        name: CHECK_EMPTY_TABLE
+        state_module_name: mdr_knowledge_behaviours.check_empty_surface
+        state_class_name: CheckEmptySurface
+        transitions:
+            - transition:
+                name: empty
+                state: EXIT
+            - transition:
+                name: not_empty
+                state: GO_BACK_TO_TABLE
+        arguments:
+            - argument:
+                name: surface_prefix
+                value: table
     - state:
         name: GO_BACK_TO_TABLE
-        state_module_name: mdr_store_groceries.scenario_states.move_base
+        state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -297,7 +315,7 @@ state_descriptions:
                 value: 3
     - state:
         name: EXIT
-        state_module_name: mdr_store_groceries.scenario_states.move_base
+        state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:

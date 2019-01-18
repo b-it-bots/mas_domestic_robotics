@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="db_name" default="message_store" />
+    <arg name="collection_name" default="message_store" />
+    <arg name="db_port" default="27018" />
+
+    <node name="clear_message_store" pkg="mdr_rosplan_interface" type="clear_message_store" respawn="false" output="screen">
+        <param name="db_name" value="$(arg db_name)" />
+        <param name="collection_name" value="$(arg collection_name)" />
+        <param name="db_port" value="$(arg db_port)" />
+    </node>
+</launch>

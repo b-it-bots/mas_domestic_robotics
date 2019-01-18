@@ -2,15 +2,21 @@
 import rospy
 import actionlib
 
+import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
+from mcr_perception_msgs.msg import Plane, Object
 from mdr_rosplan_interface.action_client_base import ActionClientBase
 from mdr_perceive_plane_action.msg import PerceivePlaneAction, PerceivePlaneGoal
-import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
-import rosplan_knowledge_msgs.srv as rosplan_srvs
-import diagnostic_msgs.msg as diag_msgs
 
 class PerceivePlaneClient(ActionClientBase):
+    '''Defines a client for a plane scanning action.
+
+    @author Minh Nguyen, Alex Mitrevski
+    @contact minh.nguyen@smail.inf.h-brs.de, aleksandar.mitrevski@h-brs.de
+
+    '''
     def __init__(self):
         super(PerceivePlaneClient, self).__init__()
+        self.clear_plane_memory = rospy.get_param('~clear_plane_memory', False)
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
 
@@ -52,77 +58,58 @@ class PerceivePlaneClient(ActionClientBase):
         return goal
 
     def update_knowledge_base(self, plane_prefix, plane_list):
+        '''Updates the knowledge base with the following facts:
+        * each of the detected planes is now explored, so it's not unexplored anymore
+        * each object on each of the detected plane is on the plane and has
+          the recognised category
+        '''
+        facts_to_add = []
+        facts_to_remove = []
+        objects_to_add = []
         for i, plane in enumerate(plane_list.planes):
-            # we remove the fact that the plane is unexplored from the knowledge base
-            request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-            request.update_type = 2
-            request.knowledge.knowledge_type = 1
-            request.knowledge.attribute_name = 'unexplored'
+            if self.clear_plane_memory:
+                self.__delete_plane_from_kb(plane.name)
 
-            arg_msg = diag_msgs.KeyValue()
-            arg_msg.key = 'plane'
-            arg_msg.value = plane.name
-            request.knowledge.values.append(arg_msg)
+            facts_to_add.append(('explored', [('plane', plane.name)]))
+            facts_to_remove.append(('unexplored', [('plane', plane.name)]))
+            objects_to_add.append((plane.name, plane))
 
-            self.knowledge_update_client(request)
-
-            # we add the fact that the plane is explored to the knowledge base
-            request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-            request.update_type = 0
-            request.knowledge.knowledge_type = 1
-            request.knowledge.attribute_name = 'explored'
-
-            arg_msg = diag_msgs.KeyValue()
-            arg_msg.key = 'plane'
-            arg_msg.value = plane.name
-            request.knowledge.values.append(arg_msg)
-
-            self.knowledge_update_client(request)
-            self.msg_store_client.insert_named(plane.name, plane)
-
-            # we add the detected objects to the knowledge base
+            # we update the list of facts and objects to add with the detected objects
             for obj in plane.object_list.objects:
                 # we set a unique name for each object
                 obj_name = obj.name + '_' + str(i)
                 obj.name = obj_name
 
-                request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-                request.update_type = 0
-                request.knowledge.knowledge_type = 1
-                request.knowledge.attribute_name = 'on'
+                facts_to_add.append(('on', [('obj', obj_name), ('plane', plane.name)]))
+                facts_to_add.append(('object_category', [('obj', obj_name), ('cat', obj.category)]))
+                object_to_add.append((obj_name, obj))
 
-                arg_msg = diag_msgs.KeyValue()
-                arg_msg.key = 'obj'
-                arg_msg.value = obj_name
-                request.knowledge.values.append(arg_msg)
+        # we finally update the knowledge base
+        self.kb_interface.update_kb(facts_to_add, facts_to_remove)
+        self.kb_interface.insert_objects(objects_to_add)
 
-                arg_msg = diag_msgs.KeyValue()
-                arg_msg.key = 'plane'
-                arg_msg.value = plane.name
-                request.knowledge.values.append(arg_msg)
+    def __delete_plane_from_kb(self, plane_name):
+        '''Removes the plane with the given name and all objects on it
+        from the knowledge base.
 
-                self.knowledge_update_client(request)
+        Keyword arguments:
+        plane_name -- string indicating the name of a plane
 
-                # we add the object category to the knowledge base
-                request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-                request.update_type = 0
-                request.knowledge.knowledge_type = 1
-                request.knowledge.attribute_name = 'object_category'
+        '''
+        facts_to_remove = [('explored', [('plane', plane_name)])]
+        objects_to_remove = [(plane_name, Plane._type)]
 
-                arg_msg = diag_msgs.KeyValue()
-                arg_msg.key = 'obj'
-                arg_msg.value = obj_name
-                request.knowledge.values.append(arg_msg)
+        # we update the lists of facts and objects to remove
+        # with the objects that on the plane
+        plane_objects = self.kb_interface.get_surface_object_names(plane_name)
+        for obj_name in plane_objects:
+            fact = [('on', [('obj', obj_name), ('plane', plane_name)])]
+            facts_to_remove.append(fact)
+            objects_to_remove.append((obj_name, Object._type))
 
-                arg_msg = diag_msgs.KeyValue()
-                arg_msg.key = 'cat'
-                arg_msg.value = obj.category
-                request.knowledge.values.append(arg_msg)
-
-                self.knowledge_update_client(request)
-
-                # we add the object instance to the world model
-                self.msg_store_client.insert_named(obj_name, obj)
+        # we finally remove the facts and objects from the knowledge base
+        self.kb_interface.remove_facts(facts_to_remove)
+        self.kb_interface.remove_objects(objects_to_remove)
 
 if __name__ == '__main__':
     rospy.init_node('perceive_plane_client')

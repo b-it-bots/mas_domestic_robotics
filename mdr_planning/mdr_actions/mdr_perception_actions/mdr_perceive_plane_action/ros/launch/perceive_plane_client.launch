@@ -9,9 +9,8 @@
         <param name="action_name" type="str" value="perceive_plane" />
         <param name="server_name" type="str" value="/mdr_actions/perceive_plane_server" />
         <param name="action_timeout" type="double" value="120" />
+        <param name="clear_plane_memory" type="bool" value="true" />
         <remap from="action_dispatch_topic" to="$(arg action_dispatch_topic)" />
         <remap from="action_feedback_topic" to="$(arg action_feedback_topic)" />
-        <remap from="knowledge_update_service" to="$(arg knowledge_update_service)" />
-        <remap from="attribute_fetching_service" to="$(arg attribute_fetching_service)" />
     </node>
 </launch>

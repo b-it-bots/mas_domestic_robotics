@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+    <include file="$(find mdr_rosplan_interface)/ros/launch/rosplan.launch" />
 
     <node pkg="mdr_move_base_action" type="move_base_action" name="move_base_server" output="screen">
         <param name="move_base_server" value="/move_base" />
@@ -20,7 +21,7 @@
         <param name="throttle_repeated_barcodes" type="double" value="2.0" />
     </node>
 
-    <param name="/sm_config_file" type="str" value="$(find mdr_robot_inspection)/config/scenario_config.yaml" />
-    <param name="/store_knowledge" value="false" />
-    <node pkg="mas_execution_manager" type="state_machine_creator" name="robot_inspection" output="screen" />
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="robot_inspection" output="screen">
+        <param name="sm_config_file" type="str" value="$(find mdr_robot_inspection)/config/scenario_config.yaml" />
+    </node>
 </launch>

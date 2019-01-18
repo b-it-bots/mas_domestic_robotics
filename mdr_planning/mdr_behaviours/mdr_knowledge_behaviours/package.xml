@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_knowledge_behaviours</name>
+  <version>1.2.0</version>
+  <description>A package for common knowledge retrieval robot behaviours.</description>
+
+  <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <license>GPLv3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>roslint</build_depend>
+  <build_depend>smach</build_depend>
+  <build_depend>mas_execution_manager</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>smach</run_depend>
+  <run_depend>mas_execution_manager</run_depend>
+
+  <export></export>
+</package>

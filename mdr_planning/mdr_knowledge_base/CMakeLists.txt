@@ -7,10 +7,11 @@ find_package(catkin REQUIRED COMPONENTS
   roslint
 )
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS
+    rospy
+)
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
-
-roslint_python()

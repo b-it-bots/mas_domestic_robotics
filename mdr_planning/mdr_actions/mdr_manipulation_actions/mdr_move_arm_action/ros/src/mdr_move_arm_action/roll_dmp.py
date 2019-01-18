@@ -1,16 +1,16 @@
 import numpy as np
 import yaml
-import pydmps
+from pydmps.dmp_discrete import DMPs_discrete
 
 class RollDMP():
     def __init__(self, file_name, n_dmps=6, n_bfs=50):
         weight = self.load_weights(file_name)
-        self.dmp = pydmps.dmp_discrete.DMPs_discrete(n_dmps=n_dmps, n_bfs=n_bfs,
-                                                     dt=0.001, ay=np.ones(n_dmps)*10.0, w=weight)
+        self.dmp = DMPs_discrete(n_dmps=n_dmps, n_bfs=n_bfs,
+                                 dt=0.001, ay=np.ones(n_dmps)*10.0, w=weight)
 
     def roll(self, goal, initial_pos, tau):
-        self.pos, self.vel, self.acc = self.dmp.rollout(goal=goal, y0=initial_pos, tau=tau)
-        return self.pos, self.vel, self.acc
+        pos, vel, acc = self.dmp.rollout(goal=goal, y0=initial_pos, tau=tau)
+        return pos, vel, acc
 
     def load_weights(self, file_name):
         with open(file_name) as f:

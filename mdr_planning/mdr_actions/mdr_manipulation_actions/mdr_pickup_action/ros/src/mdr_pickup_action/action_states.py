@@ -1,5 +1,6 @@
 #!/usr/bin/python
 from importlib import import_module
+import numpy as np
 
 import rospy
 import smach
@@ -7,6 +8,7 @@ import tf
 import actionlib
 from geometry_msgs.msg import PoseStamped
 
+from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_pickup_action.msg import PickupGoal, PickupFeedback, PickupResult
@@ -32,11 +34,14 @@ class Pickup(smach.State):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mdr_gripper_controller',
                  pregrasp_config_name='pregrasp',
+                 pregrasp_top_config_name='pregrasp_top',
                  intermediate_grasp_offset=-1,
                  safe_arm_joint_config='folded',
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
+                 move_forward_server='move_forward_server',
                  base_elbow_offset=-1.,
+                 arm_base_offset=-1.,
                  grasping_orientation=list(),
                  grasping_dmp='',
                  dmp_tau=1.,
@@ -52,11 +57,14 @@ class Pickup(smach.State):
         self.gripper = GripperControllerClass()
 
         self.pregrasp_config_name = pregrasp_config_name
+        self.pregrasp_top_config_name = pregrasp_top_config_name
         self.intermediate_grasp_offset = intermediate_grasp_offset
         self.safe_arm_joint_config = safe_arm_joint_config
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
+        self.move_forward_server = move_forward_server
         self.base_elbow_offset = base_elbow_offset
+        self.arm_base_offset = arm_base_offset
         self.grasping_orientation = grasping_orientation
         self.grasping_dmp = grasping_dmp
         self.dmp_tau = dmp_tau
@@ -69,6 +77,9 @@ class Pickup(smach.State):
 
         self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
         self.move_base_client.wait_for_server()
+
+        self.move_forward_client = actionlib.SimpleActionClient(self.move_forward_server, MoveForwardAction)
+        self.move_forward_client.wait_for_server()
 
     def execute(self, userdata):
         feedback = PickupFeedback()
@@ -105,28 +116,36 @@ class Pickup(smach.State):
             rospy.loginfo('[PICKUP] Preparing for grasp verification')
             self.gripper.init_grasp_verification()
 
-            rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
-            self.move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+            if userdata.pickup_goal.strategy == PickupGoal.SIDEWAYS_GRASP:
+                rospy.loginfo('[PICKUP] Preparing sideways graps')
+                pose_base_link = self.prepare_sideways_grasp(pose_base_link)
 
-            if self.intermediate_grasp_offset > 0:
-                rospy.loginfo('[PICKUP] Moving to intermediate grasping pose...')
-                pose_base_link.pose.position.x -= self.intermediate_grasp_offset
-                self.move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+                rospy.loginfo('[PICKUP] Grasping...')
+                arm_motion_success = self.move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+                if not arm_motion_success:
+                    rospy.logerr('[PICKUP] Arm motion unsuccessful')
+                    return 'failed'
 
-            rospy.loginfo('[PICKUP] Grasping...')
-            if self.intermediate_grasp_offset > 0:
-                pose_base_link.pose.position.x += self.intermediate_grasp_offset
-            arm_motion_success = self.move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-            if not arm_motion_success:
-                rospy.logerr('[PICKUP] Arm motion unsuccessful')
+                rospy.loginfo('[PICKUP] Arm motion successful')
+            elif userdata.pickup_goal.strategy == PickupGoal.TOP_GRASP:
+                rospy.loginfo('[PICKUP] Preparing top grasp')
+                pose_base_link, x_align_distance = self.prepare_top_grasp(pose_base_link)
+                self.gripper.orient_z(pose_base_link.pose.orientation)
+                self.gripper.move_down(pose_base_link.pose.position.z)
+            else:
+                rospy.logerr('[PICKUP] Unknown grasping strategy requested; ignoring request')
                 return 'failed'
 
-            rospy.loginfo('[PICKUP] Arm motion successful')
             rospy.loginfo('[PICKUP] Closing the gripper')
             self.gripper.close()
 
             rospy.loginfo('[PICKUP] Moving the arm back')
             self.move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
+
+            if userdata.pickup_goal.strategy == PickupGoal.TOP_GRASP:
+                rospy.loginfo('[PICKUP] Moving the base back to the original position')
+                if abs(x_align_distance) > 0:
+                    self.move_base_along_x(-x_align_distance)
 
             rospy.loginfo('[PICKUP] Verifying the grasp...')
             grasp_successful = self.gripper.verify_grasp()
@@ -190,6 +209,39 @@ class Pickup(smach.State):
         self.move_arm_client.wait_for_result()
         result = self.move_arm_client.get_result()
         return result
+
+    def prepare_sideways_grasp(self, pose_base_link):
+        rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
+        self.move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+
+        if self.intermediate_grasp_offset > 0:
+            rospy.loginfo('[PICKUP] Moving to intermediate grasping pose...')
+            pose_base_link.pose.position.x -= self.intermediate_grasp_offset
+            self.move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+
+        if self.intermediate_grasp_offset > 0:
+            pose_base_link.pose.position.x += self.intermediate_grasp_offset
+        return pose_base_link
+
+    def prepare_top_grasp(self, pose_base_link):
+        rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
+        self.move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_top_config_name)
+        x_align_distance = 0
+        if self.arm_base_offset > 0:
+            x_align_distance = pose_base_link.pose.position.x - self.arm_base_offset
+            self.move_base_along_x(x_align_distance)
+            pose_base_link.pose.position.x = self.arm_base_offset
+        return pose_base_link, x_align_distance
+
+    def move_base_along_x(self, distance_to_move):
+        movement_speed = np.sign(distance_to_move) * 0.1 # m/s
+        movement_duration = distance_to_move / movement_speed
+        move_forward_goal = MoveForwardGoal()
+        move_forward_goal.movement_duration = movement_duration
+        move_forward_goal.speed = movement_speed
+        self.move_forward_client.send_goal(move_forward_goal)
+        self.move_forward_client.wait_for_result()
+        self.move_forward_client.get_result()
 
 class SetActionLibResult(smach.State):
     def __init__(self, result):
