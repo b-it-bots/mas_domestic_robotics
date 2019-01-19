@@ -17,6 +17,8 @@ before_install:
   - docker-compose -v
 
 script:
+  - echo $TRAVIS_COMMIT
+  - echo $TRAVIS_BRANCH
   - docker-compose build travis
 
 deploy:
