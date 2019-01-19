@@ -30,8 +30,12 @@ deploy:
     - docker images
     - docker push $CONTAINER_RELEASE_IMAGE
   on:
-    all_branches: true
-    condition: $TRAVIS_BRANCH =~ ^kinetic|devel$ OR tag = true
+    tags: true
+    branches:
+      - devel
+      - indigo
+      - kinetic
+      - melodic
 
 notifications:
   slack:
