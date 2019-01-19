@@ -1,4 +1,4 @@
-FROM bitbots/bitbots-domestic:kinetic
+FROM bitbots/bitbots-common:kinetic
 
 WORKDIR /travis
 ADD ./ /travis/src/mas_domestic_robotics
