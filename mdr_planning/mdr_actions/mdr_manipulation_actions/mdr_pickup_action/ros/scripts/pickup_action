@@ -1,22 +1,41 @@
 #!/usr/bin/env python
 import rospy
-import smach
-
-from smach_ros import ActionServerWrapper, IntrospectionServer
+import actionlib
 
 from mdr_pickup_action.msg import PickupAction
-from mdr_pickup_action.action_states import (SetupPickup, Pickup, SetActionLibResult)
+from mdr_pickup_action.action_states import PickupSM
 
+class PickupServer(object):
+    '''A server exposing a pickup action.
 
-class PickupSkill(smach.StateMachine):
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * move_arm_server: Name of the move_arm action server (default: 'move_arm_server')
+    * move_base_server: Name of the move_base action server (default: 'move_base_server')
+    * gripper_controller_pkg_name: The name of a package that implements functionalities for
+                                   controlling a robot's gripper (default: 'mdr_gripper_controller')
+    * pregrasp_config_name: The name of the pregrasp configuration (default: 'pregrasp')
+    * intermediate_grasp_offset: An optional pose offset that creates an intermediate
+                                 trajectory goal following the pregrasp configuration (default: -1)
+    * safe_arm_joint_config: The name of a configuration in which the robot can
+                             safely move around the environment (default: 'folded')
+    * base_elbow_offset: An optional offset between base_link and the manipulator's elbow;
+                         used for aligning the base with the object to be grasped
+                         so that the manipulator can easily reach the object (default: -1)
+    * grasping_dmp: Path to a YAML file containing the weights of a dynamic motion primitive
+                    used for grasping (default: '')
+    * dmp_tau: The value of the temporal dynamic motion primitive parameter (default: 1)
+    * grasping_orientation: For more constrained manipulators, it might make sense to use
+                            a fixed grasping orientation (expressed as an (x, y, z, w) quaternion)
+                            to ensure easier reachability (default: [], in which case
+                            the argument is ignored)
+    * number_of_retries: Number of times a grasp should be repeated in case
+                         it fails the first time (default 0)
+
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
     def __init__(self):
-        smach.StateMachine.__init__(self,
-                                    outcomes=['OVERALL_SUCCESS',
-                                              'OVERALL_FAILED', 'PREEMPTED'],
-                                    input_keys=['pickup_goal'],
-                                    output_keys=['pickup_feedback',
-                                                 'pickup_result'])
-
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
         move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
         gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name',
@@ -31,52 +50,41 @@ class PickupSkill(smach.StateMachine):
         dmp_tau = float(rospy.get_param('~dmp_tau', 1.))
         number_of_retries = int(rospy.get_param('~number_of_retries', 0))
 
-        with self:
-            smach.StateMachine.add('SETUP_PICKUP', SetupPickup(),
-                                   transitions={'succeeded': 'PICKUP',
-                                                'failed': 'SETUP_PICKUP'})
+        rospy.loginfo('[pickup] Initialising state machine')
+        self.action_sm = PickupSM(move_arm_server=move_arm_server,
+                                  move_base_server=move_base_server,
+                                  gripper_controller_pkg_name=gripper_controller_pkg_name,
+                                  pregrasp_config_name=pregrasp_config_name,
+                                  intermediate_grasp_offset=grasp_offset,
+                                  safe_arm_joint_config=safe_arm_joint_config,
+                                  base_elbow_offset=base_elbow_offset,
+                                  arm_base_offset=arm_base_offset,
+                                  grasping_orientation=grasping_orientation,
+                                  grasping_dmp=grasping_dmp,
+                                  dmp_tau=dmp_tau,
+                                  number_of_retries=number_of_retries)
+        rospy.loginfo('[pickup] State machine initialised')
 
-            smach.StateMachine.add('PICKUP', Pickup(move_arm_server=move_arm_server,
-                                                    move_base_server=move_base_server,
-                                                    gripper_controller_pkg_name=gripper_controller_pkg_name,
-                                                    pregrasp_config_name=pregrasp_config_name,
-                                                    intermediate_grasp_offset=grasp_offset,
-                                                    safe_arm_joint_config=safe_arm_joint_config,
-                                                    base_elbow_offset=base_elbow_offset,
-                                                    arm_base_offset=arm_base_offset,
-                                                    grasping_orientation=grasping_orientation,
-                                                    grasping_dmp=grasping_dmp,
-                                                    dmp_tau=dmp_tau,
-                                                    number_of_retries=number_of_retries),
-                                   transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
-                                                'failed': 'SET_ACTION_LIB_FAILED'})
+        self.action_server = actionlib.SimpleActionServer('pickup_server',
+                                                          PickupAction, self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('pickup action server ready')
 
-            smach.StateMachine.add('SET_ACTION_LIB_FAILED',
-                                   SetActionLibResult(False),
-                                   transitions={'succeeded': 'OVERALL_FAILED'})
-
-            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS',
-                                   SetActionLibResult(True),
-                                   transitions={'succeeded': 'OVERALL_SUCCESS'})
-
+    def execute(self, goal):
+        rospy.loginfo('[pickup] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.execution_requested = True
+        while self.action_sm.result is None:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
     rospy.init_node('pickup_server')
-    sm = PickupSkill()
-    sis = IntrospectionServer('pickup_smach_viewer', sm,
-                              '/PICKUP_SMACH_VIEWER')
-    sis.start()
-
-    asw = ActionServerWrapper(
-        server_name='pickup_server',
-        action_spec=PickupAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAILED'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='pickup_goal',
-        feedback_key='pickup_feedback',
-        result_key='pickup_result')
-
-    asw.run_server()
-    rospy.spin()
+    pickup_server = PickupServer()
+    try:
+        pickup_server.action_sm.run()
+        while pickup_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(pickup_server.action_sm.name))
+        pickup_server.action_sm.stop()
