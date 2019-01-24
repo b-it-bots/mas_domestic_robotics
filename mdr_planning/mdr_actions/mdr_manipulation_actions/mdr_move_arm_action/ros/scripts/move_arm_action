@@ -1,65 +1,48 @@
 #!/usr/bin/env python
 import rospy
-import smach
-
-from smach_ros import ActionServerWrapper, IntrospectionServer
+import actionlib
 
 from mdr_move_arm_action.msg import MoveArmAction
-from mdr_move_arm_action.action_states import (SetupMoveArm, MoveArm,
-                                                SetActionLibResult)
+from mdr_move_arm_action.action_states import MoveArmSM
 
+class MoveArmServer(object):
+    '''A server exposing an arm moving action.
 
-class MoveArmSkill(smach.StateMachine):
-    def __init__(self, timeout=10):
-        smach.StateMachine.__init__(self,
-                                    outcomes=['OVERALL_SUCCESS',
-                                              'OVERALL_FAILED', 'PREEMPTED'],
-                                    input_keys=['move_arm_goal'],
-                                    output_keys=['move_arm_feedback',
-                                                 'move_arm_result'])
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * arm_name: Name of an arm MoveIt! group
 
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
+    def __init__(self):
         arm_name = rospy.get_param('~arm_name', 'arm')
 
-        with self:
-            smach.StateMachine.add('SETUP_MOVE_ARM', SetupMoveArm(),
-                                   transitions={'succeeded': 'MOVE_ARM',
-                                                'failed': 'SETUP_MOVE_ARM'})
+        rospy.loginfo('[move_arm] Initialising state machine')
+        self.action_sm = MoveArmSM(arm_name=arm_name)
+        rospy.loginfo('[move_arm] State machine initialised')
 
-            smach.StateMachine.add('MOVE_ARM', MoveArm(arm_name=arm_name),
-                                   transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
-                                                'failed': 'SET_ACTION_LIB_FAILED'})
+        self.action_server = actionlib.SimpleActionServer('move_arm_server',
+                                                          MoveArmAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('move_arm action server ready')
 
-            smach.StateMachine.add('SET_ACTION_LIB_FAILED',
-                                   SetActionLibResult(False),
-                                   transitions={'succeeded': 'OVERALL_FAILED'})
-
-            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS',
-                                   SetActionLibResult(True),
-                                   transitions={'succeeded': 'OVERALL_SUCCESS'})
-
+    def execute(self, goal):
+        rospy.loginfo('[move_arm] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.execution_requested = True
+        while self.action_sm.result is None:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
     rospy.init_node('move_arm_server')
-
-    # construct state machine
-    sm = MoveArmSkill()
-
-    # smach viewer
-    sis = IntrospectionServer('move_arm_smach_viewer', sm,
-                              '/MOVE_ARM_SMACH_VIEWER')
-    sis.start()
-
-    asw = ActionServerWrapper(
-        server_name='move_arm_server',
-        action_spec=MoveArmAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAILED'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='move_arm_goal',
-        feedback_key='move_arm_feedback',
-        result_key='move_arm_result')
-
-    # Run the server in a background thread
-    asw.run_server()
-    rospy.spin()
+    move_arm_server = MoveArmServer()
+    try:
+        move_arm_server.action_sm.run()
+        while move_arm_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(move_arm_server.action_sm.name))
+        move_arm_server.action_sm.stop()
