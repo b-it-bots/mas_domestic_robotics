@@ -1,58 +1,47 @@
 #!/usr/bin/env python
 import rospy
-import smach
-
-from smach_ros import ActionServerWrapper, IntrospectionServer
+import actionlib
 
 from mdr_move_forward_action.msg import MoveForwardAction
-from mdr_move_forward_action.action_states import SetupMoveForward, MoveForward, SetActionLibResult
+from mdr_move_forward_action.action_states import MoveForwardSM
 
-class MoveForwardSkill(smach.StateMachine):
-    def __init__(self, timeout=10):
-        smach.StateMachine.__init__(self,
-                                    outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
-                                    input_keys=['move_forward_goal'],
-                                    output_keys=['move_forward_feedback', 'move_forward_result'])
+class MoveForwardServer(object):
+    '''A server exposing an action for moving a base forward and backward.
 
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * velocity_topic: Name of a topic on which velocity commands are published
+
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
+    def __init__(self):
         velocity_topic = rospy.get_param('~velocity_topic', '/cmd_vel')
+        rospy.loginfo('[move_forward] Initialising state machine')
+        self.action_sm = MoveForwardSM(velocity_topic=velocity_topic)
+        rospy.loginfo('[move_forward] State machine initialised')
 
-        with self:
-            smach.StateMachine.add('SETUP_MOVE_FORWARD', SetupMoveForward(),
-                                   transitions={'succeeded': 'MOVE_FORWARD',
-                                                'failed': 'SETUP_MOVE_FORWARD'})
+        self.action_server = actionlib.SimpleActionServer('move_forward_server',
+                                                          MoveForwardAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('move_forward action server ready')
 
-            smach.StateMachine.add('MOVE_FORWARD', MoveForward(velocity_topic=velocity_topic),
-                                   transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
-                                                'failed': 'SET_ACTION_LIB_FAILED'})
-
-            smach.StateMachine.add('SET_ACTION_LIB_FAILED', SetActionLibResult(False),
-                                   transitions={'succeeded': 'OVERALL_FAILED'})
-
-            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
-                                   transitions={'succeeded': 'OVERALL_SUCCESS'})
+    def execute(self, goal):
+        rospy.loginfo('[move_forward] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.execution_requested = True
+        while self.action_sm.result is None:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
     rospy.init_node('move_forward_server')
-
-    # construct state machine
-    sm = MoveForwardSkill()
-
-    # smach viewer
-    sis = IntrospectionServer('move_forward_smach_viewer', sm,
-                              '/MOVE_FORWARD_SMACH_VIEWER')
-    sis.start()
-
-    asw = ActionServerWrapper(
-        server_name='move_forward_server',
-        action_spec=MoveForwardAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAILED'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='move_forward_goal',
-        feedback_key='move_forward_feedback',
-        result_key='move_forward_result')
-
-    # Run the server in a background thread
-    asw.run_server()
-    rospy.spin()
+    move_forward_server = MoveForwardServer()
+    try:
+        move_forward_server.action_sm.run()
+        while move_forward_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(move_forward_server.action_sm.name))
+        move_forward_server.action_sm.stop()

@@ -1,59 +1,51 @@
 #!/usr/bin/env python
 import rospy
-import smach
-
-from smach_ros import ActionServerWrapper, IntrospectionServer
+import actionlib
 
 from mdr_turn_base_to_action.msg import TurnBaseToAction
-from mdr_turn_base_to_action.action_states import SetupTurnBaseTo, TurnBaseTo, SetActionLibResult
+from mdr_turn_base_to_action.action_states import TurnBaseSM
 
-class TurnBaseToSkill(smach.StateMachine):
-    def __init__(self, timeout=10):
-        smach.StateMachine.__init__(self,
-                                    outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
-                                    input_keys=['turn_base_to_goal'],
-                                    output_keys=['turn_base_to_feedback', 'turn_base_to_result'])
+class TurnBaseServer(object):
+    '''A server exposing an action for turning a robot base to a desired angle.
 
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * move_base_server: Name of an action server for moving the base
+    * rotation_frame: Name of the frame in which the rotation is performed
+
+    @author Alex Mitrevski, Jose Mayoral Banos
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
+    def __init__(self):
         move_base_server_name = rospy.get_param('~move_base_server', '/move_base')
         rotation_frame = rospy.get_param('~rotation_frame', 'base_link')
 
-        with self:
-            smach.StateMachine.add('SETUP_TURN_BASE_TO', SetupTurnBaseTo(),
-                                   transitions={'succeeded':'TURN_BASE_TO',
-                                                'failed':'SET_ACTION_LIB_FAILED'})
+        rospy.loginfo('[turn_base] Initialising state machine')
+        self.action_sm = TurnBaseSM(move_base_server=move_base_server_name,
+                                    rotation_frame=rotation_frame)
+        rospy.loginfo('[turn_base] State machine initialised')
 
-            smach.StateMachine.add('TURN_BASE_TO', TurnBaseTo(move_base_server=move_base_server_name,
-                                                              rotation_frame=rotation_frame),
-                                   transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
-                                                'failed': 'SET_ACTION_LIB_FAILED'})
+        self.action_server = actionlib.SimpleActionServer('turn_base_to_server',
+                                                          TurnBaseToAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('turn_base action server ready')
 
-            smach.StateMachine.add('SET_ACTION_LIB_FAILED', SetActionLibResult(False),
-                                   transitions={'succeeded':'OVERALL_FAILED'})
-
-            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
-                                   transitions={'succeeded':'OVERALL_SUCCESS'})
+    def execute(self, goal):
+        rospy.loginfo('[turn_base] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.execution_requested = True
+        while self.action_sm.result is None:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
-    rospy.init_node('turn_base_to_server')
-
-    # construct state machine
-    sm = TurnBaseToSkill()
-
-    # smach viewer
-    sis = IntrospectionServer('turn_base_to_smach_viewer', sm, '/TURN_BASE_TO_SMACH_VIEWER')
-    sis.start()
-
-    asw = ActionServerWrapper(
-        server_name='turn_base_to_server',
-        action_spec=TurnBaseToAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAILED'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='turn_base_to_goal',
-        feedback_key='turn_base_to_feedback',
-        result_key='turn_base_to_result')
-
-    # Run the server in a background thread
-    asw.run_server()
-    rospy.spin()
+    rospy.init_node('turn_base_server')
+    turn_base_server = TurnBaseServer()
+    try:
+        turn_base_server.action_sm.run()
+        while turn_base_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(turn_base_server.action_sm.name))
+        turn_base_server.action_sm.stop()

@@ -1,57 +1,63 @@
 #!/usr/bin/env python
 import rospy
-import smach
+import actionlib
 
-import smach_ros
-from mdr_move_base_action.msg import MoveBaseAction, MoveBaseResult
-from mdr_move_base_action.action_states import SetupMoveBase, ApproachPose, SetActionLibResult
+from mdr_move_base_action.msg import MoveBaseAction
+from mdr_move_base_action.action_states import MoveBaseSM
 
-def main():
-    rospy.init_node('mdr_move_base_action_server')
+class MoveBaseServer(object):
+    '''A server exposing a go to action.
 
-    move_base_server = rospy.get_param('~move_base_server', '')
-    pose_description_file = rospy.get_param('~pose_description_file', '')
-    pose_frame = rospy.get_param('~pose_frame', '')
-    safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
-    move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * move_base_server: Name of the default move_base server (default: '/move_base')
+    * pose_description_file: Name of a yaml file in which named goals are mapped
+                             to actual coordinates
+    * pose_frame: Name of the frame in which the poses in pose_description_file
+                  are given (default: 'map')
+    * safe_arm_joint_config: Name of a configuration specified in which the robot can
+                             safely move around the environment (default: 'folded')
+    * move_arm_server: Name of the move_arm action server (default: 'move_arm_server')
 
-    sm = smach.StateMachine(outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED'],
-                            input_keys=['move_base_goal'],
-                            output_keys=['move_base_feedback', 'move_base_result'])
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
 
-    with sm:
-        smach.StateMachine.add('SETUP_MOVE_BASE',
-                               SetupMoveBase(safe_arm_joint_config=safe_arm_joint_config,
-                                             move_arm_server=move_arm_server),
-                               transitions={'succeeded': 'MOVE_BASE_TO_DESTINATION',
-                                            'failed': 'SETUP_MOVE_BASE'})
+    '''
+    def __init__(self):
+        safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
+        move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
+        move_base_server = rospy.get_param('~move_base_server', '')
+        pose_description_file = rospy.get_param('~pose_description_file', '')
+        pose_frame = rospy.get_param('~pose_frame', '')
 
-        smach.StateMachine.add('MOVE_BASE_TO_DESTINATION',
-                               ApproachPose(move_base_server=move_base_server,
-                                            pose_description_file=pose_description_file,
-                                            pose_frame=pose_frame),
-                               transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
-                                            'failed': 'SET_ACTION_LIB_FAILED'})
+        rospy.loginfo('[move_base] Initialising state machine')
+        self.action_sm = MoveBaseSM(safe_arm_joint_config=safe_arm_joint_config,
+                                    move_arm_server=move_arm_server,
+                                    move_base_server=move_base_server,
+                                    pose_description_file=pose_description_file,
+                                    pose_frame=pose_frame)
+        rospy.loginfo('[move_base] State machine initialised')
 
-        smach.StateMachine.add('SET_ACTION_LIB_FAILED', SetActionLibResult(False),
-                               transitions={'succeeded': 'OVERALL_FAILED'})
+        self.action_server = actionlib.SimpleActionServer('move_base_server',
+                                                          MoveBaseAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('move_base action server ready')
 
-        smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
-                               transitions={'succeeded': 'OVERALL_SUCCESS'})
-
-    asw = smach_ros.ActionServerWrapper(
-        server_name='move_base_server',
-        action_spec=MoveBaseAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAILED'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='move_base_goal',
-        feedback_key='move_base_feedback',
-        result_key='move_base_result')
-
-    asw.run_server()
-    rospy.spin()
+    def execute(self, goal):
+        rospy.loginfo('[move_base] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.execution_requested = True
+        while self.action_sm.result is None:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
-    main()
+    rospy.init_node('move_base_server')
+    move_base_server = MoveBaseServer()
+    try:
+        move_base_server.action_sm.run()
+        while move_base_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(move_base_server.action_sm.name))
+        move_base_server.action_sm.stop()

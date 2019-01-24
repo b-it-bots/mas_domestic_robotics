@@ -1,63 +1,54 @@
-#!/usr/bin/python
-
-import rospy
-import smach
-import actionlib
 import yaml
+import rospy
+import actionlib
 import tf
 from geometry_msgs.msg import PoseStamped, Quaternion
 import move_base_msgs.msg as move_base_msgs
 
+from pyftsm.ftsm import FTSMTransitions
+from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_move_base_action.msg import MoveBaseGoal, MoveBaseFeedback, MoveBaseResult
 
-class SetupMoveBase(smach.State):
-    def __init__(self, safe_arm_joint_config='folded', move_arm_server='move_arm_server'):
-        smach.State.__init__(self, outcomes=['succeeded', 'failed'],
-                             input_keys=['move_base_goal'],
-                             output_keys=['move_base_feedback', 'move_base_result'])
+class MoveBaseSM(ActionSMBase):
+    def __init__(self, timeout=120.,
+                 safe_arm_joint_config='folded',
+                 move_arm_server='move_arm_server',
+                 move_base_server='/move_base',
+                 pose_description_file='',
+                 pose_frame='map',
+                 max_recovery_attempts=1):
+        super(MoveBaseSM, self).__init__('MoveBase', [], max_recovery_attempts)
+        self.pose = None
         self.safe_arm_joint_config = safe_arm_joint_config
         self.move_arm_server = move_arm_server
-        self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
-        self.move_arm_client.wait_for_server()
+        self.move_base_server = move_base_server
+        self.pose_description_file = pose_description_file
+        self.pose_frame = pose_frame
+        self.timeout = timeout
+        self.move_arm_client = None
 
-    def execute(self, userdata):
-        feedback = MoveBaseFeedback()
-        feedback.current_state = 'SETUP_MOVE_BASE'
-        feedback.message = '[MOVE_BASE] Received a move base request'
-        userdata.move_base_feedback = feedback
+    def init(self):
+        try:
+            self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
+            rospy.loginfo('[move_base] Waiting for % server', self.move_arm_server)
+            self.move_arm_client.wait_for_server()
+        except:
+            rospy.logerr('[move_base] %s server does not seem to respond', self.move_arm_server)
+        return FTSMTransitions.INITIALISED
 
-        rospy.loginfo('[MOVE_BASE] Moving the arm to a safe configuration...')
+    def running(self):
+        rospy.loginfo('[move_base] Moving the arm to a safe configuration...')
         move_arm_goal = MoveArmGoal()
         move_arm_goal.goal_type = MoveArmGoal.NAMED_TARGET
         move_arm_goal.named_target = self.safe_arm_joint_config
         self.move_arm_client.send_goal(move_arm_goal)
         self.move_arm_client.wait_for_result()
-        return 'succeeded'
 
-class ApproachPose(smach.State):
-    def __init__(self, timeout=120.,
-                 move_base_server='/move_base',
-                 pose_description_file='',
-                 pose_frame='map'):
-        smach.State.__init__(self, outcomes=['succeeded', 'failed'],
-                             input_keys=['move_base_goal'],
-                             output_keys=['move_base_feedback', 'move_base_result'])
-        self.pose = None
-        self.move_base_server = move_base_server
-        self.pose_description_file = pose_description_file
-        self.pose_frame = pose_frame
-        self.timeout = timeout
-
-    def execute(self, userdata):
         pose = PoseStamped()
-        if userdata.move_base_goal.goal_type == MoveBaseGoal.NAMED_TARGET:
-            destination = userdata.move_base_goal.destination_location
-
-            feedback = MoveBaseFeedback()
-            feedback.current_state = 'APPROACH_POSE'
-            feedback.message = '[MOVE_BASE] Moving base to ' + destination
-            userdata.move_base_feedback = feedback
+        if self.goal.goal_type == MoveBaseGoal.NAMED_TARGET:
+            destination = self.goal.destination_location
+            rospy.loginfo('[move_base] Moving base to %s', destination)
 
             self.pose = self.convert_pose_name_to_coordinates(destination)
             pose.header.stamp = rospy.Time.now()
@@ -67,16 +58,13 @@ class ApproachPose(smach.State):
 
             quat = tf.transformations.quaternion_from_euler(0, 0, self.pose[2])
             pose.pose.orientation = Quaternion(*quat)
-        elif userdata.move_base_goal.goal_type == MoveBaseGoal.POSE:
-            pose = userdata.move_base_goal.pose
-
-            feedback = MoveBaseFeedback()
-            feedback.current_state = 'APPROACH_POSE'
-            feedback.message = '[MOVE_BASE] Moving base to {0}'.format(pose)
-            userdata.move_base_feedback = feedback
+        elif self.goal.goal_type == MoveBaseGoal.POSE:
+            pose = self.goal.pose
+            rospy.loginfo('[move_base] Moving base to %s', pose)
         else:
-            rospy.logerr('[MOVE_BASE] Received an unknown goal type; ignoring request')
-            return 'failed'
+            rospy.logerr('[move_base] Received an unknown goal type; ignoring request')
+            self.result = self.set_result(False)
+            return FTSMTransitions.DONE
 
         goal = move_base_msgs.MoveBaseGoal()
         goal.target_pose = pose
@@ -88,13 +76,16 @@ class ApproachPose(smach.State):
         success = move_base_client.wait_for_result()
 
         if success:
-            rospy.loginfo('Pose reached successfully')
-            return 'succeeded'
-        rospy.logerr('Pose could not be reached')
-        return 'failed'
+            rospy.loginfo('[move_base] Pose reached successfully')
+            self.result = self.set_result(True)
+            return FTSMTransitions.DONE
+
+        rospy.logerr('[move_base] Pose could not be reached')
+        self.result = self.set_result(False)
+        return FTSMTransitions.DONE
 
     def convert_pose_name_to_coordinates(self, pose_name):
-        stream = file(self.pose_description_file, 'r')
+        stream = open(self.pose_description_file, 'r')
         poses = yaml.load(stream)
         stream.close()
         try:
@@ -104,15 +95,7 @@ class ApproachPose(smach.State):
             rospy.logerr('Pose name "%s" does not exist' % (pose_name))
             return None
 
-class SetActionLibResult(smach.State):
-    def __init__(self, result):
-        smach.State.__init__(self, outcomes=['succeeded'],
-                             input_keys=['move_base_goal'],
-                             output_keys=['move_base_feedback', 'move_base_result'])
-        self.result = result
-
-    def execute(self, userdata):
+    def set_result(self, success):
         result = MoveBaseResult()
-        result.success = self.result
-        userdata.move_base_result = result
-        return 'succeeded'
+        result.success = success
+        return result

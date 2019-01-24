@@ -1,65 +1,54 @@
 #!/usr/bin/env python
 import rospy
-import smach
-
-from smach_ros import ActionServerWrapper, IntrospectionServer
+import actionlib
 
 from mdr_enter_door_action.msg import EnterDoorAction
-from mdr_enter_door_action.action_states import SetupEnterDoor, WaitForDoor, EnterDoor, SetActionLibResult
+from mdr_enter_door_action.action_states import EnterDoorSM
 
-class EnterDoorSkill(smach.StateMachine):
-    def __init__(self, timeout=10):
-        smach.StateMachine.__init__(self,
-                                    outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
-                                    input_keys=['enter_door_goal'],
-                                    output_keys=['enter_door_feedback', 'enter_door_result'])
+class EnterDoorServer(object):
+    '''A server exposing an action in which a robot waits until a door opens and then enters inside.
 
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * movement_duration: Time (in seconds) for which the robot should move
+    * speed: Movement speed
+    * move_forward_server: Name of a server exposing an action for moving a base forward
+
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
+    def __init__(self):
         movement_duration = float(rospy.get_param('~movement_duration', 15.))
         speed = float(rospy.get_param('~speed', 0.15))
         move_forward_server = rospy.get_param('~move_forward_server', 'move_forward_server')
 
-        with self:
-            smach.StateMachine.add('SETUP_ENTER_DOOR', SetupEnterDoor(),
-                                   transitions={'succeeded': 'WAIT_FOR_DOOR',
-                                                'failed': 'SETUP_ENTER_DOOR'})
+        rospy.loginfo('[enter_door] Initialising state machine')
+        self.action_sm = EnterDoorSM(move_forward_server=move_forward_server,
+                                     movement_duration=movement_duration,
+                                     speed=speed)
+        rospy.loginfo('[enter_door] State machine initialised')
 
-            smach.StateMachine.add('WAIT_FOR_DOOR', WaitForDoor(),
-                                   transitions={'succeeded': 'ENTER_DOOR',
-                                                'waiting': 'WAIT_FOR_DOOR'})
+        self.action_server = actionlib.SimpleActionServer('enter_door_server',
+                                                          EnterDoorAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('enter_door action server ready')
 
-            smach.StateMachine.add('ENTER_DOOR', EnterDoor(move_forward_server=move_forward_server,
-                                                           movement_duration=movement_duration,
-                                                           speed=speed),
-                                   transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
-                                                'failed': 'SET_ACTION_LIB_FAILED'})
-
-            smach.StateMachine.add('SET_ACTION_LIB_FAILED', SetActionLibResult(False),
-                                   transitions={'succeeded': 'OVERALL_FAILED'})
-
-            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
-                                   transitions={'succeeded': 'OVERALL_SUCCESS'})
+    def execute(self, goal):
+        rospy.loginfo('[enter_door] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.execution_requested = True
+        while self.action_sm.result is None:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
     rospy.init_node('enter_door_server')
-
-    # construct state machine
-    sm = EnterDoorSkill()
-
-    # smach viewer
-    sis = IntrospectionServer('enter_door_smach_viewer', sm, '/enter_door_SMACH_VIEWER')
-    sis.start()
-
-    asw = ActionServerWrapper(
-        server_name='enter_door_server',
-        action_spec=EnterDoorAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAILED'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='enter_door_goal',
-        feedback_key='enter_door_feedback',
-        result_key='enter_door_result')
-
-    # Run the server in a background thread
-    asw.run_server()
-    rospy.spin()
+    enter_door_server = EnterDoorServer()
+    try:
+        enter_door_server.action_sm.run()
+        while enter_door_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(enter_door_server.action_sm.name))
+        enter_door_server.action_sm.stop()
