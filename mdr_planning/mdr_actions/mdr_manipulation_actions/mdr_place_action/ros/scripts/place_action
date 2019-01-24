@@ -1,22 +1,38 @@
 #!/usr/bin/env python
 import rospy
-import smach
-
-from smach_ros import ActionServerWrapper, IntrospectionServer
+import actionlib
 
 from mdr_place_action.msg import PlaceAction
-from mdr_place_action.action_states import (SetupPlace, Place, SetActionLibResult)
+from mdr_place_action.action_states import PlaceSM
 
+class PlaceServer(object):
+    '''A server exposing a placing action.
 
-class PlaceSkill(smach.StateMachine):
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * move_arm_server: Name of the move_arm action server (default: 'move_arm_server')
+    * move_base_server: Name of the move_base action server (default: 'move_base_server')
+    * gripper_controller_pkg_name: The name of a package that implements functionalities
+                                   for controlling a robot's gripper (default: 'mdr_gripper_controller')
+    * preplace_config_name: Name of the preplace configuration (default: 'pregrasp')
+    * safe_arm_joint_config: Name of a configuration in which the robot can
+                             safely move around the environment (default: 'folded')
+    * base_elbow_offset: An optional offset between base_link and the manipulator's elbow;
+                         used for aligning the base with the placing pose so that
+                         the manipulator can easily reach it (default: -1)
+    * placing_dmp: Path to a YAML file containing the weights of a dynamic
+                   motion primitive used for placing (default: '')
+    * dmp_tau: The value of the temporal dynamic motion primitive parameter (default: 1)
+    * placing_orientation: For more constrained manipulators, it might make sense to use
+                           a fixed placing orientation (expressed as an (x, y, z, w) quaternion)
+                           to ensure easier reachability; for instance, we might want to keep
+                           the orientation with which an object was grasped instead of allowing
+                           arbitrary orientations (default: [], in which case the argument is ignored)
+
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
     def __init__(self):
-        smach.StateMachine.__init__(self,
-                                    outcomes=['OVERALL_SUCCESS',
-                                              'OVERALL_FAILED', 'PREEMPTED'],
-                                    input_keys=['place_goal'],
-                                    output_keys=['place_feedback',
-                                                 'place_result'])
-
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
         move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
         gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name',
@@ -28,54 +44,38 @@ class PlaceSkill(smach.StateMachine):
         placing_dmp = rospy.get_param('~placing_dmp', '')
         dmp_tau = float(rospy.get_param('~dmp_tau', 1.))
 
-        with self:
-            smach.StateMachine.add('SETUP_PLACE', SetupPlace(),
-                                   transitions={'succeeded': 'PLACE',
-                                                'failed': 'SETUP_PLACE'})
+        rospy.loginfo('[place] Initialising state machine')
+        self.action_sm = PlaceSM(move_arm_server=move_arm_server,
+                                 move_base_server=move_base_server,
+                                 gripper_controller_pkg_name=gripper_controller_pkg_name,
+                                 preplace_config_name=preplace_config_name,
+                                 safe_arm_joint_config=safe_arm_joint_config,
+                                 base_elbow_offset=base_elbow_offset,
+                                 placing_orientation=placing_orientation,
+                                 placing_dmp=placing_dmp,
+                                 dmp_tau=dmp_tau)
+        rospy.loginfo('[place] State machine initialised')
 
-            smach.StateMachine.add('PLACE', Place(move_arm_server=move_arm_server,
-                                                  move_base_server=move_base_server,
-                                                  gripper_controller_pkg_name=gripper_controller_pkg_name,
-                                                  preplace_config_name=preplace_config_name,
-                                                  safe_arm_joint_config=safe_arm_joint_config,
-                                                  base_elbow_offset=base_elbow_offset,
-                                                  placing_orientation=placing_orientation,
-                                                  placing_dmp=placing_dmp,
-                                                  dmp_tau=dmp_tau),
-                                   transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
-                                                'failed': 'SET_ACTION_LIB_FAILED'})
+        self.action_server = actionlib.SimpleActionServer('place_server',
+                                                          PlaceAction, self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('place action server ready')
 
-            smach.StateMachine.add('SET_ACTION_LIB_FAILED',
-                                   SetActionLibResult(False),
-                                   transitions={'succeeded': 'OVERALL_FAILED'})
-
-            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS',
-                                   SetActionLibResult(True),
-                                   transitions={'succeeded': 'OVERALL_SUCCESS'})
-
+    def execute(self, goal):
+        rospy.loginfo('[place] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.execution_requested = True
+        while self.action_sm.result is None:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
     rospy.init_node('place_server')
-
-    # construct state machine
-    sm = PlaceSkill()
-
-    # smach viewer
-    sis = IntrospectionServer('place_smach_viewer', sm,
-                              '/PLACE_SMACH_VIEWER')
-    sis.start()
-
-    asw = ActionServerWrapper(
-        server_name='place_server',
-        action_spec=PlaceAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAILED'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='place_goal',
-        feedback_key='place_feedback',
-        result_key='place_result')
-
-    # Run the server in a background thread
-    asw.run_server()
-    rospy.spin()
+    place_server = PlaceServer()
+    try:
+        place_server.action_sm.run()
+        while place_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(place_server.action_sm.name))
+        place_server.action_sm.stop()

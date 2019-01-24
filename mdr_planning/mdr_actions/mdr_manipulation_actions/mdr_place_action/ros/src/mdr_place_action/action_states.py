@@ -2,33 +2,17 @@
 from importlib import import_module
 
 import rospy
-import smach
 import tf
 import actionlib
 from geometry_msgs.msg import PoseStamped
 
+from pyftsm.ftsm import FTSMTransitions
+from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_place_action.msg import PlaceGoal, PlaceFeedback, PlaceResult
 
-class SetupPlace(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'failed'],
-                             input_keys=['place_goal'],
-                             output_keys=['place_feedback', 'place_result'])
-
-    def execute(self, userdata):
-        # consider moving the other components of the robot out of the arm's way, though
-        # this could be dangerous if the robot is for example close to some furniture item
-
-        feedback = PlaceFeedback()
-        feedback.current_state = 'SETUP_PLACE'
-        feedback.message = '[SETUP_PLACE] setting up the arm'
-        userdata.place_feedback = feedback
-
-        return 'succeeded'
-
-class Place(smach.State):
+class PlaceSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mdr_gripper_controller',
                  preplace_config_name='pregrasp',
@@ -38,10 +22,9 @@ class Place(smach.State):
                  base_elbow_offset=-1.,
                  placing_orientation=list(),
                  placing_dmp='',
-                 dmp_tau=1.):
-        smach.State.__init__(self, input_keys=['place_goal'],
-                             output_keys=['place_feedback'],
-                             outcomes=['succeeded', 'failed'])
+                 dmp_tau=1.,
+                 max_recovery_attempts=1):
+        super(PlaceSM, self).__init__('Place', [], max_recovery_attempts)
         self.timeout = timeout
 
         gripper_controller_module_name = '{0}.gripper_controller'.format(gripper_controller_pkg_name)
@@ -60,19 +43,28 @@ class Place(smach.State):
 
         self.tf_listener = tf.TransformListener()
 
-        self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
-        self.move_arm_client.wait_for_server()
+        self.move_arm_client = None
+        self.move_base_client = None
 
-        self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
-        self.move_base_client.wait_for_server()
+    def init(self):
+        try:
+            self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
+            rospy.loginfo('[place] Waiting for % server', self.move_arm_server)
+            self.move_arm_client.wait_for_server()
+        except:
+            rospy.logerr('[place] %s server does not seem to respond', self.move_arm_server)
 
-    def execute(self, userdata):
-        feedback = PlaceFeedback()
-        feedback.current_state = 'PLACE'
-        feedback.message = '[PLACE] moving the arm'
-        userdata.place_feedback = feedback
+        try:
+            self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
+            rospy.loginfo('[place] Waiting for % server', self.move_base_server)
+            self.move_base_client.wait_for_server()
+        except:
+            rospy.logerr('[place] %s server does not seem to respond', self.move_base_server)
 
-        pose = userdata.place_goal.pose
+        return FTSMTransitions.INITIALISED
+
+    def running(self):
+        pose = self.goal.pose
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
         if self.placing_orientation:
@@ -82,32 +74,33 @@ class Place(smach.State):
             pose_base_link.pose.orientation.w = self.placing_orientation[3]
 
         if self.base_elbow_offset > 0:
-            self.align_base_with_pose(pose_base_link)
+            self.__align_base_with_pose(pose_base_link)
 
             # the base is now correctly aligned with the pose, so we set the
             # y position of the goal pose to the elbow offset
             pose_base_link.pose.position.y = self.base_elbow_offset
 
-        rospy.loginfo('[PLACE] Moving to a preplace configuration...')
-        self.move_arm(MoveArmGoal.NAMED_TARGET, self.preplace_config_name)
+        rospy.loginfo('[place] Moving to a preplace configuration...')
+        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.preplace_config_name)
 
         # we set up the arm group for moving
-        rospy.loginfo('[PLACE] Placing...')
-        success = self.move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+        rospy.loginfo('[place] Placing...')
+        success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
         if not success:
-            rospy.logerr('[PLACE] Arm motion unsuccessful')
-            return 'failed'
+            rospy.logerr('[place] Arm motion unsuccessful')
+            self.result = self.set_result(False)
+            return FTSMTransitions.DONE
 
-        rospy.loginfo('[PLACE] Arm motion successful')
-        rospy.loginfo('[PLACE] Opening the gripper...')
+        rospy.loginfo('[place] Arm motion successful')
+        rospy.loginfo('[place] Opening the gripper...')
         self.gripper.open()
 
-        rospy.loginfo('[PLACE] Moving the arm back')
-        self.move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
+        rospy.loginfo('[place] Moving the arm back')
+        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
+        self.result = self.set_result(True)
+        return FTSMTransitions.DONE
 
-        return 'succeeded'
-
-    def align_base_with_pose(self, pose_base_link):
+    def __align_base_with_pose(self, pose_base_link):
         '''Moves the base so that the elbow is aligned with the goal pose.
 
         Keyword arguments:
@@ -133,7 +126,7 @@ class Place(smach.State):
         self.move_base_client.wait_for_result()
         self.move_base_client.get_result()
 
-    def move_arm(self, goal_type, goal):
+    def __move_arm(self, goal_type, goal):
         '''Sends a request to the 'move_arm' action server and waits for the
         results of the action execution.
 
@@ -156,15 +149,7 @@ class Place(smach.State):
         result = self.move_arm_client.get_result()
         return result
 
-class SetActionLibResult(smach.State):
-    def __init__(self, result):
-        smach.State.__init__(self, outcomes=['succeeded'],
-                             input_keys=['place_goal'],
-                             output_keys=['place_feedback', 'place_result'])
-        self.result = result
-
-    def execute(self, userdata):
+    def set_result(self, success):
         result = PlaceResult()
-        result.success = self.result
-        userdata.place_result = result
-        return 'succeeded'
+        result.success = success
+        return result
