@@ -25,8 +25,8 @@ class RasaNluWrapper(object):
         self.interpreter = Interpreter.load(self.model_path)
 
         # Setup topics for incoming/outgoing messages
-        self.sub = rospy.Subscriber(self.topic_input_text, String, self.process_msg)
         self.pub = rospy.Publisher(self.topic_output, String, latch=True, queue_size=1)
+        self.sub = rospy.Subscriber(self.topic_input_text, String, self.process_msg)
 
         # Wait until killed
         rospy.spin()
