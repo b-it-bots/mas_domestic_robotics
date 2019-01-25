@@ -1,76 +1,64 @@
 #!/usr/bin/env python
 import rospy
-import smach
-from smach_ros import ActionServerWrapper, IntrospectionServer
-from mas_perception_libs import Constant
+import actionlib
+
 from mdr_perceive_plane_action.msg import PerceivePlaneAction
-from mdr_perceive_plane_action.action_states import SetActionLibResult, DetectObjects, RecognizeObjects
+from mdr_perceive_plane_action.action_states import PerceivePlaneSM
 
+class PerceivePlaneServer(object):
+    '''A server exposing an action for detecting objects on a plane.
 
-class PerceivePlaneSkill(smach.StateMachine):
-    def __init__(self, detection_action_name, target_frame, recog_service_name, recog_model_name,
-                 preprocess_input_module):
-        smach.StateMachine.__init__(self, outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
-                                    input_keys=['perceive_plane_goal'],
-                                    output_keys=['perceive_plane_feedback', 'perceive_plane_result'])
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * detection_action_name: Name of an action server used for object detection
+    * recognition_service_name: Name of an image recognition service for classifying object
+    * recognition_model_name: Name of an image classification model
+    * preprocess_input_module: Name of a module containing an image preprocessing function
+                               to be executed on images before inference
+    * target_frame: Name of the reference frame the object and plane poses will be
+                    transformed to (default: '/base_link')
 
-        with self:
-            smach.StateMachine.add('DETECT_OBJECTS',
-                                   DetectObjects(detection_action_name, target_frame),
-                                   transitions={Constant.SUCCESS: 'RECOGNIZE_OBJECTS',
-                                                Constant.TIMEOUT: 'SET_ACTION_LIB_FAILURE',
-                                                Constant.FAILURE: 'SET_ACTION_LIB_FAILURE'})
+    @author Minh Nguyen, Alex Mitrevski
+    @contact minh.nguyen@smail.inf.h-brs.de, aleksandar.mitrevski@h-brs.de
 
-            smach.StateMachine.add('RECOGNIZE_OBJECTS', RecognizeObjects(recog_service_name, recog_model_name,
-                                                                         preprocess_input_module),
-                                   transitions={Constant.SUCCESS: 'SET_ACTION_LIB_SUCCESS',
-                                                Constant.FAILURE: 'SET_ACTION_LIB_FAILURE'})
+    '''
+    def __init__(self):
+        detection_action_name = rospy.get_param('~detection_action_name', '/base_link')
+        if not detection_action_name:
+            raise RuntimeError('[perceive_plane] no detection action server specified')
+        recognition_service_name = rospy.get_param('~recognition_service_name', '/mdr_perception/recognize_image')
+        recognition_model_name = rospy.get_param('~recognition_model_name', 'athome_xception_v1')
+        preprocess_input_module = rospy.get_param('~preprocess_input_module', None)
+        target_frame = rospy.get_param('~target_frame', '')
 
-            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
-                                   transitions={Constant.SUCCESS: 'OVERALL_SUCCESS'})
+        rospy.loginfo('[perceive_plane] Initialising state machine')
+        self.action_sm = PerceivePlaneSM(detection_service_proxy=detection_action_name,
+                                         recog_service_name=recognition_service_name,
+                                         recog_model_name=recognition_model_name,
+                                         preprocess_input_module=preprocess_input_module,
+                                         target_frame=target_frame)
+        rospy.loginfo('[perceive_plane] State machine initialised')
 
-            smach.StateMachine.add('SET_ACTION_LIB_FAILURE', SetActionLibResult(False),
-                                   transitions={Constant.SUCCESS: 'OVERALL_FAILED'})
+        self.action_server = actionlib.SimpleActionServer('perceive_plane_server',
+                                                          PerceivePlaneAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('perceive_plane action server ready')
 
-
-def main():
-    rospy.init_node('~perceive_plane_server')
-    # detection
-    detection_action_name = rospy.get_param('~detection_action_name', '')
-    if not detection_action_name:
-        raise RuntimeError('no detection action server specified')
-
-    # recognition
-    recognition_service_name = rospy.get_param('~recognition_service_name', '/mdr_perception/recognize_image')
-    recognition_model_name = rospy.get_param('~recognition_model_name', 'athome_xception_v1')
-    preprocess_input_module = rospy.get_param('~preprocess_input_module', None)
-
-    target_frame = rospy.get_param("~target_frame")
-
-    # Construct state machine
-    sm = PerceivePlaneSkill(detection_action_name, target_frame, recognition_service_name, recognition_model_name,
-                            preprocess_input_module)
-
-    # smach viewer
-    sis = IntrospectionServer('perceive_plane_smach_viewer', sm, '/PERCEIVE_PLANE_SMACH_VIEWER')
-    sis.start()
-
-    # Construct action server wrapper
-    asw = ActionServerWrapper(
-        server_name='perceive_plane_server',
-        action_spec=PerceivePlaneAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAILED'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='perceive_plane_goal',
-        feedback_key='perceive_plane_feedback',
-        result_key='perceive_plane_result')
-
-    # Run the server in a background thread
-    asw.run_server()
-    rospy.spin()
-
+    def execute(self, goal):
+        rospy.loginfo('[perceive_plane] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.execution_requested = True
+        while self.action_sm.result is None:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
-    main()
+    rospy.init_node('perceive_plane_server')
+    perceive_plane_server = PerceivePlaneServer()
+    try:
+        perceive_plane_server.action_sm.run()
+        while perceive_plane_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(perceive_plane_server.action_sm.name))
+        perceive_plane_server.action_sm.stop()

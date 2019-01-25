@@ -1,33 +1,51 @@
 #!/usr/bin/env python
 import rospy
-import smach
-from smach_ros import ActionServerWrapper, IntrospectionServer
+import actionlib
 
-from mdr_detect_person.skill import DetectPersonSkill
 from mdr_detect_person.msg import DetectPersonAction
+from mdr_detect_person.action_states import DetectPersonSM
+
+class DetectPersonServer(object):
+    '''A server exposing an action for detecting person faces in an image.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * image_topic: Name of a camera image topic (default /cam3d/rgb/image_raw)
+    * detection_model_path: Absolute path of a person detection model (default '')
+
+    @author Alex Mitrevski, Gabriela Cortes, Octavio Arriaga
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
+    def __init__(self):
+        image_topic = rospy.get_param('~image_topic', '/cam3d/rgb/image_raw')
+        detection_model_path = rospy.get_param('~config_file', '')
+
+        rospy.loginfo('[detect_person] Initialising state machine')
+        self.action_sm = DetectPersonSM(image_topic=image_topic,
+                                        detection_model_path=detection_model_path)
+        rospy.loginfo('[detect_person] State machine initialised')
+
+        self.action_server = actionlib.SimpleActionServer('detect_person_server',
+                                                          DetectPersonAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('detect_person action server ready')
+
+    def execute(self, goal):
+        rospy.loginfo('[detect_person] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.execution_requested = True
+        while self.action_sm.result is None:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
     rospy.init_node('detect_person_server')
-
-    # construct state machine
-    sm = DetectPersonSkill()
-
-    # smach viewer
-    sis = IntrospectionServer('detect_person_smach_viewer', sm,
-                              '/DETECT_PERSON_SMACH_VIEWER')
-    sis.start()
-
-    asw = ActionServerWrapper(
-        server_name='detect_person_server',
-        action_spec=DetectPersonAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAILED'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='detect_person_goal',
-        feedback_key='detect_person_feedback',
-        result_key='detect_person_result')
-
-    # Run the server in a background thread
-    asw.run_server()
-    rospy.spin()
+    detect_person_server = DetectPersonServer()
+    try:
+        detect_person_server.action_sm.run()
+        while detect_person_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(detect_person_server.action_sm.name))
+        detect_person_server.action_sm.stop()

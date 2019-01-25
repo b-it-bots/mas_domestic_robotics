@@ -1,34 +1,54 @@
 #!/usr/bin/env python
 import rospy
-import smach
+import actionlib
 
-from smach_ros import ActionServerWrapper, IntrospectionServer
-from mdr_gender_recognition.skill import GenderRecognitionSkill
 from mdr_gender_recognition.msg import GenderRecognitionAction
+from mdr_gender_recognition.action_states import RecognizeGenderSM
 
+class RecognizeGenderServer(object):
+    '''A server exposing an action for recognizing the genders of previously detected people.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * gender_model_path: Absolute path of a gender recognition model (default '')
+    * image_topic: Name of a camera image topic (default '/cam3d/rgb/image_raw')
+
+    @author Alex Mitrevski, Octavio Arriaga
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
+    def __init__(self):
+        gender_model_path = rospy.get_param('~gender_model_path', '')
+        image_topic = rospy.get_param('~image_topic', '/cam3d/rgb/image_raw')
+        labels = {0: 'woman', 1: 'man'}
+        image_size = (64, 64, 1)
+
+        rospy.loginfo('[recognize_gender] Initialising state machine')
+        self.action_sm = RecognizeGenderSM(gender_model_path=gender_model_path,
+                                           image_topic=image_topic,
+                                           labels=labels, image_size=image_size)
+        rospy.loginfo('[recognize_gender] State machine initialised')
+
+        self.action_server = actionlib.SimpleActionServer('recognize_gender_server',
+                                                          GenderRecognitionAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('recognize_gender action server ready')
+
+    def execute(self, goal):
+        rospy.loginfo('[recognize_gender] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.execution_requested = True
+        while self.action_sm.result is None:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
-    rospy.init_node('gender_recognition_server')
-
-    # construct state machine
-    sm = GenderRecognitionSkill()
-
-    # smach viewer
-    sis = IntrospectionServer('gender_recognition_smach_viewer', sm,
-                              '/gender_recognition_SMACH_VIEWER')
-    sis.start()
-
-    asw = ActionServerWrapper(
-        server_name='gender_recognition_server',
-        action_spec=GenderRecognitionAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAILED'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='gender_recognition_goal',
-        feedback_key='gender_recognition_feedback',
-        result_key='gender_recognition_result')
-
-    # Run the server in a background thread
-    asw.run_server()
-    rospy.spin()
+    rospy.init_node('recognize_gender_server')
+    recognize_gender_server = RecognizeGenderServer()
+    try:
+        recognize_gender_server.action_sm.run()
+        while recognize_gender_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(recognize_gender_server.action_sm.name))
+        recognize_gender_server.action_sm.stop()

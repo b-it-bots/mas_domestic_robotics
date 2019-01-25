@@ -1,73 +1,56 @@
 #!/usr/bin/env python
 import rospy
-import smach
-
-from smach_ros import ActionServerWrapper, IntrospectionServer
+import actionlib
 
 from mdr_recognize_emotion_action.msg import RecognizeEmotionAction
-from mdr_recognize_emotion_action.action_states import (SetupRecognizeEmotion, RecognizeEmotion,
-                                                     SetActionLibResult)
+from mdr_recognize_emotion_action.action_states import RecognizeEmotionSM
 
+class RecognizeEmotionServer(object):
+    '''A server exposing an action for recognizing the emotions of previously detected people.
 
-class RecognizeEmotionSkill(smach.StateMachine):
-    def __init__(self, timeout=10):
-        smach.StateMachine.__init__(self,
-                                    outcomes=['OVERALL_SUCCESS',
-                                              'OVERALL_FAILED', 'PREEMPTED'],
-                                    input_keys=['recognize_emotion_goal'],
-                                    output_keys=['recognize_emotion_feedback',
-                                                 'recognize_emotion_result'])
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * emotion_model_path: Absolute path of an emotion recognition model (default '')
+    * image_topic: Name of a camera image topic (default '/cam3d/rgb/image_raw')
 
+    @author Alex Mitrevski, Octavio Arriaga
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
+    def __init__(self):
         emotion_model_path = rospy.get_param('~emotion_model_path', '')
         image_topic = rospy.get_param('~image_topic', '/cam3d/rgb/image_raw')
         labels = {0: 'angry', 1: 'disgusted', 2: 'sad', 3: 'happy',
                   4: 'sad', 5: 'surprised', 6: 'neutral'}
         image_size = (48, 48, 1)
 
-        with self:
-            smach.StateMachine.add('SETUP_RECOGNIZE_EMOTION',
-                                   SetupRecognizeEmotion(),
-                                   transitions={'succeeded': 'RECOGNIZE_EMOTION',
-                                                'failed': 'SETUP_RECOGNIZE_EMOTION'})
+        rospy.loginfo('[recognize_emotion] Initialising state machine')
+        self.action_sm = RecognizeEmotionSM(emotion_model_path=emotion_model_path,
+                                            image_topic=image_topic,
+                                            labels=labels,
+                                            image_size=image_size)
+        rospy.loginfo('[recognize_emotion] State machine initialised')
 
-            smach.StateMachine.add('RECOGNIZE_EMOTION',
-                                   RecognizeEmotion(emotion_model_path=emotion_model_path,
-                                                 image_topic=image_topic,
-                                                 labels=labels, image_size=image_size),
-                                   transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
-                                                'failed': 'SET_ACTION_LIB_FAILED'})
+        self.action_server = actionlib.SimpleActionServer('recognize_emotion_server',
+                                                          RecognizeEmotionAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('recognize_emotion action server ready')
 
-            smach.StateMachine.add('SET_ACTION_LIB_FAILED',
-                                   SetActionLibResult(False),
-                                   transitions={'succeeded': 'OVERALL_FAILED'})
-
-            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS',
-                                   SetActionLibResult(True),
-                                   transitions={'succeeded': 'OVERALL_SUCCESS'})
-
+    def execute(self, goal):
+        rospy.loginfo('[recognize_emotion] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.execution_requested = True
+        while self.action_sm.result is None:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
     rospy.init_node('recognize_emotion_server')
-
-    # construct state machine
-    sm = RecognizeEmotionSkill()
-
-    # smach viewer
-    sis = IntrospectionServer('recognize_emotion_smach_viewer', sm,
-                              '/recognize_emotion_SMACH_VIEWER')
-    sis.start()
-
-    asw = ActionServerWrapper(
-        server_name='recognize_emotion_server',
-        action_spec=RecognizeEmotionAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAILED'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='recognize_emotion_goal',
-        feedback_key='recognize_emotion_feedback',
-        result_key='recognize_emotion_result')
-
-    # Run the server in a background thread
-    asw.run_server()
-    rospy.spin()
+    recognize_emotion_server = RecognizeEmotionServer()
+    try:
+        recognize_emotion_server.action_sm.run()
+        while recognize_emotion_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(recognize_emotion_server.action_sm.name))
+        recognize_emotion_server.action_sm.stop()
