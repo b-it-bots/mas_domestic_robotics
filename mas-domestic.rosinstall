@@ -35,7 +35,7 @@
 
 - git:
     local-name: ftsm
-    uri: https://github.com/ropod-project/ftsm.git
+    uri: https://github.com/b-it-bots/ftsm.git
     version: master
 
 - git:
