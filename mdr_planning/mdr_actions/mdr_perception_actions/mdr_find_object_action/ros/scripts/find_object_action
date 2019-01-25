@@ -1,64 +1,63 @@
 #!/usr/bin/env python
 import rospy
-import smach
-from smach_ros import ActionServerWrapper, IntrospectionServer
+import actionlib
+
 from mdr_find_object_action.msg import FindObjectAction
-from mdr_find_object_action.action_states import FindObject, SetActionLibResult
+from mdr_find_object_action.action_states import FindObjectSM
 
-class FindObjectSkill(smach.StateMachine):
+class FindObjectServer(object):
+    '''A server exposing an action for locating objects.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * ontology_url: URL of a domestic ontology file
+    * ontology_class_prefix: Prefix of the classes in the ontology
+    * retry_count_on_failure: Number of times the search should be retried
+                              if it fails the first time
+    * timeout_s: Timeout (in seconds) for the action execution
+
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
     def __init__(self):
-        smach.StateMachine.__init__(self, outcomes=['OVERALL_SUCCESS', 'OVERALL_FAILED', 'PREEMPTED'],
-                                    input_keys=['find_object_goal'],
-                                    output_keys=['find_object_feedback', 'find_object_result'])
-
         ontology_url = rospy.get_param('~ontology_url', '')
         ontology_class_prefix = rospy.get_param('~ontology_class_prefix', '')
-        retry_count_on_failure = int(rospy.get_param('~retry_count_on_failure', '0'))
-        timeout_s = float(rospy.get_param('~timeout_s', '120.'))
+        retry_count_on_failure = int(rospy.get_param('~retry_count_on_failure', 0))
+        timeout_s = float(rospy.get_param('~timeout_s', 120.))
         if not ontology_url:
-            rospy.logerr('[FIND_OBJECT] Ontology url not specified')
+            rospy.logerr('[find_object] Ontology url not specified')
 
         if not ontology_class_prefix:
-            rospy.logerr('[FIND_OBJECT] Ontology class prefix not specified')
+            rospy.logerr('[find_object] Ontology class prefix not specified')
 
-        with self:
-            smach.StateMachine.add('FIND_OBJECT', FindObject(ontology_url,
-                                                             ontology_class_prefix,
-                                                             retry_count_on_failure,
-                                                             timeout_s),
-                                   transitions={'succeeded': 'SET_ACTION_LIB_SUCCESS',
-                                                'failed': 'SET_ACTION_LIB_FAILURE',
-                                                'timeout': 'SET_ACTION_LIB_FAILURE'})
+        rospy.loginfo('[find_object] Initialising state machine')
+        self.action_sm = FindObjectSM(ontology_url=ontology_url,
+                                      ontology_class_prefix=ontology_class_prefix,
+                                      number_of_retries=retry_count_on_failure,
+                                      timeout=timeout_s)
+        rospy.loginfo('[find_object] State machine initialised')
 
-            smach.StateMachine.add('SET_ACTION_LIB_SUCCESS', SetActionLibResult(True),
-                                   transitions={'succeeded': 'OVERALL_SUCCESS'})
+        self.action_server = actionlib.SimpleActionServer('find_object_server',
+                                                          FindObjectAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('find_object action server ready')
 
-            smach.StateMachine.add('SET_ACTION_LIB_FAILURE', SetActionLibResult(False),
-                                   transitions={'succeeded': 'OVERALL_FAILED'})
-
+    def execute(self, goal):
+        rospy.loginfo('[find_object] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.execution_requested = True
+        while self.action_sm.result is None:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
     rospy.init_node('find_object_server')
-
-    # Construct state machine
-    sm = FindObjectSkill()
-
-    # smach viewer
-    sis = IntrospectionServer('find_object_smach_viewer', sm, '/FIND_OBJECT_SMACH_VIEWER')
-    sis.start()
-
-    # Construct action server wrapper
-    asw = ActionServerWrapper(
-        server_name='find_object_server',
-        action_spec=FindObjectAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAILED'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='find_object_goal',
-        feedback_key='find_object_feedback',
-        result_key='find_object_result')
-
-    # Run the server on a background thread
-    asw.run_server()
-    rospy.spin()
+    find_object_server = FindObjectServer()
+    try:
+        find_object_server.action_sm.run()
+        while find_object_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(find_object_server.action_sm.name))
+        find_object_server.action_sm.stop()
