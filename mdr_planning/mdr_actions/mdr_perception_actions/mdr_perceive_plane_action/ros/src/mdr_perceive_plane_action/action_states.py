@@ -56,7 +56,7 @@ class PerceivePlaneSM(ActionSMBase):
             image_messages = []
             for obj in plane.object_list.objects:
                 image_messages.append(obj.rgb_image)
-            indices, classes, probs = self._service_proxy.classify_image_messages(image_messages)
+            indices, classes, probs = self._recog_service_proxy.classify_image_messages(image_messages)
 
             # TODO: debug output
             if len(indices) > 0:
