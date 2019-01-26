@@ -31,7 +31,7 @@ class EnterDoorSM(ActionSMBase):
     def init(self):
         try:
             self.move_forward_client = actionlib.SimpleActionClient(self.move_forward_server, MoveForwardAction)
-            rospy.loginfo('[enter_door] Waiting for % server', self.move_forward_server)
+            rospy.loginfo('[enter_door] Waiting for %s server', self.move_forward_server)
             self.move_forward_client.wait_for_server()
         except:
             rospy.logerr('[enter_door] %s server does not seem to respond', self.move_forward_server)

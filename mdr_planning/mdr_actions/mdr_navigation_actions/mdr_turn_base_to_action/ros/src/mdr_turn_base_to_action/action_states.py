@@ -21,7 +21,7 @@ class TurnBaseSM(ActionSMBase):
     def init(self):
         try:
             self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
-            rospy.loginfo('[turn_base_to] Waiting for % server', self.move_base_server)
+            rospy.loginfo('[turn_base_to] Waiting for %s server', self.move_base_server)
             self.move_base_client.wait_for_server()
         except:
             rospy.logerr('[turn_base_to] %s server does not seem to respond', self.move_base_server)

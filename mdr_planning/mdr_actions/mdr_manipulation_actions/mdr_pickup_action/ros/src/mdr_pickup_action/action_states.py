@@ -62,21 +62,21 @@ class PickupSM(ActionSMBase):
     def init(self):
         try:
             self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
-            rospy.loginfo('[pickup] Waiting for % server', self.move_arm_server)
+            rospy.loginfo('[pickup] Waiting for %s server', self.move_arm_server)
             self.move_arm_client.wait_for_server()
         except:
             rospy.logerr('[pickup] %s server does not seem to respond', self.move_arm_server)
 
         try:
             self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
-            rospy.loginfo('[pickup] Waiting for % server', self.move_base_server)
+            rospy.loginfo('[pickup] Waiting for %s server', self.move_base_server)
             self.move_base_client.wait_for_server()
         except:
             rospy.logerr('[pickup] %s server does not seem to respond', self.move_base_server)
 
         try:
             self.move_forward_client = actionlib.SimpleActionClient(self.move_forward_server, MoveForwardAction)
-            rospy.loginfo('[pickup] Waiting for % server', self.move_forward_server)
+            rospy.loginfo('[pickup] Waiting for %s server', self.move_forward_server)
             self.move_forward_client.wait_for_server()
         except:
             rospy.logerr('[pickup] %s server does not seem to respond', self.move_forward_server)

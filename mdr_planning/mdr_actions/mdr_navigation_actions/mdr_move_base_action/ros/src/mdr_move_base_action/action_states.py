@@ -31,7 +31,7 @@ class MoveBaseSM(ActionSMBase):
     def init(self):
         try:
             self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
-            rospy.loginfo('[move_base] Waiting for % server', self.move_arm_server)
+            rospy.loginfo('[move_base] Waiting for %s server', self.move_arm_server)
             self.move_arm_client.wait_for_server()
         except:
             rospy.logerr('[move_base] %s server does not seem to respond', self.move_arm_server)
