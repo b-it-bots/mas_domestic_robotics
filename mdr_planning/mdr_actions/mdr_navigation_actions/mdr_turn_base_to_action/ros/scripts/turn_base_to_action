@@ -34,8 +34,9 @@ class TurnBaseServer(object):
     def execute(self, goal):
         rospy.loginfo('[turn_base] Received an action request')
         self.action_sm.goal = goal
+        self.action_sm.result = None
         self.action_sm.execution_requested = True
-        while self.action_sm.result is None:
+        while not self.action_sm.result:
             rospy.sleep(0.05)
         self.action_server.set_succeeded(self.action_sm.result)
 
