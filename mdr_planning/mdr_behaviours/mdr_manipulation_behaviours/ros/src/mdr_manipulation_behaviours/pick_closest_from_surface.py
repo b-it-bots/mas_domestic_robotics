@@ -36,8 +36,14 @@ class PickClosestFromSurface(ScenarioStateBase):
         if not obj_to_grasp:
             rospy.logerr('Could not find an object to grasp')
             self.say('Could not find an object to grasp')
+            if self.retry_count == self.number_of_retries:
+                rospy.logerr('No object could be found; giving up')
+                self.say('Could not find an object to grasp; giving up')
+                return 'failed_after_retrying'
+            self.retry_count += 1
             return 'find_objects_before_picking'
 
+        self.retry_count = 0
         dispatch_msg = self.get_dispatch_msg(obj_to_grasp, surface)
         rospy.loginfo('Picking %s from %s' % (obj_to_grasp, surface))
         self.say('Picking ' + obj_to_grasp + ' from ' + surface)
