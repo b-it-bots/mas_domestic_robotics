@@ -1,10 +1,8 @@
 version: '2'
 services:
   travis:
-    build:
-      dockerfile: .travis/Dockerfile
-      context: .
     image: bitbots/bitbots-domestic:${TRAVIS_COMMIT}
+    build: .
   domestic:
     build: .
     image: bitbots/bitbots-domestic:kinetic

@@ -3,16 +3,18 @@ import rospy
 import actionlib
 import tf
 
-from geometry_msgs.msg import PoseStamped
-import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
-import rosplan_knowledge_msgs.srv as rosplan_srvs
-import diagnostic_msgs.msg as diag_msgs
-
 from mcr_perception_msgs.msg import Object
 from mdr_rosplan_interface.action_client_base import ActionClientBase
+from mas_knowledge_base.knowledge_base_interface import KBException
 from mdr_pickup_action.msg import PickupAction, PickupGoal
 
 class PickupClient(ActionClientBase):
+    '''Defines a client for an object pickup action.
+
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
     def __init__(self):
         super(PickupClient, self).__init__()
 
@@ -35,19 +37,21 @@ class PickupClient(ActionClientBase):
         client = actionlib.SimpleActionClient(self.action_server_name, PickupAction)
         client.wait_for_server()
         goal = self.get_action_message(msg)
+        if goal:
+            # calling the actionlib server and waiting for the execution to end
+            rospy.loginfo('[pickup] Sending actionlib goal to %s' % self.action_server_name)
+            client.send_goal(goal)
+            client.wait_for_result(rospy.Duration.from_sec(int(self.action_timeout)))
+            result = client.get_result()
 
-        # calling the actionlib server and waiting for the execution to end
-        rospy.loginfo('[PICKUP] Sending actionlib goal to %s' % self.action_server_name)
-        client.send_goal(goal)
-        client.wait_for_result(rospy.Duration.from_sec(int(self.action_timeout)))
-        result = client.get_result()
-
-        if result and result.success:
-            rospy.loginfo('[PICKUP] Updating the knowledge base')
-            self.update_knowledge_base()
-            self.send_action_feedback(True)
+            if result and result.success:
+                rospy.loginfo('[PICKUP] Updating the knowledge base')
+                self.update_knowledge_base()
+                self.send_action_feedback(True)
+            else:
+                self.send_action_feedback(False)
         else:
-            self.send_action_feedback(False)
+            rospy.loginfo('[pickup] The action dispatch message could not be created; ignoring request')
 
     def get_action_message(self, rosplan_action_msg):
         '''Reads the action parameters and uses them to initialise an actionlib message.
@@ -61,73 +65,31 @@ class PickupClient(ActionClientBase):
             elif param.key == 'bot':
                 self.robot_name = param.value
 
-        object_pose = self.get_object_pose(self.obj)
-        object_pose.header.stamp = rospy.Time(0)
-
-        goal.pose.header.frame_id = self.frame_id
-        goal.pose.header.stamp = rospy.Time.now()
-        object_pose_in_grasp_frame = self.tf_listener.transformPose(self.frame_id,
-                                                                    object_pose)
-        goal.pose = object_pose_in_grasp_frame
-        return goal
-
-    def get_object_pose(self, object_name):
         try:
-            obj = self.msg_store_client.query_named(object_name, Object._type)[0]
-            return obj.pose
-        except:
-            rospy.logerr('Error retriving knowledge about %s', object_name)
-            return PoseStamped()
+            obj = self.kb_interface.get_obj_instance(self.obj, Object._type)
+            object_pose = obj.pose
+            object_pose.header.stamp = rospy.Time(0)
+
+            goal.pose.header.frame_id = self.frame_id
+            goal.pose.header.stamp = rospy.Time.now()
+            object_pose_in_grasp_frame = self.tf_listener.transformPose(self.frame_id,
+                                                                        object_pose)
+            goal.pose = object_pose_in_grasp_frame
+            return goal
+        except KBException as exc:
+            rospy.logerr('[pickup] %s', str(exc))
+            return None
 
     def update_knowledge_base(self):
-        # we remove the fact that the object is on the surface from the knowledge base
-        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 2
-        request.knowledge.knowledge_type = 1
-        request.knowledge.attribute_name = 'on'
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'obj'
-        arg_msg.value = self.obj
-        request.knowledge.values.append(arg_msg)
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'plane'
-        arg_msg.value = self.obj_plane
-        request.knowledge.values.append(arg_msg)
-
-        self.knowledge_update_client(request)
-
-        # we remove the fact that the robot's gripper is empty from the knowledge base
-        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 2
-        request.knowledge.knowledge_type = 1
-        request.knowledge.attribute_name = 'empty_gripper'
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'bot'
-        arg_msg.value = self.robot_name
-        request.knowledge.values.append(arg_msg)
-
-        self.knowledge_update_client(request)
-
-        # we add the fact that the robot is holding the object to the knowledge base
-        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 0
-        request.knowledge.knowledge_type = 1
-        request.knowledge.attribute_name = 'holding'
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'bot'
-        arg_msg.value = self.robot_name
-        request.knowledge.values.append(arg_msg)
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'obj'
-        arg_msg.value = self.obj
-        request.knowledge.values.append(arg_msg)
-
-        self.knowledge_update_client(request)
+        '''Updates the knowledge base with the following facts:
+        * the robot is holding the grasped object
+        * the object is not on the plane anymore
+        * the robot's gripper is not empty anymore
+        '''
+        facts_to_add = [('holding', [('bot', self.robot_name), ('obj', self.obj)])]
+        facts_to_remove = [('on', [('obj', self.obj), ('plane', self.obj_plane)]),
+                           ('empty_gripper', [('bot', self.robot_name)])]
+        self.kb_interface.update_kb(facts_to_add, facts_to_remove)
 
 if __name__ == '__main__':
     rospy.init_node('pickup_client')

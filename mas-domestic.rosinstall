@@ -24,6 +24,21 @@
     version: master
 
 - git:
+    local-name: mas_knowledge_base
+    uri: https://github.com/b-it-bots/mas_knowledge_base.git
+    version: master
+
+- git:
+    local-name: action-execution
+    uri: https://github.com/b-it-bots/action-execution.git
+    version: master
+
+- git:
+    local-name: ftsm
+    uri: https://github.com/b-it-bots/ftsm.git
+    version: master
+
+- git:
     local-name: zbar_ros
     uri: https://github.com/b-it-bots/zbar_ros.git
     version: kinetic
@@ -37,6 +52,11 @@
     local-name: ROSPlan
     uri: https://github.com/KCL-Planning/ROSPlan.git
     version: master
+
+- git:
+    local-name: mongodb_store
+    uri: https://github.com/b-it-bots/mongodb_store.git
+    version: kinetic-devel
 
 - git:
     local-name: occupancy_grid_utils

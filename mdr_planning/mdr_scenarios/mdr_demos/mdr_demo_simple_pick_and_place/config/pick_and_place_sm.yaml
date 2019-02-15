@@ -7,7 +7,7 @@ outcomes: [DONE, FAILED, TIMEOUT]
 state_descriptions:
     - state:
         name: GO_TO_TABLE
-        state_module_name: mdr_demo_simple_pick_and_place.scenario_states.move_base
+        state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
@@ -28,7 +28,7 @@ state_descriptions:
                 value: 3
     - state:
         name: PERCEIVE_TABLE
-        state_module_name: mdr_demo_simple_pick_and_place.scenario_states.perceive_planes
+        state_module_name: mdr_perception_behaviours.perceive_planes
         state_class_name: PerceivePlanes
         transitions:
             - transition:
@@ -49,8 +49,8 @@ state_descriptions:
                 value: table
     - state:
         name: PICK_OBJECT
-        state_module_name: mdr_demo_simple_pick_and_place.scenario_states.pick
-        state_class_name: Pick
+        state_module_name: mdr_manipulation_behaviours.pick_closest_from_surface
+        state_class_name: PickClosestFromSurface
         transitions:
             - transition:
                 name: succeeded
@@ -68,9 +68,12 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 3
+            - argument:
+                name: picking_surface_prefix
+                value: table
     - state:
         name: FIND_OBJECTS_BEFORE_PICKING
-        state_module_name: mdr_demo_simple_pick_and_place.scenario_states.perceive_planes
+        state_module_name: mdr_perception_behaviours.perceive_planes
         state_class_name: PerceivePlanes
         transitions:
             - transition:
@@ -91,11 +94,11 @@ state_descriptions:
                 value: table
     - state:
         name: PLACE_OBJECT
-        state_module_name: mdr_demo_simple_pick_and_place.scenario_states.place
+        state_module_name: mdr_manipulation_behaviours.place
         state_class_name: Place
         transitions:
             - transition:
-                name: pick_new_object
+                name: succeeded
                 state: PERCEIVE_TABLE
             - transition:
                 name: failed
@@ -107,3 +110,6 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 3
+            - argument:
+                name: placing_surface_prefix
+                value: table

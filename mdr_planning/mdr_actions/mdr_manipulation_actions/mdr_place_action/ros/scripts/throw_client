@@ -8,8 +8,6 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import Point, Quaternion, Pose, PoseStamped
 
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
-import rosplan_knowledge_msgs.srv as rosplan_srvs
-import diagnostic_msgs.msg as diag_msgs
 from mcr_perception_msgs.msg import Object
 
 from action_execution.action import Action
@@ -19,6 +17,12 @@ from mdr_rosplan_interface.action_client_base import ActionClientBase
 from mdr_place_action.msg import PlaceAction, PlaceGoal
 
 class ThrowClient(ActionClientBase):
+    '''Defines a client for an object throwing action.
+
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
     def __init__(self):
         super(ThrowClient, self).__init__()
 
@@ -35,7 +39,7 @@ class ThrowClient(ActionClientBase):
         if self.action_name != msg.name.lower():
             return
 
-        rospy.loginfo('[THROW] Action request received')
+        rospy.loginfo('[throw] Action request received')
         self.action_id = msg.action_id
 
         client = actionlib.SimpleActionClient(self.action_server_name, PlaceAction)
@@ -43,13 +47,13 @@ class ThrowClient(ActionClientBase):
         goal = self.get_action_message(msg)
 
         # calling the actionlib server and waiting for the execution to end
-        rospy.loginfo('[THROW] Sending actionlib goal to %s' % self.action_server_name)
+        rospy.loginfo('[throw] Sending actionlib goal to %s' % self.action_server_name)
         client.send_goal(goal)
         client.wait_for_result(rospy.Duration.from_sec(int(self.action_timeout)))
         result = client.get_result()
 
         if result and result.success:
-            rospy.loginfo('[THROW] Updating the knowledge base')
+            rospy.loginfo('[throw] Updating the knowledge base')
             self.update_knowledge_base(goal.pose)
             self.send_action_feedback(True)
         else:
@@ -71,12 +75,12 @@ class ThrowClient(ActionClientBase):
         return goal
 
     def get_throwing_pose(self):
-        throwing_target = self.get_object_by_name(self.throwing_target)
+        throwing_target = self.kb_interface.get_obj_instance(self.throwing_target, Object._type)
         throwing_target.pose.header.stamp = rospy.Time(0)
         throwing_target.pose = self.tf_listener.transformPose(self.frame_id, throwing_target.pose)
         throwing_target_obj = ConverterFactory.convert_ros_msg(throwing_target)
 
-        obj_to_throw = self.get_object_by_name(self.obj)
+        obj_to_throw = self.kb_interface.get_obj_instance(self.obj, Object._type)
         obj_to_throw.pose.header.frame_id = self.frame_id
         manipulated_obj = ConverterFactory.convert_ros_msg(obj_to_throw)
 
@@ -96,70 +100,23 @@ class ThrowClient(ActionClientBase):
         candidate_pose = ConverterFactory.convert_to_ros_msg(candidate_pose)
         return candidate_pose
 
-    def get_object_by_name(self, obj_name):
-        try:
-            obj = self.msg_store_client.query_named(obj_name, Object._type)[0]
-            return obj
-        except:
-            rospy.logerr('Error retriving knowledge about %s', obj_name)
-            return None
-
     def update_knowledge_base(self, new_object_pose):
-        # we remove the fact that the robot is holding the object from the knowledge base
-        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 2
-        request.knowledge.knowledge_type = 1
-        request.knowledge.attribute_name = 'holding'
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'bot'
-        arg_msg.value = self.robot_name
-        request.knowledge.values.append(arg_msg)
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'obj'
-        arg_msg.value = self.obj
-        request.knowledge.values.append(arg_msg)
-
-        self.knowledge_update_client(request)
-
-        # we add the fact that the robot's gripper is empty to the knowledge base
-        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 0
-        request.knowledge.knowledge_type = 1
-        request.knowledge.attribute_name = 'empty_gripper'
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'bot'
-        arg_msg.value = self.robot_name
-        request.knowledge.values.append(arg_msg)
-
-        self.knowledge_update_client(request)
-
-        # we add the fact that the object is on the surface to the knowledge base
-        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 0
-        request.knowledge.knowledge_type = 1
-        request.knowledge.attribute_name = 'in'
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'obj'
-        arg_msg.value = self.obj
-        request.knowledge.values.append(arg_msg)
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'storing_obj'
-        arg_msg.value = self.throwing_target
-        request.knowledge.values.append(arg_msg)
-
-        self.knowledge_update_client(request)
+        '''Updates the knowledge base with the following facts:
+        * the object is in the throwing target
+        * the robot's gripper is empty
+        * the robot is not holding the object anymore
+        '''
+        facts_to_add = [('in', [('obj', self.obj), ('storing_obj', self.throwing_target)]),
+                        ('empty_gripper', [('bot', self.robot_name)])]
+        facts_to_remove = [('holding', [('bot', self.robot_name), ('obj', self.obj)])]
+        self.kb_interface.update_kb(facts_to_add, facts_to_remove)
 
         # we update the location of the object
-        thrown_object = self.get_object_by_name(self.obj)
+        thrown_object = self.kb_interface.get_obj_instance(self.obj, Object._type)
         new_object_pose.header.stamp = rospy.Time.now()
         new_object_pose.pose.position.z = 0.
         thrown_object.pose = new_object_pose
-        self.msg_store_client.update_named(self.obj, thrown_object)
+        self.kb_interface.update_obj_instance(self.obj, thrown_object)
 
 if __name__ == '__main__':
     rospy.init_node('throw_client')
