@@ -13,6 +13,7 @@ add_message_files(
   AudioEndpoint.msg
   Endpoints.msg
   ExecutionState.msg
+  Event.msg
 )
 
 generate_messages(DEPENDENCIES std_msgs)
