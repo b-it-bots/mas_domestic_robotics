@@ -129,7 +129,16 @@ class PickupSM(ActionSMBase):
                 rospy.loginfo('[pickup] Preparing top grasp')
                 pose_base_link, x_align_distance = self.__prepare_top_grasp(pose_base_link)
                 self.gripper.orient_z(pose_base_link.pose.orientation)
-                self.gripper.move_down(pose_base_link.pose.position.z)
+
+                pose_base_link, _ = self.__prepare_top_grasp(pose_base_link)
+                rospy.loginfo('[pickup] Grasping...')
+                arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+                if not arm_motion_success:
+                    rospy.logerr('[pickup] Arm motion unsuccessful')
+                    self.result = self.set_result(False)
+                    return FTSMTransitions.DONE
+
+                rospy.loginfo('[pickup] Arm motion successful')
             else:
                 rospy.logerr('[pickup] Unknown grasping strategy requested; ignoring request')
                 self.result = self.set_result(False)
