@@ -1,0 +1,8 @@
+# Description: Defines a state machine for a RoboCup@Home find my mates scenario
+# Author: Patrick Nagel
+# Email: patrick.nagel@h-brs.de
+sm_id: mdr_find_my_mates
+states: []
+outcomes: []
+state_descriptions:
+    
