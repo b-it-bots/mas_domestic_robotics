@@ -1,0 +1,207 @@
+# Description: Defines a state machine for a RoboCup@Home take out garbage scenario
+# Author: Roberto Cai
+# Email: roberto.cai@smail.inf.h-brs.de
+sm_id: mdr_take_out_garbage
+states: [LISTEN, PROCESS_SPEECH_COMMAND, ENTER, GO_TO_BIN, FIND_BIN, PERCEIVE_INSIDE_BIN, PICK_OBJECT, GO_TO_COLLECTION_ZONE, PLACE_OBJECT, CHECK_BINS_LEFT, EXIT]
+outcomes: [DONE, TIMEOUT]
+state_descriptions:
+    - state:
+        name: LISTEN
+        state_module_name: mdr_listen_action.action_states
+        state_class_name: Listen
+        transitions:
+          - transition:
+              name: received_command
+              state: PROCESS_SPEECH_COMMAND
+    - state:
+        name: PROCESS_SPEECH_COMMAND
+        state_module_name: mdr_process_speech_command_action.action_states
+        state_class_name: ProcessCommand
+        transitions:
+          - transition:
+              name: start_store_groceries
+              state: ENTER
+          - transition:
+              name: continue_waiting
+              state: LISTEN
+        arguments:
+            - argument:
+                name: start_command
+                value: take out garbage
+    - state:
+        name: ENTER
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_BIN
+            - transition:
+                name: failed
+                state: ENTER
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [INSIDE_ARENA]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_BIN
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: FIND_BIN
+            - transition:
+                name: failed
+                state: GO_TO_BIN
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [BIN]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: FIND_BIN
+        state_module_name: mdr_take_out_garbage.scenario_states
+        state_class_name: FindBin
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_INSIDE_BIN
+            - transition:
+                name: failed
+                state: GO_TO_BIN
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [BIN]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PERCEIVE_INSIDE_BIN
+        state_module_name: mdr_perception_behaviours.perceive_inside_bin
+        state_class_name: PerceiveInsideBin
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICK_OBJECT
+            - transition:
+                name: failed
+                state: PERCEIVE_INSIDE_BIN
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PICK_OBJECT
+        state_module_name: mdr_manipulation_behaviours.pick_non_rigid_object_from_bin
+        state_class_name: PickNonRigidObjectFromBin
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_COLLECTION_ZONE
+            - transition:
+                name: failed
+                state: PICK_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_COLLECTION_ZONE
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PLACE_OBJECT
+            - transition:
+                name: failed
+                state: GO_TO_COLLECTION_ZONE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [COLLETION_ZONE]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PLACE_OBJECT
+        state_module_name: mdr_manipulation_behaviours.place
+        state_class_name: Place
+        transitions:
+            - transition:
+                name: succeeded
+                state: CHECK_EMPTY_TABLE
+            - transition:
+                name: failed
+                state: PLACE_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: placing_surface_prefix
+                value: collection_zone
+    - state:
+        name: CHECK_BINS_LEFT
+        state_module_name: mdr_knowledge_behaviours.check_bins_left
+        state_class_name: CheckBinsLeft
+        transitions:
+            - transition:
+                name: no_bins_left
+                state: EXIT
+            - transition:
+                name: bins_still_left
+                state: GO_TO_BIN
+        arguments:
+            - argument:
+                name:
+                value:
+    - state:
+        name: EXIT
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: EXIT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [OUTSIDE_ARENA]
+            - argument:
+                name: number_of_retries
+                value: 3
