@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_serve_drinks</name>
+  <version>1.0.0</version>
+  <description>State machine and launch files for the RoboCup@Home serving drinks scenario</description>
+  <license>GPLv3</license>
+
+  <author email="henrik.schnor@smail.inf.h-brs.de">Henrik Schnor</author>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>roslint</build_depend>
+  <build_depend>mas_execution_manager</build_depend>
+  <build_depend>mdr_move_base_action</build_depend>
+  <build_depend>mdr_move_arm_action</build_depend>
+  <build_depend>mdr_pickup_action</build_depend>
+  <build_depend>mdr_perceive_plane_action</build_depend>
+  <build_depend>mdr_navigation_behaviours</build_depend>
+  <build_depend>mdr_perception_behaviours</build_depend>
+  <build_depend>mdr_manipulation_behaviours</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>mas_execution_manager</run_depend>
+  <run_depend>mdr_move_base_action</run_depend>
+  <run_depend>mdr_move_arm_action</run_depend>
+  <run_depend>mdr_pickup_action</run_depend>
+  <run_depend>mdr_perceive_plane_action</run_depend>
+  <run_depend>mdr_navigation_behaviours</run_depend>
+  <run_depend>mdr_perception_behaviours</run_depend>
+  <run_depend>mdr_manipulation_behaviours</run_depend>
+</package>
