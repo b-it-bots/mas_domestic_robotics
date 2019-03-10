@@ -48,7 +48,7 @@ include_directories(
 
 install(PROGRAMS
     ros/scripts/find_object_action
-    ros/scripts/find_object_client_test
+    ros/scripts/find_object_action_client_test
     DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )
 
