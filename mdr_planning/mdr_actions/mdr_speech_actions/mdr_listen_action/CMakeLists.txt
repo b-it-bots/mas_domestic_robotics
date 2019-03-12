@@ -8,6 +8,8 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   roslint
   rospy
+  mdr_speech_matching
+  mdr_speech_recognition
 )
 
 catkin_python_setup()
@@ -28,6 +30,8 @@ catkin_package(
    actionlib_msgs
    message_runtime
    std_msgs
+   mdr_speech_matching
+   mdr_speech_recognition
 )
 
 include_directories(
