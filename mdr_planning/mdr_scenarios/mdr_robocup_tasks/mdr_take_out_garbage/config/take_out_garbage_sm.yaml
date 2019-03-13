@@ -19,7 +19,7 @@ state_descriptions:
         state_class_name: ProcessCommand
         transitions:
           - transition:
-              name: start_store_groceries
+              name: start_take_out_garbage
               state: ENTER
           - transition:
               name: continue_waiting
@@ -98,7 +98,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: PICK_OBJECT
+                state: PICK_GARBAGE_BAG
             - transition:
                 name: failed
                 state: PERCEIVE_INSIDE_BIN
@@ -110,7 +110,7 @@ state_descriptions:
                 name: number_of_retries
                 value: 3
     - state:
-        name: PICK_OBJECT
+        name: PICK_GARBAGE_BAG
         state_module_name: mdr_manipulation_behaviours.pick_non_rigid_object_from_bin
         state_class_name: PickNonRigidObjectFromBin
         transitions:
@@ -119,7 +119,7 @@ state_descriptions:
                 state: GO_TO_COLLECTION_ZONE
             - transition:
                 name: failed
-                state: PICK_OBJECT
+                state: PICK_GARBAGE_BAG
             - transition:
                 name: failed_after_retrying
                 state: FAILED
@@ -144,7 +144,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [COLLETION_ZONE]
+                value: [COLLECTION_ZONE]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -197,7 +197,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: CHECK_EMPTY_TABLE
+                state: CHECK_BINS_LEFT
             - transition:
                 name: failed
                 state: PLACE_OBJECT
