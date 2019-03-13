@@ -134,7 +134,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: PLACE_OBJECT
+                state: FIND_COLLECTION_ZONE
             - transition:
                 name: failed
                 state: GO_TO_COLLECTION_ZONE
@@ -148,6 +148,48 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 3
+    - state:
+        name: FIND_COLLECTION_ZONE
+        state_module_name: mdr_take_out_garbage.scenario_states
+        state_class_name: FindCollectionZone
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed
+                state: GO_TO_COLLECTION_ZONE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: placing_surface_prefix
+                value: collection_zone
+    - state:
+        name: PERCEIVE_COLLECTION_ZONE
+        state_module_name: mdr_perception_behaviours.perceive_planes
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: PLACE_OBJECT
+            - transition:
+                name: failed
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: plane_prefix
+                value: collection_zone
     - state:
         name: PLACE_OBJECT
         state_module_name: mdr_manipulation_behaviours.place
