@@ -4,7 +4,7 @@ import sensor_msgs.msg
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mcr_perception_msgs.msg import PlaneList
-from mas_perception_libs import ObjectDetector, ImageRecognitionServiceProxy
+from mas_perception_libs import ObjectDetector, RecognizeImageServiceProxy
 from mdr_perceive_plane_action.msg import PerceivePlaneResult, PerceivePlaneFeedback
 
 class PerceivePlaneSM(ActionSMBase):
@@ -17,9 +17,8 @@ class PerceivePlaneSM(ActionSMBase):
                  max_recovery_attempts=1):
         super(PerceivePlaneSM, self).__init__('PerceivePlane', [], max_recovery_attempts)
         self._detector = ObjectDetector(detection_service_proxy)
-        self._recog_service_proxy = ImageRecognitionServiceProxy(recog_service_name,
-                                                                 recog_model_name,
-                                                                 preprocess_input_module)
+        self._recog_service_proxy = RecognizeImageServiceProxy(recog_service_name, recog_model_name,
+                                                               preprocess_input_module)
         self._image_pub = rospy.Publisher('/first_recognized_image',
                                           sensor_msgs.msg.Image,
                                           queue_size=1)
