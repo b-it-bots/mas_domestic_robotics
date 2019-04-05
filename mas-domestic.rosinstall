@@ -34,6 +34,11 @@
     version: master
 
 - git:
+    local-name: ftsm
+    uri: https://github.com/b-it-bots/ftsm.git
+    version: master
+
+- git:
     local-name: zbar_ros
     uri: https://github.com/b-it-bots/zbar_ros.git
     version: kinetic

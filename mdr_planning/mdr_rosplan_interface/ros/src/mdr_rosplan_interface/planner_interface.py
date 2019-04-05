@@ -1,5 +1,6 @@
 import rospy
 from std_srvs.srv import Empty
+import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 from mas_knowledge_base.domestic_kb_interface import DomesticKBInterface
 
 class PlannerInterface(object):
@@ -21,6 +22,10 @@ class PlannerInterface(object):
         self.planner_proxy = None
         self.plan_parsing_proxy = None
         self.plan_dispatch_proxy = None
+        self.action_dispatch_topic = rospy.get_param('/planner/action_dispatch_topic',
+                                                     '/kcl_rosplan/action_dispatch')
+        self.action_feedback_topic = rospy.get_param('/planner/action_feedback_topic',
+                                                     '/kcl_rosplan/action_feedback')
         self.kb_interface = DomesticKBInterface()
 
         problem_generation_srv = rospy.get_param('/planner/problem_generation_srv',
@@ -55,6 +60,15 @@ class PlannerInterface(object):
         except (rospy.ServiceException, rospy.ROSException):
             rospy.logerr('The service %s does not appear to exist.', plan_dispatch_srv)
 
+        self.current_action = ''
+        self.executing = False
+        self.action_dispatch_sub = rospy.Subscriber(self.action_dispatch_topic,
+                                                    plan_dispatch_msgs.ActionDispatch,
+                                                    self.get_dispatched_action)
+        self.action_feedback_sub = rospy.Subscriber(self.action_feedback_topic,
+                                                    plan_dispatch_msgs.ActionFeedback,
+                                                    self.get_action_feedback)
+
     def add_plan_goals(self, goals):
         '''Registers the ground predicates in the given list as planning goals.
 
@@ -88,12 +102,15 @@ class PlannerInterface(object):
             self.problem_generation_proxy()
         except rospy.ServiceException as exc:
             rospy.logerr('An error occured while generating a problem file: ' + str(exc))
+            return False
 
         rospy.loginfo('[planner_interface] Invoking the planner')
         try:
             self.planner_proxy()
         except rospy.ServiceException as exc:
             rospy.logerr('An error occured while planning: ' + str(exc))
+            return False
+        return True
 
     def start_plan_dispatch(self):
         '''Parses a previously generated plan and starts dispatching the plan.
@@ -103,9 +120,25 @@ class PlannerInterface(object):
             self.plan_parsing_proxy()
         except rospy.ServiceException as exc:
             rospy.logerr('An error occured while parsing the plan: ' + str(exc))
+            return False
 
         rospy.loginfo('[planner_interface] Invoking the plan dispatcher')
         try:
             self.plan_dispatch_proxy()
         except rospy.ServiceException as exc:
             rospy.logerr('An error occured while dispatching the plan: ' + str(exc))
+            return False
+
+        self.executing = True
+        return True
+
+    def get_current_action(self):
+        return self.current_action
+
+    def get_dispatched_action(self, msg):
+        self.current_action = msg.name
+
+    def get_action_feedback(self, msg):
+        if msg.information and msg.information[0].key == 'action_name' and \
+        msg.information[0].value == self.current_action:
+            self.executing = msg.status != 'action achieved'
