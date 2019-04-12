@@ -23,6 +23,7 @@
         (unexplored ?plane - plane)
         (explored ?plane - plane)
         (on ?obj - object ?plane - plane)
+        (in ?obj - object ?source - object)
         (holding ?bot - robot ?obj - object)
         (empty_gripper ?bot - robot)
     )
