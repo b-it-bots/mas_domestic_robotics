@@ -2,8 +2,6 @@
 <launch>
     <arg name="action_dispatch_topic" default="/kcl_rosplan/action_dispatch"/>
     <arg name="action_feedback_topic" default="/kcl_rosplan/action_feedback"/>
-    <arg name="knowledge_update_service" default="/rosplan_knowledge_base/update"/>
-    <arg name="attribute_fetching_service" default="/rosplan_knowledge_base/state/propositions"/>
 
     <node pkg="mdr_place_action" type="place_client" name="place_client" output="screen">
         <param name="action_name" type="str" value="place" />
@@ -11,8 +9,6 @@
         <param name="action_timeout" type="double" value="120" />
         <remap from="action_dispatch_topic" to="$(arg action_dispatch_topic)" />
         <remap from="action_feedback_topic" to="$(arg action_feedback_topic)" />
-        <remap from="knowledge_update_service" to="$(arg knowledge_update_service)" />
-        <remap from="attribute_fetching_service" to="$(arg attribute_fetching_service)" />
         <param name="placing_pose_frame" type="str" value="base_link" />
     </node>
 </launch>

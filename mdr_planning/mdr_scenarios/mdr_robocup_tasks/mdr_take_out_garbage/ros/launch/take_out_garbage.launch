@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+    <include file="$(find mdr_rosplan_interface)/ros/launch/rosplan.launch" />
+
+    <!-- Actions -->
+    <include file="$(find mdr_listen_action)/ros/launch/listen.launch" />
+    <include file="$(find mdr_process_speech_command_action)/ros/launch/process_command.launch" />
+    <include file="$(find mdr_move_arm_action)/ros/launch/move_arm.launch" />
+
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" />
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
+
+    <include file="$(find mdr_perceive_plane_action)/ros/launch/perceive_plane.launch" />
+    <include file="$(find mdr_perceive_plane_action)/ros/launch/perceive_plane_client.launch" />
+
+    <include file="$(find mdr_pickup_action)/ros/launch/pickup_action.launch" />
+    <include file="$(find mdr_pickup_action)/ros/launch/pickup_client.launch" />
+
+    <include file="$(find mdr_place_action)/ros/launch/place_action.launch" />
+    <include file="$(find mdr_place_action)/ros/launch/place_client.launch" />
+
+    <!-- State machine -->
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="take_out_garbage" output="screen">
+        <param name="sm_config_file" type="str" value="$(find mdr_take_out_garbage)/config/take_out_garbage_sm.yaml" />
+    </node>
+</launch>

@@ -2,48 +2,38 @@
 import numpy as np
 
 import rospy
-import smach
 import moveit_commander
 
+from pyftsm.ftsm import FTSMTransitions
+from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_arm_action.msg import MoveArmGoal, MoveArmFeedback, MoveArmResult
 from mdr_move_arm_action.dmp import DMPExecutor
 
-class SetupMoveArm(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['succeeded', 'failed'],
-                             input_keys=['move_arm_goal'],
-                             output_keys=['move_arm_feedback', 'move_arm_result'])
-
-    def execute(self, userdata):
-        # consider moving the other components of the robot out of the arm's way, though
-        # this could be dangerous if the robot is for example close to some furniture item
-
-        feedback = MoveArmFeedback()
-        feedback.current_state = 'MOVE_ARM'
-        feedback.message = '[move_arm] moving the arm'
-        userdata.move_arm_feedback = feedback
-
-        return 'succeeded'
-
-class MoveArm(smach.State):
-    def __init__(self, timeout=120.0, arm_name='arm'):
-        smach.State.__init__(self, input_keys=['move_arm_goal'],
-                             outcomes=['succeeded', 'failed'])
+class MoveArmSM(ActionSMBase):
+    def __init__(self, timeout=120.0, arm_name='arm', max_recovery_attempts=1):
+        super(MoveArmSM, self).__init__('MoveArm', [], max_recovery_attempts)
         self.timeout = timeout
-        self.arm = moveit_commander.MoveGroupCommander(arm_name)
+        self.arm_name = arm_name
+        self.arm = None
 
-    def execute(self, userdata):
+    def init(self):
+        try:
+            self.arm = moveit_commander.MoveGroupCommander(self.arm_name)
+        except:
+            rospy.logerr('[move_arm] %s could not be initialised', self.arm_name)
+        return FTSMTransitions.INITIALISED
+
+    def running(self):
         self.arm.clear_pose_targets()
         success = False
-        if userdata.move_arm_goal.goal_type == MoveArmGoal.NAMED_TARGET:
-            self.arm.set_named_target(userdata.move_arm_goal.named_target)
+        if self.goal.goal_type == MoveArmGoal.NAMED_TARGET:
+            self.arm.set_named_target(self.goal.named_target)
             rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
             success = self.arm.go(wait=True)
-        elif userdata.move_arm_goal.goal_type == MoveArmGoal.END_EFFECTOR_POSE:
-            pose = userdata.move_arm_goal.end_effector_pose
-
-            dmp_name = userdata.move_arm_goal.dmp_name
-            tau = userdata.move_arm_goal.dmp_tau
+        elif self.goal.goal_type == MoveArmGoal.END_EFFECTOR_POSE:
+            pose = self.goal.end_effector_pose
+            dmp_name = self.goal.dmp_name
+            tau = self.goal.dmp_tau
             rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
 
             # we use a dynamic motion primitive for moving the arm if one is specified;
@@ -56,30 +46,26 @@ class MoveArm(smach.State):
                 self.arm.set_pose_reference_frame(pose.header.frame_id)
                 self.arm.set_pose_target(pose.pose)
                 success = self.arm.go(wait=True)
-        elif userdata.move_arm_goal.goal_type == MoveArmGoal.JOINT_VALUES:
-            joint_values = userdata.move_arm_goal.joint_values
+        elif self.goal.goal_type == MoveArmGoal.JOINT_VALUES:
+            joint_values = self.goal.joint_values
             self.arm.set_joint_value_target(joint_values)
             rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
             success = self.arm.go(wait=True)
         else:
             rospy.logerr('[move_arm] Invalid target specified; ignoring request')
-            return 'failed'
+            self.result = self.set_result(False)
+            return FTSMTransitions.DONE
 
         if not success:
             rospy.logerr('[move_arm] Arm motion unsuccessful')
-            return 'failed'
+            self.result = self.set_result(False)
+            return FTSMTransitions.DONE
+
         rospy.loginfo('[move_arm] Arm motion successful')
-        return 'succeeded'
+        self.result = self.set_result(True)
+        return FTSMTransitions.DONE
 
-class SetActionLibResult(smach.State):
-    def __init__(self, result):
-        smach.State.__init__(self, outcomes=['succeeded'],
-                             input_keys=['move_arm_goal'],
-                             output_keys=['move_arm_feedback', 'move_arm_result'])
-        self.result = result
-
-    def execute(self, userdata):
+    def set_result(self, success):
         result = MoveArmResult()
-        result.success = self.result
-        userdata.move_arm_result = result
-        return 'succeeded'
+        result.success = success
+        return result

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mdr_rasa</name>
+  <version>0.0.1</version>
+  <description>A wrapper for the rasa framework</description>
+
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <author email="henrik.schnor@smail.inf.h-brs.de">Henrik Schnor</author>
+
+  <license>GPLv3</license>
+
+  <!-- Url tags are optional, but multiple are allowed, one per tag -->
+  <!-- Optional attribute type can be: website, bugtracker, or repository -->
+  <!-- Example: -->
+  <!-- <url type="website">http://wiki.ros.org/mdr_speech_to_text_matching</url> -->
+
+
+  <!-- Author tags are optional, multiple are allowed, one per tag -->
+  <!-- Authors do not have to be maintainers, but could be -->
+  <!-- Example: -->
+  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+
+  </package>

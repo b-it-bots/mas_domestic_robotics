@@ -2,13 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mdr_store_groceries)
 
 find_package(catkin REQUIRED COMPONENTS
-  roslint
   rospy
-  smach_ros
-  smach
-  actionlib
-  mongodb_store
-  mdr_rosplan_interface
+  roslint
   mas_execution_manager
   mdr_listen_action
   mdr_process_speech_command_action
@@ -17,17 +12,14 @@ find_package(catkin REQUIRED COMPONENTS
   mdr_pickup_action
   mdr_place_action
   mdr_perceive_plane_action
+  mdr_navigation_behaviours
+  mdr_perception_behaviours
+  mdr_manipulation_behaviours
 )
 
 catkin_package(
   CATKIN_DEPENDS
-    roslint
     rospy
-    smach_ros
-    smach
-    actionlib
-    mongodb_store
-    mdr_rosplan_interface
     mas_execution_manager
     mdr_listen_action
     mdr_process_speech_command_action
@@ -36,6 +28,9 @@ catkin_package(
     mdr_pickup_action
     mdr_place_action
     mdr_perceive_plane_action
+    mdr_navigation_behaviours
+    mdr_perception_behaviours
+    mdr_manipulation_behaviours
 )
 
 catkin_python_setup()

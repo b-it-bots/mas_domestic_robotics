@@ -7,6 +7,9 @@
 *.*~
 *.swp
 
+# Generated rasa models
+/mdr_speech/mdr_rasa/models/*/generated/
+
 # MongoDB
 prealloc.*
 mongod.lock

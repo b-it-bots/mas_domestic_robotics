@@ -1,0 +1,79 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_rosplan_interface.action_client_base import ActionClientBase
+from mdr_find_object_action.msg import FindObjectAction, FindObjectGoal
+
+class FindObjectClient(ActionClientBase):
+    '''Defines a client for an action for finding objects.
+
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
+    def __init__(self):
+        super(FindObjectClient, self).__init__()
+        self.object_name = ''
+        while not rospy.is_shutdown():
+            rospy.sleep(0.1)
+
+    def call_action(self, msg):
+        # we only react to calls to this action
+        if self.action_name != msg.name.lower():
+            return
+
+        self.action_id = msg.action_id
+
+        client = actionlib.SimpleActionClient(self.action_server_name, FindObjectAction)
+        client.wait_for_server()
+        goal = self.get_action_message(msg)
+
+        # calling the actionlib server and waiting for the execution to end
+        rospy.loginfo('[FIND_OBJECT] Sending action lib goal to' + self.action_server_name)
+        client.send_goal(goal)
+        client.wait_for_result(rospy.Duration.from_sec(int(self.action_timeout)))
+        result = client.get_result()
+
+        if result and result.success:
+            rospy.loginfo('[FIND_OBJECT] %s %s', result.object_location, result.relation)
+            self.update_knowledge_base(self.object_name, result.object_location, result.relation)
+            self.send_action_feedback(True)
+        else:
+            self.send_action_feedback(False)
+
+    def get_action_message(self, rosplan_action_msg):
+        '''Reads the action parameters and uses them to initialise an actionlib message.
+        '''
+        goal = FindObjectGoal()
+        for param in rosplan_action_msg.parameters:
+            if param.key == 'obj_name':
+                goal.goal_type = FindObjectGoal.NAMED_OBJECT
+                goal.object_name = param.value
+                self.object_name = param.value
+            elif param.key == 'obj_category':
+                goal.goal_type = FindObjectGoal.OBJECT_CATEGORY
+                goal.object_name = param.value
+                self.object_name = param.value # TODO: make the name unique
+            elif param.key == 'bot':
+                self.robot_name = param.value
+        return goal
+
+    def update_knowledge_base(self, object_name, object_location, relation):
+        '''TODO: Decide what to do with the detected object; this is not so simple
+        since there are multiple cases that need to be considered:
+        * the object was already in the knowledge base
+        * the object's location was taken from the ontology and then verified;
+          in this case, we want to insert a relation and save the object
+        * the robot was searching for an object of a given category and found
+          a specific instance; this is similar to the previous case, but
+          we need to make sure that the name of the object is unique
+        '''
+        pass
+
+if __name__ == '__main__':
+    rospy.init_node('find_object_client')
+    try:
+        FindObjectClient()
+    except rospy.ROSInterruptException:
+        pass

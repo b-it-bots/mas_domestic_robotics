@@ -1,0 +1,311 @@
+# Description: Defines a state machine for the RoboCup@Home "serving drinks" scenario
+# Author: Henrik Schnor
+# Email: henrik.schnor@smail.inf.h-brs.de
+sm_id: mdr_serve_drinks
+states: [GO_NEAR_BAR, FIND_BAR, GO_TO_BAR, PERCEIVE_BAR, GO_TO_LIVING_ROOM, FIND_PEOPLE, CHOOSE_ACTION, GET_ORDER_GO_TO_PERSON, GET_ORDER_DIALOGUE, GET_DRINK_GO_TO_BAR, GET_DRINK_PERCEIVE_BAR, GET_DRINK_PICK, DELIVER_DRINK_GO_TO_PERSON, DELIVER_DRINK_HAND_OVER]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    #
+    # This is for initial observation of all available drinks
+    #
+    - state:
+        name: GO_NEAR_BAR
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: FIND_BAR
+            - transition:
+                name: failed
+                state: GO_NEAR_BAR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [NEAR_BAR]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: FIND_BAR
+        state_module_name: mdr_perception_behaviours.find_table
+        state_class_name: FindTable
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_BAR
+            - transition:
+                name: failed
+                state: GO_NEAR_BAR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_BAR
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_BAR
+            - transition:
+                name: failed
+                state: GO_NEAR_BAR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [BAR]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PERCEIVE_BAR
+        state_module_name: mdr_perception_behaviours.perceive_planes
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_LIVING_ROOM
+            - transition:
+                name: failed
+                state: GO_NEAR_BAR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: plane_prefix
+                value: bar
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    #
+    # Go to the living room, see who's there and decide what to do
+    #
+    - state:
+        name: GO_TO_LIVING_ROOM
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: FIND_PEOPLE
+            - transition:
+                name: failed
+                state: GO_TO_LIVING_ROOM
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [LIVING_ROOM]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: FIND_PEOPLE
+        state_module_name: mdr_perception_behaviours.find_people
+        state_class_name: FindPeople
+        transitions:
+            - transition:
+                name: succeeded
+                state: CHOOSE_ACTION
+            - transition:
+                name: failed
+                state: GO_TO_LIVING_ROOM
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: CHOOSE_ACTION
+        state_module_name: mdr_serve_drinks.scenario_states.choose_action
+        state_class_name: ChooseAction
+        transitions:
+            - transition:
+                name: get_order
+                state: GET_ORDER_GO_TO_PERSON
+            - transition:
+                name: deliver_drink
+                state: DELIVER_DRINK_GO_TO_PERSON
+            - transition:
+                name: done
+                state: DONE
+            - transition:
+                name: failed
+                state: GO_TO_LIVING_ROOM
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    #
+    # Approach a person and ask for their order
+    #
+    - state:
+        name: GET_ORDER_GO_TO_PERSON
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GET_ORDER_DIALOGUE
+            - transition:
+                name: failed
+                state: GO_TO_LIVING_ROOM
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [PERSON_WITHOUT_DRINK]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GET_ORDER_DIALOGUE
+        state_module_name: mdr_speech_behaviours.dialogue
+        state_class_name: Dialogue
+        transitions:
+            - transition:
+                name: succeeded
+                state: GET_DRINK_GO_TO_BAR
+            - transition:
+                name: failed
+                state: GO_TO_LIVING_ROOM
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: dialogue_model
+                value: get_drink_order
+
+    #
+    # Get a drink from the bar (we'll try to pick it ourselves for now)
+    #
+    - state:
+        name: GET_DRINK_GO_TO_BAR
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GET_DRINK_PERCEIVE_BAR
+            - transition:
+                name: failed
+                state: GET_DRINK_GO_TO_BAR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [BAR]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GET_DRINK_PERCEIVE_BAR
+        state_module_name: mdr_perception_behaviours.perceive_planes
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: GET_DRINK_PICK
+            - transition:
+                name: failed
+                state: GET_DRINK_GO_TO_BAR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: plane_prefix
+                value: bar
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GET_DRINK_PICK
+        state_module_name: mdr_manipulation_behaviours.pick_object
+        state_class_name: PickObject
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_LIVING_ROOM
+            - transition:
+                name: failed
+                state: GET_DRINK_GO_TO_BAR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: picking_surface_prefix
+                value: bar
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    #
+    # Deliver the drink to the person who ordered it
+    #
+    - state:
+        name: DELIVER_DRINK_GO_TO_PERSON
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: DELIVER_DRINK_HAND_OVER
+            - transition:
+                name: failed
+                state: DELIVER_DRINK_GO_TO_PERSON
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [PERSON_WITH_ORDER]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: DELIVER_DRINK_HAND_OVER
+        state_module_name: mdr_manipulation_behaviours.hand_over_object
+        state_class_name: HandOverObject
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_LIVING_ROOM
+            - transition:
+                name: failed
+                state: DELIVER_DRINK_GO_TO_PERSON
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
