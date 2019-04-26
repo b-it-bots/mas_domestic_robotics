@@ -21,6 +21,7 @@ class MoveArmSM(ActionSMBase):
             self.arm = moveit_commander.MoveGroupCommander(self.arm_name)
         except:
             rospy.logerr('[move_arm] %s could not be initialised', self.arm_name)
+            return FTSMTransitions.INIT_FAILED
         return FTSMTransitions.INITIALISED
 
     def running(self):
@@ -64,6 +65,10 @@ class MoveArmSM(ActionSMBase):
         rospy.loginfo('[move_arm] Arm motion successful')
         self.result = self.set_result(True)
         return FTSMTransitions.DONE
+
+    def recovering(self):
+        rospy.sleep(5.)
+        return FTSMTransitions.DONE_RECOVERING
 
     def set_result(self, success):
         result = MoveArmResult()
