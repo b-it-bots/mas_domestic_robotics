@@ -34,7 +34,7 @@ class DMPExecutor(object):
                                                  TwistStamped, queue_size=1)
         self.vel_publisher_base = rospy.Publisher(self.base_vel_topic, Twist, queue_size=1)
         self.feedforward_gain = 30
-        self.feedback_gain = 1
+        self.feedback_gain = 10
         self.sigma_threshold_upper = 0.12
         self.sigma_threshold_lower = 0.07
         self.base_feedback_gain = 2.0
@@ -252,10 +252,10 @@ class DMPExecutor(object):
 
         self.generate_trajectory(goal, initial_pos)
         pos = []
-        for i in range(self.pos.shape[0]):
-            pos.append(self.tranform_pose(self.pos[i, 0:3]))
+        for i in range(self.pos.shape[1]):
+            pos.append(self.tranform_pose(self.pos[:, i]))
         pos = np.array(pos)
-        self.pos = pos
+        self.pos = pos.T
         self.publish_path()
 
         # transform pose to base link
