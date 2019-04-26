@@ -44,11 +44,14 @@ class MbotPlanner(object):
         self.interpretation_received = True
 
     def process_interpretation(self):
-        '''
-        Function that publish the right action depending on the interpretation received
+        '''Publishes an action depending on the interpretation received.
         '''
         for action in self.received_interpretation.sentence_recognition:
             dispatch_msg = self.get_dispatch_msg(action)
+            if not dispatch_msg.name:
+                rospy.logwarn('[process_interpretation] Got an unknown action; ignoring request')
+                continue
+
             rospy.loginfo('\033[1;36m[process_interpretation] Dispatching action {0}\033[0;37m'.format(dispatch_msg.name))
             self.action_dispatch_pub.publish(dispatch_msg)
             while not self.action_completed and not self.action_failed:
@@ -63,36 +66,35 @@ class MbotPlanner(object):
         rospy.loginfo('\033[1;36m[process_interpretation] Done dispatching actions\033[0;37m')
 
     def get_dispatch_msg(self, action):
-       dispatch_msg = plan_dispatch_msgs.ActionDispatch()
+        dispatch_msg = plan_dispatch_msgs.ActionDispatch()
 
-       arg_msg = diag_msgs.KeyValue()
-       arg_msg.key = 'bot'
-       arg_msg.value = self.robot_name
-       dispatch_msg.parameters.append(arg_msg)
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'bot'
+        arg_msg.value = self.robot_name
+        dispatch_msg.parameters.append(arg_msg)
 
-       if action.intention == 'go':
-           dispatch_msg.name = 'move_base'
-           for slot in action.slots:
-               arg_msg = diag_msgs.KeyValue()
-               if slot.type == 'destination':
-                   arg_msg.key = 'to'
-               arg_msg.value = slot.data
-               dispatch_msg.parameters.append(arg_msg)
-       elif action.intention == 'take':
-           for slot in action.slots:
-               arg_msg = diag_msgs.KeyValue()
-               if slot.type == 'object':
-                   arg_msg.key = 'obj'
-               elif slot.type == 'source':
-                   dispatch_msg.name = 'pick'
-                   arg_msg.key = 'surface'
-               elif slot.type == 'destination':
-                   dispatch_msg.name = 'place'
-                   arg_msg.key = 'surface'
-               arg_msg.value = slot.data
-               dispatch_msg.parameters.append(arg_msg)
-
-       return dispatch_msg
+        if action.intention == 'go':
+            dispatch_msg.name = 'move_base'
+            for slot in action.slots:
+                arg_msg = diag_msgs.KeyValue()
+                if slot.type == 'destination':
+                    arg_msg.key = 'to'
+                arg_msg.value = slot.data
+                dispatch_msg.parameters.append(arg_msg)
+        elif action.intention == 'take':
+            for slot in action.slots:
+                arg_msg = diag_msgs.KeyValue()
+                if slot.type == 'object':
+                    arg_msg.key = 'obj'
+                elif slot.type == 'source':
+                    dispatch_msg.name = 'pick'
+                    arg_msg.key = 'surface'
+                elif slot.type == 'destination':
+                    dispatch_msg.name = 'place'
+                    arg_msg.key = 'surface'
+                arg_msg.value = slot.data
+                dispatch_msg.parameters.append(arg_msg)
+        return dispatch_msg
 
     def action_feedback_cb(self, msg):
         if msg.status == 'action achieved':
@@ -105,7 +107,6 @@ class MbotPlanner(object):
             if self.interpretation_received == True:
                 # lower flag
                 self.interpretation_received = False
-
 
                 # recognize intention
                 self.process_interpretation()
