@@ -140,32 +140,6 @@ class WaitForUserInput(smach.State):
                             rospy.logerr("No input received")
                             return 'no_input_received'
 
-                if SpeechRecognizer.check_internet_connection():
-                    try:
-                        recognized_speech = self.recognizer.recognize_google(audio)
-                    except sr.UnknownValueError:
-                        userdata.input_error_message = "Input not understood."
-                        rospy.logerr("Input not understood.")
-                        return 'input_not_understood'
-                    except sr.RequestError:
-                        userdata.input_error_message = "No input received."
-                        rospy.logerr("No input received")
-                        return 'no_input_received'
-                else:
-                    try:
-                        if self.use_kaldi:
-                            recognized_speech = self.recognizer.recognize_kaldi(audio)[0]
-                        else:
-                            recognized_speech = self.recognizer.recognize_sphinx(audio)
-                    except sr.UnknownValueError:
-                        userdata.input_error_message = "Input not understood."
-                        rospy.logerr("Input not understood.")
-                        return 'input_not_understood'
-                    except sr.RequestError:
-                        userdata.input_error_message = "No input received."
-                        rospy.logerr("No input received")
-                        return 'no_input_received'
-
         except Exception as exc:
             rospy.logerr(exc)
 
