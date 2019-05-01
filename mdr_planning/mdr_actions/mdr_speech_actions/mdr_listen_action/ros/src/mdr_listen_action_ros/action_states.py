@@ -105,6 +105,41 @@ class WaitForUserInput(smach.State):
                 use google, otherwise use pocketsphinx for speech recognition.
                 """
                 recognized_speech = ""
+                if self.use_kaldi:
+                    try:
+                        recognized_speech = self.recognizer.recognize_kaldi(audio)[0]
+                    except sr.UnknownValueError:
+                        userdata.input_error_message = "Input not understood."
+                        rospy.logerr("Input not understood.")
+                        return 'input_not_understood'
+                    except sr.RequestError:
+                        userdata.input_error_message = "No input received."
+                        rospy.logerr("No input received")
+                        return 'no_input_received'
+                else:
+                    if SpeechRecognizer.check_internet_connection():
+                        try:
+                            recognized_speech = self.recognizer.recognize_google(audio)
+                        except sr.UnknownValueError:
+                            userdata.input_error_message = "Input not understood."
+                            rospy.logerr("Input not understood.")
+                            return 'input_not_understood'
+                        except sr.RequestError:
+                            userdata.input_error_message = "No input received."
+                            rospy.logerr("No input received")
+                            return 'no_input_received'
+                    else:
+                        try:
+                            recognized_speech = self.recognizer.recognize_sphinx(audio)
+                        except sr.UnknownValueError:
+                            userdata.input_error_message = "Input not understood."
+                            rospy.logerr("Input not understood.")
+                            return 'input_not_understood'
+                        except sr.RequestError:
+                            userdata.input_error_message = "No input received."
+                            rospy.logerr("No input received")
+                            return 'no_input_received'
+
                 if SpeechRecognizer.check_internet_connection():
                     try:
                         recognized_speech = self.recognizer.recognize_google(audio)
