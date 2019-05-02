@@ -5,7 +5,7 @@ Created on 2018.10.09
 
 @author: Patrick Nagel, Roberto Cai Wu
 """
-
+import sys
 import rospy
 import smach
 import speech_recognition as sr
@@ -18,12 +18,14 @@ class InitializeListen(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'failed', 'processing'],
-                             input_keys=['error_message', 'listen_feedback'],
-                             output_keys=['listen_feedback', 'init_error_message'])
+                             input_keys=['error_message', 'listen_feedback', 'model_directory', 'use_kaldi'],
+                             output_keys=['listen_feedback', 'init_error_message', 'model_directory', 'use_kaldi'])
         self.feedback_given = False
 
     def execute(self, userdata):
         rospy.loginfo("Executing state InitializeListen")
+        print(userdata.model_directory)
+        print(userdata.use_kaldi)
 
         # Give some feedback.
         while not self.feedback_given:
@@ -50,9 +52,8 @@ class WaitForUserInput(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, outcomes=['input_received', 'input_not_understood', 'no_input_received', 'processing'],
-                             input_keys=['listen_feedback', 'accoustic_input'],
-                             output_keys=['listen_feedback', 'accoustic_input',
-                                          'input_error_message'])
+                             input_keys=['listen_feedback', 'accoustic_input', 'model_directory', 'use_kaldi'],
+                             output_keys=['listen_feedback', 'accoustic_input', 'input_error_message'])
         self.feedback_given = False
         self.input_received = False
 
