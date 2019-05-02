@@ -47,6 +47,8 @@ if __name__ == '__main__':
 
     # construct state machine
     sm = ListenSkill()
+    sm.userdata.model_directory = rospy.get_param('~model_directory')
+    sm.userdata.use_kaldi = rospy.get_param('~use_kaldi')
 
     # smach viewer
     sis = IntrospectionServer('listen_smach_viewer', sm, '/LISTEN_SMACH_VIEWER')

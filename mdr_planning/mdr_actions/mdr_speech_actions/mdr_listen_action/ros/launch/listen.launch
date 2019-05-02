@@ -1,7 +1,8 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="mdr_listen_action" type="listen" name="listen_server" output="screen" ns="mdr_actions" >
-        <param name="model_directory" type="str" value="$(find mdr_speech_recognition)/config/models/tdnn_en" />
+        <!-- <param name="model_directory" type="str" value="$(find mdr_speech_recognition)/config/models/tdnn_en" /> -->
+        <param name="model_directory" type="str" value="/home/rob/speech/data/models/tdnn-en" />
         <param name="use_kaldi"       value="true"/>
     </node>
 </launch>

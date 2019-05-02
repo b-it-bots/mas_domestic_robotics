@@ -55,17 +55,7 @@ class WaitForUserInput(smach.State):
                                           'input_error_message'])
         self.feedback_given = False
         self.input_received = False
-        self.model_directory = rospy.get_param('~model_directory')
-        self.use_kaldi = rospy.get_param('~use_kaldi')
-        self.recognizer = sr.Recognizer()
-        if self.use_kaldi:
-            try:
-                self.recognizer.load_kaldi_model(model_directory=self.model_directory)
-            except:
-                self.use_kaldi = False
-                rospy.logerr(sys.exc_info()[0])
-                rospy.logerr('Unable to load Kaldi model. Using PocketSphinx as offline speech recognition')
-        self.microphone = sr.Microphone()
+
 
     def callback(self, data, userdata):
         # TODO: SpeechVerifier, here!
@@ -91,6 +81,17 @@ class WaitForUserInput(smach.State):
             self.feedback_given = True
             return 'processing'
 
+        self.model_directory = userdata.model_directory
+        self.use_kaldi = userdata.use_kaldi
+        self.recognizer = sr.Recognizer()
+        if self.use_kaldi:
+            try:
+                self.recognizer.load_kaldi_model(model_directory=self.model_directory)
+            except:
+                self.use_kaldi = False
+                rospy.logerr(sys.exc_info()[0])
+                rospy.logerr('Unable to load Kaldi model. Using PocketSphinx as offline speech recognition')
+        self.microphone = sr.Microphone()
 
         with self.microphone as source:
             self.recognizer.adjust_for_ambient_noise(source)
