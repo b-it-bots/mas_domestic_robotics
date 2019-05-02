@@ -3,7 +3,7 @@
 """
 Created on 2018.10.09
 
-@author: Patrick Nagel
+@author: Patrick Nagel, Roberto Cai Wu
 """
 
 import rospy
@@ -56,13 +56,17 @@ class WaitForUserInput(smach.State):
         self.feedback_given = False
         self.input_received = False
 
-    def callback(self, data, userdata):
-        rospy.loginfo("I heard: " + data)
 
+    def callback(self, data, userdata):
         # TODO: SpeechVerifier, here!
         #sv = SpeechVerifier("../../../common/config/dict", "../../../common/config/sentence_pool.txt", data.sentences)
         #userdata.accoustic_input = sv.find_best_match()
-        self.input_received = True
+
+        if data != "":
+            rospy.loginfo("You said: " + data)
+            self.input_received = True
+        else:
+            self.input_received = False
         userdata.accoustic_input = data
 
     def execute(self, userdata):
@@ -77,43 +81,68 @@ class WaitForUserInput(smach.State):
             self.feedback_given = True
             return 'processing'
 
-        recognizer = sr.Recognizer()
-        microphone = sr.Microphone()
-
-        with microphone as source:
-            recognizer.adjust_for_ambient_noise(source)
-
-        with microphone as source:
-            rospy.loginfo("Listening...")
-            audio = recognizer.listen(source)
-        rospy.loginfo("Got a sound; recognizing...")
-
-        """
-        Google over PocketSphinx: In case there is a internet connection
-        use google, otherwise use pocketsphinx for speech recognition.
-        """
-        if SpeechRecognizer.check_internet_connection():
+        self.model_directory = userdata.model_directory
+        self.use_kaldi = userdata.use_kaldi
+        self.recognizer = sr.Recognizer()
+        if self.use_kaldi:
             try:
-                recognized_speech = recognizer.recognize_google(audio)
-            except sr.UnknownValueError:
-                userdata.input_error_message = "Input not understood."
-                rospy.logerr("Input not understood.")
-                return 'input_not_understood'
-            except sr.RequestError:
-                userdata.input_error_message = "No input received."
-                rospy.logerr("No input received")
-                return 'no_input_received'
-        else:
-            try:
-                recognized_speech = recognizer.recognize_sphinx(audio)
-            except sr.UnknownValueError:
-                userdata.input_error_message = "Input not understood."
-                rospy.logerr("Input not understood.")
-                return 'input_not_understood'
-            except sr.RequestError:
-                userdata.input_error_message = "No input received."
-                rospy.logerr("No input received")
-                return 'no_input_received'
+                self.recognizer.load_kaldi_model(model_directory=self.model_directory)
+            except:
+                self.use_kaldi = False
+                rospy.logerr(sys.exc_info()[0])
+                rospy.logerr('Unable to load Kaldi model. Using PocketSphinx as offline speech recognition')
+        self.microphone = sr.Microphone()
+
+        with self.microphone as source:
+            self.recognizer.adjust_for_ambient_noise(source)
+        try:
+            with self.microphone as source:
+                rospy.loginfo("Listening...")
+                audio = self.recognizer.listen(source)
+                rospy.loginfo("Got a sound; recognizing...")
+
+                """
+                Google over PocketSphinx: In case there is a internet connection
+                use google, otherwise use pocketsphinx for speech recognition.
+                """
+                recognized_speech = ""
+                if self.use_kaldi:
+                    try:
+                        recognized_speech = self.recognizer.recognize_kaldi(audio)[0]
+                    except sr.UnknownValueError:
+                        userdata.input_error_message = "Input not understood."
+                        rospy.logerr("Input not understood.")
+                        return 'input_not_understood'
+                    except sr.RequestError:
+                        userdata.input_error_message = "No input received."
+                        rospy.logerr("No input received")
+                        return 'no_input_received'
+                else:
+                    if SpeechRecognizer.check_internet_connection():
+                        try:
+                            recognized_speech = self.recognizer.recognize_google(audio)
+                        except sr.UnknownValueError:
+                            userdata.input_error_message = "Input not understood."
+                            rospy.logerr("Input not understood.")
+                            return 'input_not_understood'
+                        except sr.RequestError:
+                            userdata.input_error_message = "No input received."
+                            rospy.logerr("No input received")
+                            return 'no_input_received'
+                    else:
+                        try:
+                            recognized_speech = self.recognizer.recognize_sphinx(audio)
+                        except sr.UnknownValueError:
+                            userdata.input_error_message = "Input not understood."
+                            rospy.logerr("Input not understood.")
+                            return 'input_not_understood'
+                        except sr.RequestError:
+                            userdata.input_error_message = "No input received."
+                            rospy.logerr("No input received")
+                            return 'no_input_received'
+
+        except Exception as exc:
+            rospy.logerr(exc)
 
         self.callback(recognized_speech, userdata)
 
