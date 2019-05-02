@@ -2,11 +2,8 @@
 <package format="2">
   <name>mdr_find_my_mates</name>
   <version>1.0.0</version>
-<<<<<<< HEAD
   <description>State machine and launch files for a RoboCup@Home "finy my mates" scenario</description>
-=======
-  <description>State machine and launch files for a RoboCup@Home finy my mates scenario</description>
->>>>>>> 610c5f3c8b4487343f491f31db5f47627f0a8a00
+
   <license>GPLv3</license>
 
   <author email="patrick.nagel@h-brs.de">Patrick Nagel</author>
@@ -15,34 +12,26 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>rospy</build_depend>
-<<<<<<< HEAD
   <build_depend>roslint</build_depend>
   <build_depend>mas_execution_manager</build_depend>
   <build_depend>mdr_interview_action</build_depend>
   <build_depend>mdr_find_people_action</build_depend>
-=======
-  <build_depend>mas_execution_manager</build_depend>
-  <build_depend>mdr_listen_action</build_depend>
-  <build_depend>mdr_process_speech_command_action</build_depend>
->>>>>>> 610c5f3c8b4487343f491f31db5f47627f0a8a00
   <build_depend>mdr_move_base_action</build_depend>
+
+  <build_depend>mdr_listen_action</build_depend>
   <build_depend>mdr_navigation_behaviours</build_depend>
   <build_depend>mdr_perception_behaviours</build_depend>
+  <build_depend>mdr_process_speech_command_action</build_depend>
+  <build_depend>mdr_manipulation_behaviours</build_depend>
 
   <run_depend>rospy</run_depend>
   <run_depend>mas_execution_manager</run_depend>
-<<<<<<< HEAD
   <run_depend>mdr_interview_action</run_depend>
   <run_depend>mdr_find_people_action</run_depend>
   <run_depend>mdr_move_base_action</run_depend>
-  <run_depend>mdr_navigation_behaviours</run_depend>
-  <run_depend>mdr_perception_behaviours</run_depend>
-=======
   <run_depend>mdr_listen_action</run_depend>
-  <run_depend>mdr_process_speech_command_action</run_depend>
-  <run_depend>mdr_move_base_action</run_depend>
   <run_depend>mdr_navigation_behaviours</run_depend>
   <run_depend>mdr_perception_behaviours</run_depend>
+  <run_depend>mdr_process_speech_command_action</run_depend>
   <run_depend>mdr_manipulation_behaviours</run_depend>
->>>>>>> 610c5f3c8b4487343f491f31db5f47627f0a8a00
 </package>
