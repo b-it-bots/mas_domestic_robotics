@@ -38,7 +38,7 @@ class MoveToPerson(ScenarioStateBase):
 
         person_to_interview = people_identifiers[0]
         person_info = self.kb_interface.get_obj_instance(person_to_interview, Person)
-        person_pose = person_info.pose
+        person_pose = person_info.safe_pose
 
         move_base_goal = MoveBaseGoal()
         move_base_goal.goal_type = MoveBaseGoal.POSE
