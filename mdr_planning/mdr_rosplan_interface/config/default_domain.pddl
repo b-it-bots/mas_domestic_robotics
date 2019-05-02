@@ -9,6 +9,7 @@
         robot
         door
         plane
+        person
     )
 
     (:predicates
@@ -26,6 +27,8 @@
         (in ?obj - object ?source - object)
         (holding ?bot - robot ?obj - object)
         (empty_gripper ?bot - robot)
+        (known ?person - person)
+        (unknown ?person - person)
     )
 
     (:durative-action move_base
