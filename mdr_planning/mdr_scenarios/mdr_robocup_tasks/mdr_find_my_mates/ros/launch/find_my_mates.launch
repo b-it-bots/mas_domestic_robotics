@@ -2,23 +2,11 @@
 <launch>
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
 
-    <!-- Actions -->
-<<<<<<< HEAD
     <include file="$(find mdr_interview_action)/ros/launch/interview.launch" />
-
     <include file="$(find mdr_find_people_action)/ros/launch/find_people.launch" />
 
     <!-- State machine -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="find_my_mates" output="screen">
         <param name="sm_config_file" type="str" value="$(find mdr_find_my_mates)/config/find_my_mates_sm.yaml" />
-=======
-    <include file="$(find mdr_listen_action)/ros/launch/listen.launch" />
-    <include file="$(find mdr_process_speech_command_action)/ros/launch/process_command.launch" />
-    <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" />
-
-    <!-- State machine -->
-    <node pkg="mas_execution_manager" type="state_machine_creator" name="store_groceries" output="screen">
-        <param name="sm_config_file" type="str" value="$(find mdr_find_my_mates)/config/mdr_find_my_mates.yaml" />
->>>>>>> 610c5f3c8b4487343f491f31db5f47627f0a8a00
     </node>
 </launch>
