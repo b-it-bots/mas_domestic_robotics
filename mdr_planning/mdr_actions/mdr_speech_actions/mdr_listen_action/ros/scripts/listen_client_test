@@ -36,7 +36,7 @@ if __name__ == '__main__':
     try:
         client.send_goal(goal)
 
-        timeout = 15.0
+        timeout = 10.0
         client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
         rospy.loginfo(client.get_result())
 
