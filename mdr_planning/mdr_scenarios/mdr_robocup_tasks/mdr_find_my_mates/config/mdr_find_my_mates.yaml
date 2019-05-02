@@ -85,7 +85,7 @@ state_descriptions:
                 value: []
     - state:
         name: CHECK_LIST_OF_PEOPLE_TO_FIND
-        state_module_name: mdr_knowledge_behaviours.check_mates_to_find
+        state_module_name: mdr_find_my_mates.scenario_states.check_mates_to_find
         state_class_name: CheckMatesToFind
         transitions:
             - transition:
