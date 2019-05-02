@@ -1,0 +1,173 @@
+# Description: Defines a state machine for a RoboCup@Home find my mates scenario
+# Author: Patrick Nagel
+# Email: patrick.nagel@h-brs.de
+sm_id: mdr_find_my_mates
+states: [LOCALIZE_PERSON, ANALYZE_LOCATION, REQUEST_LOCATION_INFORMATION, ANALYZE_PERSON, REQUEST_PERSONAL_INFORMATION, REPORT_FINDINGS, REQUEST_HELP]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: LOCALIZE_PERSON
+        state_module_name:
+        state_class_name: LocalizePerson
+        transitions:
+            - transition:
+                name: person_localized
+                state: ANALYZE_LOCATION
+            - transition:
+                name: failed
+                state: REQUEST_HELP
+    - state:
+        name: ANALYZE_LOCATION
+        state_module_name:
+        state_class_name: AnalyzeLocation
+        transitions:
+            - transition:
+                name: failed
+                state: REQUEST_LOCATION_INFORMATION
+            - transition:
+                name: succeeded
+                state: ANALYZE_PERSON
+    - state:
+        name: REQUEST_LOCATION_INFORMATION
+        state_module_name:
+        state_class_name: RequestLocationInformation
+        transitions:
+            - transition:
+                name: succeeded
+                state: ANALYZE_PERSON
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: ANALYZE_PERSON
+        state_module_name:
+        state_class_name: AnalyzePerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: REQUEST_PERSONAL_INFORMATION
+            - transition:
+                name: failed
+                state: REQUEST_PERSONAL_INFORMATION
+    - state:
+        name: REQUEST_PERSONAL_INFORMATION
+        state_module_name:
+        state_class_name: RequestPersonalInformation
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_OPERATOR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_OPERATOR
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: REPORT_FINDINGS
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [OPERATOR_LOCATION]
+    - state:
+        name: REPORT_FINDINGS
+        state_module_name:
+        state_class_name: ReportFindings
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOCALIZE_PERSON
+    - state:
+        name: LOCALIZE_PERSON
+        state_module_name:
+        state_class_name: LocalizePerson
+        transitions:
+            - transition:
+                name: person_localized
+                state: ANALYZE_LOCATION
+            - transition:
+                name: failed
+                state: REQUEST_HELP
+    - state:
+        name: ANALYZE_LOCATION
+        state_module_name:
+        state_class_name: AnalyzeLocation
+        transitions:
+            - transition:
+                name: failed
+                state: REQUEST_LOCATION_INFORMATION
+            - transition:
+                name: succeeded
+                state: ANALYZE_PERSON
+    - state:
+        name: REQUEST_LOCATION_INFORMATION
+        state_module_name:
+        state_class_name: RequestLocationInformation
+        transitions:
+            - transition:
+                name: succeeded
+                state: ANALYZE_PERSON
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: ANALYZE_PERSON
+        state_module_name:
+        state_class_name: AnalyzePerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: REQUEST_PERSONAL_INFORMATION
+            - transition:
+                name: failed
+                state: REQUEST_PERSONAL_INFORMATION
+    - state:
+        name: REQUEST_PERSONAL_INFORMATION
+        state_module_name:
+        state_class_name: RequestPersonalInformation
+        transitions:
+            - transition:
+                name: succeeded
+                state: REPORT_FINDINGS
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_OPERATOR
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: REPORT_FINDINGS
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [OPERATOR_LOCATION]
+    - state:
+        name: REPORT_FINDINGS
+        state_module_name:
+        state_class_name: ReportFindings
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
