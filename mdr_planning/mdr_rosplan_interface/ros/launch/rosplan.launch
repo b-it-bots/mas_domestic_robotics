@@ -10,6 +10,9 @@
     <arg name="action_dispatch_topic" default="/kcl_rosplan/action_dispatch" />
     <arg name="action_feedback_topic" default="/kcl_rosplan/action_feedback" />
 
+    <param name="/ontology_url" value="file://$(find mas_knowledge_base)/common/ontology/apartment_go_2019.owl" />
+    <param name="/ontology_class_prefix" value="apartment" />
+
     <!-- data paths -->
     <param name="/rosplan/data_path" value="$(arg data_path)" />
     <param name="/rosplan/planner_path" value="$(arg planner_path)" />
