@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+
+import threading
+
+import rospy
+from sensor_msgs.msg import Image, PointCloud2
+from cv_bridge import CvBridge, CvBridgeError
+from mas_perception_libs import ImageDetectionKey
+from mas_perception_libs.visualization import draw_labeled_boxes
+from mas_perception_libs.utils import cloud_msg_to_cv_image
+from mdr_find_people.find_people import FindPeople
+
+
+class FindPeopleTest(object):
+    """This class is for testing the functionalities of ros/src/mdr_find_people/find_people.py
+    For testig the action server, see find_people_client_test.
+    """
+
+
+    def __init__(self):
+        self.lock = threading.Lock()
+        self.proc_thread = None
+
+        self.bridge = CvBridge()
+
+        # Setup rospy things
+        rospy.init_node("find_people_node")
+        self.pub = rospy.Publisher('/test_recognition', Image, latch=True, queue_size=1)
+        self.sub = rospy.Subscriber('/hsrb/head_rgbd_sensor/depth_registered/rectified_points', PointCloud2, self.process_msg)
+        rospy.spin()
+
+
+    def process_msg(self, data):
+        # Process only one message at a time
+        # If busy, skip incoming messages
+        with self.lock:
+            if self.proc_thread is None:
+                self.proc_thread = threading.Thread(target=self.run, args=(data,))
+                self.proc_thread.start()
+            else:
+                #print('Busy - skipping frame')
+                pass
+
+
+    def run(self, cloud_msg):
+        predictions, bb2ds, poses = FindPeople.detect(cloud_msg)
+
+        # Render images with bounding boxes
+        image = FindPeople.render_image_with_detections(cloud_msg, bb2ds)
+
+        # Convert cv_img to ros message and publish it to a topic
+        # Can be seen in rviz
+        try:
+            img_msg = self.bridge.cv2_to_imgmsg(image, 'bgr8')
+            self.pub.publish(img_msg)
+        except CvBridgeError as e:
+            print('Couldn\'t convert cv image to ROS message: ' + e.message)
+
+        # Print some additional info
+        self.print_info(cloud_msg, predictions, bb2ds, poses)
+
+
+    def print_info(self, cloud_msg, predictions, bounding_boxes, poses):
+        for i in range(len(predictions)):
+            pred = predictions[i]
+            bb2d = bounding_boxes[i]
+            pose = poses[i]
+
+            print(pred[ImageDetectionKey.CLASS])
+            print('  conf: {}'.format(pred[ImageDetectionKey.CONF]))
+            print('  pos: x_min:{:.2f} x_max:{:.2f} y_min:{:.2f} y_max:{:.2f}'.format(pred[ImageDetectionKey.X_MIN], pred[ImageDetectionKey.X_MAX], pred[ImageDetectionKey.Y_MIN], pred[ImageDetectionKey.Y_MAX]))
+            print('  pose (frame {}): X={:.3f} y={:.3f} z={:.3f}'.format(cloud_msg.header.frame_id, pose[0], pose[1], pose[2]))
+
+
+
+
+if __name__ == '__main__':
+    FindPeopleTest()

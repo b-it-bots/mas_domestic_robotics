@@ -1,0 +1,57 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_rosplan_interface.action_client_base import ActionClientBase
+from mdr_find_people.msg import FindPeopleAction, FindPeopleGoal
+
+class FindPeopleClient(ActionClientBase):
+    def __init__(self):
+        super(FindPeopleClient, self).__init__()
+
+        while not rospy.is_shutdown():
+            rospy.sleep(0.1)
+
+    def call_action(self, msg):
+        # we only react to calls to this action
+        if self.action_name != msg.name.lower():
+            return
+
+        self.action_id = msg.action_id
+
+        client = actionlib.SimpleActionClient(self.action_server_name, FindPeopleAction)
+        client.wait_for_server()
+        goal = self.get_action_message(msg)
+
+        # calling the actionlib server and waiting for the execution to end
+        rospy.loginfo('Sending action lib goal to find_people_server,')
+        client.send_goal(goal)
+        client.wait_for_result(rospy.Duration.from_sec(int(self.action_timeout)))
+        result = client.get_result()
+
+        if result and result.success:
+            rospy.loginfo('[FIND_PEOPLE] Updating the knowledge base')
+            self.update_knowledge_base(result.person_list)
+            self.send_action_feedback(True)
+        else:
+            self.send_action_feedback(False)
+
+    def get_action_message(self, rosplan_action_msg):
+        '''Reads the action parameters and uses them to initialise an actionlib message.
+        '''
+        goal = FindPeopleGoal()
+        return goal
+
+    def update_knowledge_base(self, person_list):
+        '''Updates the knowledge base with the following facts:
+        * a list of people that the robot see
+        '''
+        facts_to_add = [('people_seen', [('people', person_list)])]
+        self.kb_interface.update_kb(facts_to_add, [])
+
+if __name__ == '__main__':
+    rospy.init_node('mdr_find_people_client')
+    try:
+        FindPeopleClient()
+    except rospy.ROSInterruptException:
+        pass

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+
+    <include file="$(find mdr_interview_action)/ros/launch/interview.launch" />
+    <include file="$(find mdr_find_people_action)/ros/launch/find_people.launch" />
+
+    <!-- State machine -->
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="find_my_mates" output="screen">
+        <param name="sm_config_file" type="str" value="$(find mdr_find_my_mates)/config/find_my_mates_sm.yaml" />
+    </node>
+</launch>

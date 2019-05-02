@@ -1,0 +1,40 @@
+#!/usr/bin/env python2
+
+import rospy
+import smach
+
+from smach_ros import ActionServerWrapper, IntrospectionServer
+from mdr_find_people.msg import FindPeopleAction, FindPeopleResult
+from mdr_find_people.action_states import FindPeopleState
+
+
+class FindPeopleSkill(smach.StateMachine):
+    
+    def __init__(self):
+        smach.StateMachine.__init__(self,
+                                    outcomes=['OVERALL_SUCCESS', 'OVERALL_FAIL'],
+                                    input_keys=['find_people_goal'],
+                                    output_keys=['find_people_result'])
+
+        with self:
+            smach.StateMachine.add('FIND_PEOPLE', FindPeopleState(),
+                                   transitions={'succeeded': 'OVERALL_SUCCESS',
+                                                'failed': 'OVERALL_FAIL'})
+
+
+if __name__ == '__main__':
+    rospy.init_node('find_people_server')
+
+    sm = FindPeopleSkill()
+
+    asw = ActionServerWrapper(
+        server_name='find_people_server',
+        action_spec=FindPeopleAction,
+        wrapped_container=sm,
+        succeeded_outcomes=['OVERALL_SUCCESS'],
+        aborted_outcomes=['OVERALL_FAIL'],
+        goal_key='find_people_goal',
+        result_key='find_people_result')
+
+    asw.run_server()
+    rospy.spin()
