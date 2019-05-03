@@ -10,8 +10,6 @@ state_descriptions:
     - state:
         name: RECEIVE_INFORMATION_FROM_OPERATOR
     - state:
-        name: PREPARE_TO_SCAN_PEOPLE
-    - state:
         name: FIND_OBJECT
     - state:
         name: GIVE_DIRECTIONS
