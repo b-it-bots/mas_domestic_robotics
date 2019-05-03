@@ -5,7 +5,7 @@ import actionlib
 import speech_recognition as sr
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
-from mdr_simple_listen_action.msg import ListenFeedback, ListenResult
+from mdr_listen_action.msg import ListenFeedback, ListenResult
 from mdr_speech_recognition.speech_recognizer import SpeechRecognizer
 
 class ListenSM(ActionSMBase):
