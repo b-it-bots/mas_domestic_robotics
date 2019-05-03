@@ -1,0 +1,11 @@
+---
+# result
+string message
+string message_type
+bool success
+---
+# feedback
+string status_initialization
+string status_wait_for_user_input
+string status_process_input
+bool error_detected
