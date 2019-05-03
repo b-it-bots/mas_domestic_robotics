@@ -150,8 +150,8 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_TO_OPERATOR
-        state_module_name:
-        state_class_name:
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
         transitions:
             - transition:
                 name: succeeded
@@ -167,8 +167,8 @@ state_descriptions:
                 name: number_of_retries
                 value: 3
             - argument:
-                name:
-                value: []
+                name: destination_locations
+                value: [FIND_PEOPLE]
     - state:
         name: REPORT_TO_OPERATOR
         state_module_name: mdr_hri_behaviours.report
