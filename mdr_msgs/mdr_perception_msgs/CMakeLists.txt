@@ -52,7 +52,7 @@ add_message_files(
   FILES
   FaceBoundingBox.msg
   PersonInfo.msg
-#   Message2.msg
+  ObjectInfo.msg
 )
 
 ## Generate services in the 'srv' folder

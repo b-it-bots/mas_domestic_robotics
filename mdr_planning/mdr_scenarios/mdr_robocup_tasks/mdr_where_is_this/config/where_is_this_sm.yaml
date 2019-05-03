@@ -1,0 +1,36 @@
+# Description: Defines a state machine for a RoboCup@Home "Where is this?" scenario
+# Author: Argentina Ortega
+# Email: argentina.ortega@h-brs.de
+sm_id: mdr_where_is_this
+states: [ENTER_LIVING_ROOM, RECEIVE_INFORMATION_FROM_OPERATOR, FIND_OBJECT, GIVE_DIRECTIONS, EXIT]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: ENTER_LIVING_ROOM
+    - state:
+        name: RECEIVE_INFORMATION_FROM_OPERATOR
+    - state:
+        name: FIND_OBJECT
+    - state:
+        name: GIVE_DIRECTIONS
+    - state:
+        name: EXIT
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: EXIT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [OUTSIDE_ARENA]
+            - argument:
+                name: number_of_retries
+                value: 3
