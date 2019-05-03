@@ -1,3 +1,4 @@
+import os
 import rospy
 import actionlib
 import rospkg
@@ -25,32 +26,36 @@ class ReceiveInformation(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'receive_information')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
-        self.timeout = kwargs.get('timeout', 80)
+        self.timeout = kwargs.get('timeout', 25)
         self.threshold = kwargs.get('threshold', 0.68)
 
         # Load the rasa model
         rospack = rospkg.RosPack()
         package_directory = rospack.get_path("mdr_where_is_this")
-        model_directory = (package_directory + '/common/model/')
+        model_directory = os.path.join(package_directory, 'common', 'model', 'current', 'nlu')
         self.interpreter = Interpreter.load(model_directory)
+
+        # wait for listen action server
+        self.client = actionlib.SimpleActionClient("listen_server", ListenAction)
+        wait_result = self.client.wait_for_server(timeout=rospy.Duration(self.timeout))
+        if not wait_result:
+            raise RuntimeError('failed to wait for "listen_server" action')
 
     def execute(self, userdata):
         # Setup the listen goal
-        client = actionlib.SimpleActionClient("listen_server", ListenAction)
-        client.wait_for_server()
         goal = ListenGoal()
 
         self.say('Hi. What are you looking for?')
 
-        for times_repeated in range(number_of_retries):
+        for times_repeated in range(self.number_of_retries):
             # Ask again if not understood the first time
             if times_repeated > 0:
                 self.say("Sorry, I didn't understand you. Could you repeat that please?")
 
             # Listen for speech
-            client.send_goal(goal)
-            client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
-            listen_result = client.get_result()
+            self.client.send_goal(goal)
+            self.client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
+            listen_result = self.client.get_result()
 
             # Try to get the intent
             rasa_result = self.interpreter.parse(listen_result.message)
