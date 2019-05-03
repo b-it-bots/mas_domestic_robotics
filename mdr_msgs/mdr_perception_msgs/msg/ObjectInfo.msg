@@ -1,0 +1,2 @@
+string name
+string location
