@@ -7,8 +7,8 @@ outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
         name: RECEIVE_INFORMATION_FROM_OPERATOR
-        state_module_name: mdr_where_is_this.scenario_states.retrieve_information
-        state_class_name: RetrieveInformation
+        state_module_name: mdr_where_is_this.scenario_states.receive_information
+        state_class_name: ReceiveInformation
         transitions:
             - transition:
                 name: succeeded
@@ -51,7 +51,7 @@ state_descriptions:
                 state: MOVE_TO_OBJECT_LOCATION
             - transition:
                 name: failed
-                state: REQUEST_MOVEMENT
+                state: GIVE_DIRECTIONS
             - transition:
                 name: failed_after_retrying
                 state: FAILED

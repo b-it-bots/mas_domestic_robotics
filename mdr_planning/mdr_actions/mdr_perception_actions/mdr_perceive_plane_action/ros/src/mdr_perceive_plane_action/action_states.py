@@ -60,6 +60,7 @@ class PerceivePlaneSM(ActionSMBase):
                 probs.append(obj.probability)
 
             if self._classify_object:
+                rospy.loginfo('[perceive_plane] classifying objects')
                 indices, classes, probs = self._recog_service_proxy.classify_image_messages(image_messages)
                 for i in indices:
                     plane.object_list.objects[i].name = classes[i]
@@ -69,9 +70,11 @@ class PerceivePlaneSM(ActionSMBase):
 
             if len(classes) > 0:
                 objects_str = ', '.join(['{0} ({1:.3f})'.format(cls, prob) for cls, prob in zip(classes, probs)])
-                rospy.loginfo('[perceive_plane] on plane "{0}" found objects: {1}'.format(plane.name, objects_str))
+                rospy.loginfo('[perceive_plane] on plane "{0}" (height {1:.3f}) found objects: {2}'
+                              .format(plane.name, plane.plane_point.z, objects_str))
             else:
-                rospy.logwarn('[perceive_plane] no objects recognized for plane %s', plane.name)
+                rospy.logwarn('[perceive_plane] no objects recognized for plane "{0}" (height {1:.3f})'
+                              .format(plane.name, plane.plane_point.z))
 
         self.result = self.set_result(True, detected_planes)
         return FTSMTransitions.DONE
