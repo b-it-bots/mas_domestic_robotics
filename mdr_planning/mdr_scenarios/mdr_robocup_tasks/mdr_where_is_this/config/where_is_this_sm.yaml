@@ -1,36 +1,97 @@
-# Description: Defines a state machine for a RoboCup@Home "Where is this?" scenario
-# Author: Argentina Ortega
-# Email: argentina.ortega@h-brs.de
-sm_id: mdr_where_is_this
-states: [ENTER_LIVING_ROOM, RECEIVE_INFORMATION_FROM_OPERATOR, FIND_OBJECT, GIVE_DIRECTIONS, EXIT]
+# Description: Defines a state machine for a RoboCup@Home "where is this" scenario
+# Author: Patrick Nagel
+# Email: patrick.nagel@h-brs.de
+sm_id: mdr_find_my_mates
+states: [RECEIVE_INFORMATION_FROM_OPERATOR, PROVIDE_LOCATION_INFORMATION, GIVE_DIRECTIONS, MOVE_TO_OBJECT_LOCATION, DESCRIBE_LOCATION]
 outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
-        name: ENTER_LIVING_ROOM
-    - state:
         name: RECEIVE_INFORMATION_FROM_OPERATOR
+        state_module_name: mdr_hri_behaviours.retrieve_information
+        state_class_name: RetrieveInformation
+        transitions:
+            - transition:
+                name: succeeded
+                state: PROVIDE_LOCATION_INFORMATION
+            - transition:
+                name: failed
+                state: RECEIVE_INFORMATION_FROM_OPERATOR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
     - state:
-        name: FIND_OBJECT
+        name: PROVIDE_LOCATION_INFORMATION
+        state_module_name:
+        state_class_name:
+        transitions:
+            - transition:
+                name: succeeded
+                state: GIVE_DIRECTIONS
+            - transition:
+                name: failed
+                state: PROVIDE_LOCATION_INFORMATION
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
     - state:
         name: GIVE_DIRECTIONS
+        state_module_name:
+        state_class_name:
+        transitions:
+            - transition:
+                name: succeeded
+                state: MOVE_TO_OBJECT_LOCATION
+            - transition:
+                name: failed
+                state: REQUEST_MOVEMENT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
     - state:
-        name: EXIT
+        name: MOVE_TO_OBJECT_LOCATION
         state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: DESCRIBE_LOCATION
+            - transition:
+                name: failed
+                state: MOVE_TO_OBJECT_LOCATION
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 5
+    - state:
+        name: DESCRIBE_LOCATION
+        state_module_name:
+        state_class_name:
         transitions:
             - transition:
                 name: succeeded
                 state: DONE
             - transition:
                 name: failed
-                state: EXIT
+                state: DESCRIBE_LOCATION
             - transition:
                 name: failed_after_retrying
                 state: FAILED
         arguments:
-            - argument:
-                name: destination_locations
-                value: [OUTSIDE_ARENA]
             - argument:
                 name: number_of_retries
                 value: 3
