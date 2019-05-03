@@ -36,7 +36,8 @@ class FindPeopleState(smach.State):
 
     @staticmethod
     def is_inside_arena(pose):
-        p1, p2, p3, p4 = map(Point, [(-0.9909883, -4.218833), (-1.92709, 0.9022037), (-7.009388, -1.916794), (-4.107592, -7.078834)])
+        p1, p2, p3, p4 = map(Point, [(-0.9909883, -4.218833), (-1.92709, 0.9022037),
+                                     (-7.009388, -1.916794), (-4.107592, -7.078834)])
         living_room = Polygon(p1,p2,p3,p4)
         person_pose = Point(pose.pose.position.x, pose.pose.position.y) # Inspection test pose
         return living_room.encloses_point(person_pose)
@@ -48,7 +49,7 @@ class FindPeopleState(smach.State):
                              input_keys=['find_people_goal'],
                              output_keys=['find_people_result', 'error_message'])
 
-	self._listener = tf.TransformListener()
+        self._listener = tf.TransformListener()
 
 
     def execute(self, userdata):
@@ -56,7 +57,7 @@ class FindPeopleState(smach.State):
 
         # Get the pointcloud
         cloud_msg = rospy.wait_for_message(POINTCLOUD_TOPIC, PointCloud2)
-        
+
         # Get positions of people
         predictions, bb2ds, poses = FindPeople.detect(cloud_msg)
 

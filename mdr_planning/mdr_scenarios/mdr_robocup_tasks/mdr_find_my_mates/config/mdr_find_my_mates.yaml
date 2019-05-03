@@ -54,7 +54,7 @@ state_descriptions:
                 state: CHECK_LIST_OF_PEOPLE_TO_FIND
             - transition:
                 name: failed
-                state: DETECT_PEOPLE
+                state: CHANGE_PERSPECTIVE
             - transition:
                 name: failed_after_retrying
                 state: FAILED
@@ -114,7 +114,7 @@ state_descriptions:
                 value: 3
     - state:
         name: ASK_NAME
-        state_module_name: mdr_hri_behaviours.interview_person
+        state_module_name: mdr_find_my_mates.scenario_states.interview_person
         state_class_name: InterviewPerson
         transitions:
             - transition:
@@ -132,7 +132,7 @@ state_descriptions:
                 value: 5
     - state:
         name: DESCRIBE_PERSON
-        state_module_name: mdr_perception_behaviours.describe_person
+        state_module_name: mdr_find_my_mates.scenario_states.describe_person
         state_class_name: DescribePerson
         transitions:
             - transition:
@@ -171,7 +171,7 @@ state_descriptions:
                 value: [FIND_PEOPLE]
     - state:
         name: REPORT_TO_OPERATOR
-        state_module_name: mdr_hri_behaviours.report
+        state_module_name: mdr_find_my_mates.scenario_states.report
         state_class_name: Report
         transitions:
             - transition:

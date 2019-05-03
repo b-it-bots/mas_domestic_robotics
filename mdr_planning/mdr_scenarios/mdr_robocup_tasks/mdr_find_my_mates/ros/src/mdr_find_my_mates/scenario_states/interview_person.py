@@ -2,6 +2,8 @@ import rospy
 import actionlib
 import rospkg
 
+from mcr_perception_msgs.msg import Person
+from mdr_perception_msgs.msg import PersonInfo
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 from rasa_nlu.training_data import load_data
@@ -16,6 +18,8 @@ class Interview(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'interview',
                                    save_sm_state=save_sm_state,
+                                   input_keys=['person_interviewing'],
+                                   output_keys=['person_name'],
                                    outcomes=['succeeded', 'failed',
                                              'failed_after_retrying'])
         self.sm_id = kwargs.get('sm_id', '')
@@ -34,6 +38,10 @@ class Interview(ScenarioStateBase):
         if self.save_sm_state:
             self.save_current_state()
 
+        person_identifier = userdata.person_interviewing
+        known_male_names = [x.lower() for x in self.ontology_interface.get_instances_of('Male')]
+        known_female_names = [x.lower() for x in self.ontology_interface.get_instances_of('Female')]
+
         client = actionlib.SimpleActionClient("listen_server", ListenAction)
         client.wait_for_server()
         goal = ListenGoal()
@@ -42,6 +50,7 @@ class Interview(ScenarioStateBase):
         repeated_questions = 0
         self.say('Hi. What is your name?')
         ongoing_conversation = True
+        name = None
         while ongoing_conversation or repeated_questions < 3:
             client.send_goal(goal)
             client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
@@ -49,7 +58,28 @@ class Interview(ScenarioStateBase):
             result = self.interpreter.parse(understood_voice.message)
             intent_of_result = result["intent"]
             if intent_of_result["name"] == "name" and intent_of_result["confidence"] >= self.threshold:
-                # UPDATE DATABASE
+                name = result["entities"][0]["entity"].lower()
+
+                facts_to_remove = [('unknown', [('person', person_identifier)])]
+                facts_to_add = [('known', [('person', name)])]
+                self.kb_interface.update_kb(facts_to_add, facts_to_remove)
+
+                person_data = self.kb_interface.get_obj_instance(person_identifier, Person)
+                self.kb_interface.insert_obj_instance(name, person_data)
+                self.kb_interface.remove_obj_instance(person_identifier, Person)
+
+                person_info = PersonInfo()
+                person_info.name = name
+
+                if name in known_male_names:
+                    person_info.gender = 'male'
+                elif name in known_female_names:
+                    person_info.gender = 'female'
+                else:
+                    person_info.gender = 'unknown'
+
+                self.kb_interface.insert_obj_instance(name, PersonInfo)
+
                 ongoing_conversation = False
                 self.succeeded = True
             elif intent_of_result["name"] == "name" and intent_of_result["confidence"] < self.threshold:
@@ -57,6 +87,7 @@ class Interview(ScenarioStateBase):
                 self.say("I did not understand you. Could you repeat please?")
 
         if self.succeeded:
+            userdata.person_name = name
             rospy.loginfo('Person interviewed successfully')
             self.say('Thank you! Have a nice day!')
             return 'succeeded'

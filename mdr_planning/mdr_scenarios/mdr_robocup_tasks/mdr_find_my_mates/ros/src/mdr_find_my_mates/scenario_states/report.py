@@ -14,14 +14,13 @@ class Report(ScenarioStateBase):
     def execute(self, userdata):
         rospy.loginfo('Describing my mates ...')
 
-        known_instances = self.kb_interface.get_all_attributes('known')
+        known_people = self.kb_interface.get_all_attributes('known')
         people_names = []
         for item in known_people:
             if not item.is_negative:
                 for param in item.values:
                     if param.key == 'person':
                         people_names.append(param.value)
-        people_info_msg = []
 
         for name in people_names:
             info_msg = self.kb_interface.get_obj_instance(name, PersonInfo)
@@ -30,5 +29,4 @@ class Report(ScenarioStateBase):
                 self.say('He is on the ' + info_msg.location)
             else:
                 self.say('She is on the ' + info_msg.location)
-
         return 'succeeded'
