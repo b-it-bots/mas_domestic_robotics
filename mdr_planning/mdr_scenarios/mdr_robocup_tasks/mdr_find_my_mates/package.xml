@@ -15,8 +15,7 @@
   <build_depend>rospy</build_depend>
 
   <build_depend>roslint</build_depend>
-  <build_depend>mdr_interview_action</build_depend>
-  <build_depend>mdr_find_people_action</build_depend>
+  <build_depend>mdr_find_people</build_depend>
 
   <build_depend>mas_execution_manager</build_depend>
 
@@ -27,8 +26,7 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>mas_execution_manager</exec_depend>
 
-  <exec_depend>mdr_interview_action</exec_depend>
-  <exec_depend>mdr_find_people_action</exec_depend>
+  <exec_depend>mdr_find_people</exec_depend>
 
   <exec_depend>mdr_move_base_action</exec_depend>
   <exec_depend>mdr_navigation_behaviours</exec_depend>

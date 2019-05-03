@@ -10,4 +10,6 @@ class CheckMatesToFind(ScenarioStateBase):
 
     def execute(self, userdata):
         unknown_instances = self.kb_interface.get_all_attributes('unknown')
-        return unknown_instances == []
+        if unknown_instances:
+            return 'mates_left'
+        return 'no_mates_left'

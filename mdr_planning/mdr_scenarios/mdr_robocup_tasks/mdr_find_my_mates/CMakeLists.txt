@@ -5,8 +5,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   roslint
   mas_execution_manager
-  mdr_interview_action
-  #mdr_find_people_action
+  mdr_find_people
   mdr_move_base_action
   mdr_navigation_behaviours
   mdr_perception_behaviours
@@ -16,8 +15,7 @@ catkin_package(
   CATKIN_DEPENDS
     rospy
     mas_execution_manager
-    mdr_interview_action
-    #mdr_find_people_action
+    mdr_find_people
     mdr_move_base_action
     mdr_navigation_behaviours
     mdr_perception_behaviours

@@ -2,8 +2,7 @@
 <launch>
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
 
-    <include file="$(find mdr_interview_action)/ros/launch/interview.launch" />
-    <include file="$(find mdr_find_people_action)/ros/launch/find_people.launch" />
+    <include file="$(find mdr_find_people)/ros/launch/find_people.launch" />
 
     <!-- State machine -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="find_my_mates" output="screen">
