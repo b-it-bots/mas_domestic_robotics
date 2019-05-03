@@ -18,19 +18,10 @@ from mas_perception_libs.utils import cloud_msg_to_image_msg, crop_cloud_to_xyz,
 from ssd_keras_ros import SSDKerasObjectDetector
 
 
-POINTCLOUD_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
-
-
 class FindPeople(object):
 
     def __init__(self):
         pass
-
-
-    @staticmethod
-    def single_shot_detection():
-        cloud_msg = rospy.wait_for_message(POINTCLOUD_TOPIC, PointCloud2)
-        return FindPeople.detect(cloud_msg)
 
 
     @staticmethod

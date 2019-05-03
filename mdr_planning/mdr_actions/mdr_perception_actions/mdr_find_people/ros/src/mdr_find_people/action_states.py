@@ -4,10 +4,17 @@ import smach
 from sympy import Polygon, Point
 
 import tf
+from sensor_msgs.msg import PointCloud2
 from mdr_find_people.msg import FindPeopleResult
 from mcr_perception_msgs.msg import Person, PersonList
 from mas_perception_libs import ImageDetectionKey
+from mas_perception_libs.visualization import crop_image
+from mas_perception_libs.utils import cloud_msg_to_image_msg
+from cv_bridge import CvBridge
 from find_people import FindPeople
+
+
+POINTCLOUD_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 
 class FindPeopleState(smach.State):
@@ -46,9 +53,12 @@ class FindPeopleState(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state FIND_PEOPLE')
+
+        # Get the pointcloud
+        cloud_msg = rospy.wait_for_message(POINTCLOUD_TOPIC, PointCloud2)
         
         # Get positions of people
-        predictions, bb2ds, poses = FindPeople.single_shot_detection()
+        predictions, bb2ds, poses = FindPeople.detect(cloud_msg)
 
         # Filter detections for people inside the arena
         for i in range(len(predictions)):
@@ -56,6 +66,15 @@ class FindPeopleState(smach.State):
                 del predictions[i]
                 del bb2ds[i]
                 del poses[i]
+
+        # Get people images
+        cv_image = cloud_msg_to_cv_image(cloud_msg)
+        bridge = CvBridge()
+        images = []
+        for bb2d in bb2ds:
+            cropped_cv = crop_image(cv_image, bb2d)
+            cropped_img_msg = bridge.cv2_to_imgmsg(cropped_cv, encoding="passthrough")
+            images.append(cropped_img_msg)
 
         # Create the action result message
         pl = []
@@ -71,6 +90,8 @@ class FindPeopleState(smach.State):
             # 1 meter towards the robot from the actual position
             safe_pose = FindPeopleState.pose_subtract(poses[i], 1)
             p.safe_pose = safe_pose
+
+            p.rgb_image = images[i]
 
             pl.append(p)
 
