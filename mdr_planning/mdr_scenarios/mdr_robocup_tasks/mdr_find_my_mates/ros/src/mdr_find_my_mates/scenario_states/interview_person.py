@@ -57,7 +57,7 @@ class Interview(ScenarioStateBase):
             understood_voice = client.get_result()
             result = self.interpreter.parse(understood_voice.message)
             intent_of_result = result["intent"]
-            if intent_of_result["name"] == "name" and intent_of_result["confidence"] >= self.threshold:
+            if intent_of_result["name"] == "greeting" and intent_of_result["confidence"] >= self.threshold:
                 name = result["entities"][0]["entity"].lower()
 
                 facts_to_remove = [('unknown', [('person', person_identifier)])]
@@ -82,7 +82,7 @@ class Interview(ScenarioStateBase):
 
                 ongoing_conversation = False
                 self.succeeded = True
-            elif intent_of_result["name"] == "name" and intent_of_result["confidence"] < self.threshold:
+            elif intent_of_result["name"] != "greeting" or intent_of_result["confidence"] < self.threshold:
                 repeated_questions += 1
                 self.say("I did not understand you. Could you repeat please?")
 
