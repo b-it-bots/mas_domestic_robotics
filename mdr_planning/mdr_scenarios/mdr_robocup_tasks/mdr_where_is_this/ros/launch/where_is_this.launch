@@ -14,7 +14,7 @@
     <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" /> -->
 
     <!-- State machine -->
-    <node pkg="mas_execution_manager" type="state_machine_creator" name="where is this" output="screen">
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="where_is_this" output="screen">
         <param name="sm_config_file" type="str" value="$(find mdr_where_is_this)/config/where_is_this_sm.yaml" />
     </node>
 </launch>

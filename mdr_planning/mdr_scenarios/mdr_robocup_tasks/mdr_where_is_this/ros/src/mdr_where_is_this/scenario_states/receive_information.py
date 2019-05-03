@@ -4,7 +4,7 @@ class ReceiveInformation(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'receive_information',
                                    save_sm_state=save_sm_state,
-                                   outcomes=['succeeded', 'failed'])
+                                   outcomes=['succeeded', 'failed', 'failed_after_retrying'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'receive_information')
         self.number_of_retries = kwargs.get('number_of_retries', 0)

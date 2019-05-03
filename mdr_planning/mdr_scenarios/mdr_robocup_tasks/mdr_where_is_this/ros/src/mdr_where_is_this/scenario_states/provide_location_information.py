@@ -1,10 +1,11 @@
+import rospy
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class ProvideLocationInformation(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'provide_location_information',
                                    save_sm_state=save_sm_state,
-                                   outcomes=['succeeded', 'failed'])
+                                   outcomes=['succeeded', 'failed', 'failed_after_retrying'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'provide_location_information')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
