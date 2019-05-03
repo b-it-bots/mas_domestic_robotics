@@ -1,4 +1,7 @@
 import rospy
+import actionlib
+import rospkg
+
 from std_msgs.msg import String
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from mdr_perception_msgs.msg import PersonInfo
@@ -33,23 +36,29 @@ class RetrieveInformation(ScenarioStateBase):
         goal = ListenGoal()
 
         self.say('Who should I look for?')
-        try:
+        repeated_questions = 0
+        ongoing_conversation = True
+        while ongoing_conversation or repeated_questions < 3:
             client.send_goal(goal)
             client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
             recognized_speech = client.get_result()
 
-            result = self.interpreter.parse(understood_voice.message)
+            result = self.interpreter.parse(recognized_speech.message)
             intent_of_result = result["intent"]
-            if intent_of_result["name"] == "name" and intent_of_result["confidence"] >= self.threshold:
-                # UPDATE DATABASE
+            if intent_of_result["name"] == "find" and intent_of_result["confidence"] >= self.threshold:
+                names = [x["entity"].lower() for x in result["entities"]]
+                facts_to_add = []
+                for name in names:
+                    fact = ('searched', [('person', name)])
+                    facts_to_add.append(fact)
+                self.kb_interface.insert_facts(facts_to_add)
+
                 ongoing_conversation = False
                 self.succeeded = True
-            elif intent_of_result["name"] == "name" and intent_of_result["confidence"] < self.threshold:
+            elif intent_of_result["name"] != "find" or intent_of_result["confidence"] < self.threshold:
                 repeated_questions += 1
                 self.say("I did not understand you. Could you repeat please?")
 
-        except Exception as ex:
-            rospy.logerr(type(ex).__name__ + ": You have failed!")
-            return 'failed'
-
-        return 'succeeded'
+        if not ongoing_conversation:
+            return 'succeeded'
+        return 'failed'
