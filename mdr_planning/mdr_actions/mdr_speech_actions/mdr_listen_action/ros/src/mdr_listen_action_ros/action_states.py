@@ -52,8 +52,8 @@ class WaitForUserInput(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, outcomes=['input_received', 'input_not_understood', 'no_input_received', 'processing'],
-                             input_keys=['listen_feedback', 'accoustic_input', 'model_directory', 'use_kaldi'],
-                             output_keys=['listen_feedback', 'accoustic_input', 'input_error_message'])
+                             input_keys=['listen_feedback', 'acoustic_input', 'model_directory', 'use_kaldi'],
+                             output_keys=['listen_feedback', 'acoustic_input', 'input_error_message'])
         self.feedback_given = False
         self.input_received = False
 
@@ -68,7 +68,7 @@ class WaitForUserInput(smach.State):
             self.input_received = True
         else:
             self.input_received = False
-        userdata.accoustic_input = data
+        userdata.acoustic_input = data
 
     def execute(self, userdata):
         rospy.loginfo("Executing state WaitForUserInput")
@@ -107,40 +107,40 @@ class WaitForUserInput(smach.State):
                 use google, otherwise use pocketsphinx for speech recognition.
                 """
                 recognized_speech = ""
-                if self.use_kaldi:
-                    try:
-                        recognized_speech = self.recognizer.recognize_kaldi(audio)[0]
-                    except sr.UnknownValueError:
-                        userdata.input_error_message = "Input not understood."
-                        rospy.logerr("Input not understood.")
-                        return 'input_not_understood'
-                    except sr.RequestError:
-                        userdata.input_error_message = "No input received."
-                        rospy.logerr("No input received")
-                        return 'no_input_received'
-                else:
-                    if SpeechRecognizer.check_internet_connection():
-                        try:
-                            recognized_speech = self.recognizer.recognize_google(audio)
-                        except sr.UnknownValueError:
-                            userdata.input_error_message = "Input not understood."
-                            rospy.logerr("Input not understood.")
-                            return 'input_not_understood'
-                        except sr.RequestError:
-                            userdata.input_error_message = "No input received."
-                            rospy.logerr("No input received")
-                            return 'no_input_received'
-                    else:
-                        try:
-                            recognized_speech = self.recognizer.recognize_sphinx(audio)
-                        except sr.UnknownValueError:
-                            userdata.input_error_message = "Input not understood."
-                            rospy.logerr("Input not understood.")
-                            return 'input_not_understood'
-                        except sr.RequestError:
-                            userdata.input_error_message = "No input received."
-                            rospy.logerr("No input received")
-                            return 'no_input_received'
+                #if self.use_kaldi:
+                try:
+                    recognized_speech = self.recognizer.recognize_kaldi(audio)[0]
+                except sr.UnknownValueError:
+                    userdata.input_error_message = "Input not understood."
+                    rospy.logerr("Input not understood.")
+                    return 'input_not_understood'
+                except sr.RequestError:
+                    userdata.input_error_message = "No input received."
+                    rospy.logerr("No input received")
+                    return 'no_input_received'
+                #else:
+                #    if SpeechRecognizer.check_internet_connection():
+                #        try:
+                #            recognized_speech = self.recognizer.recognize_google(audio)
+                #        except sr.UnknownValueError:
+                #            userdata.input_error_message = "Input not understood."
+                #            rospy.logerr("Input not understood.")
+                #            return 'input_not_understood'
+                #        except sr.RequestError:
+                #            userdata.input_error_message = "No input received."
+                #            rospy.logerr("No input received")
+                #            return 'no_input_received'
+                #    else:
+                #        try:
+                #            recognized_speech = self.recognizer.recognize_sphinx(audio)
+                #        except sr.UnknownValueError:
+                #            userdata.input_error_message = "Input not understood."
+                #            rospy.logerr("Input not understood.")
+                #            return 'input_not_understood'
+                #        except sr.RequestError:
+                #            userdata.input_error_message = "No input received."
+                #            rospy.logerr("No input received")
+                #            return 'no_input_received'
 
         except Exception as exc:
             rospy.logerr(exc)
@@ -187,7 +187,7 @@ class ProcessInput(smach.State):
 
     def __init__(self):
         smach.State.__init__(self, outcomes=['succeeded', 'input_not_understood', 'processing'],
-                             input_keys=['accoustic_input', 'listen_feedback',
+                             input_keys=['acoustic_input', 'listen_feedback',
                                          'input_error_message'],
                              output_keys=['listen_feedback', 'listen_result',
                                           'input_error_message'])
@@ -206,21 +206,28 @@ class ProcessInput(smach.State):
             self.feedback_given = True
             return 'processing'
 
-        sm = SpeechMatching()
-        matching_result = sm.match_sentence(userdata.accoustic_input)
-
         result = ListenResult()
-        if matching_result[1][1] != 0:
-            rospy.loginfo("This is what I think you meant: %s", matching_result[1][0])
-            result.success = True
-        else:
-            rospy.loginfo("I'm sorry, I don't know what you said. ")
-            return 'input_not_understood'
-
-        result.message = matching_result[1][0]
-        result.message_type = matching_result[0]
+        result.message = userdata.acoustic_input
+        result.message_type = 'command'
+        result.success = True
         userdata.listen_result = result
         return 'succeeded'
+
+#        sm = SpeechMatching()
+#        matching_result = sm.match_sentence(userdata.accoustic_input)
+#
+#        result = ListenResult()
+#        if matching_result[1][1] != 0:
+#            rospy.loginfo("This is what I think you meant: %s", matching_result[1][0])
+#            result.success = True
+#        else:
+#            rospy.loginfo("I'm sorry, I don't know what you said. ")
+#            return 'input_not_understood'
+#
+#        result.message = matching_result[1][0]
+#        result.message_type = matching_result[0]
+#        userdata.listen_result = result
+#        return 'succeeded'
 
 
 class InputError(smach.State):

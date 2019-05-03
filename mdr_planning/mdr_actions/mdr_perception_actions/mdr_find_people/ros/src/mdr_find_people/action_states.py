@@ -1,15 +1,16 @@
 import math
 import rospy
 import smach
-from sympy import Polygon, Point
+import sympy
 
 import tf
 from sensor_msgs.msg import PointCloud2
+from geometry_msgs.msg import Point, Pose, PoseStamped
 from mdr_find_people.msg import FindPeopleResult
 from mcr_perception_msgs.msg import Person, PersonList
 from mas_perception_libs import ImageDetectionKey
 from mas_perception_libs.visualization import crop_image
-from mas_perception_libs.utils import cloud_msg_to_image_msg
+from mas_perception_libs.utils import cloud_msg_to_image_msg, cloud_msg_to_cv_image
 from cv_bridge import CvBridge
 from find_people import FindPeople
 
@@ -36,10 +37,10 @@ class FindPeopleState(smach.State):
 
     @staticmethod
     def is_inside_arena(pose):
-        p1, p2, p3, p4 = map(Point, [(-0.9909883, -4.218833), (-1.92709, 0.9022037),
-                                     (-7.009388, -1.916794), (-4.107592, -7.078834)])
-        living_room = Polygon(p1,p2,p3,p4)
-        person_pose = Point(pose.pose.position.x, pose.pose.position.y) # Inspection test pose
+        p1, p2, p3, p4 = map(sympy.Point, [(-0.9909883, -4.218833), (-1.92709, 0.9022037),
+                                           (-7.009388, -1.916794), (-4.107592, -7.078834)])
+        living_room = sympy.Polygon(p1,p2,p3,p4)
+        person_pose = sympy.Point(pose.pose.position.x, pose.pose.position.y) # Inspection test pose
         return living_room.encloses_point(person_pose)
 
 
@@ -61,18 +62,19 @@ class FindPeopleState(smach.State):
         # Get positions of people
         predictions, bb2ds, poses = FindPeople.detect(cloud_msg)
 
+        people_outside_arena = [] 
         # Filter detections for people inside the arena
         for i in range(len(predictions)):
             if not FindPeopleState.is_inside_arena(poses[i]):
-                del predictions[i]
-                del bb2ds[i]
-                del poses[i]
+                people_outside_arena.append(i)
 
         # Get people images
         cv_image = cloud_msg_to_cv_image(cloud_msg)
         bridge = CvBridge()
         images = []
-        for bb2d in bb2ds:
+        for i, bb2d in enumerate(bb2ds):
+            #if i in people_outside_arena:
+            #    continue
             cropped_cv = crop_image(cv_image, bb2d)
             cropped_img_msg = bridge.cv2_to_imgmsg(cropped_cv, encoding="passthrough")
             images.append(cropped_img_msg)
@@ -80,6 +82,9 @@ class FindPeopleState(smach.State):
         # Create the action result message
         pl = []
         for i in range(len(predictions)):
+            #if i in people_outside_arena:
+            #    continue
+
             p = Person()
             p.id = i
             p.probability = predictions[i][ImageDetectionKey.CONF]

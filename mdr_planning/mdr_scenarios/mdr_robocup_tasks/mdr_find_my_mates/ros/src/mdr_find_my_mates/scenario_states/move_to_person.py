@@ -13,7 +13,7 @@ class MoveToPerson(ScenarioStateBase):
         self.state_name = kwargs.get('state_name', 'move_to_person')
         self.move_base_action_server_name = kwargs.get('move_base_action_server_name',
                                                        'move_base_server')
-        self.move_base_timeout = float(kwargs.get('move_base_timeout'), 15.)
+        self.move_base_timeout = kwargs.get('move_base_timeout', 15.)
 
         self.move_base_client = actionlib.SimpleActionClient(self.move_base_action_server_name,
                                                              MoveBaseAction)
@@ -32,6 +32,7 @@ class MoveToPerson(ScenarioStateBase):
                     if param.key == 'person':
                         people_identifiers.append(param.value)
 
+        print(people_identifiers)
         if not people_identifiers:
             print('[move_to_person] No people found; aborting operation')
             return 'failed_after_retrying'

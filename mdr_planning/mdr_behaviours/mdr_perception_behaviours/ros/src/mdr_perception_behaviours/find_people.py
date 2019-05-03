@@ -13,6 +13,7 @@ class FindPeople(ScenarioStateBase):
         self.state_name = kwargs.get('state_name', 'find_people')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
+        self.timeout = 120.
 
     def execute(self, userdata):
         rospy.loginfo('[find_people] Trying to find people')

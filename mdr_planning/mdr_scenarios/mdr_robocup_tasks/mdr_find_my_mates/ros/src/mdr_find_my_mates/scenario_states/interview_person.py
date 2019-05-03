@@ -13,7 +13,7 @@ from rasa_nlu.model import Interpreter, Metadata, Trainer
 
 from mdr_listen_action.msg import ListenAction, ListenGoal
 
-class Interview(ScenarioStateBase):
+class InterviewPerson(ScenarioStateBase):
 
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'interview',

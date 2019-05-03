@@ -11,7 +11,7 @@ import tf
 from rospkg import RosPack
 
 from std_msgs.msg import String, Header
-from geometry_msgs import PoseStamped, Point, Quaternion
+from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
 from sensor_msgs.msg import PointCloud2
 from mas_perception_libs import ImageDetectionKey, ImageDetectorBase
 from mas_perception_libs.utils import cloud_msg_to_image_msg, crop_cloud_to_xyz, transform_cloud_with_listener

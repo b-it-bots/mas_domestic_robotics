@@ -38,13 +38,14 @@ class RetrieveInformation(ScenarioStateBase):
         self.say('Who should I look for?')
         repeated_questions = 0
         ongoing_conversation = True
-        while ongoing_conversation or repeated_questions < 3:
+        while ongoing_conversation and repeated_questions < 3:
             client.send_goal(goal)
             client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
             recognized_speech = client.get_result()
 
             result = self.interpreter.parse(recognized_speech.message)
             intent_of_result = result["intent"]
+            print(result)
             if intent_of_result["name"] == "find" and intent_of_result["confidence"] >= self.threshold:
                 names = [x["entity"].lower() for x in result["entities"]]
                 facts_to_add = []
