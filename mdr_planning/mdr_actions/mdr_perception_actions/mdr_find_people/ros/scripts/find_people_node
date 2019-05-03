@@ -64,12 +64,12 @@ class FindPeopleTest(object):
         for i in range(len(predictions)):
             pred = predictions[i]
             bb2d = bounding_boxes[i]
-            pose = poses[i]
+            point = poses[i].pose.point
 
             print(pred[ImageDetectionKey.CLASS])
             print('  conf: {}'.format(pred[ImageDetectionKey.CONF]))
             print('  pos: x_min:{:.2f} x_max:{:.2f} y_min:{:.2f} y_max:{:.2f}'.format(pred[ImageDetectionKey.X_MIN], pred[ImageDetectionKey.X_MAX], pred[ImageDetectionKey.Y_MIN], pred[ImageDetectionKey.Y_MAX]))
-            print('  pose (frame {}): X={:.3f} y={:.3f} z={:.3f}'.format(cloud_msg.header.frame_id, pose[0], pose[1], pose[2]))
+            print('  pose (frame {}): X={:.3f} y={:.3f} z={:.3f}'.format(cloud_msg.header.frame_id, point.x, point.y, point.z))
 
 
 

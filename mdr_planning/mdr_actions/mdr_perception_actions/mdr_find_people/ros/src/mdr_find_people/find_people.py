@@ -4,14 +4,14 @@ import os
 import json
 import cv2
 import numpy as np
-import scipy.misc
 import tensorflow as tf
 
 import rospy
 import tf
 from rospkg import RosPack
 
-from std_msgs.msg import String
+from std_msgs.msg import String, Header
+from geometry_msgs import PoseStamped, Point, Quaternion
 from sensor_msgs.msg import PointCloud2
 from mas_perception_libs import ImageDetectionKey, ImageDetectorBase
 from mas_perception_libs.utils import cloud_msg_to_image_msg, crop_cloud_to_xyz, transform_cloud_with_listener
@@ -85,8 +85,11 @@ class FindPeople(object):
             bb2d = bounding_boxes[i]
 
             cropped_cloud = crop_cloud_to_xyz(cloud_msg, bb2d)
-            mean_pose = np.nanmean(np.reshape(cropped_cloud, (-1, 3)), axis=0)
-            poses.append(mean_pose)
+            mean_coords = np.nanmean(np.reshape(cropped_cloud, (-1, 3)), axis=0)
+            mean_ps = PoseStamped()
+            mean_ps.header = Header(frame_id=cloud_msg.header.frame_id)
+            mean_ps.pose = Pose(Point(mean_coords[0], mean_coords[1], mean_coords[2]), Quaternion())
+            poses.append(mean_ps)
 
         return poses
 
