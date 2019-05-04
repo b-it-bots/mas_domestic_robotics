@@ -20,7 +20,6 @@ class DescribeLocation(ScenarioStateBase):
 
         self.current_pose = None
         self.current_top_pos = None
-        self.pose_sub = rospy.Subscriber('/amcl_pose', PoseStamped, self.get_pose)
 
         rospy.loginfo('[describe_location] Waiting for topological_position server')
         self.topological_position_client = rospy.ServiceProxy('topological_position',
@@ -100,6 +99,3 @@ class DescribeLocation(ScenarioStateBase):
             obj_list_str += obj + ', '
         obj_list_str += ' and the ' + obj_list[-1]
         return obj_list_str
-
-    def get_pose(self, pose_msg):
-        self.current_pose = pose_msg.pose

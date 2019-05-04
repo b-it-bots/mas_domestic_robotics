@@ -61,4 +61,4 @@ state_descriptions:
                 value: 3
             - argument:
                 name: pose_topic_name
-                value: /hsrb/base_pose
+                value: /global_pose
