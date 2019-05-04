@@ -1,11 +1,17 @@
 {
-    "training_data": "training_data.json",
+    "language": "en",
+    "rasa_nlu_version": "0.13.7",
     "pipeline": [
         {
-            "class": "rasa_nlu.tokenizers.whitespace_tokenizer.WhitespaceTokenizer",
-            "name": "tokenizer_whitespace"
+            "name": "tokenizer_whitespace",
+            "class": "rasa_nlu.tokenizers.whitespace_tokenizer.WhitespaceTokenizer"
         },
         {
+            "name": "ner_crf",
+            "classifier_file": "crf_model.pkl",
+            "class": "rasa_nlu.extractors.crf_entity_extractor.CRFEntityExtractor",
+            "L1_c": 0.1,
+            "max_iterations": 50,
             "features": [
                 [
                     "low",
@@ -31,67 +37,61 @@
                     "upper"
                 ]
             ],
-            "L1_c": 0.1,
             "L2_c": 0.1,
-            "max_iterations": 50,
-            "classifier_file": "crf_model.pkl",
-            "name": "ner_crf",
-            "class": "rasa_nlu.extractors.crf_entity_extractor.CRFEntityExtractor",
             "BILOU_flag": true
         },
         {
-            "synonyms_file": "entity_synonyms.json",
             "name": "ner_synonyms",
+            "synonyms_file": "entity_synonyms.json",
             "class": "rasa_nlu.extractors.entity_synonyms.EntitySynonymMapper"
         },
         {
-            "lowercase": true,
-            "strip_accents": null,
-            "max_features": null,
-            "min_ngram": 1,
-            "max_df": 1.0,
-            "OOV_token": null,
             "class": "rasa_nlu.featurizers.count_vectors_featurizer.CountVectorsFeaturizer",
+            "max_ngram": 1,
+            "OOV_token": null,
+            "max_df": 1.0,
+            "strip_accents": null,
+            "min_df": 1,
+            "max_features": null,
+            "OOV_words": [],
+            "name": "intent_featurizer_count_vectors",
+            "min_ngram": 1,
+            "token_pattern": "(?u)\\b\\w\\w+\\b",
             "featurizer_file": "intent_featurizer_count_vectors.pkl",
             "stop_words": null,
-            "token_pattern": "(?u)\\b\\w\\w+\\b",
-            "max_ngram": 1,
-            "min_df": 1,
-            "OOV_words": [],
-            "name": "intent_featurizer_count_vectors"
+            "lowercase": true
         },
         {
+            "class": "rasa_nlu.classifiers.embedding_intent_classifier.EmbeddingIntentClassifier",
+            "num_hidden_layers_a": 2,
             "hidden_layer_size_a": [
                 256,
                 128
             ],
+            "use_max_sim_neg": true,
+            "C_emb": 0.8,
             "batch_size": [
                 64,
                 256
             ],
-            "C2": 0.002,
             "evaluate_on_num_examples": 1000,
-            "intent_tokenization_flag": false,
-            "similarity_type": "cosine",
-            "droprate": 0.2,
-            "class": "rasa_nlu.classifiers.embedding_intent_classifier.EmbeddingIntentClassifier",
-            "use_max_sim_neg": true,
-            "embed_dim": 20,
-            "C_emb": 0.8,
-            "num_hidden_layers_b": 0,
-            "classifier_file": "intent_classifier_tensorflow_embedding.ckpt",
             "epochs": 300,
-            "name": "intent_classifier_tensorflow_embedding",
-            "evaluate_every_num_epochs": 10,
-            "hidden_layer_size_b": [],
-            "num_hidden_layers_a": 2,
+            "droprate": 0.2,
+            "mu_neg": -0.4,
             "mu_pos": 0.8,
-            "num_neg": 20,
+            "intent_tokenization_flag": false,
+            "evaluate_every_num_epochs": 10,
+            "classifier_file": "intent_classifier_tensorflow_embedding.ckpt",
+            "similarity_type": "cosine",
+            "num_hidden_layers_b": 0,
+            "name": "intent_classifier_tensorflow_embedding",
+            "C2": 0.002,
+            "embed_dim": 20,
             "intent_split_symbol": "_",
-            "mu_neg": -0.4
+            "num_neg": 20,
+            "hidden_layer_size_b": []
         }
     ],
-    "rasa_nlu_version": "0.13.7",
-    "trained_at": "20190503-195131",
-    "language": "en"
+    "trained_at": "20190504-083426",
+    "training_data": "training_data.json"
 }
