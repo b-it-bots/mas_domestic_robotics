@@ -67,7 +67,7 @@ class DescribeLocation(ScenarioStateBase):
                 return 'failed'
 
         top_path_request = TopologicalPathRequest()
-        top_path_request.source = self.current_pose
+        top_path_request.source = self.current_top_pos
         top_path_request.goal = location
         try:
             top_path_result = self.topological_path_client(top_path_request)
