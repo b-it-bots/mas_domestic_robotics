@@ -1,8 +1,8 @@
 import rospy
 from geometry_msgs.msg import PoseWithCovarianceStamped
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
-from topological_map.srv import TopologicalPath, TopologicalPathRequest, \
-                                TopologicalPosition, TopologicalPositionRequest
+from topological_map_ros.srv import TopologicalPath, TopologicalPathRequest, \
+                                    TopologicalPosition, TopologicalPositionRequest
 
 class DescribeLocation(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
