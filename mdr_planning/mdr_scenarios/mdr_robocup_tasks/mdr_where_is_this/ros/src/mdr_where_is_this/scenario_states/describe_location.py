@@ -70,17 +70,16 @@ class DescribeLocation(ScenarioStateBase):
                 rospy.logerr(str(exc))
                 return 'failed'
 
-            objects_next_to = self.ontology_interface.get_objects_next_to(obj_name)
-
         self.say('The {0} is in the {1}'.format(obj_name, obj_location))
 
         self.say('You can reach there as follows')
         for path_description in directions:
             self.say(path_description)
 
-        self.say('The {0} is next to {1}'.format(obj_name,
-                                                 self.format_obj_next_to_list(objects_next_to)))
-
+        objects_next_to = self.ontology_interface.get_objects_next_to(obj_name)
+        if objects_next_to:
+            self.say('The {0} is next to {1}'.format(obj_name,
+                                                     self.format_obj_next_to_list(objects_next_to)))
         return 'succeeded'
 
     def format_obj_next_to_list(self, obj_list):
