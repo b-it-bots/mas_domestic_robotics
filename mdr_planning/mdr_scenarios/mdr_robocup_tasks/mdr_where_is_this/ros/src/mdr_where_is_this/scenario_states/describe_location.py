@@ -15,7 +15,7 @@ class DescribeLocation(ScenarioStateBase):
         self.state_name = kwargs.get('state_name', 'describe_location')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.pose_timeout = kwargs.get('pose_timeout', 5.)
-        self.pose_topic_name = kwargs.get('/amcl_pose', 5.)
+        self.pose_topic_name = kwargs.get('pose_topic_name', '/amcl_pose')
         self.retry_count = 0
 
         self.current_pose = None
