@@ -3,7 +3,8 @@
 """
 Created on 2019.10.09
 
-@author: Patrick Nagel
+@author: Roberto Cai
+@email: roberto.cai@smail.inf.h-brs.de
 """
 
 import sys
@@ -14,19 +15,6 @@ import actionlib
 
 from mdr_listen_action.msg import ListenAction, ListenGoal
 
-def print_usage_info():
-    rospy.loginfo("usage: listen <duration>")
-    rospy.loginfo("       where the <duration> is measured in seconds and defines "\
-    "how long the robot is in listen-mode")
-    rospy.sleep(2)
-    return raw_input("Enter a duration and confirm with the return key: ")
-
-def proceed_user_input(goal):
-    timeout = 15.0
-    client.send_goal(goal)
-    client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
-    print(client.get_result())
-
 if __name__ == '__main__':
     rospy.init_node('listen_client_test')
     client = actionlib.SimpleActionClient('listen_server', ListenAction)
@@ -35,7 +23,6 @@ if __name__ == '__main__':
     goal = ListenGoal()
     try:
         client.send_goal(goal)
-
         timeout = 10.0
         client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
         rospy.loginfo(client.get_result())
