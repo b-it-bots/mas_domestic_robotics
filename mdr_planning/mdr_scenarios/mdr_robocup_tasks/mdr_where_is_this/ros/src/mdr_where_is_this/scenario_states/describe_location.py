@@ -56,38 +56,42 @@ class DescribeLocation(ScenarioStateBase):
             return 'failed'
 
         obj_name = userdata.target_entity['value']
-        obj_location = ''
+        location = ''
         directions = None
         if userdata.target_entity['type'] == 'location':
-            pass
+            location = userdata.target_entity['value']
         elif userdata.target_entity['type'] == 'object':
-            obj_location = self.ontology_interface.get_obj_location(obj_name)
-            if not obj_location:
+            location = self.ontology_interface.get_obj_location(obj_name)
+            if not location:
                 self.say('I unfortunately don\'t know where the {0} is'.format(obj_name))
                 return 'failed'
 
-            top_path_request = TopologicalPathRequest()
-            top_path_request.source = self.current_pose
-            top_path_request.goal = obj_location
+        top_path_request = TopologicalPathRequest()
+        top_path_request.source = self.current_pose
+        top_path_request.goal = location
+        try:
+            top_path_result = self.topological_path_client(top_path_request)
+            directions = top_path_result.directions
+        except rospy.ServiceException as exc:
+            self.say('I don\'t know how to get to the {0}'.format(location))
+            rospy.logerr(str(exc))
+            return 'failed'
 
-            try:
-                top_path_result = self.topological_path_client(top_path_request)
-                directions = top_path_result.directions
-            except rospy.ServiceException as exc:
-                self.say('I don\'t know how to get to the {0}'.format(obj_location))
-                rospy.logerr(str(exc))
-                return 'failed'
+        if userdata.target_entity['type'] == 'location':
+            self.say('You can reach the {0} as follows'.format(location))
+            for path_description in directions:
+                self.say(path_description)
+        elif userdata.target_entity['type'] == 'object':
+            self.say('The {0} is in the {1}'.format(obj_name, location))
+            self.say('You can reach there as follows')
 
-        self.say('The {0} is in the {1}'.format(obj_name, obj_location))
+            for path_description in directions:
+                self.say(path_description)
 
-        self.say('You can reach there as follows')
-        for path_description in directions:
-            self.say(path_description)
-
-        objects_next_to = self.ontology_interface.get_objects_next_to(obj_name)
-        if objects_next_to:
-            self.say('The {0} is next to {1}'.format(obj_name,
-                                                     self.format_obj_next_to_list(objects_next_to)))
+            objects_next_to = self.ontology_interface.get_objects_next_to(obj_name)
+            if objects_next_to:
+                self.say('The {0} is next to {1}'.format(obj_name,
+                                                         self.format_obj_next_to_list(objects_next_to)))
         return 'succeeded'
 
     def format_obj_next_to_list(self, obj_list):
