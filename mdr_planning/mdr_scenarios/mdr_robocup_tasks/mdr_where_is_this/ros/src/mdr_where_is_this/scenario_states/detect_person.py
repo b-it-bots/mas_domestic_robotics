@@ -14,10 +14,16 @@ class DetectPerson(ScenarioStateBase):
                                    save_sm_state=save_sm_state,
                                    input_keys=[],
                                    output_keys=[],
-                                   outcomes=['succeeded', 'failed'])
+                                   outcomes=['succeeded', 'failed', 'failed_after_retrying'])
+
+        # Get parameters
+        self.sm_id = kwargs.get('sm_id', '')
+        self.state_name = kwargs.get('state_name', 'detect_person')
+        self.number_of_retries = kwargs.get('number_of_retries', 0)
+        self.timeout = kwargs.get('timeout', 30) # not used right now
 
         self.person_in_front = False
-        self.person_status_sub = rospy.Subscriber(DOOR_STATUS_TOPIC, Bool, self.update_person_in_front)
+        self.person_status_sub = rospy.Subscriber(DetectPerson.DOOR_STATUS_TOPIC, Bool, self.update_person_in_front)
 
     def execute(self, userdata):
         self.say('Please step in front of me')
@@ -30,5 +36,5 @@ class DetectPerson(ScenarioStateBase):
 
         return 'succeeded'
 
-    def update_door_open(self, msg):
-        self.person_in_front = !msg.data
+    def update_person_in_front(self, msg):
+        self.person_in_front = not msg.data
