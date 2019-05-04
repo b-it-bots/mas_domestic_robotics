@@ -8,6 +8,8 @@
         <arg name="strl_file_path" value="$(find mdr_where_is_this)/config/plan.strl" />
     </include>
 
+    <include file="$(find mdr_listen_action)/ros/launch/listen.launch" />
+
     <!-- <include file="$(find mdr_find_people)/ros/launch/find_people.launch" />
     <include file="$(find mdr_find_people)/ros/launch/find_people_client.launch" />
     <include file="$(find mdr_listen_action)/ros/launch/listen.launch" />

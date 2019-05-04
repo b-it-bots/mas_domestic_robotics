@@ -2,7 +2,7 @@
 # Author: Patrick Nagel
 # Email: patrick.nagel@h-brs.de
 sm_id: mdr_where_is_this
-states: [RECEIVE_INFORMATION_FROM_OPERATOR, PROVIDE_LOCATION_INFORMATION, GIVE_DIRECTIONS, MOVE_TO_OBJECT_LOCATION, DESCRIBE_LOCATION]
+states: [RECEIVE_INFORMATION_FROM_OPERATOR, DESCRIBE_LOCATION]
 outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
@@ -12,7 +12,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: PROVIDE_LOCATION_INFORMATION
+                state: DESCRIBE_LOCATION
             - transition:
                 name: failed
                 state: RECEIVE_INFORMATION_FROM_OPERATOR
@@ -23,60 +23,6 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 3
-    - state:
-        name: PROVIDE_LOCATION_INFORMATION
-        state_module_name: mdr_where_is_this.scenario_states.provide_location_information
-        state_class_name: ProvideLocationInformation
-        transitions:
-            - transition:
-                name: succeeded
-                state: GIVE_DIRECTIONS
-            - transition:
-                name: failed
-                state: PROVIDE_LOCATION_INFORMATION
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: number_of_retries
-                value: 3
-    - state:
-        name: GIVE_DIRECTIONS
-        state_module_name: mdr_where_is_this.scenario_states.give_directions
-        state_class_name: GiveDirections
-        transitions:
-            - transition:
-                name: succeeded
-                state: MOVE_TO_OBJECT_LOCATION
-            - transition:
-                name: failed
-                state: GIVE_DIRECTIONS
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: number_of_retries
-                value: 3
-    - state:
-        name: MOVE_TO_OBJECT_LOCATION
-        state_module_name: mdr_navigation_behaviours.move_base
-        state_class_name: MoveBase
-        transitions:
-            - transition:
-                name: succeeded
-                state: DESCRIBE_LOCATION
-            - transition:
-                name: failed
-                state: MOVE_TO_OBJECT_LOCATION
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: number_of_retries
-                value: 5
     - state:
         name: DESCRIBE_LOCATION
         state_module_name: mdr_where_is_this.scenario_states.describe_location
