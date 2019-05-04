@@ -1,0 +1,15 @@
+--- Sentence received: --- 
+2019-05-03 16:33:07 go to the kitchen 
+--- Interpretation received: --- 
+2019-05-03 16:33:11 go destination kitchen 
+ 
+--- Sentence received: --- 
+2019-05-03 16:33:13 find Patrick 
+--- Interpretation received: --- 
+2019-05-03 16:33:13 find person patrick 
+ 
+--- Sentence received: --- 
+2019-05-03 16:33:19 make the barrel 
+--- Interpretation received: --- 
+2019-05-03 16:33:19 take object barrel 
+ 

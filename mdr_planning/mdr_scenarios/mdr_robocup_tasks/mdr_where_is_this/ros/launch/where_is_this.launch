@@ -9,6 +9,7 @@
     </include>
 
     <include file="$(find mdr_listen_action)/ros/launch/listen.launch" />
+    <include file="$(find topological_map_ros)/ros/launch/topological_map.launch"/>
 
     <!-- <include file="$(find mdr_find_people)/ros/launch/find_people.launch" />
     <include file="$(find mdr_find_people)/ros/launch/find_people_client.launch" />

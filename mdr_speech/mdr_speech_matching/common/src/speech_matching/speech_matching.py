@@ -15,21 +15,21 @@ class SpeechMatching(object):
     def __init__(self, threshold=90):
         self.threshold = threshold
 
-        question_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '../..', 'config/questions.txt'))
-        command_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '../..', 'config/commands.txt'))
+        objects_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '../..', 'config/objects.txt'))
+        locations_dir = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '../..', 'config/locations.txt'))
 
-        self.question_pool = SpeechMatching.load_pool(question_dir)
-        self.question_sentences = [i[0].strip() for i in self.question_pool]
-        self.question_phonemes = [i[1].strip() for i in self.question_pool]
+        self.objects_pool = SpeechMatching.load_pool(objects_dir)
+        self.objects_sentences = [i[0].strip() for i in self.objects_pool]
+        self.objects_phonemes = [i[1].strip() for i in self.objects_pool]
 
-        self.command_pool = SpeechMatching.load_pool(command_dir)
-        self.command_sentences = [i[0].strip() for i in self.command_pool]
-        self.command_phonemes = [i[1].strip() for i in self.command_pool]
+        self.locations_pool = SpeechMatching.load_pool(locations_dir)
+        self.locations_sentences = [i[0].strip() for i in self.locations_pool]
+        self.locations_phonemes = [i[1].strip() for i in self.locations_pool]
 
     """
     The following method loads a sentence pool and returns a list of tuples,
     containing the readable sentence and the sentence in phonemes. This method
-    is similar to the method used in question_responder (TODO: export this
+    is similar to the method used in objects_responder (TODO: export this
     method and use it in both.)
     """
     @staticmethod
@@ -54,27 +54,27 @@ class SpeechMatching(object):
     returns True otherwise False.
     """
     def find_match(self, input_sentence):
-        question_match = process.extract(input_sentence, self.question_sentences)
-        if question_match[1] >= self.threshold:
+        objects_match = process.extract(input_sentence, self.objects_sentences)
+        if objects_match[1] >= self.threshold:
             return True
-        command_match = process.extract(input_sentence, self.command_sentences)
-        if command_match[1] >= self.threshold:
+        locations_match = process.extract(input_sentence, self.locations_sentences)
+        if locations_match[1] >= self.threshold:
             return True
         return False
 
     """
     The following method returns a matching sentence, its Levenshtein distance
-    and the category to which it belongs (question or command). In case the
+    and the category to which it belongs (objects or locations). In case the
     match is below the threshold, the return sentence is empty, the distance is
     zero and the category is 'nothing'.
     """
     def match_sentence(self, input_sentence):
-        question_match = process.extractOne(input_sentence, self.question_sentences)
-        command_match = process.extractOne(input_sentence, self.command_sentences)
+        objects_match = process.extractOne(input_sentence, self.objects_sentences)
+        locations_match = process.extractOne(input_sentence, self.locations_sentences)
 
-        if question_match[1] >= self.threshold and question_match[1] >= command_match[1]:
-            return ["question", question_match]
-        elif command_match[1] >= self.threshold:
-            return ["command", command_match]
+        if objects_match[1] >= self.threshold and objects_match[1] >= locations_match[1]:
+            return ["objects", objects_match]
+        elif locations_match[1] >= self.threshold:
+            return ["locations", locations_match]
         else:
             return ["nothing", ("", 0)]

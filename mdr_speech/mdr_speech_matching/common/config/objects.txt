@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 trashbag:
 apple juice:
 big coke:
@@ -61,3 +62,161 @@ coathanger:
 cupboard:
 bar table:
 sofa:
+=======
+senbei:
+bread:
+cereal bar chocolate:
+glass:
+cookies:
+cookie:
+comb:
+peanut:
+sugar:
+apples:
+pie:
+sake:
+watermelon:
+candies:
+pen:
+ham:
+strawberry:
+whiteboard cleaner:
+peach:
+cloth:
+mints:
+snack:
+blueberry:
+tray:
+plate:
+biscuits:
+corn:
+salt:
+iced tea:
+book:
+peanuts:
+sushi:
+lemon:
+toothbrush:
+chewing gum:
+big water:
+chips:
+grapes:
+paprika:
+vodka:
+cans:
+charger:
+plates:
+blackberry:
+sprite:
+containers:
+trashbag:
+pringles:
+nut fruit mix:
+fruit bar apple:
+peanut bits:
+candy:
+rice:
+dryer:
+cups:
+knives:
+apple juice:
+container:
+blueberries:
+pasta:
+books:
+newspapers:
+toothpaste:
+laptop:
+beer:
+yogurt:
+tablet:
+towel:
+cake:
+food:
+manju:
+onion:
+onions:
+lemonade:
+fork:
+pens:
+hot chocolate:
+pencil:
+wine:
+oranges:
+toiletries:
+lemons:
+seasoning mix:
+noodles:
+spoon:
+apple:
+knife:
+shampoo:
+red bull:
+pear:
+basket:
+coffee:
+cream:
+orange juice:
+snacks:
+bananas:
+bouillon:
+donuts:
+notebook:
+orange:
+tea:
+forks:
+coke:
+red spritzer:
+dishwasher tab:
+pepper:
+magazines:
+iso drink:
+toilet paper:
+big lemon juice:
+crackers:
+cup:
+juice:
+sauerkraut:
+lotion:
+glasses:
+newspaper:
+trays:
+bowl:
+peaches:
+fruit bar forest fruit:
+chocolate egg:
+big coke:
+can:
+chewing gums:
+rum:
+chocolate bar:
+shower gel:
+milk:
+cracker:
+kleenex:
+magazine:
+biscuit:
+get it:
+almond:
+cereals bar:
+sponge:
+cheese:
+banana:
+bowls:
+sparkling water:
+soap:
+cider:
+cereal bar chocolate banana:
+whisky:
+burger:
+bottle:
+water:
+drink:
+pizza:
+blackberries:
+strawberries:
+almonds:
+chocolate tablet:
+bottles:
+tomatoes:
+>>>>>>> 052ce8b75992c1274ac707a2658cff3eae9538e0
