@@ -1,5 +1,5 @@
 import rospy
-from geometry_msgs.msg import PoseWithCovarianceStamped
+from geometry_msgs.msg import PoseStamped
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from topological_map_ros.srv import TopologicalPath, TopologicalPathRequest, \
                                     TopologicalPosition, TopologicalPositionRequest
@@ -14,11 +14,13 @@ class DescribeLocation(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'describe_location')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
+        self.pose_timeout = kwargs.get('pose_timeout', 5.)
+        self.pose_topic_name = kwargs.get('/amcl_pose', 5.)
         self.retry_count = 0
 
         self.current_pose = None
         self.current_top_pos = None
-        self.pose_sub = rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.get_pose)
+        self.pose_sub = rospy.Subscriber('/amcl_pose', PoseStamped, self.get_pose)
 
         rospy.loginfo('[describe_location] Waiting for topological_position server')
         self.topological_position_client = rospy.ServiceProxy('topological_position',
@@ -34,8 +36,14 @@ class DescribeLocation(ScenarioStateBase):
         if self.save_sm_state:
             self.save_current_state()
 
-        while not self.current_pose:
-            rospy.sleep(0.05)
+        try:
+            self.current_pose = rospy.wait_for_message(self.pose_topic_name,
+                                                       PoseStamped,
+                                                       self.pose_timeout)
+        except rospy.ROSException as exc:
+            rospy.logerr(str(exc))
+            self.say('I unfortunately don\'t know where I am')
+            return 'failed'
 
         top_pos_request = TopologicalPositionRequest()
         top_pos_request.current_pose = self.current_pose
@@ -90,4 +98,4 @@ class DescribeLocation(ScenarioStateBase):
         return obj_list_str
 
     def get_pose(self, pose_msg):
-        self.current_pose = pose_msg.pose.pose
+        self.current_pose = pose_msg.pose
