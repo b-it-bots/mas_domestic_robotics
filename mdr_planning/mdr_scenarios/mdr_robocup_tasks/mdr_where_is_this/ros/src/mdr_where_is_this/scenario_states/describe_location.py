@@ -8,7 +8,7 @@ class DescribeLocation(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'describe_location',
                                    save_sm_state=save_sm_state,
-                                   input_keys=['entity_type', 'entity_value'],
+                                   input_keys=['target_entity'],
                                    outcomes=['succeeded', 'failed',
                                              'failed_after_retrying'])
         self.sm_id = kwargs.get('sm_id', '')
@@ -55,12 +55,12 @@ class DescribeLocation(ScenarioStateBase):
             rospy.logerr(str(exc))
             return 'failed'
 
-        obj_name = userdata.entity_value
+        obj_name = userdata.target_entity['value']
         obj_location = ''
         directions = None
-        if userdata.entity_type == 'location':
+        if userdata.target_entity['type'] == 'location':
             pass
-        elif userdata.entity_type == 'object':
+        elif userdata.target_entity['type'] == 'object':
             obj_location = self.ontology_interface.get_obj_location(obj_name)
             if not obj_location:
                 self.say('I unfortunately don\'t know where the {0} is'.format(obj_name))
