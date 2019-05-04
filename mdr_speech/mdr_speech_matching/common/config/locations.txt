@@ -1,104 +1,104 @@
-kitchen
-bench
-nightstand
-sofa
-couch
-drawing room
-tv stand
-bed
-drawer
-sideboard
-side table
-bookcase
-counter
-kitchen cabinet
-garage
-television
-door
-bedchamber
-office
-basement
-bar
-bedside
-dressing table
-dormitory room
-sink
-staircase
-left arm chair
-fridge
-table
-porch
-room
-hall
-radiator
-dryer
-bookshelf
-telephone
-laundry
-cupboard
-bedroom
-refrigerator
-white drawer
-cabinet
-center table
-hallway
-entrance
-shed
-utility room
-high table
-ballroom
-workshop
-side shelf
-bar table
-den
-prayer room
-washing machine
-closet
-trash bin
-master bedroom
-coffee table
-bedroom chair
-pantry
-corridor
-kitchen chair
-games room
-dishwasher
-living room
-lawn
-dining room
-toilet
-oven
-balcony
-washer
-patio
-stove
-library
-kitchen table
-stool
-crib
-cellar
-playroom
-trash can
-rocking chair
-larder
-guestroom
-wardrobe
-sunroom
-music room
-right arm chair
-bathroom
-lamp
-living room table
-dining table
-window
-garden
-futon
-coathanger
-beanbag
-chair
-shower
-box room
-desk
-cloakroom
-conservatory
-parlour
+kitchen:
+bench:
+nightstand:
+sofa:
+couch:
+drawing room:
+tv stand:
+bed:
+drawer:
+sideboard:
+side table:
+bookcase:
+counter:
+kitchen cabinet:
+garage:
+television:
+door:
+bedchamber:
+office:
+basement:
+bar:
+bedside:
+dressing table:
+dormitory room:
+sink:
+staircase:
+left arm chair:
+fridge:
+table:
+porch:
+room:
+hall:
+radiator:
+dryer:
+bookshelf:
+telephone:
+laundry:
+cupboard:
+bedroom:
+refrigerator:
+white drawer:
+cabinet:
+center table:
+hallway:
+entrance:
+shed:
+utility room:
+high table:
+ballroom:
+workshop:
+side shelf:
+bar table:
+den:
+prayer room:
+washing machine:
+closet:
+trash bin:
+master bedroom:
+coffee table:
+bedroom chair:
+pantry:
+corridor:
+kitchen chair:
+games room:
+dishwasher:
+living room:
+lawn:
+dining room:
+toilet:
+oven:
+balcony:
+washer:
+patio:
+stove:
+library:
+kitchen table:
+stool:
+crib:
+cellar:
+playroom:
+trash can:
+rocking chair:
+larder:
+guestroom:
+wardrobe:
+sunroom:
+music room:
+right arm chair:
+bathroom:
+lamp:
+living room table:
+dining table:
+window:
+garden:
+futon:
+coathanger:
+beanbag:
+chair:
+shower:
+box room:
+desk:
+cloakroom:
+conservatory:
+parlour:

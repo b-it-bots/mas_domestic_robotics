@@ -54,7 +54,7 @@ class ReceiveInformation(ScenarioStateBase):
             self.say('Hi. What are you looking for?')
             rospy.sleep(1)
         # Ask again if not understood the first time
-        else self.number_of_retries < 3:
+        elif self.number_of_retries < 3:
             self.say("Sorry, I didn't understand you. Could you repeat that please?")
             rospy.sleep(3)
 
@@ -92,7 +92,7 @@ class ReceiveInformation(ScenarioStateBase):
             else:
                 entity = rasa_result["entities"][0]
                 entity_type = entity["entity"]
-                entity_value = entitiy["value"]
+                entity_value = entity["value"]
 
                 # Match entity value with known objects or locations
                 matching_result = self.speech_matcher.match_sentence(entity_value)
