@@ -46,86 +46,29 @@ If you have never worked with ROS before, we recommend to go through the beginne
 
 In order to understand at least the different core components of ROS, you have to start from tutorial 1 ("Installing and Configuring Your ROS Environment") till tutorial 7 ("Understanding ROS Services and Parameters").
 
-## Set up a catkin workspace
-
-    source /opt/ros/kinetic/setup.bash
-    mkdir -p ~/kinetic/src; cd ~/kinetic/src
-    catkin_init_workspace
-    catkin build
 
 ## Clone and compile the MAS domestic robotics software
-First of all you have to clone the repository.
+b-it-bots members can use [these instructions](https://github.com/b-it-bots/dev-env#setup) to setup a complete development environment for all our robots.
 
-    cd ~/kinetic/src;
-    git clone gitgate@mas.b-it-center.de:mas-group/mas_domestic_robotics.git
+For external users, the following instructions should get you a working system:
 
-Then go on with installing further external dependencies:
+1. Set up a catkin workspace
 
-    cd ~/kinetic/src/mas_domestic_robotics
-    ./repository.debs
+  ```
+  mkdir -p ~/catkin_ws/src && cd ~/catkin_ws
+  wstool init src
+  wstool merge -t src https://raw.githubusercontent.com/b-it-bots/mas_domestic_robotics/devel/mas-domestic.rosinstall
+  ```
+2. Get the code and dependencies
 
-    source ~/kinetic/devel/setup.bash
+  ```
+    wstool update -t src
+    rosdep install --from-paths src --ignore-src --rosdistro=kinetic -y
+  ```
+3. Build the code
 
-The last command should be added to the ~/.bashrc file so that they do not need to be executed everytime you open a new terminal.
+  ```
+  catkin build
+  ```
 
-And finally compile the repository:
-
-    cd ~/kinetic
-    catkin build
-
-If no errors appear, everything is ready.
-
-### Setting the Environment Variables
-#### ROBOT variable
-With the ROBOT variable you can choose which hardware configuration should be loaded when starting the robot. The following line will add the variable to your .bashrc:
-
-     echo "export ROBOT=cob3-1" >> ~/.bashrc
-     source ~/.bashrc
-
-#### ROBOT_ENV Variable
-The ROBOT_ENV variable can be used to switch between different environments. The following line will add the variable to your .bashrc:
-
-     echo "export ROBOT_ENV=brsu-c069" >> ~/.bashrc
-     source ~/.bashrc
-
-## Bring up the robot and it's basic components
-### In Simulation
-
-The first time you start the simulation, Gazebo tries to download objects from the internet. Thus, make sure that you have established an internet connection before running the following command.
-
-     roslaunch mdr_bringup_sim robot.launch
-
-In a new terminal you can open the Gazebo GUI to see the environment and the robot
-
-     gzclient
-
-### At the Real Robot
-
-     roslaunch mdr_bringup robot.launch
-
-## Test the arm, hand, torso, tray and head
-
-     roslaunch mdr_bringup dashboard.launch
-
-## Test the base
-
-     roslaunch cob_teleop teleop_keyboard.launch
-
-## Visualize the robot state and sensor data
-
-     rosrun rviz rviz
-
-## Build a map for base navigation
-
-     roslaunch mdr_2dslam 2dslam.launch
-
-## Use autonomous navigation
-### Omni-directional navigation
-
-     roslaunch mdr_2dnav 2dnav.launch nav_mode:=dwa
-
-or
-
-     roslaunch mdr_2dnav 2dnav.launch nav_mode:=eband
-
-Click on the menu bar "File -> Open Config", navigate to "~/kinetic/src/mas_domestic_robotics" and select the "cob.rviz" file.
+If you encounter any problems, please check the list of [issues](https://github.com/b-it-bots/mas_domestic_robotics/issues) and open a new one if you don't see a discussion of the problem there.
