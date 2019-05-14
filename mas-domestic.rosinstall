@@ -1,22 +1,22 @@
 - git:
     local-name: mas_common_robotics
     uri: https://github.com/b-it-bots/mas_common_robotics.git
-    version: kinetic
+    version: melodic
 
 - git:
     local-name: mas_domestic_robotics
     uri: https://github.com/b-it-bots/mas_domestic_robotics.git
-    version: kinetic
+    version: melodic
 
 - git:
     local-name: mas_navigation
     uri: https://github.com/b-it-bots/mas_navigation.git
-    version: kinetic
+    version: melodic
 
 - git:
     local-name: mas_perception
     uri: https://github.com/b-it-bots/mas_perception.git
-    version: kinetic
+    version: melodic
 
 - git:
     local-name: mas_execution_manager
@@ -56,7 +56,7 @@
 - git:
     local-name: mongodb_store
     uri: https://github.com/b-it-bots/mongodb_store.git
-    version: kinetic-devel
+    version: melodic-devel
 
 - git:
     local-name: occupancy_grid_utils
@@ -71,4 +71,4 @@
 - git:
     local-name: kdl_parser
     uri: https://github.com/ros/kdl_parser.git
-    version: kinetic-devel
+    version: melodic-devel

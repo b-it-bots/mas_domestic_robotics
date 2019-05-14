@@ -1,7 +1,7 @@
-FROM bitbots/bitbots-common:kinetic
+FROM bitbots/bitbots-common:melodic
 
-WORKDIR /kinetic
-COPY mas-domestic.rosinstall /kinetic
+WORKDIR /melodic
+COPY mas-domestic.rosinstall /melodic
 
 RUN wstool init --shallow src && \
     wstool merge -t src mas-domestic.rosinstall && \
@@ -10,19 +10,19 @@ RUN wstool init --shallow src && \
     cd - && \
     wstool update -t src
 
-ADD . /kinetic/src/mas_domestic_robotics
+ADD . /melodic/src/mas_domestic_robotics
 
 
 RUN . /opt/ros/mas_stable/setup.sh && \
     apt-get update -qq && \
     rosdep update -q && \
-    rosdep install --from-paths src --ignore-src --rosdistro=kinetic -y && \
+    rosdep install --from-paths src --ignore-src --rosdistro=melodic -y && \
     rm -rf /var/lib/apt/lists/* && \
     catkin config --init && \
     catkin config --extend /opt/ros/mas_stable && \
     catkin config --install --install-space /opt/ros/mas_stable && \
     catkin build && \
-    rm -rf /kinetic/
+    rm -rf /melodic/
 
 WORKDIR /
 ENTRYPOINT ["/ros_entrypoint.sh"]

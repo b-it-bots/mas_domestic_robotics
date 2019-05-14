@@ -5,4 +5,4 @@ services:
     build: .
   domestic:
     build: .
-    image: bitbots/bitbots-domestic:kinetic
+    image: bitbots/bitbots-domestic:melodic
