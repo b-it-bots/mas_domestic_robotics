@@ -51,7 +51,13 @@ class ReceiveInformation(ScenarioStateBase):
         goal = ListenGoal()
 
         if not self.number_of_retries == 0:
-            self.say('Hi. What are you looking for?')
+            self.say('Please speak into my microphone')
+            rospy.sleep(1)
+
+            self.say('The microphone is on the top of my head')
+            rospy.sleep(1)
+
+            self.say('What are you looking for?')
             rospy.sleep(1)
         # Ask again if not understood the first time
         elif self.number_of_retries < 3:
