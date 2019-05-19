@@ -37,6 +37,10 @@
     local-name: ftsm
     uri: https://github.com/b-it-bots/ftsm.git
     version: master
+- git:
+    local-name: topological_map
+    uri: https://github.com/b-it-bots/topological_map.git
+    version: master
 
 - git:
     local-name: zbar_ros
