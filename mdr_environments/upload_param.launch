@@ -2,10 +2,10 @@
 <launch>
   <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)"/>
   <arg name="domestic_domain" default="false"/>  <!-- include environment specific launch file -->
-  <!--include file="$(find mcr_default_env_config)/$(arg robot_env)/upload_param_$(arg robot_env).launch" /-->
+  <!--include file="$(find mdr_environments)/$(arg robot_env)/upload_param_$(arg robot_env).launch" /-->
 
   <group ns="/script_server">
     <!-- send ROBOT parameters to parameter server -->
-    <rosparam command="load" ns="base" file="$(find mcr_default_env_config)/$(arg robot_env)/navigation_goals.yaml"/>
+    <rosparam command="load" ns="base" file="$(find mdr_environments)/$(arg robot_env)/navigation_goals.yaml"/>
   </group>
 </launch>
