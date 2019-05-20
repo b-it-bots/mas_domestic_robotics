@@ -8,7 +8,7 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import Point, Quaternion, Pose, PoseStamped
 
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
-from mcr_perception_msgs.msg import Object
+from mas_perception_msgs.msg import Object
 
 from action_execution.action import Action
 from ae_ros_message_converter.converter_factory import ConverterFactory
