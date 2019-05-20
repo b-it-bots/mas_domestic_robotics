@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   rosplan_dispatch_msgs
   rosplan_knowledge_msgs
   diagnostic_msgs
-  mcr_perception_msgs
+  mas_perception_msgs
   mdr_rosplan_interface
   mdr_move_arm_action
   mdr_move_base_action
@@ -48,7 +48,7 @@ catkin_package(
    geometry_msgs
    trajectory_msgs
    diagnostic_msgs
-   mcr_perception_msgs
+   mas_perception_msgs
    mdr_rosplan_interface
    mdr_move_arm_action
    mdr_move_base_action

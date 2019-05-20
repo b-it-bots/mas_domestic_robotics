@@ -4,7 +4,7 @@ string plane_frame_prefix
 ---
 # result definition
 bool success
-mcr_perception_msgs/PlaneList recognized_planes
+mas_perception_msgs/PlaneList recognized_planes
 ---
 # feedback
 string current_state

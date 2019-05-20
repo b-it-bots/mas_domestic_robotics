@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   mas_perception_libs
-  mcr_perception_msgs
+  mas_perception_msgs
   mas_knowledge_base
   mdr_move_base_action
   mdr_perceive_plane_action
@@ -26,7 +26,7 @@ add_action_files(DIRECTORY ros/action
 generate_messages(
   DEPENDENCIES
     actionlib_msgs
-    mcr_perception_msgs
+    mas_perception_msgs
 )
 
 catkin_package(
@@ -36,7 +36,7 @@ catkin_package(
    actionlib_msgs
    message_runtime
    mas_perception_libs
-   mcr_perception_msgs
+   mas_perception_msgs
    mas_knowledge_base
    mdr_move_base_action
    mdr_perceive_plane_action

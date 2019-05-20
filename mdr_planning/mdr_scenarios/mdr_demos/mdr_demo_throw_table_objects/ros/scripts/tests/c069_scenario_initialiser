@@ -6,7 +6,7 @@ import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
 from mongodb_store.message_store import MessageStoreProxy
 
-from mcr_perception_msgs.msg import Object, Plane
+from mas_perception_msgs.msg import Object, Plane
 
 class C069ScenarioInitialiser(object):
     def __init__(self, objects=list(), obj_names=list()):

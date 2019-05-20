@@ -19,7 +19,7 @@ An action for finding objects in a familiar environment. The action includes an 
 ### Result:
 
 * ``bool success``: Indicates whether the action was successfully completed
-* ``mcr_perception_msgs/Object obj``: The object (if found)
+* ``mas_perception_msgs/Object obj``: The object (if found)
 * ``string object_location``: The location of the object if the object was found
 * ``string relation``: The relation of the found object and its location (such as "on" or "in")
 
@@ -76,7 +76,7 @@ The following parameters need to be passed when launching the action client:
 ## Dependencies
 
 * ``mas_perception_libs``
-* ``mcr_perception_msgs``
+* ``mas_perception_msgs``
 * ``mas_knowledge_base``
 * ``mdr_move_base_action``
 * ``mdr_perceive_plane_action``

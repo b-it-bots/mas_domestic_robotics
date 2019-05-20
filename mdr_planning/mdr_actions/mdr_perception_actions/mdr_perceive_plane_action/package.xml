@@ -18,7 +18,7 @@
   <buildtool_depend>genmsg</buildtool_depend>
   <build_depend>actionlib</build_depend>
 
-  <build_depend>mcr_perception_msgs</build_depend>
+  <build_depend>mas_perception_msgs</build_depend>
   <build_depend>mas_perception_libs</build_depend>
   <build_depend>actionlib_msgs</build_depend>
   <build_depend>message_generation</build_depend>
@@ -30,7 +30,7 @@
   <run_depend>actionlib</run_depend>
   <run_depend>actionlib_msgs</run_depend>
   <run_depend>message_runtime</run_depend>
-  <run_depend>mcr_perception_msgs</run_depend>
+  <run_depend>mas_perception_msgs</run_depend>
   <run_depend>mdr_object_recognition</run_depend>
 
   <export></export>
