@@ -9,7 +9,7 @@
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map)"/>
 
     <!-- visualize navigation goals -->
-    <include file="$(find mcr_navigation_tools)/ros/launch/pose_visualizer.launch" />
+    <include file="$(find mas_navigation_tools)/ros/launch/pose_visualizer.launch" />
 
     <!-- particle filter localization -->
     <include file="$(find mdr_2dnav)/ros/launch/amcl.launch" />
