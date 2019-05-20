@@ -29,6 +29,10 @@ jobs:
     - stage: build
       script:
         - docker-compose build travis
+    - stage: build
+      name: "Sonarcloud.io"
+      script:
+        - sonar-scanner
     - stage: deploy
       name: "Docker Hub"
       skip_cleanup: true
@@ -41,3 +45,9 @@ jobs:
 notifications:
   slack:
     secure: RUiplbRX8scnvplFZhBIvSJxPDs/qCcBiMmSZnocILQsHrZMCIhv0eNoAT6FWIkXpJbS4l56BFbSdZH25/qNl/cdNwbn/YCc4N4fketeYduLcWNpwOfbf41vjFIXEbzo6wboFjlIPJDZgQFbtMThoJ2Gx6J2nBLB719j4Skj5C58yx6/ScioXZZ1LIXEE1aeOwRnju+OqX/o0dvUNrnP+6XnMtuYSicml10JV5tj3r9IJQuSAD6Bv0l/2eMparJ5UboRMwtCy5GVLfetky6WARmESJP+bKhvYE1+FR3AdRmzA47rmE+c7fZzyybSRKeUlhWPUVatTLbWxpB4ivXxKfRWqe1RiYUIAQz8U2EhWgiuR47/1qYvQ4Lefq2pgZzbCTy4Z8rL4+CjuQqRrweAIS2AQuyWfcnv01BuJX7mmdR+jA0FYWSBxdTgrJLJ70y6ZiV6QGWYFW4x9mot3E6O+vh1LfI56ctpJfwHgIFwc0xN8rMhhkTNzEG911QAZPLsNp1+v18vXF5StHXc4sTM62IagVEifTjoVkJCTytKtqBIn+ZrAcxIBBZk8Mre9doT3ulCjRtzmGLEmGGHN429jY0ufjw1pdAml/a6FDKlKwp7/QZ49qeg23/OkkZCJ1MQ3kducjtO0qCV2DcCS7dS2b8q7ZJGH+gcWGc82XAsFgs=
+
+addons:
+  sonarcloud:
+    organization: "b-it-bots"
+    token:
+      secure: "dRKXZht+QEdakRytXcHQQ2BeCbc6aJnKgsJoRfew90Os6jwYHsblZxgd6hT339wks8/sIq7QEQHj7Mk7h/WL9TCbkQuSmrK9sNLV0O8RYFtvxPJ7XLHM9eV4IkJSijTxfoY3KiKi/C70tWnMs8fNLVRAm68WqzHwyF0DTtr6bZU2P3YeGs8Vv559j2Rh7kXp4k7l5P9ZTo6HE5vOpt307wsNBNZLiJTSjA6RQUOUlr+LxwT7bTgiIakIbmZ7kLP+dAlF8Dwc00dnBGzOeDJ0Gocy8aoxwGKxyllOVgs3F4+7fUKSf0J7qP3JM92xv+CeKgOu/L/ktAnDwpwat0Xoweo4I1sIhaR1mCDBbHNNS8WnfVX3ItqL0F7n/6+BAn76BuFMnjVzqYHXNwLQL9H5sJhj7OMX5apOEsBcxDErgDA/umeWjvccgjqd79yCfVkq5zHueBeTEDAzfrQNyLypusZZSjfAkrbtmxK6KhWXuz4kmyR20sLNbTZiC6RgVAsSpVaJt8qpqac2bG7dqj/8vx8sso8VLRFmmPGXuF4UQI/ZYb7yWpb4/fU3kNTi+sFyNDpZe4zQITSnWGtplpS7gyejY/mMj6yQ2lElTZAvQXqeuWr5N08BB8oDRqxFQJjXae18yOoWvsDKSw0nSou7E3qHA6aqKGnCCU8FvPbv0hA="
