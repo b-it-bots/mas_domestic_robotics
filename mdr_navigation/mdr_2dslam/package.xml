@@ -2,7 +2,7 @@
 <package>
   <name>mdr_2dslam</name>
   <version>1.2.0</version>
-  <description>2d base slam mapping based on ros gmapping for Care-O-bot 3, Fraunhofer IPA</description>
+  <description>2D base slam mapping based on ros gmapping</description>
 
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
