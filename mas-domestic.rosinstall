@@ -9,8 +9,8 @@
     version: kinetic
 
 - git:
-    local-name: mas_navigation
-    uri: https://github.com/b-it-bots/mas_navigation.git
+    local-name: mas_navigation_tools
+    uri: https://github.com/b-it-bots/mas_navigation_tools.git
     version: kinetic
 
 - git:
