@@ -7,7 +7,7 @@ import tf
 from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import Point, Pose, PoseStamped
 from mdr_find_people.msg import FindPeopleResult
-from mcr_perception_msgs.msg import Person, PersonList
+from mas_perception_msgs.msg import Person, PersonList
 from mas_perception_libs import ImageDetectionKey
 from mas_perception_libs.visualization import crop_image
 from mas_perception_libs.utils import cloud_msg_to_image_msg, cloud_msg_to_cv_image

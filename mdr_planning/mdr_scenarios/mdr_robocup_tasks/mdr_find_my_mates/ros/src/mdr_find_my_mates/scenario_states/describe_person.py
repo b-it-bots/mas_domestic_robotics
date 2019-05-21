@@ -2,7 +2,7 @@ import cv2
 import rospy
 import numpy as np
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
-from mcr_perception_msgs.msg import Person
+from mas_perception_msgs.msg import Person
 from mdr_perception_msgs.msg import PersonInfo
 from cv_bridge import CvBridge, CvBridgeError
 
