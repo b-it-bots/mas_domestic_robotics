@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslint
   rospy
   std_msgs
-  mcr_door_status
+  mdr_door_status
   mdr_move_forward_action
 )
 

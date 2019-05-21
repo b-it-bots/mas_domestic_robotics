@@ -15,7 +15,7 @@ interacts with ROSPlan.
 ### Result:
 
 * ``bool success``
-* ``mcr_perception_msgs/PlaneList recognized_planes``
+* ``mas_perception_msgs/PlaneList recognized_planes``
 
 ### Feedback:
 
@@ -54,9 +54,9 @@ The following arguments may be passed when launching the action server:
 * ``target_frame``: name of the reference frame the object and plane poses will be transformed to
   (default: '/base_link')
 * ``detection_action_name``: name of the action server used for object detection.
-  Action file: `mcr_perception_msgs/DetectScene.action`.
+  Action file: `mas_perception_msgs/DetectScene.action`.
 * ``recognition_service_name``: the name of the image recognition service for classifying object.
-  Service file: `mcr_perception_msgs/RecognizeImage.srv`.
+  Service file: `mas_perception_msgs/RecognizeImage.srv`.
 * ``recognition_model_name``: the name of the image classification model located in the `mdr_object_recognition`
   package.
 * ``preprocess_input_module``: the name of the module containing the image preprocessing function to be executed on
@@ -80,7 +80,7 @@ The following parameters need to be passed when launching the action client:
 
 * ``mas_perception_libs``
 * ``mdr_object_recognition``
-* ``mcr_perception_msgs``
+* ``mas_perception_msgs``
 
 ## Example usage
 

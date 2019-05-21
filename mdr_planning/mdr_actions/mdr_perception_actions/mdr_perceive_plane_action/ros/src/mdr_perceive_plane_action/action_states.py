@@ -2,7 +2,7 @@
 import rospy
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
-from mcr_perception_msgs.msg import PlaneList
+from mas_perception_msgs.msg import PlaneList
 from mas_perception_libs import ObjectDetector, RecognizeImageServiceProxy
 from mdr_perceive_plane_action.msg import PerceivePlaneResult, PerceivePlaneFeedback
 

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+
+	<node pkg="mdr_door_status" type="door_status_node_mockup" name="door_status_mockup" ns="mcr_perception" output="screen">
+		<remap from="~door_status" to="/mdr_perception/mdr_door_status/door_status"/>
+	</node>
+</launch>
