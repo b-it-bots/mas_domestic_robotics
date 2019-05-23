@@ -64,7 +64,6 @@ class PerceivePlaneSM(ActionSMBase):
                 indices, classes, probs = self._recog_service_proxy.classify_image_messages(image_messages)
                 for i in indices:
                     plane.object_list.objects[i].name = classes[i]
-                    # TODO: handle categories
                     plane.object_list.objects[i].category = classes[i]
                     plane.object_list.objects[i].probability = probs[i]
 
