@@ -8,7 +8,7 @@ from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 
 if __name__ == '__main__':
     rospy.init_node('mdr_move_base_client_test')
-    client = actionlib.SimpleActionClient('/mdr_actions/move_base_server', MoveBaseAction)
+    client = actionlib.SimpleActionClient('move_base_server', MoveBaseAction)
     client.wait_for_server()
     goal = MoveBaseGoal()
     if len(sys.argv) == 2:

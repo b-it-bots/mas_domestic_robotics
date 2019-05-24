@@ -6,6 +6,7 @@ from nav_msgs.msg import Path
 import tf
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from ros_dmp.srv import GenerateMotion, GenerateMotionRequest
 
 from mdr_move_arm_action.roll_dmp import RollDMP
 
@@ -24,13 +25,16 @@ class DMPExecutor(object):
         self.dmp_executor_path_topic = rospy.get_param('~path_topic', '/dmp_executor/path')
         self.move_base_server = rospy.get_param('~move_base_server', 'move_base/move')
 
+        # ros_dmp service
+        self.motion_client = rospy.ServiceProxy('/generate_motion_service', GenerateMotion)
+
         self.number_of_sampling_points = 30
-        self.goal_tolerance = 0.02
+        self.goal_tolerance = 0.05
         self.vel_publisher_arm = rospy.Publisher(self.cartesian_velocity_topic,
                                                  TwistStamped, queue_size=1)
         self.vel_publisher_base = rospy.Publisher(self.base_vel_topic, Twist, queue_size=1)
         self.feedforward_gain = 30
-        self.feedback_gain = 1
+        self.feedback_gain = 10
         self.sigma_threshold_upper = 0.12
         self.sigma_threshold_lower = 0.07
         self.base_feedback_gain = 2.0
@@ -55,13 +59,32 @@ class DMPExecutor(object):
     def move_base(self):
         move_base_goal = MoveBaseGoal()
         move_base_goal.target_pose.header.frame_id = self.map_frame_name
-        print self.move_base_client.send_goal(move_base_goal)
+        print(self.move_base_client.send_goal(move_base_goal))
 
     def generate_trajectory(self, goal, initial_pos):
-        goal = np.array([goal[0], goal[1], goal[2], 0.0, 0.0, 0.0])
-        initial_pos = np.array([initial_pos[0], initial_pos[1], initial_pos[2], 0.0, 0.0, 0.0])
-        self.roll = RollDMP(self.dmp_name, n_bfs=150)
-        self.pos, self.vel, self.acc = self.roll.roll(goal, initial_pos, self.tau)
+        req = GenerateMotionRequest()
+        req.goal_pose.pose.position.x = goal[0]
+        req.goal_pose.pose.position.y = goal[1]
+        req.goal_pose.pose.position.z = goal[2]
+        req.initial_pose.pose.position.x = initial_pos[0]
+        req.initial_pose.pose.position.y = initial_pos[1]
+        req.initial_pose.pose.position.z = initial_pos[2]
+        req.dmp_name = self.dmp_name
+        req.tau = self.tau
+        req.dt = 0.001
+
+        print('[dmp] Sending trajectory request: ', req)
+        response = self.motion_client(req)
+        pos_x = []
+        pos_y = []
+        pos_z = []
+        for state in response.cart_traj.cartesian_state:
+            pos_x.append(state.pose.position.x)
+            pos_y.append(state.pose.position.y)
+            pos_z.append(state.pose.position.z)
+        self.pos = np.array(pos_x)
+        self.pos = np.vstack((self.pos, np.array(pos_y)))
+        self.pos = np.vstack((self.pos, np.array(pos_z)))
 
     def tranform_pose(self, pose):
         #transform goals to odom frame
@@ -91,16 +114,17 @@ class DMPExecutor(object):
         self.path_pub.publish(path)
 
     def trajectory_controller(self):
-        previous_pos = None
         count = 0
         previous_index = 0
-        path = self.pos[:, 0:3].T
+        path = self.pos
         path_x = path[0, :]
         path_y = path[1, :]
         path_z = path[2, :]
         while not rospy.is_shutdown():
             try:
-                (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame_name, self.palm_link_name, rospy.Time(0))
+                (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame_name,
+                                                                self.palm_link_name,
+                                                                rospy.Time(0))
                 break
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
@@ -112,7 +136,9 @@ class DMPExecutor(object):
         old_pos_index = 0
         while distance > self.goal_tolerance and not rospy.is_shutdown():
             try:
-                (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame_name, self.palm_link_name, rospy.Time(0))
+                (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame_name,
+                                                                self.palm_link_name,
+                                                                rospy.Time(0))
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
             current_pos = np.array([trans[0], trans[1], trans[2]])
@@ -226,10 +252,10 @@ class DMPExecutor(object):
 
         self.generate_trajectory(goal, initial_pos)
         pos = []
-        for i in range(self.pos.shape[0]):
-            pos.append(self.tranform_pose(self.pos[i, 0:3]))
+        for i in range(self.pos.shape[1]):
+            pos.append(self.tranform_pose(self.pos[:, i]))
         pos = np.array(pos)
-        self.pos = pos
+        self.pos = pos.T
         self.publish_path()
 
         # transform pose to base link

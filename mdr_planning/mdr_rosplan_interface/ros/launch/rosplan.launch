@@ -3,20 +3,28 @@
     <arg name="knowledge_base_path" default="$(find mdr_knowledge_base)/common/mongoDB" />
     <arg name="planner_path" default="$(find rosplan_planning_system)/common/bin/" />
     <arg name="data_path" default="" />
-    <arg name="domain_path" default="" />
+    <arg name="domain_path" default="$(find mdr_rosplan_interface)/config/default_domain.pddl" />
     <arg name="problem_path" default="" />
     <arg name="strl_file_path" default="" />
     <arg name="planner_command" default="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n DOMAIN PROBLEM" />
-    <arg name="generate_default_problem" default="true" />
-    <arg name="max_dispatch_attempts" default="2" />
+    <arg name="action_dispatch_topic" default="/kcl_rosplan/action_dispatch" />
+    <arg name="action_feedback_topic" default="/kcl_rosplan/action_feedback" />
 
     <!-- data paths -->
     <param name="/rosplan/data_path" value="$(arg data_path)" />
-    <param name="/rosplan/planner_path" value="%(arg planner_path)" />
+    <param name="/rosplan/planner_path" value="$(arg planner_path)" />
     <param name="/rosplan/domain_path" value="$(arg domain_path)" />
 
+    <!-- planner interface parameters -->
+    <param name="/planner/problem_generation_srv" value="/rosplan_problem_interface/problem_generation_server" />
+    <param name="/planner/planner_srv" value="/rosplan_planner_interface/planning_server" />
+    <param name="/planner/plan_parsing_srv" value="/rosplan_parsing_interface/parse_plan" />
+    <param name="/planner/plan_dispatch_srv" value="/rosplan_plan_dispatcher/dispatch_plan" />
+    <param name="/planner/action_dispatch_topic" value="$(arg action_dispatch_topic)" />
+    <param name="/planner/action_feedback_topic" value="$(arg action_feedback_topic)" />
+
     <!-- knowledge base -->
-    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="false" output="screen">
+    <node name="rosplan_knowledge_base" pkg="rosplan_knowledge_base" type="knowledgeBase" respawn="true" output="screen">
         <param name="domain_path" value="$(arg domain_path)" />
         <param name="problem_path" value="$(arg problem_path)" />
         <param name="database_path" value="$(arg knowledge_base_path)" />
@@ -27,17 +35,48 @@
         <arg name="db_path" value="$(arg knowledge_base_path)" />
         <arg name="port" value="27018" />
     </include>
-    <node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="false" output="log" />
+    <node name="rosplan_scene_message_store" pkg="mongodb_store" type="message_store_node.py" respawn="true" output="log" />
+
+    <!-- problem generation -->
+    <node name="rosplan_problem_interface" pkg="rosplan_planning_system" type="problemInterface" respawn="true" output="screen">
+        <param name="knowledge_base" value="rosplan_knowledge_base" />
+        <param name="domain_path" value="$(arg domain_path)" />
+        <param name="problem_path" value="$(arg problem_path)" />
+        <param name="problem_topic" value="/rosplan_problem_interface/problem_instance" />
+        <param name="planning_language" value="PDDL" />
+    </node>
 
     <!-- planning system -->
-    <node name="rosplan_planner_interface" pkg="rosplan_planning_system" type="popf_planner_interface" respawn="false" output="screen">
+    <node name="rosplan_planner_interface" pkg="rosplan_planning_system" type="popf_planner_interface" respawn="true" output="screen">
+        <param name="use_problem_topic" value="true" />
+        <param name="problem_topic" value="/rosplan_problem_interface/problem_instance" />
+        <param name="planner_topic" value="planner_output" />
         <param name="data_path" value="$(arg data_path)" />
         <param name="domain_path" value="$(arg domain_path)" />
         <param name="problem_path" value="$(arg problem_path)" />
         <param name="strl_file_path" value="$(arg strl_file_path)" />
-
         <param name="planner_command" value="$(arg planner_command)" />
-        <param name="generate_default_problem" value="$(arg generate_default_problem)" />
-        <param name="max_dispatch_attempts" value="$(arg max_dispatch_attempts)" />
     </node>
+
+    <!-- plan parsing -->
+    <include file="$(find rosplan_planning_system)/launch/includes/parsing_interface.launch">
+        <arg name="knowledge_base" value="rosplan_knowledge_base" />
+        <arg name="planner_topic" value="/rosplan_planner_interface/planner_output" />
+        <arg name="plan_topic" value="complete_plan" />
+    </include>
+
+    <!-- plan dispatch -->
+    <include file="$(find rosplan_planning_system)/launch/includes/dispatch_interface.launch">
+        <arg name="knowledge_base" value="rosplan_knowledge_base" />
+        <arg name="plan_topic" value="/rosplan_parsing_interface/complete_plan" />
+        <arg name="action_dispatch_topic" value="$(arg action_dispatch_topic)" />
+        <arg name="action_feedback_topic" value="$(arg action_feedback_topic)" />
+    </include>
+
+    <!-- we reset the message store before using it -->
+    <include file="$(find mdr_rosplan_interface)/ros/launch/clear_message_store.launch">
+        <arg name="db_name" default="message_store" />
+        <arg name="collection_name" default="message_store" />
+        <arg name="db_port" default="27018" />
+    </include>
 </launch>

@@ -9,18 +9,38 @@
     version: kinetic
 
 - git:
-    local-name: mas_navigation
-    uri: https://github.com/b-it-bots/mas_navigation.git
+    local-name: mas_navigation_tools
+    uri: https://github.com/b-it-bots/mas_navigation_tools.git
     version: kinetic
 
 - git:
-    local-name: mas_perception
-    uri: https://github.com/b-it-bots/mas_perception.git
+    local-name: mas_perception_libs
+    uri: https://github.com/b-it-bots/mas_perception_libs.git
+    version: kinetic
+
+- git:
+    local-name: mas_perception_msgs
+    uri: https://github.com/b-it-bots/mas_perception_msgs.git
     version: kinetic
 
 - git:
     local-name: mas_execution_manager
     uri: https://github.com/b-it-bots/mas_execution_manager.git
+    version: master
+
+- git:
+    local-name: mas_knowledge_base
+    uri: https://github.com/b-it-bots/mas_knowledge_base.git
+    version: master
+
+- git:
+    local-name: action-execution
+    uri: https://github.com/b-it-bots/action-execution.git
+    version: master
+
+- git:
+    local-name: ftsm
+    uri: https://github.com/b-it-bots/ftsm.git
     version: master
 
 - git:
@@ -37,6 +57,11 @@
     local-name: ROSPlan
     uri: https://github.com/KCL-Planning/ROSPlan.git
     version: master
+
+- git:
+    local-name: mongodb_store
+    uri: https://github.com/b-it-bots/mongodb_store.git
+    version: kinetic-devel
 
 - git:
     local-name: occupancy_grid_utils

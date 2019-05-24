@@ -71,8 +71,6 @@ The following parameters need to be passed when launching the action client:
 * ``action_timeout``: Maximum time (in seconds) that we are willing to wait for the action to be executed
 * ``action_dispatch_topic``: Name of the topic at which the plan dispatcher sends action requests
 * ``action_feedback_topic``: Name of the topic at which the action sends feedback to the plan dispatcher
-* ``knowledge_update_service``: Name of a service used for updating the planning problem as the world changes
-* ``attribute_fetching_service``: Name of a service used for retrieving attributes representing the current knowledge about the world
 * ``placing_pose_frame``: Name of the frame in which placing is performed (default: 'base_link')
 
 ## Action execution summary
@@ -94,7 +92,7 @@ The action performs placing with respect to the `base_link` frame (even if the g
 * ``rosplan_dispatch_msgs``
 * ``rosplan_knowledge_msgs``
 * ``diagnostic_msgs``
-* ``mcr_perception_msgs``
+* ``mas_perception_msgs``
 * ``mdr_rosplan_interface``
 * ``mdr_move_arm_action``
 * ``mdr_move_base_action``

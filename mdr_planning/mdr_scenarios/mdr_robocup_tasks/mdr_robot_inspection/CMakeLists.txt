@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   smach
   actionlib
   std_msgs
-  mcr_door_status
+  mdr_door_status
   mdr_enter_door_action
   mdr_move_base_action
   mas_execution_manager
@@ -22,7 +22,7 @@ catkin_package(
     actionlib
     std_msgs
     zbar_ros
-    mcr_door_status
+    mdr_door_status
     mdr_move_base_action
     mdr_enter_door_action
     mas_execution_manager

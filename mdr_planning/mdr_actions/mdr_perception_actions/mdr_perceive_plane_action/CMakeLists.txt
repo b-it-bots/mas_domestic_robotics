@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslint
   rospy
   roslaunch
-  mcr_perception_msgs
+  mas_perception_msgs
   mas_perception_libs
 )
 
@@ -23,7 +23,7 @@ add_action_files(DIRECTORY ros/action
 generate_messages(
   DEPENDENCIES
     actionlib_msgs
-    mcr_perception_msgs
+    mas_perception_msgs
 )
 
 catkin_package(

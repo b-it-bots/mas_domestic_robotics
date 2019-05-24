@@ -7,17 +7,15 @@ interacts with ROSPlan.
 
 ### Goal:
 
-* ``string plane_config``: Name of the configuration set for setting up the dynamic parameter server.  Each plane should
-  have a set of configurations, and all configuration sets should be listed in
-  ``config/perceive_plane_configurations.yaml``. This is necessary for configuring the scene segmentation  node in
-  ``mas_common_robotics``
+* ``string plane_config``: Name of the plane configuration to be perceived.
+  TODO(minhnh): confirm that this can be removed.
 * ``string plane_frame_prefix``: prefix to the plane names which will be written to the ``Plane`` objects in
   ``action_states.DetectObjects``
 
 ### Result:
 
 * ``bool success``
-* ``mcr_perception_msgs/PlaneList recognized_planes``
+* ``mas_perception_msgs/PlaneList recognized_planes``
 
 ### Feedback:
 
@@ -33,8 +31,6 @@ interacts with ROSPlan.
 ├── ros
 │   ├── action
 │   │   └── PerceivePlane.action
-│   ├── config
-│   │   └── perceive_plane_configurations.yaml
 │   ├── launch
 │   │   ├── perceive_plane_client.launch
 │   │   ├── perceive_plane.launch
@@ -58,9 +54,9 @@ The following arguments may be passed when launching the action server:
 * ``target_frame``: name of the reference frame the object and plane poses will be transformed to
   (default: '/base_link')
 * ``detection_action_name``: name of the action server used for object detection.
-  Action file: `mcr_perception_msgs/DetectScene.action`.
+  Action file: `mas_perception_msgs/DetectScene.action`.
 * ``recognition_service_name``: the name of the image recognition service for classifying object.
-  Service file: `mcr_perception_msgs/ImageRecognition.srv`.
+  Service file: `mas_perception_msgs/RecognizeImage.srv`.
 * ``recognition_model_name``: the name of the image classification model located in the `mdr_object_recognition`
   package.
 * ``preprocess_input_module``: the name of the module containing the image preprocessing function to be executed on
@@ -75,25 +71,21 @@ The following parameters need to be passed when launching the action client:
 * ``action_name``: Name of the action as used in the planning domain
 * ``server_name``: Name of the ``perceive_plane`` action server
 * ``action_timeout``: Maximum time (in seconds) that we are willing to wait for the action to be executed
-* ``clear_plane_memory``: If set to true, all objects previously seen on a plane will be deleted from the knowledge base before new objects are added to it (default false)
+* ``clear_plane_memory``: If set to true, all objects previously seen on a plane will be deleted from the
+  knowledge base before new objects are added to it (default false)
 * ``action_dispatch_topic``: Name of the topic at which the plan dispatcher sends action requests
 * ``action_feedback_topic``: Name of the topic at which the action sends feedback to the plan dispatcher
-* ``knowledge_update_service``: Name of a service used for updating the planning problem as the world changes
-* ``attribute_fetching_service``: Name of a service used for retrieving attributes representing the current knowledge
-about the world
 
 ## Dependencies
 
-* ``mdr_object_recognition_mean_circle``
 * ``mas_perception_libs``
 * ``mdr_object_recognition``
-* ``mcr_dynamic_reconfigure_client``
-* ``mcr_perception_msgs``
+* ``mas_perception_msgs``
 
 ## Example usage
 
 1. Change the ``service_module`` and ``service_class_name`` value to the desired extended service proxy. By default
-a test service proxy of type ``std_srv/Empty`` is loaded.
+   a test service proxy of type ``std_srv/Empty`` is loaded.
 2. Run the action server: ``roslaunch mdr_perceive_plane_action perceive_plane.launch``.
-The ``perceive_plane_test.launch`` file will create a server of type ``std_srv/Empty`` for testing.
+   The ``perceive_plane_test.launch`` file will create a server of type ``std_srv/Empty`` for testing.
 3. Run the client example: ``rosrun mdr_perceive_plane_action perceive_plane_client_test``

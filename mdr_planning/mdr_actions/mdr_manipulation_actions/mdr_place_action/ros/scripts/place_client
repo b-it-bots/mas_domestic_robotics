@@ -10,7 +10,7 @@ from geometry_msgs.msg import Point, Quaternion, Pose, PoseStamped, PointStamped
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
-from mcr_perception_msgs.msg import Object, Plane
+from mas_perception_msgs.msg import Object, Plane
 
 from action_execution.action import Action
 from action_execution.utils.configuration import Configuration
@@ -20,6 +20,12 @@ from mdr_rosplan_interface.action_client_base import ActionClientBase
 from mdr_place_action.msg import PlaceAction, PlaceGoal
 
 class PlaceClient(ActionClientBase):
+    '''Defines a client for an object placing action.
+
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
     def __init__(self):
         super(PlaceClient, self).__init__()
 
@@ -36,7 +42,7 @@ class PlaceClient(ActionClientBase):
         if self.action_name != msg.name.lower():
             return
 
-        rospy.loginfo('[PLACE] Action request received')
+        rospy.loginfo('[place] Action request received')
         self.action_id = msg.action_id
 
         client = actionlib.SimpleActionClient(self.action_server_name, PlaceAction)
@@ -44,13 +50,13 @@ class PlaceClient(ActionClientBase):
         goal = self.get_action_message(msg)
 
         # calling the actionlib server and waiting for the execution to end
-        rospy.loginfo('[PLACE] Sending actionlib goal to %s' % self.action_server_name)
+        rospy.loginfo('[place] Sending actionlib goal to %s' % self.action_server_name)
         client.send_goal(goal)
         client.wait_for_result(rospy.Duration.from_sec(int(self.action_timeout)))
         result = client.get_result()
 
         if result and result.success:
-            rospy.loginfo('[PLACE] Updating the knowledge base')
+            rospy.loginfo('[place] Updating the knowledge base')
             self.update_knowledge_base(goal.pose)
             self.send_action_feedback(True)
         else:
@@ -75,18 +81,18 @@ class PlaceClient(ActionClientBase):
         obj_config = Configuration()
         obj_config.frame_id = self.frame_id
 
-        surface_object_names = self.get_surface_object_names(self.obj_plane)
-        surface_objects = self.get_surface_object(surface_object_names)
+        surface_object_names = self.kb_interface.get_surface_object_names(self.obj_plane)
+        surface_objects = self.kb_interface.get_objects(surface_object_names, Object._type)
         for obj in surface_objects:
             obj.pose.header.stamp = rospy.Time(0)
             obj.pose = self.tf_listener.transformPose(self.frame_id, obj.pose)
             obj_config.static_objs.append(ConverterFactory.convert_ros_msg(obj))
 
-        manipulated_obj = self.get_object_by_name(self.obj)
+        manipulated_obj = self.kb_interface.get_obj_instance(self.obj, Object._type)
         manipulated_obj.pose.header.frame_id = self.frame_id
         obj_config.manipulated_obj = ConverterFactory.convert_ros_msg(manipulated_obj)
 
-        surface_plane = self.get_surface_by_name(self.obj_plane)
+        surface_plane = self.kb_interface.get_obj_instance(self.obj_plane, Plane._type)
 
         # we convert the surface center point to the desired frame
         surface_plane_point = PointStamped()
@@ -142,103 +148,22 @@ class PlaceClient(ActionClientBase):
         candidate_pose = ConverterFactory.convert_to_ros_msg(candidate_pose)
         return candidate_pose
 
-    def get_surface_object_names(self, surface_name):
-        surface_objects = list()
-        request = rosplan_srvs.GetAttributeServiceRequest()
-        request.predicate_name = 'on'
-        result = self.attribute_fetching_client(request)
-        for item in result.attributes:
-            object_on_desired_surface = False
-            object_name = ''
-            if not item.is_negative:
-                for param in item.values:
-                    if param.key == 'plane' and param.value == surface_name:
-                        object_on_desired_surface = True
-                    elif param.key == 'obj':
-                        object_name = param.value
-            if object_on_desired_surface:
-                surface_objects.append(object_name)
-        return surface_objects
-
-    def get_surface_object(self, surface_objects):
-        objects = list()
-        for obj_name in surface_objects:
-            obj = self.get_object_by_name(obj_name)
-            if obj is not None:
-                objects.append(obj)
-        return objects
-
-    def get_object_by_name(self, obj_name):
-        try:
-            obj = self.msg_store_client.query_named(obj_name, Object._type)[0]
-            return obj
-        except:
-            rospy.logerr('Error retriving knowledge about %s', obj_name)
-            return None
-
-    def get_surface_by_name(self, surface_name):
-        try:
-            surface = self.msg_store_client.query_named(surface_name, Plane._type)[0]
-            return surface
-        except:
-            rospy.logerr('Error retriving knowledge about %s', surface_name)
-            return None
-
     def update_knowledge_base(self, new_object_pose):
-        # we remove the fact that the robot is holding the object from the knowledge base
-        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 2
-        request.knowledge.knowledge_type = 1
-        request.knowledge.attribute_name = 'holding'
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'bot'
-        arg_msg.value = self.robot_name
-        request.knowledge.values.append(arg_msg)
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'obj'
-        arg_msg.value = self.obj
-        request.knowledge.values.append(arg_msg)
-
-        self.knowledge_update_client(request)
-
-        # we add the fact that the robot's gripper is empty to the knowledge base
-        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 0
-        request.knowledge.knowledge_type = 1
-        request.knowledge.attribute_name = 'empty_gripper'
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'bot'
-        arg_msg.value = self.robot_name
-        request.knowledge.values.append(arg_msg)
-
-        self.knowledge_update_client(request)
-
-        # we add the fact that the object is on the surface to the knowledge base
-        request = rosplan_srvs.KnowledgeUpdateServiceRequest()
-        request.update_type = 0
-        request.knowledge.knowledge_type = 1
-        request.knowledge.attribute_name = 'on'
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'obj'
-        arg_msg.value = self.obj
-        request.knowledge.values.append(arg_msg)
-
-        arg_msg = diag_msgs.KeyValue()
-        arg_msg.key = 'plane'
-        arg_msg.value = self.obj_plane
-        request.knowledge.values.append(arg_msg)
-
-        self.knowledge_update_client(request)
+        '''Updates the knowledge base with the following facts:
+        * the object is on the placing surface
+        * the robot's gripper is empty
+        * the robot is not holding the object anymore
+        '''
+        facts_to_add = [('on', [('obj', self.obj), ('plane', self.obj_plane)]),
+                        ('empty_gripper', [('bot', self.robot_name)])]
+        facts_to_remove = [('holding', [('bot', self.robot_name), ('obj', self.obj)])]
+        self.kb_interface.update_kb(facts_to_add, facts_to_remove)
 
         # we update the location of the object
-        placed_object = self.get_object_by_name(self.obj)
+        placed_object = self.kb_interface.get_obj_instance(self.obj, Object._type)
         new_object_pose.header.stamp = rospy.Time.now()
         placed_object.pose = new_object_pose
-        self.msg_store_client.update_named(self.obj, placed_object)
+        self.kb_interface.update_obj_instance(self.obj, placed_object)
 
 if __name__ == '__main__':
     rospy.init_node('place_client')

@@ -7,7 +7,7 @@ outcomes: [DONE, TIMEOUT, FAILED]
 state_descriptions:
     - state:
         name: GO_TO
-        state_module_name: mdr_demo_patrol.scenario_states.move_base
+        state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:

@@ -1,0 +1,16 @@
+int32 NAMED_OBJECT=1
+int32 OBJECT_CATEGORY=2
+
+# goal definition
+int32 goal_type
+string object_name
+---
+# result definition
+bool success
+mas_perception_msgs/Object obj
+string object_location
+string relation
+---
+# feedback
+string current_state
+string message

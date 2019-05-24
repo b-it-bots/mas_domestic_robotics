@@ -38,7 +38,7 @@ if __name__ == '__main__':
 
         timeout = 15.0
         client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
-    rospy.loginfo(client.get_result())
+        rospy.loginfo(client.get_result())
 
     except Exception as ex:
         rospy.logerr(type(ex).__name__ + ": You have failed!")
