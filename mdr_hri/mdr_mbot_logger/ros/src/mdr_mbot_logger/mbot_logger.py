@@ -23,7 +23,6 @@ class MbotLogger(object):
                          self.sentenceCallback, queue_size=1)
 
         # to publish the recognition
-        # self.pub_sentence_recog = rospy.Publisher('~output_recognition', ActionSlotArray, queue_size=1)
         # flag to indicate that a text was received and needs to be processed
         self.interpretation_received = False
         # to store the sentece that will be received in the callback
