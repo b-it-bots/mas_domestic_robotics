@@ -10,7 +10,7 @@ from mdr_find_people.msg import FindPeopleResult
 from mas_perception_msgs.msg import Person, PersonList
 from mas_perception_libs import ImageDetectionKey
 from mas_perception_libs.visualization import crop_image
-from mas_perception_libs.utils import cloud_msg_to_image_msg, cloud_msg_to_cv_image
+from mas_perception_libs.utils import cloud_msg_to_cv_image
 from cv_bridge import CvBridge
 from find_people import FindPeople
 
@@ -62,7 +62,7 @@ class FindPeopleState(smach.State):
         # Get positions of people
         predictions, bb2ds, poses = FindPeople.detect(cloud_msg)
 
-        people_outside_arena = [] 
+        people_outside_arena = []
         # Filter detections for people inside the arena
         for i in range(len(predictions)):
             if not FindPeopleState.is_inside_arena(poses[i]):
