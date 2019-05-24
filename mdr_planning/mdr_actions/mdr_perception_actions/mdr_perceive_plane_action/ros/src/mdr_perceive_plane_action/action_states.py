@@ -4,7 +4,7 @@ from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mas_perception_msgs.msg import PlaneList
 from mas_perception_libs import ObjectDetector, RecognizeImageServiceProxy
-from mdr_perceive_plane_action.msg import PerceivePlaneResult, PerceivePlaneFeedback
+from mdr_perceive_plane_action.msg import PerceivePlaneResult
 
 class PerceivePlaneSM(ActionSMBase):
     def __init__(self, detection_service_proxy,
