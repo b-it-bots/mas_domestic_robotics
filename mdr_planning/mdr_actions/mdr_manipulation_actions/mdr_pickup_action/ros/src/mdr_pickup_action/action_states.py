@@ -19,6 +19,8 @@ class PickupSM(ActionSMBase):
                  gripper_controller_pkg_name='mdr_gripper_controller',
                  pregrasp_config_name='pregrasp',
                  pregrasp_top_config_name='pregrasp_top',
+                 pregrasp_low_config_name='pregrasp_low',
+                 pregrasp_height_threshold=0.5,
                  intermediate_grasp_offset=-1,
                  safe_arm_joint_config='folded',
                  move_arm_server='move_arm_server',
@@ -41,6 +43,8 @@ class PickupSM(ActionSMBase):
 
         self.pregrasp_config_name = pregrasp_config_name
         self.pregrasp_top_config_name = pregrasp_top_config_name
+        self.pregrasp_low_config_name = pregrasp_low_config_name
+        self.pregrasp_height_threshold = pregrasp_height_threshold
         self.intermediate_grasp_offset = intermediate_grasp_offset
         self.safe_arm_joint_config = safe_arm_joint_config
         self.move_arm_server = move_arm_server
@@ -222,7 +226,10 @@ class PickupSM(ActionSMBase):
 
     def __prepare_sideways_grasp(self, pose_base_link):
         rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
-        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+        if pose_base_link.pose.position.z > self.pregrasp_height_threshold:
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+        else:
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_low_config_name)
 
         if self.intermediate_grasp_offset > 0:
             rospy.loginfo('[PICKUP] Moving to intermediate grasping pose...')
