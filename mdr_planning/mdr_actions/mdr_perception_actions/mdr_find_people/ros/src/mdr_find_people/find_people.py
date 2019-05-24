@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import os
-import json
 import cv2
 import numpy as np
 import tensorflow as tf
@@ -10,7 +9,7 @@ import rospy
 import tf
 from rospkg import RosPack
 
-from std_msgs.msg import String, Header
+from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
 from sensor_msgs.msg import PointCloud2
 from mas_perception_libs import ImageDetectionKey, ImageDetectorBase
