@@ -6,11 +6,11 @@ from std_msgs.msg import Bool
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
-from mdr_enter_door_action.msg import EnterDoorFeedback, EnterDoorResult
+from mdr_enter_door_action.msg import EnterDoorResult
 
 class EnterDoorSM(ActionSMBase):
     def __init__(self, waiting_sleep_duration=1.,
-                 door_status_topic='/mcr_perception/door_status/door_status',
+                 door_status_topic='/mdr_perception/door_status/door_status',
                  timeout=120.0,
                  move_forward_server='move_forward_server',
                  movement_duration=10., speed=0.1,

@@ -3,7 +3,7 @@ import rospy
 import actionlib
 
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
-from mcr_perception_msgs.msg import Plane, Object
+from mas_perception_msgs.msg import Plane, Object
 from mdr_rosplan_interface.action_client_base import ActionClientBase
 from mdr_perceive_plane_action.msg import PerceivePlaneAction, PerceivePlaneGoal
 

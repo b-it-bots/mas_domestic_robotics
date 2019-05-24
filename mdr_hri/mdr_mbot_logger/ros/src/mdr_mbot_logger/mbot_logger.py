@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 import rospy
-import copy
-import rospkg
 from std_msgs.msg import String
-from mbot_nlu.msg import Slot, ActionSlot, ActionSlotArray
+from mbot_nlu.msg import Slot, ActionSlotArray
 import datetime
 import time
 
@@ -24,8 +22,6 @@ class MbotLogger(object):
                          String,
                          self.sentenceCallback, queue_size=1)
 
-        # to publish the recognition
-        # self.pub_sentence_recog = rospy.Publisher('~output_recognition', ActionSlotArray, queue_size=1)
         # flag to indicate that a text was received and needs to be processed
         self.interpretation_received = False
         # to store the sentece that will be received in the callback
@@ -35,7 +31,6 @@ class MbotLogger(object):
         self.recognized_sentence = None
         # inform the user that the node has initialized
         rospy.loginfo("Logger is ready to receive commands")
-
 
     def sentenceCallback(self, msg):
         print('Received sentence ')
@@ -61,11 +56,11 @@ class MbotLogger(object):
         output_msg = ' '.join(output_msg_list)
         self.logging_file.write(output_msg + ' \n')
         self.logging_file.write(' \n')
-        print(output_msg) 
+        print(output_msg)
 
     def wait_for_information(self):
         while not rospy.is_shutdown():
-            # sleep to control the frequency of this node
-            rospy.sleep(0.1)
+        # sleep to control the frequency of this node
+         rospy.sleep(0.1)
         print('Saving log file ...')
         self.logging_file.close()

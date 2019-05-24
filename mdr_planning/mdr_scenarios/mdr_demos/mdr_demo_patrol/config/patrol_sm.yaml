@@ -22,7 +22,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [KITCHEN, LIVING_ROOM, TABLE, SHELF, TABLE]
+                value: [kitchen, living_room, table, shelf, table]
             - argument:
                 name: number_of_retries
                 value: 3

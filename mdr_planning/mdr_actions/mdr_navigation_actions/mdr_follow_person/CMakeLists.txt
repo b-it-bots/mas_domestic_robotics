@@ -7,7 +7,7 @@ find_package(catkin REQUIRED
     geometry_msgs
     nav_msgs
     mcr_algorithms
-    mcr_perception_msgs
+    mas_perception_msgs
     tf
     std_srvs
 )
@@ -17,7 +17,7 @@ catkin_package(
     geometry_msgs
     nav_msgs
     mcr_algorithms
-    mcr_perception_msgs
+    mas_perception_msgs
     std_srvs
 )
 

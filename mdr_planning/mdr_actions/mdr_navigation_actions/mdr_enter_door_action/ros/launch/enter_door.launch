@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
 <launch>
-    <include file="$(find mcr_door_status)/ros/launch/door_status.launch" />
+    <include file="$(find mdr_door_status)/ros/launch/door_status.launch" />
     <node pkg="mdr_enter_door_action" type="enter_door_action" name="enter_door_server" output="screen" />
 </launch>

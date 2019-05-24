@@ -15,7 +15,7 @@
         <param name="recognition_service_name" type="string" value="$(arg recognition_service_name)" />
         <param name="recognition_model_name" type="string" value="$(arg recognition_model_name)" />
         <param name="preprocess_input_module" type="string" value="$(arg preprocess_input_module)" />
-        <param name="classify_object" type="string" value="$(arg classify_object)" />
+        <param name="classify_object" type="bool" value="$(arg classify_object)" />
     </node>
 
     <include file="$(find mdr_object_recognition)/ros/launch/object_recognition.launch">

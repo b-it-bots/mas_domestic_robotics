@@ -8,7 +8,6 @@ import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from ros_dmp.srv import GenerateMotion, GenerateMotionRequest
 
-from mdr_move_arm_action.roll_dmp import RollDMP
 
 class DMPExecutor(object):
     def __init__(self, dmp_name, tau):
@@ -122,14 +121,13 @@ class DMPExecutor(object):
         path_z = path[2, :]
         while not rospy.is_shutdown():
             try:
-                (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame_name,
+                (trans, _) = self.tf_listener.lookupTransform(self.odom_frame_name,
                                                                 self.palm_link_name,
                                                                 rospy.Time(0))
                 break
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
         current_pos = np.array([trans[0], trans[1], trans[2]])
-        previous_pos = current_pos[:]
         distance = np.linalg.norm((np.array(path[:, path.shape[1] - 1]) - current_pos))
         followed_trajectory = []
 
@@ -243,7 +241,7 @@ class DMPExecutor(object):
                                               self.palm_link_name,
                                               rospy.Time.now(),
                                               rospy.Duration(30))
-            (trans, rot) = self.tf_listener.lookupTransform(self.base_link_frame_name,
+            (trans, _) = self.tf_listener.lookupTransform(self.base_link_frame_name,
                                                             self.palm_link_name,
                                                             rospy.Time(0))
             initial_pos = np.array(trans)

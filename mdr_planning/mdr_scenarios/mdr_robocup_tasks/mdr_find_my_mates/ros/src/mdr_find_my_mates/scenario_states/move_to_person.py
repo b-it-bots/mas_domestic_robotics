@@ -1,6 +1,6 @@
 import rospy
 import actionlib
-from mcr_perception_msgs.msg import Person
+from mas_perception_msgs.msg import Person
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 

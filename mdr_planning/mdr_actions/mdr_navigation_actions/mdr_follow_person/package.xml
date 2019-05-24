@@ -16,14 +16,14 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>nav_msgs</build_depend>
   <build_depend>mcr_algorithms</build_depend>
-  <build_depend>mcr_perception_msgs</build_depend>
+  <build_depend>mas_perception_msgs</build_depend>
   <build_depend>tf</build_depend>
   <build_depend>std_srvs</build_depend>
 
   <run_depend>geometry_msgs</run_depend>
   <run_depend>nav_msgs</run_depend>
   <run_depend>mcr_algorithms</run_depend>
-  <run_depend>mcr_perception_msgs</run_depend>
+  <run_depend>mas_perception_msgs</run_depend>
   <run_depend>std_srvs</run_depend>
 
   <test_depend>roslaunch</test_depend>

@@ -1,5 +1,4 @@
 import rospy
-from std_msgs.msg import String
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from mdr_perception_msgs.msg import PersonInfo
 

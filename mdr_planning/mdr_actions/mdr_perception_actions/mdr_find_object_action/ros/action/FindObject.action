@@ -7,7 +7,7 @@ string object_name
 ---
 # result definition
 bool success
-mcr_perception_msgs/Object obj
+mas_perception_msgs/Object obj
 string object_location
 string relation
 ---

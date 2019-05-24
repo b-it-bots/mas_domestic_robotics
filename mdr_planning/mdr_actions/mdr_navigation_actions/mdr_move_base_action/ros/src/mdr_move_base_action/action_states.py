@@ -8,7 +8,7 @@ import move_base_msgs.msg as move_base_msgs
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from mdr_move_base_action.msg import MoveBaseGoal, MoveBaseFeedback, MoveBaseResult
+from mdr_move_base_action.msg import MoveBaseGoal, MoveBaseResult
 
 class MoveBaseSM(ActionSMBase):
     def __init__(self, timeout=120.,

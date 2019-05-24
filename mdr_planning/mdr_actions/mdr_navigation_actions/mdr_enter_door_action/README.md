@@ -20,17 +20,17 @@ The action takes no inputs.
 ## Dependencies
 
 * ``std_msgs``
-* ``mcr_door_status``
+* ``mdr_door_status``
 * ``mdr_move_forward_action``
 
 ## Example usage
 
-1. Run the action server and its dependencies (namely ``mcr_door_status`` and ``mdr_move_forward_action``): ``roslaunch mdr_enter_door_action enter_door.launch``
+1. Run the action server and its dependencies (namely ``mdr_door_status`` and ``mdr_move_forward_action``): ``roslaunch mdr_enter_door_action enter_door.launch``
 2. Run the client example: ``rosrun mdr_enter_door_action enter_door_action_client_test``
 
 ## Example usage (manual)
 
-1. Launch the node that publishes the status of a door: ``roslaunch mcr_door_status door_status.launch``
+1. Launch the node that publishes the status of a door: ``roslaunch mdr_door_status door_status.launch``
 2. Run the move forward action server: ``roslaunch mdr_move_forward_action move_forward.launch``
 3. Run the action server: ``roslaunch mdr_enter_door_action enter_door_server.launch``
 4. Run the client example: ``rosrun mdr_enter_door_action enter_door_action_client_test``
@@ -40,4 +40,4 @@ The action takes no inputs.
 1. Run the move forward action server: ``roslaunch mdr_move_forward_action move_forward.launch``
 2. Run the action server: ``roslaunch mdr_enter_door_action enter_door_server.launch``
 3. Run the client example: ``rosrun mdr_enter_door_action enter_door_action_client_test``
-4. Publish an ``open`` door status: ``rostopic pub -r 1 /mcr_perception/door_status/door_status std_msgs/Bool "data: true"``
+4. Publish an ``open`` door status: ``rostopic pub -r 1 /mdr_perception/door_status/door_status std_msgs/Bool "data: true"``

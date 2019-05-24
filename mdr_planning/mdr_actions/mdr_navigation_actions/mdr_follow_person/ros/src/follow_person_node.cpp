@@ -15,8 +15,8 @@
 #include <nav_msgs/Odometry.h>
 
 #include <mcr_algorithms/controller/pi_controller.h>
-#include <mcr_perception_msgs/Person.h>
-#include <mcr_perception_msgs/PersonList.h>
+#include <mas_perception_msgs/Person.h>
+#include <mas_perception_msgs/PersonList.h>
 
 enum EnumBehaviorState
 {
@@ -31,7 +31,7 @@ public:
     PersonFollowBehavior(ros::NodeHandle &nh);
     ~PersonFollowBehavior();
 
-    void personTrackerCallback(const mcr_perception_msgs::PersonList::ConstPtr &inputPersonList);
+    void personTrackerCallback(const mas_perception_msgs::PersonList::ConstPtr &inputPersonList);
     void odometryCallback(const nav_msgs::Odometry::ConstPtr &odom_msgs);
     void nextStep();
 
@@ -51,7 +51,7 @@ private:
     PIController* pi_controller_x_;
     PIController* pi_controller_theta_;
     tf::TransformListener* _pTransformListener;
-    mcr_perception_msgs::PersonList _personList;
+    mas_perception_msgs::PersonList _personList;
     nav_msgs::Odometry current_odom_;
     double _dMaxTranslationalVelocity;
     double _dMaxRotationalVelocity;
@@ -88,7 +88,7 @@ PersonFollowBehavior::PersonFollowBehavior(ros::NodeHandle &nh)
     this->_eState = eBehaviorStateInit;
 
     // subscribe and advertise
-    this->_subPersonTracker = this->_nh->subscribe < mcr_perception_msgs::PersonList
+    this->_subPersonTracker = this->_nh->subscribe < mas_perception_msgs::PersonList
                               > ("people_positions", 1, &PersonFollowBehavior::personTrackerCallback, this);
     this->_subOdom = this->_nh->subscribe < nav_msgs::Odometry > ("odometry", 1, &PersonFollowBehavior::odometryCallback, this);
     this->_pubBaseCommands = this->_nh->advertise < geometry_msgs::Twist > ("cmd_vel", 1);
@@ -370,7 +370,7 @@ void PersonFollowBehavior::nextStep()
     _dLastSpeed = fabs(this->_dTranslationalVelocityToSet) + fabs(this->_dRotationalVelocityToSet);
 }
 
-void PersonFollowBehavior::personTrackerCallback(const mcr_perception_msgs::PersonList::ConstPtr& inputPersonList)
+void PersonFollowBehavior::personTrackerCallback(const mas_perception_msgs::PersonList::ConstPtr& inputPersonList)
 {
     this->_personList = *inputPersonList;
 }

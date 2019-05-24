@@ -10,7 +10,7 @@ from geometry_msgs.msg import Point, Quaternion, Pose, PoseStamped, PointStamped
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import rosplan_knowledge_msgs.srv as rosplan_srvs
 import diagnostic_msgs.msg as diag_msgs
-from mcr_perception_msgs.msg import Object, Plane
+from mas_perception_msgs.msg import Object, Plane
 
 from action_execution.action import Action
 from action_execution.utils.configuration import Configuration

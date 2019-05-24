@@ -116,24 +116,10 @@ class ReceiveInformation(ScenarioStateBase):
 
                 target_entity = {"type": entity_type, "value": entity_value}
 
-                # userdata['target_entities'] = target_entities
                 userdata["target_entity"] = target_entity
-                # rospy.loginfo('Successfully got wanted object/location: {}'.format(target_entities))
                 rospy.loginfo('Successfully got wanted object/location: {}'.format(target_entity))
                 self.say('Thank you! I will describe you now how to get there.')
                 return 'succeeded'
-
-
-                # # Put relevant intents into a list
-                # target_entities = []
-                # for entity in rasa_result["entities"]:
-                #     entity_type = entity['entity']
-                #     entity_value = entity['value']
-                #     if entity['entity'] == 'location' or entity['entity'] == 'person':
-                #         target_entities.append({'type': entity_type, 'value': entity_value})
-                #
-                # If we are confident the operator asked for an object location
-
 
         # Conversation has exceeded the maximum number of retries at this point
         rospy.loginfo('Could not retrieve the wanted object/location!')
