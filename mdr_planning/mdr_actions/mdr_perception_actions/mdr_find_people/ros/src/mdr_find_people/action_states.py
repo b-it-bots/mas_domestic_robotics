@@ -10,6 +10,7 @@ from mdr_find_people.msg import FindPeopleResult
 from mas_perception_msgs.msg import Person, PersonList
 from mas_perception_libs import ImageDetectionKey
 from mas_perception_libs.visualization import crop_image
+from mas_perception_libs.utils import cloud_msg_to_cv_image
 from cv_bridge import CvBridge
 from find_people import FindPeople
 
