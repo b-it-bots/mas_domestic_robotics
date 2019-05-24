@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 import rospy
-import copy
-import rospkg
 from std_msgs.msg import String
-from mbot_nlu.msg import Slot, ActionSlot, ActionSlotArray
+from mbot_nlu.msg import Slot, ActionSlotArray
 import datetime
 import time
 
@@ -61,7 +59,7 @@ class MbotLogger(object):
         output_msg = ' '.join(output_msg_list)
         self.logging_file.write(output_msg + ' \n')
         self.logging_file.write(' \n')
-        print(output_msg) 
+        print(output_msg)
 
     def wait_for_information(self):
         while not rospy.is_shutdown():
