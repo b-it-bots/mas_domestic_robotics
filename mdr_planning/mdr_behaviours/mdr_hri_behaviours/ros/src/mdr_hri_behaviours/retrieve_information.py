@@ -3,7 +3,7 @@ import actionlib
 import rospkg
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
-from rasa_nlu.model import Interpreter, Metadata
+from rasa_nlu.model import Interpreter
 from mdr_listen_action.msg import ListenAction, ListenGoal
 
 class RetrieveInformation(ScenarioStateBase):
