@@ -4,8 +4,8 @@
     <arg name="planner_path" default="$(find rosplan_planning_system)/common/bin/" />
     <arg name="data_path" default="" />
     <arg name="domain_path" default="$(find mdr_rosplan_interface)/config/default_domain.pddl" />
-    <arg name="problem_path" default="" />
-    <arg name="strl_file_path" default="" />
+    <arg name="problem_path" default="$(find mdr_rosplan_interface)/config/problem.pddl" />
+    <arg name="strl_file_path" default="$(find mdr_rosplan_interface)/config/plan.pddl" />
     <arg name="planner_command" default="timeout 10 $(find rosplan_planning_system)/common/bin/popf -n DOMAIN PROBLEM" />
     <arg name="action_dispatch_topic" default="/kcl_rosplan/action_dispatch" />
     <arg name="action_feedback_topic" default="/kcl_rosplan/action_feedback" />
