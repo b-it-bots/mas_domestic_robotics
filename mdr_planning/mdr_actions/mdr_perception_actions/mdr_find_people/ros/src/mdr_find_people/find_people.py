@@ -6,15 +6,12 @@ import cv2
 import numpy as np
 import tensorflow as tf
 
-import rospy
-import tf
 from rospkg import RosPack
 
 from std_msgs.msg import String, Header
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
-from sensor_msgs.msg import PointCloud2
 from mas_perception_libs import ImageDetectionKey, ImageDetectorBase
-from mas_perception_libs.utils import cloud_msg_to_image_msg, crop_cloud_to_xyz, transform_cloud_with_listener
+from mas_perception_libs.utils import cloud_msg_to_image_msg, crop_cloud_to_xyz
 from ssd_keras_ros import SSDKerasObjectDetector
 
 
@@ -33,9 +30,9 @@ class FindPeople(object):
         rp = RosPack()
         package_path = rp.get_path('ssd_keras_ros')
         class_ann_file = os.path.join(package_path, 'models', 'coco_classes.yml')
-        kwargs_file = os.path.join(package_path, 'models', 'ssd_keras_object_detector_kwargs.yml') 
+        kwargs_file = os.path.join(package_path, 'models', 'ssd_keras_object_detector_kwargs.yml')
 
-        # create SSDKerasObjectDetector object and call detection on 
+        # create SSDKerasObjectDetector object and call detection on
         detector = SSDKerasObjectDetector(class_file=class_ann_file, model_kwargs_file=kwargs_file)
         predictions = detector.detect([cloud_msg_to_image_msg(cloud_msg)])[0]
 
@@ -90,4 +87,3 @@ class FindPeople(object):
         cv_image = cloud_msg_to_cv_image(cloud_msg)
         image = draw_labeled_boxes(cv_image, bounding_boxes)
         return image
-
