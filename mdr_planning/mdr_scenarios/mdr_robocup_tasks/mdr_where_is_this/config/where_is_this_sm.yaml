@@ -48,10 +48,10 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: DONE
+                state: RECEIVE_INFORMATION_FROM_OPERATOR
             - transition:
                 name: failed
-                state: DESCRIBE_LOCATION
+                state: RECEIVE_INFORMATION_FROM_OPERATOR
             - transition:
                 name: failed_after_retrying
                 state: FAILED
