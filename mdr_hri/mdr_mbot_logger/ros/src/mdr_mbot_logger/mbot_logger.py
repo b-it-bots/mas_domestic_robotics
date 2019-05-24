@@ -63,6 +63,6 @@ class MbotLogger(object):
     def wait_for_information(self):
         while not rospy.is_shutdown():
         # sleep to control the frequency of this node
-        rospy.sleep(0.1)
+         rospy.sleep(0.1)
         print('Saving log file ...')
         self.logging_file.close()
