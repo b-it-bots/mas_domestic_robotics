@@ -54,7 +54,7 @@ class DescribeLocation(ScenarioStateBase):
             rospy.logerr(str(exc))
             return 'failed'
 
-        obj_name = userdata.target_entity['value']
+        obj_name = ''.join([x.title() for x in userdata.target_entity['value'].split(' ')])
         location = ''
         directions = None
         if userdata.target_entity['type'] == 'location':
@@ -67,7 +67,7 @@ class DescribeLocation(ScenarioStateBase):
 
         top_path_request = TopologicalPathRequest()
         top_path_request.source = self.current_top_pos
-        top_path_request.goal = location
+        top_path_request.goal = self.format_location(location)
         try:
             top_path_result = self.topological_path_client(top_path_request)
             directions = top_path_result.directions
@@ -77,20 +77,31 @@ class DescribeLocation(ScenarioStateBase):
             return 'failed'
 
         if userdata.target_entity['type'] == 'location':
-            self.say('You can reach the {0} as follows'.format(location))
-            for path_description in directions:
-                self.say(path_description)
+            if not directions:
+                self.say('We are already there')
+            else:
+                self.say('You can reach the {0} as follows'.format(location))
+                rospy.sleep(0.5)
+                for path_description in directions:
+                    self.say(path_description)
         elif userdata.target_entity['type'] == 'object':
             self.say('The {0} is in the {1}'.format(obj_name, location))
-            self.say('You can reach there as follows')
+            rospy.sleep(0.5)
 
-            for path_description in directions:
-                self.say(path_description)
+            if not directions:
+                self.say('We are already there')
+            else:
+                self.say('You can reach there as follows')
+                for path_description in directions:
+                    self.say(path_description)
+            rospy.sleep(0.5)
 
             objects_next_to = self.ontology_interface.get_objects_next_to(obj_name)
             if objects_next_to:
                 self.say('The {0} is next to {1}'.format(obj_name,
                                                          self.format_obj_next_to_list(objects_next_to)))
+                rospy.sleep(1.5)
+        rospy.sleep(10.0)
         return 'succeeded'
 
     def format_obj_next_to_list(self, obj_list):
@@ -99,3 +110,14 @@ class DescribeLocation(ScenarioStateBase):
             obj_list_str += obj + ', '
         obj_list_str += ' and the ' + obj_list[-1]
         return obj_list_str
+
+    def format_location(self, location):
+        location_map = {'Kitchen': 'kitchen',
+                        'Bar': 'bar',
+                        'Hallway': 'hallway',
+                        'Bedroom': 'bedroom',
+                        'LivingRoom': 'living_room'}
+        if location in location_map:
+            return location_map[location]
+        else:
+            return location
