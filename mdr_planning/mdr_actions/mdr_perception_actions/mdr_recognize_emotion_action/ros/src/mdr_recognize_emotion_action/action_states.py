@@ -10,7 +10,7 @@ from cv_bridge import CvBridge, CvBridgeError
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
-from mdr_recognize_emotion_action.msg import RecognizeEmotionFeedback, RecognizeEmotionResult
+from mdr_recognize_emotion_action.msg import RecognizeEmotionResult
 
 class RecognizeEmotionSM(ActionSMBase):
     def __init__(self, timeout=120.0,
