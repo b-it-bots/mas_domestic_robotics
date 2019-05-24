@@ -6,8 +6,6 @@ Created on 2017.09.25
 @author: Patrick Nagel
 """
 
-from random import randint
-
 import os
 import rospy
 import smach

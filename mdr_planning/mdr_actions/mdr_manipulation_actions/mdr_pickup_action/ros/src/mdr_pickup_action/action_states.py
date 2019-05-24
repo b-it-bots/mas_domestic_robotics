@@ -12,7 +12,7 @@ from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from mdr_pickup_action.msg import PickupGoal, PickupFeedback, PickupResult
+from mdr_pickup_action.msg import PickupFeedback, PickupResult
 
 class PickupSM(ActionSMBase):
     def __init__(self, timeout=120.0,
