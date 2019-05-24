@@ -22,7 +22,6 @@ class MbotLogger(object):
                          String,
                          self.sentenceCallback, queue_size=1)
 
-        # to publish the recognition
         # flag to indicate that a text was received and needs to be processed
         self.interpretation_received = False
         # to store the sentece that will be received in the callback
