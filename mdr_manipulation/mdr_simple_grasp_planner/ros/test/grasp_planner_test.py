@@ -13,7 +13,6 @@ class TestGraspPlanner(unittest.TestCase):
     def test_plan(self):
         planner = mdr_simple_grasp_planner.grasp_planner.GraspPlanner()
         grasps = planner.plan()
-        
         self.assertGreater(len(grasps), 0)
 
 
