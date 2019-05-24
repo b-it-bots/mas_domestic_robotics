@@ -1,0 +1,7 @@
+bedroom:
+kitchen:
+bar:
+living room:
+hallway:
+entrance:
+exit:

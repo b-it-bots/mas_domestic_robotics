@@ -2,20 +2,20 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_robot_inspection
-states: [ENTER, GO_TO_KITCHEN, GO_TO_INSPECTION_WAYPOINT, INTRODUCE_SELF, WAIT_FOR_CMD, ACKNOWLEDGE_CMD, SHOW_OFF, WAIT_FOR_QR, CONFIRM_QR_CODE, EXIT]
+states: [WAIT_FOR_DOOR, ENTER, GO_TO_INSPECTION_WAYPOINT, INTRODUCE_SELF, SHOW_OFF, WAIT_FOR_QR, CONFIRM_QR_CODE, EXIT]
 outcomes: [DONE, TIMEOUT, FAILED]
 state_descriptions:
     - state:
-        name: ENTER
+        name: WAIT_FOR_DOOR
         state_module_name: mdr_robot_inspection.scenario_states.enter
         state_class_name: Enter
         transitions:
             - transition:
                 name: succeeded
-                state: GO_TO_KITCHEN
+                state: ENTER
             - transition:
                 name: failed
-                state: ENTER
+                state: WAIT_FOR_DOOR
             - transition:
                 name: failed_after_retrying
                 state: FAILED
@@ -24,7 +24,7 @@ state_descriptions:
                 name: number_of_retries
                 value : 3
     - state:
-        name: GO_TO_KITCHEN
+        name: ENTER
         state_module_name: mdr_robot_inspection.scenario_states.move_base
         state_class_name: MoveBase
         transitions:
@@ -33,14 +33,14 @@ state_descriptions:
                 state: GO_TO_INSPECTION_WAYPOINT
             - transition:
                 name: failed
-                state: GO_TO_KITCHEN
+                state: ENTER
             - transition:
                 name: failed_after_retrying
                 state: FAILED
         arguments:
             - argument:
                 name: destination_locations
-                value: [KITCHEN]
+                value: [hallway]
             - argument:
                 name: number_of_retries
                 value : 3
@@ -61,7 +61,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [INSPECTION_AREA]
+                value: [inspection_area]
             - argument:
                 name: number_of_retries
                 value : 3
@@ -72,49 +72,21 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: WAIT_FOR_CMD
-            - transition:
-                name: failed
-                state: WAIT_FOR_CMD
-    - state:
-        name: WAIT_FOR_CMD
-        state_module_name: mdr_robot_inspection.scenario_states.wait_for_cmd
-        state_class_name: WaitForCmd
-        transitions:
-            - transition:
-                name: succeeded
-                state: ACKNOWLEDGE_CMD
-            - transition:
-                name: waiting
-                state: WAIT_FOR_CMD
-            - transition:
-                name: failed
-                state: WAIT_FOR_CMD
-    - state:
-        name: ACKNOWLEDGE_CMD
-        state_module_name: mdr_robot_inspection.action_states
-        state_class_name: Acknowledge
-        transitions:
-            - transition:
-                name: succeeded
                 state: SHOW_OFF
             - transition:
                 name: failed
-                state: WAIT_FOR_CMD
+                state: INTRODUCE_SELF
     - state:
         name: SHOW_OFF
         state_module_name: mdr_robot_inspection.action_states
         state_class_name: MoveArm
         transitions:
             - transition:
-                name: up
-                state: WAIT_FOR_CMD
-            - transition:
-                name: down
+                name: succeeded
                 state: WAIT_FOR_QR
             - transition:
                 name: failed
-                state: WAIT_FOR_CMD
+                state: SHOW_OFF
     - state:
         name: WAIT_FOR_QR
         state_module_name: mdr_robot_inspection.scenario_states.wait_for_qr
@@ -157,7 +129,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [SECOND_DOOR]
+                value: [second_door]
             - argument:
                 name: number_of_retries
                 value : 3

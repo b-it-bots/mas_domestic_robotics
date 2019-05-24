@@ -2,14 +2,14 @@ import numpy as np
 import cv2
 import tensorflow as tf
 from keras.models import load_model
-from cv_bridge import CvBridge, CvBridgeError
+from cv_bridge import CvBridge
 
 import rospy
 from sensor_msgs.msg import Image
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
-from mdr_gender_recognition.msg import GenderRecognitionFeedback, GenderRecognitionResult
+from mdr_gender_recognition.msg import GenderRecognitionResult
 
 class RecognizeGenderSM(ActionSMBase):
     def __init__(self, timeout=120.0, image_topic='/cam3d/rgb/image_raw',
@@ -38,7 +38,6 @@ class RecognizeGenderSM(ActionSMBase):
         return FTSMTransitions.INITIALISED
 
     def running(self):
-        number_of_faces = self.goal.number_of_faces
         bounding_boxes = self.goal.bounding_boxes
         genders = []
 
@@ -54,7 +53,6 @@ class RecognizeGenderSM(ActionSMBase):
             face = self.__preprocess_image(face)
             recognized_gender = self.__recognize_gender(face)
             genders.append(recognized_gender)
-            rgb_cv2 = cv2.rectangle(rgb_image, (x, y), (x + w, y + h), (0, 0, 255), 2)
             cv2.putText(rgb_image, recognized_gender, (x, y - 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0),
                         1, cv2.LINE_AA)
         output_ros_image = self.bridge.cv2_to_imgmsg(rgb_image, 'bgr8')

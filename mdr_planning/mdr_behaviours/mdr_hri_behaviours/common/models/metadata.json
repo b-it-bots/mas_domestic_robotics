@@ -1,0 +1,97 @@
+{
+    "trained_at": "20190503-092454", 
+    "pipeline": [
+        {
+            "name": "tokenizer_whitespace", 
+            "class": "rasa_nlu.tokenizers.whitespace_tokenizer.WhitespaceTokenizer"
+        }, 
+        {
+            "BILOU_flag": true, 
+            "L2_c": 0.1, 
+            "features": [
+                [
+                    "low", 
+                    "title", 
+                    "upper"
+                ], 
+                [
+                    "bias", 
+                    "low", 
+                    "prefix5", 
+                    "prefix2", 
+                    "suffix5", 
+                    "suffix3", 
+                    "suffix2", 
+                    "upper", 
+                    "title", 
+                    "digit", 
+                    "pattern"
+                ], 
+                [
+                    "low", 
+                    "title", 
+                    "upper"
+                ]
+            ], 
+            "name": "ner_crf", 
+            "L1_c": 0.1, 
+            "classifier_file": "crf_model.pkl", 
+            "class": "rasa_nlu.extractors.crf_entity_extractor.CRFEntityExtractor", 
+            "max_iterations": 50
+        }, 
+        {
+            "synonyms_file": null, 
+            "name": "ner_synonyms", 
+            "class": "rasa_nlu.extractors.entity_synonyms.EntitySynonymMapper"
+        }, 
+        {
+            "token_pattern": "(?u)\\b\\w\\w+\\b", 
+            "analyzer": "word", 
+            "min_ngram": 1, 
+            "max_df": 1.0, 
+            "min_df": 1, 
+            "max_features": null, 
+            "class": "rasa_nlu.featurizers.count_vectors_featurizer.CountVectorsFeaturizer", 
+            "max_ngram": 1, 
+            "lowercase": true, 
+            "stop_words": null, 
+            "name": "intent_featurizer_count_vectors", 
+            "featurizer_file": "intent_featurizer_count_vectors.pkl", 
+            "OOV_token": null, 
+            "OOV_words": [], 
+            "strip_accents": null
+        }, 
+        {
+            "intent_split_symbol": "_", 
+            "epochs": 300, 
+            "random_seed": null, 
+            "intent_tokenization_flag": false, 
+            "embed_dim": 20, 
+            "evaluate_every_num_epochs": 10, 
+            "C_emb": 0.8, 
+            "C2": 0.002, 
+            "num_neg": 20, 
+            "evaluate_on_num_examples": 1000, 
+            "droprate": 0.2, 
+            "batch_size": [
+                64, 
+                256
+            ], 
+            "mu_neg": -0.4, 
+            "classifier_file": "intent_classifier_tensorflow_embedding.ckpt", 
+            "similarity_type": "cosine", 
+            "class": "rasa_nlu.classifiers.embedding_intent_classifier.EmbeddingIntentClassifier", 
+            "hidden_layers_sizes_b": [], 
+            "hidden_layers_sizes_a": [
+                256, 
+                128
+            ], 
+            "name": "intent_classifier_tensorflow_embedding", 
+            "use_max_sim_neg": true, 
+            "mu_pos": 0.8
+        }
+    ], 
+    "rasa_nlu_version": "0.14.0", 
+    "training_data": "training_data.json", 
+    "language": "en"
+}

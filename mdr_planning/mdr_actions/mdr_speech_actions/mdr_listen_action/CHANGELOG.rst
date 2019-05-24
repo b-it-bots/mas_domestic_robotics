@@ -12,3 +12,8 @@ Forthcoming
 ------------------------
 * Create launch file
 * Contributors: Roberto Cai
+
+2.0.0 (2019-05-03 20:15)
+------------------------
+* Change action states to implement FTSM
+* Contributors: Roberto Cai

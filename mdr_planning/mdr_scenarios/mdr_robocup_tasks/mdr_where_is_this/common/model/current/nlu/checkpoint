@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/kramer/Documents/second_semester/RnD/natural_language_processing/nlu_tools/rasa_nlu/demos/gpsr/models/current/nlu/intent_classifier_tensorflow_embedding.ckpt"
+all_model_checkpoint_paths: "/home/kramer/Documents/second_semester/RnD/natural_language_processing/nlu_tools/rasa_nlu/demos/gpsr/models/current/nlu/intent_classifier_tensorflow_embedding.ckpt"

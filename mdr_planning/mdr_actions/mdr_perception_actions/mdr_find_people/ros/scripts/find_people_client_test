@@ -1,0 +1,26 @@
+#!/usr/bin/env python2
+
+import rospy
+import actionlib
+
+from mdr_find_people.msg import FindPeopleAction, FindPeopleGoal
+
+
+if __name__ == '__main__':
+    rospy.init_node('find_people_client_test')
+
+    rospy.loginfo('Waiting for server...')
+    client = actionlib.SimpleActionClient('find_people_server', FindPeopleAction)
+    client.wait_for_server()
+
+    goal = FindPeopleGoal()
+
+    try:
+        print('Sending goal...')
+        client.send_goal(goal)
+        print('Waiting for result...')
+        client.wait_for_result(rospy.Duration.from_sec(20))
+        rospy.loginfo(client.get_result())
+    except Exception as e:
+        rospy.logerr('Failed to execute find people action: {}'.format(repr(e)))
+

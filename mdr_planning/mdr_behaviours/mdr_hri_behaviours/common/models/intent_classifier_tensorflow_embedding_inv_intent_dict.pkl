@@ -1,0 +1,11 @@
+(dp1
+I0
+Vfind
+p2
+sI1
+Vgo
+p3
+sI2
+Vgreeting
+p4
+s.

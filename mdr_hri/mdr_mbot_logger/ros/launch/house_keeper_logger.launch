@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<launch>
+     
+    <!--Launch mbot_logger -->
+    <include file="$(find mdr_mbot_logger)/ros/launch/mbot_logger.launch"> </include>
+
+    <!--Launch speech recognition -->
+    <include file="$(find mdr_speech_recognition)/ros/launch/speech_recognition.launch"> </include>
+
+    <!--Launch mbot -->
+    <include file="$(find mbot_nlu)/ros/launch/mbot_nlu.launch">
+        <arg name="nlu_classifier" value="erick_gpsr" />
+    </include>
+</launch>

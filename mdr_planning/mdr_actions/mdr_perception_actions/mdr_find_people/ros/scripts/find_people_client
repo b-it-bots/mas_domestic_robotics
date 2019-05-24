@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_rosplan_interface.action_client_base import ActionClientBase
+from mdr_find_people.msg import FindPeopleAction, FindPeopleGoal
+
+class FindPeopleClient(ActionClientBase):
+    def __init__(self):
+        super(FindPeopleClient, self).__init__()
+
+        while not rospy.is_shutdown():
+            rospy.sleep(0.1)
+
+    def call_action(self, msg):
+        # we only react to calls to this action
+        if self.action_name != msg.name.lower():
+            return
+
+        self.action_id = msg.action_id
+
+        client = actionlib.SimpleActionClient(self.action_server_name, FindPeopleAction)
+        client.wait_for_server()
+        goal = self.get_action_message(msg)
+
+        # calling the actionlib server and waiting for the execution to end
+        rospy.loginfo('Sending action lib goal to %s', self.action_server_name)
+        client.send_goal(goal)
+        client.wait_for_result(rospy.Duration.from_sec(int(self.action_timeout)))
+        result = client.get_result()
+
+        if result and result.person_list:
+            rospy.loginfo('[FIND_PEOPLE] Updating the knowledge base')
+            self.update_knowledge_base(result.person_list)
+            self.send_action_feedback(True)
+        else:
+            self.send_action_feedback(False)
+
+    def get_action_message(self, rosplan_action_msg):
+        '''Reads the action parameters and uses them to initialise an actionlib message.
+        '''
+        goal = FindPeopleGoal()
+        for param in rosplan_action_msg.parameters:
+            if param.key == 'bot':
+                self.robot_name = param.value
+        return goal
+
+    def update_knowledge_base(self, person_list):
+        '''Updates the knowledge base with the following facts:
+        * a list of people that the robot sees
+        '''
+        facts_to_add = []
+        objects_to_add = []
+        for i, person in enumerate(person_list.persons):
+            person_identifier = 'person_{0}'.format(i)
+            fact = ('unknown', [('person', person_identifier)])
+            facts_to_add.append(fact)
+            objects_to_add.append((person_identifier, person))
+        self.kb_interface.insert_facts(facts_to_add)
+        self.kb_interface.insert_objects(objects_to_add)
+
+if __name__ == '__main__':
+    rospy.init_node('mdr_find_people_client')
+    try:
+        FindPeopleClient()
+    except rospy.ROSInterruptException:
+        pass
