@@ -2,12 +2,8 @@ import rospy
 import actionlib
 import rospkg
 
-from std_msgs.msg import String
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
-from mdr_perception_msgs.msg import PersonInfo
-from rasa_nlu.training_data import load_data
-from rasa_nlu.components import ComponentBuilder
-from rasa_nlu.model import Interpreter, Metadata, Trainer
+from rasa_nlu.model import Interpreter
 from mdr_listen_action.msg import ListenAction, ListenGoal
 
 class RetrieveInformation(ScenarioStateBase):
