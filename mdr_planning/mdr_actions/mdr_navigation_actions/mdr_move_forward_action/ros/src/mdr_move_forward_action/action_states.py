@@ -4,7 +4,7 @@ import rospy
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from geometry_msgs.msg import Twist
-from mdr_move_forward_action.msg import MoveForwardFeedback, MoveForwardResult
+from mdr_move_forward_action.msg import MoveForwardResult
 
 class MoveForwardSM(ActionSMBase):
     def __init__(self, timeout=120.0, velocity_topic='/cmd_vel', max_recovery_attempts=1):
