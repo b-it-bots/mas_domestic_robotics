@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
   message_generation
-  mcr_perception_msgs
+  mas_perception_msgs
   mas_perception_libs
 )
 
@@ -24,7 +24,7 @@ add_action_files(DIRECTORY ros/action
 generate_messages(
   DEPENDENCIES
     actionlib_msgs
-    mcr_perception_msgs
+    mas_perception_msgs
 )
 
 ###################################

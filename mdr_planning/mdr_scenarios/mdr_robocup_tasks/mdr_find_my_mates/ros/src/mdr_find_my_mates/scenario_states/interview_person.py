@@ -2,7 +2,7 @@ import rospy
 import actionlib
 import rospkg
 
-from mcr_perception_msgs.msg import Person
+from mas_perception_msgs.msg import Person
 from mdr_perception_msgs.msg import PersonInfo
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 

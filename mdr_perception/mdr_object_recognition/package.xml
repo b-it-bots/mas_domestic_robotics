@@ -2,10 +2,7 @@
 <package format="2">
   <name>mdr_object_recognition</name>
   <version>1.2.0</version>
-  <description>This package provides launcher for
-      mcr_object_recognition_mean_circle.
-
-  </description>
+  <description>This package contains recognition models for @Home scenarios</description>
 
   <author email="shehzi001@gmail.com">Shehzad Ahmed</author>
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
@@ -19,5 +16,4 @@
   <depend>sensor_msgs</depend>
   <depend>mas_perception_libs</depend>
 
-  <exec_depend>mcr_object_recognition_mean_circle</exec_depend>
 </package>
