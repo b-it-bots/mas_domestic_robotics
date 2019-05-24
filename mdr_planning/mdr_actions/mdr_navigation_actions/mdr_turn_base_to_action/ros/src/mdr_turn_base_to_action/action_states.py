@@ -5,7 +5,7 @@ from tf.transformations import quaternion_from_euler
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
-from mdr_turn_base_to_action.msg import TurnBaseToFeedback, TurnBaseToResult
+from mdr_turn_base_to_action.msg import TurnBaseToResult
 
 class TurnBaseSM(ActionSMBase):
     def __init__(self, timeout=120.0,
