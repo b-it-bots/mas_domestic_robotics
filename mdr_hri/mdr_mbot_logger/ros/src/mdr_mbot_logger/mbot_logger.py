@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 import rospy
-import copy
-import rospkg
 from std_msgs.msg import String
-from mbot_nlu.msg import Slot, ActionSlot, ActionSlotArray
+from mbot_nlu.msg import Slot, ActionSlotArray
 import datetime
 import time
 
@@ -36,7 +34,6 @@ class MbotLogger(object):
         # inform the user that the node has initialized
         rospy.loginfo("Logger is ready to receive commands")
 
-
     def sentenceCallback(self, msg):
         print('Received sentence ')
         print(msg.data)
@@ -65,7 +62,7 @@ class MbotLogger(object):
 
     def wait_for_information(self):
         while not rospy.is_shutdown():
-            # sleep to control the frequency of this node
-            rospy.sleep(0.1)
+        # sleep to control the frequency of this node
+        rospy.sleep(0.1)
         print('Saving log file ...')
         self.logging_file.close()
