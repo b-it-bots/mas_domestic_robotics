@@ -27,37 +27,19 @@ generate_messages(
     mas_perception_msgs
 )
 
-###################################
-## catkin specific configuration ##
-###################################
-
 catkin_package(
  CATKIN_DEPENDS
    actionlib_msgs
    message_runtime
 )
 
-#############
-## Install ##
-#############
+install(PROGRAMS
+  ros/scripts/find_people_server
+  ros/scripts/find_people_client_test
+  ros/scripts/find_people_client
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
+)
 
-## Mark executable scripts (Python etc.) for installation
-## in contrast to setup.py, you can choose the destination
-# install(PROGRAMS
-#   scripts/my_python_script
-#   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-#############
-## Testing ##
-#############
-
-## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_mdr_question_answering.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
-
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
-
+install(DIRECTORY ros/launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+)
