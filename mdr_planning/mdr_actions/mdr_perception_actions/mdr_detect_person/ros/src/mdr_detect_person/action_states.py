@@ -8,7 +8,7 @@ from cv_bridge import CvBridge
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
-from mdr_detect_person.msg import DetectPersonFeedback, DetectPersonGoal, DetectPersonResult
+from mdr_detect_person.msg import DetectPersonFeedback, DetectPersonResult
 from mdr_perception_msgs.msg import FaceBoundingBox
 from mdr_detect_person.inference import load_detection_model, detect_faces
 
@@ -50,7 +50,6 @@ class DetectPersonSM(ActionSMBase):
                 bounding_boxes.append(bounding_box)
 
                 x, y, w, h = face_coordinates
-                rgb_cv2 = cv2.rectangle(rgb_image, (x, y), (x + w, y + h), (0, 0, 255), 2)
             output_ros_image = self.bridge.cv2_to_imgmsg(rgb_image, 'bgr8')
             self.image_publisher.publish(output_ros_image)
         except:

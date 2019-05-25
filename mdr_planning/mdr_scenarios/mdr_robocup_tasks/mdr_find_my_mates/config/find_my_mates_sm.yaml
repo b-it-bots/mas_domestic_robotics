@@ -1,0 +1,202 @@
+# Description: Defines a state machine for a RoboCup@Home find my mates scenario
+# Author: Patrick Nagel
+# Email: patrick.nagel@h-brs.de
+sm_id: mdr_find_my_mates
+states: [ENTER_LIVING_ROOM, RECEIVE_INFORMATION_FROM_OPERATOR, DETECT_PEOPLE, CHECK_LIST_OF_PEOPLE_TO_FIND, CHANGE_PERSPECTIVE, GO_TO_PERSON, ASK_NAME, DESCRIBE_PERSON, EXIT]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: ENTER_LIVING_ROOM
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: RECEIVE_INFORMATION_FROM_OPERATOR
+            - transition:
+                name: failed
+                state: ENTER_LIVING_ROOM
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: destination_locations
+                value: [find_people]
+    - state:
+        name: RECEIVE_INFORMATION_FROM_OPERATOR
+        state_module_name: mdr_hri_behaviours.retrieve_information
+        state_class_name: RetrieveInformation
+        transitions:
+            - transition:
+                name: succeeded
+                state: PREPARE_TO_SCAN_PEOPLE
+            - transition:
+                name: failed
+                state: RECEIVE_INFORMATION_FROM_OPERATOR
+    - state:
+        name: PREPARE_TO_SCAN_PEOPLE
+        state_module_name: mas_hsr_store_groceries.scenario_states.scan_shelf
+        state_class_name: ScanShelf
+        transitions:
+            - transition:
+                name: succeeded
+                state: DETECT_PEOPLE
+            - transition:
+                name: failed
+                state: PREPARE_TO_SCAN_PEOPLE
+        arguments:
+            - argument:
+                name: head_joints
+                value:
+                    head_tilt_joint: -0.2
+    - state:
+        name: DETECT_PEOPLE
+        state_module_name: mdr_perception_behaviours.find_people
+        state_class_name: FindPeople
+        transitions:
+            - transition:
+                name: succeeded
+                state: CHECK_LIST_OF_PEOPLE_TO_FIND
+            - transition:
+                name: failed
+                state: CHANGE_PERSPECTIVE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: CHANGE_PERSPECTIVE
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: DETECT_PEOPLE
+            - transition:
+                name: failed
+                state: CHANGE_PERSPECTIVE
+            - transition:
+                name: failed_after_retrying
+                state: DETECT_PEOPLE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: destination_locations
+                value: [kitchen_table_left]
+    - state:
+        name: CHECK_LIST_OF_PEOPLE_TO_FIND
+        state_module_name: mdr_find_my_mates.scenario_states.check_mates_to_find
+        state_class_name: CheckMatesToFind
+        transitions:
+            - transition:
+                name: mates_left
+                state: GO_TO_PERSON
+            - transition:
+                name: no_mates_left
+                state: GO_TO_OPERATOR
+    - state:
+        name: GO_TO_PERSON
+        state_module_name: mdr_find_my_mates.scenario_states.move_to_person
+        state_class_name: MoveToPerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: ASK_NAME
+            - transition:
+                name: failed
+                state: GO_TO_PERSON
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: ASK_NAME
+        state_module_name: mdr_find_my_mates.scenario_states.interview_person
+        state_class_name: InterviewPerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: DESCRIBE_PERSON
+            - transition:
+                name: failed
+                state: ASK_NAME
+            - transition:
+                name: failed_after_retrying
+                state: CHECK_LIST_OF_PEOPLE_TO_FIND
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 5
+    - state:
+        name: DESCRIBE_PERSON
+        state_module_name: mdr_find_my_mates.scenario_states.describe_person
+        state_class_name: DescribePerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: CHECK_LIST_OF_PEOPLE_TO_FIND
+    - state:
+        name: GO_TO_OPERATOR
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: REPORT_TO_OPERATOR
+            - transition:
+                name: failed
+                state: GO_TO_OPERATOR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: destination_locations
+                value: [find_people]
+    - state:
+        name: REPORT_TO_OPERATOR
+        state_module_name: mdr_find_my_mates.scenario_states.report
+        state_class_name: Report
+        transitions:
+            - transition:
+                name: succeeded
+                state: EXIT
+            - transition:
+                name: failed
+                state: REPORT_TO_OPERATOR
+    - state:
+        name: EXIT
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: EXIT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [outside_arena]
+            - argument:
+                name: number_of_retries
+                value: 3

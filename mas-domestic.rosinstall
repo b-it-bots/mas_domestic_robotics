@@ -9,13 +9,18 @@
     version: melodic
 
 - git:
-    local-name: mas_navigation
-    uri: https://github.com/b-it-bots/mas_navigation.git
+    local-name: mas_navigation_tools
+    uri: https://github.com/b-it-bots/mas_navigation_tools.git
     version: melodic
 
 - git:
-    local-name: mas_perception
-    uri: https://github.com/b-it-bots/mas_perception.git
+    local-name: mas_perception_libs
+    uri: https://github.com/b-it-bots/mas_perception_libs.git
+    version: meloic
+
+- git:
+    local-name: mas_perception_msgs
+    uri: https://github.com/b-it-bots/mas_perception_msgs.git
     version: melodic
 
 - git:
@@ -36,6 +41,10 @@
 - git:
     local-name: ftsm
     uri: https://github.com/b-it-bots/ftsm.git
+    version: master
+- git:
+    local-name: topological_map
+    uri: https://github.com/b-it-bots/topological_map.git
     version: master
 
 - git:

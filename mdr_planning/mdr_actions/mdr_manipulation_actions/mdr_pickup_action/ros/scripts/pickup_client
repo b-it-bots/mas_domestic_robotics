@@ -3,7 +3,7 @@ import rospy
 import actionlib
 import tf
 
-from mcr_perception_msgs.msg import Object
+from mas_perception_msgs.msg import Object
 from mdr_rosplan_interface.action_client_base import ActionClientBase
 from mas_knowledge_base.knowledge_base_interface import KBException
 from mdr_pickup_action.msg import PickupAction, PickupGoal

@@ -6,7 +6,7 @@ from tf import TransformListener
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import diagnostic_msgs.msg as diag_msgs
 
-from mcr_perception_msgs.msg import Object
+from mas_perception_msgs.msg import Object
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class PickClosestFromSurface(ScenarioStateBase):

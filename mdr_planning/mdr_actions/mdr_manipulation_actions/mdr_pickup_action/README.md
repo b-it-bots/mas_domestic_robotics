@@ -59,7 +59,10 @@ The following parameters may be passed when launching the action server:
 * ``move_arm_server``: Name of the `move_arm` action server (default: 'move_arm_server')
 * ``move_base_server``: Name of the `move_base` action server (default: 'move_base_server')
 * ``gripper_controller_pkg_name``: The name of a package that implements functionalities for controlling a robot's gripper (default: 'mdr_gripper_controller')
-* ``pregrasp_config_name``: The name of the pregrasp configuration (default: 'pregrasp')
+* ``pregrasp_config_name``: The name of the default pregrasp configuration for side grasps (default: 'pregrasp')
+* ``pregrasp_top_config_name``: The name of a pregrasp configuration for top grasps (default: 'pregrasp_top')
+* ``pregrasp_low_config_name``: The name of a pregrasp configuration for low sideways grasps (default: 'pregrasp_low')
+* ``pregrasp_height_threshold``: Height threshold for selecting high or low pregrasp poses (default: 0.5)
 * ``intermediate_grasp_offset``: An optional pose offset that creates an intermediate trajectory goal following the pregrasp configuration (default: -1)
 * ``safe_arm_joint_config``: The name of a configuration in which the robot can safely move around the environment (default: 'folded')
 * ``base_elbow_offset``: An optional offset between `base_link` and the manipulator's elbow; used for aligning the base with the object to be grasped so that the manipulator can easily reach the object (default: -1)
@@ -100,7 +103,7 @@ The action performs grasping with respect to the `base_link` frame (even if the 
 * ``rosplan_dispatch_msgs``
 * ``rosplan_knowledge_msgs``
 * ``diagnostic_msgs``
-* ``mcr_perception_msgs``
+* ``mas_perception_msgs``
 * ``mdr_rosplan_interface``
 * ``mdr_move_arm_action``
 * ``mdr_move_base_action``

@@ -6,7 +6,7 @@ import moveit_commander
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
-from mdr_move_arm_action.msg import MoveArmGoal, MoveArmFeedback, MoveArmResult
+from mdr_move_arm_action.msg import MoveArmGoal, MoveArmResult
 from mdr_move_arm_action.dmp import DMPExecutor
 
 class MoveArmSM(ActionSMBase):

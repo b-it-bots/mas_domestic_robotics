@@ -1,0 +1,10 @@
+#!/usr/bin/env python
+
+import rospy
+from mdr_mbot_logger.mbot_logger import MbotLogger
+
+if __name__ == '__main__':
+    rospy.init_node('mbot_logger', anonymous=False)
+    logger = MbotLogger()
+    logger.wait_for_information()
+

@@ -54,7 +54,9 @@ The following parameters may be passed when launching the action server:
 * ``move_arm_server``: Name of the `move_arm` action server (default: 'move_arm_server')
 * ``move_base_server``: Name of the `move_base` action server (default: 'move_base_server')
 * ``gripper_controller_pkg_name``: The name of a package that implements functionalities for controlling a robot's gripper (default: 'mdr_gripper_controller')
-* ``preplace_config_name``: Name of the preplace configuration (default: 'pregrasp')
+* ``preplace_config_name``: Name of a default preplace configuration for sideways grasps (default: 'pregrasp')
+* ``preplace_low_config_name``: Name of a preplace configuration for low sideways grasps (default: 'pregrasp_low')
+* ``preplace_height_threshold``: Height threshold for choosing between low and high preplace configurations (default: 0.5)
 * ``safe_arm_joint_config``: Name of a configuration in which the robot can safely move around the environment (default: 'folded')
 * ``base_elbow_offset``: An optional offset between `base_link` and the manipulator's elbow; used for aligning the base with the placing pose so that the manipulator can easily reach it (default: -1)
 * ``placing_dmp``:  Path to a YAML file containing the weights of a dynamic motion primitive used for placing (default: '')
@@ -92,7 +94,7 @@ The action performs placing with respect to the `base_link` frame (even if the g
 * ``rosplan_dispatch_msgs``
 * ``rosplan_knowledge_msgs``
 * ``diagnostic_msgs``
-* ``mcr_perception_msgs``
+* ``mas_perception_msgs``
 * ``mdr_rosplan_interface``
 * ``mdr_move_arm_action``
 * ``mdr_move_base_action``

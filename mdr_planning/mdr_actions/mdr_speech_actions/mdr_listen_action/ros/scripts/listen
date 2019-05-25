@@ -3,67 +3,49 @@
 """
 Created on 2018.10.09
 
-@author: patrick
+@author: Roberto Cai
+@email: roberto.cai@smail.inf.h-brs.de
 """
-
 import rospy
-import smach
+import actionlib
 
-from smach_ros import ActionServerWrapper, IntrospectionServer
 from mdr_listen_action.msg import ListenAction, ListenResult, ListenFeedback
-from mdr_listen_action_ros.action_states import InitializeListen, InitializationError, WaitForUserInput, ProcessInput, InputError
+from mdr_listen_action.action_states import ListenSM
 
-class ListenSkill(smach.StateMachine):
+class ListenServer(object):
 
     def __init__(self):
-        smach.StateMachine.__init__(self,
-                                    outcomes=['OVERALL_SUCCESS', 'OVERALL_FAIL', 'PREEMPTED'],
-                                    input_keys=['listen_goal'],
-                                    output_keys=['listen_feedback', 'listen_result'])
+        self.model_directory = rospy.get_param('~model_directory')
+        self.use_kaldi = rospy.get_param('~use_kaldi')
+        print(self.model_directory)
+        rospy.loginfo('[listen] Initialising state machine')
+        self.action_sm = ListenSM(model_directory=self.model_directory,
+                                  use_kaldi=self.use_kaldi)
+        rospy.loginfo('[listen] State machine initialised')
 
-        with self:
-            smach.StateMachine.add('INITIALIZE_LISTEN', InitializeListen(),
-                                   transitions={'succeeded':'WAIT_FOR_USER_INPUT',
-                                                'failed':'INITIALIZATION_ERROR',
-                                                'processing':'INITIALIZE_LISTEN'})
-            smach.StateMachine.add('INITIALIZATION_ERROR', InitializationError(),
-                                   transitions={'error_detected':'OVERALL_FAIL',
-                                                'processing':'INITIALIZATION_ERROR'})
-            smach.StateMachine.add('WAIT_FOR_USER_INPUT', WaitForUserInput(),
-                                   transitions={'input_received':'PROCESS_INPUT',
-                                                'input_not_understood':'INPUT_ERROR',
-                                                'no_input_received':'INPUT_ERROR',
-                                                'processing':'WAIT_FOR_USER_INPUT'})
-            smach.StateMachine.add('PROCESS_INPUT', ProcessInput(),
-                                   transitions={'succeeded':'OVERALL_SUCCESS',
-                                                'input_not_understood':'INPUT_ERROR',
-                                                'processing':'PROCESS_INPUT'})
-            smach.StateMachine.add('INPUT_ERROR', InputError(),
-                                   transitions={'error_detected':'OVERALL_FAIL',
-                                                'processing':'INPUT_ERROR'})
+        self.action_server = actionlib.SimpleActionServer('listen_server',
+                                                          ListenAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('listen action server ready')
+
+    def execute(self, goal):
+        rospy.loginfo('[listen] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.result = None
+        self.action_sm.execution_requested = True
+        while not self.action_sm.result:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
+
 
 if __name__ == '__main__':
     rospy.init_node('listen_server')
-
-    # construct state machine
-    sm = ListenSkill()
-
-    # smach viewer
-    sis = IntrospectionServer('listen_smach_viewer', sm, '/LISTEN_SMACH_VIEWER')
-    sis.start()
-
-    # construct the action server wrapper
-    asw = ActionServerWrapper(
-        server_name='listen_server',
-        action_spec=ListenAction,
-        wrapped_container=sm,
-        succeeded_outcomes=['OVERALL_SUCCESS'],
-        aborted_outcomes=['OVERALL_FAIL'],
-        preempted_outcomes=['PREEMPTED'],
-        goal_key='listen_goal',
-        feedback_key='listen_feedback',
-        result_key='listen_result')
-
-    # Run the server in the background thread
-    asw.run_server()
-    rospy.spin()
+    listen_server = ListenServer()
+    try:
+        listen_server.action_sm.run()
+        while listen_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(listen_server.action_sm.name))
+        pickup_server.action_sm.stop()

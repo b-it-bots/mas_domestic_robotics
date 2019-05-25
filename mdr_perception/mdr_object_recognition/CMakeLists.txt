@@ -6,7 +6,6 @@ find_package(catkin REQUIRED
     rospy
     std_msgs
     sensor_msgs
-    mcr_object_recognition_mean_circle
     mas_perception_libs
 )
 

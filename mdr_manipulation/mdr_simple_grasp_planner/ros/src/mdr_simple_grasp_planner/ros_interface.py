@@ -1,7 +1,6 @@
 import rospy
 import moveit_msgs.msg
 import std_msgs.msg
-import geometry_msgs.msg
 import grasp_planner
 
 class GraspPlannerRosInterface:
@@ -20,14 +19,14 @@ class GraspPlannerRosInterface:
         self.state = self._STATE_CREATED
         self.next_grasp = 0
         self.grasps = None
-        
+
         rospy.loginfo('Grasp planner running')
 
 
     def event_in(self, msg):
         '''
         Handle an incoming event.
-        
+
         :param msg: The event type. Valid events are:
         e_reset: Reset the planner and re-plan.
         e_trigger: Trigger the planner to send out the next grasp.
@@ -60,7 +59,7 @@ class GraspPlannerRosInterface:
         '''
         self.grasp_publisher.publish(self.grasps[self.next_grasp])
         self.next_grasp += 1
-        
+
         # if all grasps have been processed inform the external components
         if (self.next_grasp == len(self.grasps)):
             self.next_grasp = 0
@@ -86,8 +85,7 @@ class GraspPlannerRosInterface:
 
 def main():
     rospy.init_node('grasp_planner')
-    planner = GraspPlannerRosInterface()
-    
+    planner = GraspPlannerRosInterface()    
     while (not rospy.is_shutdown()):
         planner.step()
         rospy.sleep(0.2)

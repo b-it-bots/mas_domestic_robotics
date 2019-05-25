@@ -2,7 +2,6 @@
 
 import pyaudio
 import wave
-import sys
 import yaml
 import rospy
 import rospkg

@@ -1,0 +1,64 @@
+# Description: Defines a state machine for a RoboCup@Home "where is this" scenario
+# Author: Patrick Nagel
+# Email: patrick.nagel@h-brs.de
+sm_id: mdr_where_is_this
+states: [DETECT_PERSON, RECEIVE_INFORMATION_FROM_OPERATOR, DESCRIBE_LOCATION]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: DETECT_PERSON
+        state_module_name: mdr_where_is_this.scenario_states.detect_person
+        state_class_name: DetectPerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: RECEIVE_INFORMATION_FROM_OPERATOR
+            - transition:
+                name: failed
+                state: DETECT_PERSON
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: RECEIVE_INFORMATION_FROM_OPERATOR
+        state_module_name: mdr_where_is_this.scenario_states.receive_information
+        state_class_name: ReceiveInformation
+        transitions:
+            - transition:
+                name: succeeded
+                state: DESCRIBE_LOCATION
+            - transition:
+                name: failed
+                state: RECEIVE_INFORMATION_FROM_OPERATOR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: DESCRIBE_LOCATION
+        state_module_name: mdr_where_is_this.scenario_states.describe_location
+        state_class_name: DescribeLocation
+        transitions:
+            - transition:
+                name: succeeded
+                state: RECEIVE_INFORMATION_FROM_OPERATOR
+            - transition:
+                name: failed
+                state: RECEIVE_INFORMATION_FROM_OPERATOR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: pose_topic_name
+                value: /global_pose
