@@ -25,7 +25,7 @@ state_descriptions:
                 value: 3
             - argument:
                 name: destination_locations
-                value: [FIND_PEOPLE]
+                value: [find_people]
     - state:
         name: RECEIVE_INFORMATION_FROM_OPERATOR
         state_module_name: mdr_hri_behaviours.retrieve_information
@@ -91,7 +91,7 @@ state_descriptions:
                 value: 3
             - argument:
                 name: destination_locations
-                value: [KITCHEN_TABLE_LEFT]
+                value: [kitchen_table_left]
     - state:
         name: CHECK_LIST_OF_PEOPLE_TO_FIND
         state_module_name: mdr_find_my_mates.scenario_states.check_mates_to_find
@@ -167,7 +167,7 @@ state_descriptions:
                 value: 3
             - argument:
                 name: destination_locations
-                value: [FIND_PEOPLE]
+                value: [find_people]
     - state:
         name: REPORT_TO_OPERATOR
         state_module_name: mdr_find_my_mates.scenario_states.report
@@ -196,7 +196,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [OUTSIDE_ARENA]
+                value: [outside_arena]
             - argument:
                 name: number_of_retries
                 value: 3
