@@ -7,7 +7,7 @@
     <node name="map_server" pkg="map_server" type="map_server" args="$(arg map)"/>
 
     <!-- Visualize the navigation goals -->
-    <node pkg="mcr_navigation_tools" name="pose_visualiser" type="pose_visualiser" output="screen">
+    <node pkg="mas_navigation_tools" name="pose_visualiser" type="pose_visualiser" output="screen">
         <param name="pose_frame" value="map" />
         <param name="pose_description_file" value="$(find mdr_environments)/$(arg robot_env)/navigation_goals.yaml" />
     </node>
