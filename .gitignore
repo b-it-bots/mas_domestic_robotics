@@ -16,3 +16,6 @@ mongod.lock
 local.0
 local.ns
 message_store.*
+
+# Kaldi models
+/mdr_speech/mdr_speech_recognition/config/models/*
