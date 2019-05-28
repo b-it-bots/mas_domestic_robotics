@@ -1,4 +1,4 @@
-FROM bitbots/bitbots-common:melodic
+FROM bitbots/bitbots-domestic:melodic-base
 
 WORKDIR /melodic
 COPY mas-domestic.rosinstall /melodic
