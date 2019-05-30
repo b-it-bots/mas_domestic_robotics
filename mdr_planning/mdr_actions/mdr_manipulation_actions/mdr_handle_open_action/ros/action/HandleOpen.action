@@ -1,0 +1,11 @@
+# goal
+string handle_type
+geometry_msgs/PoseStamped handle_pose
+geometry_msgs/PoseStamped init_end_effector_pose
+---
+# result
+bool success
+---
+# feedback
+string current_state
+string message

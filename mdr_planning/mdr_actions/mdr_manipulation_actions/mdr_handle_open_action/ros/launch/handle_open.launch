@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_handle_open_action" type="handle_open_action" name="handle_open_server" output="screen">
+    </node>
+</launch>

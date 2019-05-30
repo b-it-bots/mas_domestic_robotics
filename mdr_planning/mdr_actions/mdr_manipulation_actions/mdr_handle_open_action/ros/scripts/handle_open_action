@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_handle_open_action.msg import HandleOpenAction
+from mdr_handle_open_action.action_states import HandleOpenSM
+
+class HandleOpenServer(object):
+    '''A server exposing an action for opening doors and furniture with handles.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    ## TODO: list any expected parameters here
+
+    '''
+    def __init__(self):
+        ## TODO: read any configuration parameters for the action here
+        # param = rospy.get_param('~param_name', 'default_param_value')
+
+        rospy.loginfo('[handle_open] Initialising state machine')
+        self.action_sm = HandleOpenSM()
+        rospy.loginfo('[handle_open] State machine initialised')
+
+        self.action_server = actionlib.SimpleActionServer('handle_open_server',
+                                                          HandleOpenAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('handle_open action server ready')
+
+    def execute(self, goal):
+        rospy.loginfo('[handle_open] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.result = None
+        self.action_sm.execution_requested = True
+        while not self.action_sm.result:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
+
+if __name__ == '__main__':
+    rospy.init_node('handle_open_server')
+    handle_open_server = HandleOpenServer()
+    try:
+        handle_open_server.action_sm.run()
+        while handle_open_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(handle_open_server.action_sm.name))
+        handle_open_server.action_sm.stop()
