@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_push_action" type="push_action" name="push_server" output="screen">
+    </node>
+</launch>

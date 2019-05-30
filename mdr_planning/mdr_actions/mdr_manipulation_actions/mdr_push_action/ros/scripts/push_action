@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_push_action.msg import PushAction
+from mdr_push_action.action_states import PushSM
+
+class PushServer(object):
+    '''A server exposing an object pushing action.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    ## TODO: list any expected parameters here
+
+    '''
+    def __init__(self):
+        ## TODO: read any configuration parameters for the action here
+        # param = rospy.get_param('~param_name', 'default_param_value')
+
+        rospy.loginfo('[push] Initialising state machine')
+        self.action_sm = PushSM()
+        rospy.loginfo('[push] State machine initialised')
+
+        self.action_server = actionlib.SimpleActionServer('push_server',
+                                                          PushAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('push action server ready')
+
+    def execute(self, goal):
+        rospy.loginfo('[push] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.result = None
+        self.action_sm.execution_requested = True
+        while not self.action_sm.result:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
+
+if __name__ == '__main__':
+    rospy.init_node('push_server')
+    push_server = PushServer()
+    try:
+        push_server.action_sm.run()
+        while push_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(push_server.action_sm.name))
+        push_server.action_sm.stop()
