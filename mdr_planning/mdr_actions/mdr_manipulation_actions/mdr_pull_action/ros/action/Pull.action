@@ -1,0 +1,11 @@
+# goal
+geometry_msgs/PoseStamped init_end_effector_pose
+geometry_msgs/Vector3 direction
+float64 duration
+---
+# result
+bool success
+---
+# feedback
+string current_state
+string message
