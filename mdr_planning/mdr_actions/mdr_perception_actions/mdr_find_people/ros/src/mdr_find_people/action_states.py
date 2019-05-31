@@ -81,7 +81,7 @@ class FindPeopleState(smach.State):
 
         # Create the action result message
         pl = []
-        for i in range(len(predictions)):
+        for i, _ in enumerate(predictions):
             #if i in people_outside_arena:
             #    continue
 
