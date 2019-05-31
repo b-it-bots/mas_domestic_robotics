@@ -2,7 +2,7 @@
 # Authors: Alex Mitrevski, Argentina Ortega
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_speech_person_recognition
-states: [FIND_CROWD, RECOGNIZE_GENDERS, REQUEST_OPERATOR, PROCESS_SPEECH, ANSWER_QUESTION]
+states: [FIND_CROWD, RECOGNIZE_GENDERS, REQUEST_OPERATOR, PROCESS_SPEECH]
 outcomes: [DONE, FAILED, TIMEOUT]
 state_descriptions:
     - state:
