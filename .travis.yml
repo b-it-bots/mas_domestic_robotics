@@ -29,7 +29,8 @@ jobs:
     - stage: build
       script:
         - docker-compose build travis
-    - stage: build
+    - stage: test
+      if: fork = false
       name: "Sonarcloud.io"
       script:
         - sonar-scanner
