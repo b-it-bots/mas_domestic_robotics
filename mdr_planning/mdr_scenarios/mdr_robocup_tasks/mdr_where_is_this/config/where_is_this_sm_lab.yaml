@@ -2,7 +2,7 @@
 # Author: Patrick Nagel
 # Email: patrick.nagel@h-brs.de
 sm_id: mdr_where_is_this
-states: [DETECT_PERSON, RECEIVE_INFORMATION_FROM_OPERATOR, DESCRIBE_LOCATION]
+states: [RECEIVE_INFORMATION_FROM_OPERATOR, DESCRIBE_LOCATION]
 outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
