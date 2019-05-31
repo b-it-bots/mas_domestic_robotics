@@ -22,7 +22,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [OBSERVATION_POSE]
+                value: [observation_pose]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -64,7 +64,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [TABLE]
+                value: [table]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -130,7 +130,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [TRASH_CAN]
+                value: [trash_can]
             - argument:
                 name: number_of_retries
                 value: 3
