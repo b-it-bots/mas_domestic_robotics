@@ -4,12 +4,13 @@ project(mdr_where_is_this)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   roslint
+  std_msgs
+  geometry_msgs
+  topological_map_ros
   mas_execution_manager
+  mas_knowledge_base
   mdr_listen_action
   mdr_speech_matching
-  topological_map_ros
-  geometry_msgs
-  std_msgs
 )
 
 catkin_python_setup()
@@ -17,18 +18,16 @@ catkin_python_setup()
 catkin_package(
   CATKIN_DEPENDS
     rospy
+    std_msgs
+    geometry_msgs
+    topological_map_ros
     mas_execution_manager
+    mas_knowledge_base
     mdr_listen_action
     mdr_speech_matching
-    topological_map_ros
-    geometry_msgs
-    std_msgs
 )
 
-include_directories(
-# include
-# ${catkin_INCLUDE_DIRS}
-)
+include_directories()
 
 install(DIRECTORY ros/launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/launch
