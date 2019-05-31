@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 
 import os
-import json
-import cv2
 import numpy as np
-import tensorflow as tf
 
 from rospkg import RosPack
 
-from std_msgs.msg import String, Header
+from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
 from mas_perception_libs import ImageDetectionKey, ImageDetectorBase
 from mas_perception_libs.utils import cloud_msg_to_image_msg, crop_cloud_to_xyz
@@ -68,7 +65,7 @@ class FindPeople(object):
     def get_people_poses(cloud_msg, predictions, bounding_boxes):
         poses = []
 
-        for i in range(len(predictions)):
+        for i, _ in enumerate(predictions):
             pred = predictions[i]
             bb2d = bounding_boxes[i]
 

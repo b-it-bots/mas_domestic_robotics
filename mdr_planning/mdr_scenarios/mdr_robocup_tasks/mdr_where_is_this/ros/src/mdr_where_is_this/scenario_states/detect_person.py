@@ -1,5 +1,4 @@
 import rospy
-import actionlib
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from std_msgs.msg import Bool

@@ -45,24 +45,24 @@ class ListenSM(ActionSMBase):
                         rospy.logerr("No input received")
                         return FTSMTransitions.DONE
                 else:
-                   if SpeechRecognizer.check_internet_connection():
-                       try:
-                           self.recognized_speech = self.recognizer.recognize_google(audio)
-                       except sr.UnknownValueError:
-                           rospy.logerr("Google: Input not understood.")
-                           return FTSMTransitions.DONE
-                       except sr.RequestError:
-                           rospy.logerr("Google: No input received")
-                           return FTSMTransitions.DONE
-                   else:
-                       try:
-                           self.recognized_speech = self.recognizer.recognize_sphinx(audio)
-                       except sr.UnknownValueError:
-                           rospy.logerr("PocketSphinx: Input not understood.")
-                           return FTSMTransitions.DONE
-                       except sr.RequestError:
-                           rospy.logerr("PocketSphinx: No input received")
-                           return FTSMTransitions.DONE
+                    if SpeechRecognizer.check_internet_connection():
+                        try:
+                            self.recognized_speech = self.recognizer.recognize_google(audio)
+                        except sr.UnknownValueError:
+                            rospy.logerr("Google: Input not understood.")
+                            return FTSMTransitions.DONE
+                        except sr.RequestError:
+                            rospy.logerr("Google: No input received")
+                            return FTSMTransitions.DONE
+                    else:
+                        try:
+                            self.recognized_speech = self.recognizer.recognize_sphinx(audio)
+                        except sr.UnknownValueError:
+                            rospy.logerr("PocketSphinx: Input not understood.")
+                            return FTSMTransitions.DONE
+                        except sr.RequestError:
+                            rospy.logerr("PocketSphinx: No input received")
+                            return FTSMTransitions.DONE
         except Exception as exc:
             rospy.logerr(exc)
         if self.recognized_speech != '':
