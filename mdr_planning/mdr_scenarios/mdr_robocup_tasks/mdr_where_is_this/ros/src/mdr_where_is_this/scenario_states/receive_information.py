@@ -14,6 +14,8 @@ from mdr_listen_action.msg import ListenAction, ListenGoal
 
 from speech_matching.speech_matching import SpeechMatching
 
+from mas_tools.ros_utils import get_package_path
+
 class ReceiveInformation(ScenarioStateBase):
 
     def __init__(self, save_sm_state=False, **kwargs):
@@ -32,9 +34,8 @@ class ReceiveInformation(ScenarioStateBase):
         self.threshold = kwargs.get('threshold', 0.68)
 
         # Load the rasa model
-        rospack = rospkg.RosPack()
-        package_directory = rospack.get_path("mdr_where_is_this")
-        model_directory = os.path.join(package_directory, 'common', 'model', 'current', 'nlu')
+        package_directory = get_package_path('rasa_nlu_models', 'common', 'where_is_this')
+        model_directory = os.path.join(package_directory,'nlu')
         self.interpreter = Interpreter.load(model_directory)
 
         # wait for listen action server
