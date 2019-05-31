@@ -38,7 +38,7 @@ class MoveToPerson(ScenarioStateBase):
             return 'failed_after_retrying'
 
         person_to_interview = people_identifiers[0]
-        person_info = self.kb_interface.get_obj_instance(person_to_interview, Person)
+        person_info = self.kb_interface.get_obj_instance(person_to_interview, Person._type)
         person_pose = person_info.safe_pose
 
         move_base_goal = MoveBaseGoal()
