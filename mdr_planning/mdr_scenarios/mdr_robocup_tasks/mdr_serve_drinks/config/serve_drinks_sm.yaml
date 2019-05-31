@@ -25,7 +25,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [NEAR_BAR]
+                value: [near_bar]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -64,7 +64,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [BAR]
+                value: [bar]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -110,7 +110,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [LIVING_ROOM]
+                value: [living_room]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -177,7 +177,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [PERSON_WITHOUT_DRINK]
+                value: [person_without_drink]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -220,7 +220,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [BAR]
+                value: [bar]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -287,7 +287,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [PERSON_WITH_ORDER]
+                value: [person_with_order]
             - argument:
                 name: number_of_retries
                 value: 3
