@@ -34,8 +34,7 @@ class ReceiveInformation(ScenarioStateBase):
         self.threshold = kwargs.get('threshold', 0.68)
 
         # Load the rasa model
-        package_directory = get_package_path('rasa_nlu_models', 'common', 'where_is_this')
-        model_directory = os.path.join(package_directory,'nlu')
+        model_directory = get_package_path('rasa_nlu_models', 'common', 'where_is_this','nlu')
         self.interpreter = Interpreter.load(model_directory)
 
         # wait for listen action server
