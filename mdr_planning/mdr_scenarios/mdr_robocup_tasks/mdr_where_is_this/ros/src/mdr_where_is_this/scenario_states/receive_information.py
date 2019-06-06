@@ -41,12 +41,6 @@ class ReceiveInformation(ScenarioStateBase):
         goal = ListenGoal()
 
         if not self.number_of_retries == 0:
-            self.say('Please speak into my microphone')
-            rospy.sleep(1)
-
-            self.say('The microphone is on the top of my head')
-            rospy.sleep(1)
-
             self.say('What are you looking for?')
             rospy.sleep(1)
         # Ask again if not understood the first time
@@ -108,7 +102,6 @@ class ReceiveInformation(ScenarioStateBase):
 
                 userdata["target_entity"] = target_entity
                 rospy.loginfo('Successfully got wanted object/location: {}'.format(target_entity))
-                self.say('Thank you! I will describe you now how to get there.')
                 return 'succeeded'
 
         # Conversation has exceeded the maximum number of retries at this point
