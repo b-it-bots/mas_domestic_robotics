@@ -103,7 +103,9 @@ class DescribeLocation(ScenarioStateBase):
                 self.say('You can reach the {0} as follows'.format(location))
                 rospy.sleep(0.5)
                 for path_description in directions:
+                    rospy.sleep(1)
                     self.say(path_description)
+            rospy.sleep(5)
         elif userdata.target_entity['type'] == 'object':
             self.say('The {0} is in the {1}'.format(obj_name, location))
             rospy.sleep(0.5)
@@ -113,8 +115,9 @@ class DescribeLocation(ScenarioStateBase):
             else:
                 self.say('You can reach there as follows')
                 for path_description in directions:
+                    rospy.sleep(1)
                     self.say(path_description)
-            rospy.sleep(0.5)
+            rospy.sleep(5)
 
             objects_next_to = self.ontology_interface.get_objects_next_to(obj_name)
             if objects_next_to:
