@@ -38,6 +38,9 @@ class DMPExecutor(object):
         self.sigma_threshold_lower = 0.07
         self.base_feedback_gain = 2.0
 
+        self.motion_completed = False
+        self.motion_cancelled = False
+
         rospy.Subscriber(self.arm_controller_sigma_values_topic,
                          Float32MultiArray, self.sigma_values_cb)
         self.path_pub = rospy.Publisher(self.dmp_executor_path_topic, Path, queue_size=1)
@@ -122,8 +125,8 @@ class DMPExecutor(object):
         while not rospy.is_shutdown():
             try:
                 (trans, _) = self.tf_listener.lookupTransform(self.odom_frame_name,
-                                                                self.palm_link_name,
-                                                                rospy.Time(0))
+                                                              self.palm_link_name,
+                                                              rospy.Time(0))
                 break
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
@@ -132,11 +135,15 @@ class DMPExecutor(object):
         followed_trajectory = []
 
         old_pos_index = 0
-        while distance > self.goal_tolerance and not rospy.is_shutdown():
+        self.motion_completed = False
+        self.motion_cancelled = False
+        while not self.motion_completed and \
+              not self.motion_cancelled and \
+              not rospy.is_shutdown():
             try:
-                (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame_name,
-                                                                self.palm_link_name,
-                                                                rospy.Time(0))
+                (trans, _) = self.tf_listener.lookupTransform(self.odom_frame_name,
+                                                              self.palm_link_name,
+                                                              rospy.Time(0))
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
             current_pos = np.array([trans[0], trans[1], trans[2]])
@@ -144,7 +151,7 @@ class DMPExecutor(object):
             dist = []
             for i in range(path.shape[1]):
                 dist.append(np.linalg.norm((path[:, i] - current_pos)))
-            index =  np.argmin(dist)
+            index = np.argmin(dist)
 
             if old_pos_index != index:
                 followed_trajectory.append(current_pos)
@@ -217,6 +224,9 @@ class DMPExecutor(object):
             self.vel_publisher_arm.publish(message_arm)
             count += 1
 
+            if distance <= self.goal_tolerance:
+                self.motion_completed = True
+
         # stop arm and base motion after converging
         message_base = Twist()
         message_base.linear.x = 0.0
@@ -242,8 +252,8 @@ class DMPExecutor(object):
                                               rospy.Time.now(),
                                               rospy.Duration(30))
             (trans, _) = self.tf_listener.lookupTransform(self.base_link_frame_name,
-                                                            self.palm_link_name,
-                                                            rospy.Time(0))
+                                                          self.palm_link_name,
+                                                          rospy.Time(0))
             initial_pos = np.array(trans)
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             initial_pos = np.zeros(3)
@@ -269,10 +279,10 @@ class DMPExecutor(object):
                 break
             except:
                 continue
-        start_pose.pose.orientation.x = 0.529
-        start_pose.pose.orientation.y = -0.475
-        start_pose.pose.orientation.z = 0.467
-        start_pose.pose.orientation.w = 0.525
+        start_pose.pose.orientation.x = 0.
+        start_pose.pose.orientation.y = 0.
+        start_pose.pose.orientation.z = 0.
+        start_pose.pose.orientation.w = 1.
 
         rospy.loginfo('Executing motion')
         self.trajectory_controller()
