@@ -13,17 +13,21 @@ from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_handle_open_action.msg import HandleOpenGoal, HandleOpenResult
 
+from mdr_move_arm_action.dmp import DMPExecutor
+
 from importlib import import_module
 
 class HandleOpenSM(ActionSMBase):
     ## TODO: determine any other needed parameters
     def __init__(self, timeout=120.0,
-                 gripper_controller_pkg_name='mdr_gripper_controller',
+                 gripper_controller_pkg_name='mas_hsr_gripper_controller',
                  safe_arm_joint_config='folded',
-                 pregrasp_top_config_name='neutral',
+                 pregrasp_config_name='neutral',
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  move_forward_server='move_forward_server',
+                 handle_open_dmp = '',
+                 dmp_tau = 1.,
                  max_recovery_attempts=1):
         super(HandleOpenSM, self).__init__(
             'HandleOpen', [], max_recovery_attempts)
@@ -39,6 +43,8 @@ class HandleOpenSM(ActionSMBase):
         self.move_forward_server = move_forward_server
 
         self.pregrasp_config_name = pregrasp_config_name
+        self.handle_open_dmp = handle_open_dmp
+        self.dmp_tau = dmp_tau
 
         self.retract_arm = False
 
@@ -71,8 +77,8 @@ class HandleOpenSM(ActionSMBase):
 
     def running(self):
         pose = self.goal.handle_pose
-        string handle_type = self.goal.handle_type
-        init_end_effector_pose = self.goal.init_end_effector_pose
+        # string handle_type = self.goal.handle_type
+        # init_end_effector_pose = self.goal.init_end_effector_pose
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
 
@@ -154,7 +160,7 @@ class HandleOpenSM(ActionSMBase):
             move_arm_goal.named_target = goal
         elif goal_type == MoveArmGoal.END_EFFECTOR_POSE:
             move_arm_goal.end_effector_pose = goal
-            move_arm_goal.dmp_name = self.grasping_dmp
+            move_arm_goal.dmp_name = self.handle_open_dmp
             move_arm_goal.dmp_tau = self.dmp_tau
         self.move_arm_client.send_goal(move_arm_goal)
         self.move_arm_client.wait_for_result()

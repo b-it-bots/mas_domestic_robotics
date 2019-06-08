@@ -17,14 +17,18 @@ class HandleOpenServer(object):
         # param = rospy.get_param('~param_name', 'default_param_value')
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
         move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
-        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name', 'mdr_gripper_controller')
+        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name', 'mas_hsr_gripper_controller')
         safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
+        pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp_config_name')
+        handle_open_dmp = rospy.get_param('~handle_open_dmp', 'handle_open_dmp')
 
         rospy.loginfo('[handle_open] Initialising state machine')
         self.action_sm = HandleOpenSM(move_arm_server=move_arm_server,
                                       move_base_server=move_base_server,
                                       gripper_controller_pkg_name=gripper_controller_pkg_name,
-                                      safe_arm_joint_config=safe_arm_joint_config)
+                                      safe_arm_joint_config=safe_arm_joint_config,
+                                      pregrasp_config_name=pregrasp_config_name,
+                                      handle_open_dmp=handle_open_dmp)
         rospy.loginfo('[handle_open] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('handle_open_server',
