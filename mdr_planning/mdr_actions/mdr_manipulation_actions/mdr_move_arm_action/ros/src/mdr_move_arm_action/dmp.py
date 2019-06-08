@@ -33,6 +33,7 @@ class DMPExecutor(object):
         self.sigma_threshold_upper = rospy.get_param('~sigma_threshold_upper', 0.12)
         self.sigma_threshold_lower = rospy.get_param('~sigma_threshold_upper', 0.07)
         self.use_whole_body_control = rospy.get_param('~use_whole_body_control', False)
+        self.linear_vel_limit = rospy.get_param('~linear_vel_limit', 0.05)
 
         rospy.Subscriber(self.arm_controller_sigma_values_topic,
                          Float32MultiArray, self.sigma_values_cb)
@@ -160,11 +161,11 @@ class DMPExecutor(object):
             vel_z = self.feedforward_gain * (path_z[ind] - path_z[index]) + self.feedback_gain * (path_z[ind] - current_pos[2])
 
             # limiting speed
-            norm_ = np.linalg.norm(np.array([vel_x, vel_y, vel_z]))
-            if norm_ > 0.05:
-                vel_x = vel_x * 0.05 / norm_
-                vel_y = vel_y * 0.05 / norm_
-                vel_z = vel_z * 0.05 / norm_
+            vel_norm = np.linalg.norm(np.array([vel_x, vel_y, vel_z]))
+            if vel_norm > self.linear_vel_limit:
+                vel_x = vel_x * self.linear_vel_limit / vel_norm
+                vel_y = vel_y * self.linear_vel_limit / vel_norm
+                vel_z = vel_z * self.linear_vel_limit / vel_norm
 
             vel_x_arm = vel_x
             vel_y_arm = vel_y
