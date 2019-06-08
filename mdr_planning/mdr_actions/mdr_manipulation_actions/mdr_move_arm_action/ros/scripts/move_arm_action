@@ -33,13 +33,11 @@ class MoveArmServer(object):
         self.action_sm.goal = goal
         self.action_sm.result = None
         self.action_sm.execution_requested = True
-        while not self.action_sm.result and not self.action_server.is_preempt_requested():
+        while not self.action_sm.result:
+            if self.action_server.is_preempt_requested():
+                self.action_sm.preempted = True
             rospy.sleep(0.05)
-
-        if not self.action_server.is_preempt_requested():
-            self.action_server.set_succeeded(self.action_sm.result)
-        else:
-            self.action_sm.preempted = True
+        self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
     rospy.init_node('move_arm_server')
