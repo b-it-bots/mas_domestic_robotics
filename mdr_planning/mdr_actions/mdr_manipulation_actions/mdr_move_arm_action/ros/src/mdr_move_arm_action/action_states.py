@@ -51,7 +51,7 @@ class MoveArmSM(ActionSMBase):
                     rospy.sleep(0.05)
 
                 if self.preempted:
-                    dmp_traj_executor.motion_canceled = True
+                    dmp_traj_executor.motion_cancelled = True
                     self.preempted = False
 
                     rospy.loginfo('[move_arm] Cancelled arm motion')
