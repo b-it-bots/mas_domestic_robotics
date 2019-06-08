@@ -20,6 +20,7 @@ class HandleOpenSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mdr_gripper_controller',
                  safe_arm_joint_config='folded',
+                 pregrasp_top_config_name='neutral',
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  move_forward_server='move_forward_server',
@@ -36,6 +37,8 @@ class HandleOpenSM(ActionSMBase):
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
         self.move_forward_server = move_forward_server
+
+        self.pregrasp_config_name = pregrasp_config_name
 
         self.retract_arm = False
 
@@ -81,12 +84,9 @@ class HandleOpenSM(ActionSMBase):
         #     # y position of the goal pose to the elbow offset
         #     pose_base_link.pose.position.y = self.base_elbow_offset
 
-        rospy.loginfo('[handle_open] Opening the gripper...')
-        self.gripper.open()
-
         rospy.loginfo('[handle_open] Preparing grasp end-effector pose')
         ## TODO: implement __prepare_handle_grasp method
-        # pose_base_link = self.__prepare_handle_grasp(pose_base_link)
+        pose_base_link = self.__prepare_handle_grasp(pose_base_link)
 
         rospy.loginfo('[handle_open] Grasping...')
         arm_motion_success = self.__move_arm(
@@ -109,7 +109,12 @@ class HandleOpenSM(ActionSMBase):
         else:
             rospy.loginfo('[handle_open] Moving the base back')
             ## TODO: define backward_movement_distance, a distance value (in m?)
-            # self.__move_base_along_x(backward_movement_distance)
+            self.__move_base_along_x(-0.5)
+
+        rospy.loginfo('[handle_open] Opening the gripper...')
+        self.gripper.open()
+
+        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
 
         # For now, assume success:
         self.result = self.set_result(True)
@@ -119,9 +124,42 @@ class HandleOpenSM(ActionSMBase):
     ## TODO: implement a pre-grasp configuration that enables handle manipulation
     ## The final end-affector position should match expected handle orientation
     def __prepare_handle_grasp(self, pose_base_link):
-        rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
+        rospy.loginfo('[handle_open] Moving to a pregrasp configuration...')
         # ...
+        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+
+        rospy.loginfo('[handle_open] Opening the gripper...')
+        self.gripper.open()
+
+        ## TODO: Implement wrist rotation
+
+        rospy.loginfo('[handle_open] Moving to intermediate grasping pose...')
+        pose_base_link.pose.position.x -= 0.2
+        pose_base_link.pose.position.z += 0.2
+        self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+
         return pose_base_link
+
+    def __move_arm(self, goal_type, goal):
+        '''Sends a request to the 'move_arm' action server and waits for the
+        results of the action execution.
+        Keyword arguments:
+        goal_type -- 'MoveArmGoal.NAMED_TARGET' or 'MoveArmGoal.END_EFFECTOR_POSE'
+        goal -- A string if 'goal_type' is 'MoveArmGoal.NAMED_TARGET';
+                a 'geometry_msgs/PoseStamped' if 'goal_type' is 'MoveArmGoal.END_EFFECTOR_POSE'
+        '''
+        move_arm_goal = MoveArmGoal()
+        move_arm_goal.goal_type = goal_type
+        if goal_type == MoveArmGoal.NAMED_TARGET:
+            move_arm_goal.named_target = goal
+        elif goal_type == MoveArmGoal.END_EFFECTOR_POSE:
+            move_arm_goal.end_effector_pose = goal
+            move_arm_goal.dmp_name = self.grasping_dmp
+            move_arm_goal.dmp_tau = self.dmp_tau
+        self.move_arm_client.send_goal(move_arm_goal)
+        self.move_arm_client.wait_for_result()
+        result = self.move_arm_client.get_result()
+        return result
 
     def __move_base_along_x(self, distance_to_move):
         movement_speed = np.sign(distance_to_move) * 0.1 # m/s
