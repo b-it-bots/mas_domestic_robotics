@@ -6,7 +6,7 @@ from nav_msgs.msg import Path
 import tf
 import actionlib
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from ros_dmp.srv import GenerateMotion, GenerateMotionRequest
+from ros_dmp.roll_dmp import RollDmp
 
 
 class DMPExecutor(object):
@@ -23,9 +23,6 @@ class DMPExecutor(object):
                                                                  '/arm_controller/sigma_values')
         self.dmp_executor_path_topic = rospy.get_param('~path_topic', '/dmp_executor/path')
         self.move_base_server = rospy.get_param('~move_base_server', 'move_base/move')
-
-        # ros_dmp service
-        self.motion_client = rospy.ServiceProxy('/generate_motion_service', GenerateMotion)
 
         self.number_of_sampling_points = 30
         self.goal_tolerance = 0.05
@@ -47,6 +44,7 @@ class DMPExecutor(object):
         self.goal = None
         self.dmp_name = dmp_name
         self.tau = tau
+        self.roll_dmp = RollDmp(self.dmp_name, 0.001, self.base_link_frame_name)
 
         self.min_sigma_value = None
         self.deploy_wbc = True
@@ -64,23 +62,20 @@ class DMPExecutor(object):
         print(self.move_base_client.send_goal(move_base_goal))
 
     def generate_trajectory(self, goal, initial_pos):
-        req = GenerateMotionRequest()
-        req.goal_pose.pose.position.x = goal[0]
-        req.goal_pose.pose.position.y = goal[1]
-        req.goal_pose.pose.position.z = goal[2]
-        req.initial_pose.pose.position.x = initial_pos[0]
-        req.initial_pose.pose.position.y = initial_pos[1]
-        req.initial_pose.pose.position.z = initial_pos[2]
-        req.dmp_name = self.dmp_name
-        req.tau = self.tau
-        req.dt = 0.001
+        initial_pose = np.array([initial_pos[0], initial_pos[1], initial_pos[2], 0., 0., 0.])
+        goal_pose = np.array([goal[0], goal[1], goal[2], 0., 0., 0.])
 
-        print('[dmp] Sending trajectory request: ', req)
-        response = self.motion_client(req)
+        print('[move_arm/dmp] Querying trajectory')
+        print('[move_arm/dmp] Initial pose: ', initial_pose)
+        print('[move_arm/dmp] Goal pose: ', goal_pose)
+        cartesian_trajectory, _ = self.roll_dmp.get_trajectory_and_path(goal_pose,
+                                                                        initial_pose,
+                                                                        self.tau)
+
         pos_x = []
         pos_y = []
         pos_z = []
-        for state in response.cart_traj.cartesian_state:
+        for state in cartesian_trajectory.cartesian_state:
             pos_x.append(state.pose.position.x)
             pos_y.append(state.pose.position.y)
             pos_z.append(state.pose.position.z)
