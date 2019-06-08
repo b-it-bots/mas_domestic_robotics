@@ -1,0 +1,8 @@
+time_step: 0.001
+goal_tolerance_m: 0.05
+feedforward_gain: 30
+feedback_gain: 10
+sigma_threshold_upper: 0.12
+sigma_threshold_lower: 0.07
+base_feedback_gain: 2.0
+use_whole_body_control: true
