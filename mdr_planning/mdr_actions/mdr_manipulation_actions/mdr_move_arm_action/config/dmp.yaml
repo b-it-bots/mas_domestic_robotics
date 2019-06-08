@@ -6,3 +6,4 @@ sigma_threshold_upper: 0.12
 sigma_threshold_lower: 0.07
 base_feedback_gain: 2.0
 use_whole_body_control: true
+linear_vel_limit: 0.05
