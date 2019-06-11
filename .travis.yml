@@ -41,7 +41,7 @@ jobs:
         - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
         - docker build -t $CONTAINER_RELEASE_IMAGE .
         - docker images
-        - docker push $CONTAINER_RELEASE_IMAGE
+        - travis_wait docker push $CONTAINER_RELEASE_IMAGE
 
 notifications:
   slack:
