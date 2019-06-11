@@ -14,17 +14,17 @@ if __name__ == '__main__':
 
     goal = HandleOpenGoal()
 
-    goal.pose.header.frame_id = 'base_link'
-    goal.pose.header.stamp = rospy.Time.now()
+    goal.handle_pose.header.frame_id = 'base_link'
+    goal.handle_pose.header.stamp = rospy.Time.now()
 
-    goal.pose.pose.position.x = 0.418
-    goal.pose.pose.position.y = 0.078
-    goal.pose.pose.position.z = 0.842
+    goal.handle_pose.pose.position.x = 1.000
+    goal.handle_pose.pose.position.y = 0.078
+    goal.handle_pose.pose.position.z = 0.400
 
-    goal.pose.pose.orientation.x = 0.000
-    goal.pose.pose.orientation.y = 0.000
-    goal.pose.pose.orientation.z = 0.000
-    goal.pose.pose.orientation.w = 1.000
+    goal.handle_pose.pose.orientation.x = 0.000
+    goal.handle_pose.pose.orientation.y = 0.000
+    goal.handle_pose.pose.orientation.z = 0.000
+    goal.handle_pose.pose.orientation.w = 1.000
 
     timeout = 15.0
     rospy.loginfo('Sending action lib goal to handle_open_server')

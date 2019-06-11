@@ -15,20 +15,24 @@ class HandleOpenServer(object):
     def __init__(self):
         ## TODO: read any configuration parameters for the action here
         # param = rospy.get_param('~param_name', 'default_param_value')
+        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name', 'mas_hsr_gripper_controller')
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
         move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
-        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name', 'mas_hsr_gripper_controller')
-        safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
+        move_forward_server = rospy.get_param('~move_forward_server', 'move_forward_server')
         pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp_config_name')
+        final_config_name = rospy.get_param('~sfinal_config_name', 'neutral')
         handle_open_dmp = rospy.get_param('~handle_open_dmp', 'handle_open_dmp')
+        dmp_tau = rospy.get_param('~dmp_tau', 'dmp_tau')
 
         rospy.loginfo('[handle_open] Initialising state machine')
-        self.action_sm = HandleOpenSM(move_arm_server=move_arm_server,
+        self.action_sm = HandleOpenSM(gripper_controller_pkg_name=gripper_controller_pkg_name,
+                                      move_arm_server=move_arm_server,
                                       move_base_server=move_base_server,
-                                      gripper_controller_pkg_name=gripper_controller_pkg_name,
-                                      safe_arm_joint_config=safe_arm_joint_config,
+                                      move_forward_server=move_forward_server,
                                       pregrasp_config_name=pregrasp_config_name,
-                                      handle_open_dmp=handle_open_dmp)
+                                      final_config_name=final_config_name,
+                                      handle_open_dmp=handle_open_dmp,
+                                      dmp_tau=dmp_tau)
         rospy.loginfo('[handle_open] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('handle_open_server',

@@ -21,13 +21,13 @@ class HandleOpenSM(ActionSMBase):
     ## TODO: determine any other needed parameters
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mas_hsr_gripper_controller',
-                 safe_arm_joint_config='folded',
-                 pregrasp_config_name='neutral',
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  move_forward_server='move_forward_server',
+                 pregrasp_config_name='pregrasp_low',
+                 final_config_name = 'neutral',
                  handle_open_dmp = '',
-                 dmp_tau = 1.,
+                 dmp_tau = 30.,
                  max_recovery_attempts=1):
         super(HandleOpenSM, self).__init__(
             'HandleOpen', [], max_recovery_attempts)
@@ -37,16 +37,17 @@ class HandleOpenSM(ActionSMBase):
         GripperControllerClass = getattr(import_module(gripper_controller_module_name), 'GripperController')
         self.gripper = GripperControllerClass()
 
-        self.safe_arm_joint_config = safe_arm_joint_config
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
         self.move_forward_server = move_forward_server
 
         self.pregrasp_config_name = pregrasp_config_name
+        self.final_config_name = final_config_name
+
         self.handle_open_dmp = handle_open_dmp
         self.dmp_tau = dmp_tau
 
-        self.retract_arm = False
+        self.tf_listener = tf.TransformListener()
 
     def init(self):
         try:
@@ -90,8 +91,7 @@ class HandleOpenSM(ActionSMBase):
         #     # y position of the goal pose to the elbow offset
         #     pose_base_link.pose.position.y = self.base_elbow_offset
 
-        rospy.loginfo('[handle_open] Preparing grasp end-effector pose')
-        ## TODO: implement __prepare_handle_grasp method
+        rospy.loginfo('[handle_open] Preparing grasping pose')
         pose_base_link = self.__prepare_handle_grasp(pose_base_link)
 
         rospy.loginfo('[handle_open] Grasping...')
@@ -107,28 +107,20 @@ class HandleOpenSM(ActionSMBase):
         rospy.loginfo('[handle_open] Closing the gripper')
         self.gripper.close()
 
-        # Choice of either moving arm back, or moving robot base back:
-        if self.retract_arm:
-            rospy.loginfo('[handle_open] Moving the arm back')
-            ## TODO: define final_end_effector_pose, a geometry_msgs/PoseStamped goal message
-            # self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, final_end_effector_pose)
-        else:
-            rospy.loginfo('[handle_open] Moving the base back')
-            ## TODO: define backward_movement_distance, a distance value (in m?)
-            self.__move_base_along_x(-0.5)
+        # Moving robot base back (instead of moving arm back):
+        rospy.loginfo('[handle_open] Moving the base back')
+        ## TODO: define backward_movement_distance, a distance value (in m?)
+        self.__move_base_along_x(-0.5)
 
         rospy.loginfo('[handle_open] Opening the gripper...')
         self.gripper.open()
 
-        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.final_config_name)
 
         # For now, assume success:
         self.result = self.set_result(True)
         return FTSMTransitions.DONE
 
-
-    ## TODO: implement a pre-grasp configuration that enables handle manipulation
-    ## The final end-affector position should match expected handle orientation
     def __prepare_handle_grasp(self, pose_base_link):
         rospy.loginfo('[handle_open] Moving to a pregrasp configuration...')
         # ...
@@ -140,8 +132,9 @@ class HandleOpenSM(ActionSMBase):
         ## TODO: Implement wrist rotation
 
         rospy.loginfo('[handle_open] Moving to intermediate grasping pose...')
-        pose_base_link.pose.position.x -= 0.2
-        pose_base_link.pose.position.z += 0.2
+        ## TODO: Move arm a specified distance after going to pregrasp_low, if needed:
+        # pose_base_link.pose.position.x -= 0.02
+        # pose_base_link.pose.position.z += 0.02
         self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
 
         return pose_base_link
