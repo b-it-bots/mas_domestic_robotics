@@ -130,6 +130,8 @@ class HandleOpenSM(ActionSMBase):
         self.gripper.open()
 
         ## TODO: Implement wrist rotation
+        rospy.loginfo('[handle_open] Rotating the gripper...')
+        self.gripper.rotate_wrist(np.pi/2.)        
 
         rospy.loginfo('[handle_open] Moving to intermediate grasping pose...')
         ## TODO: Move arm a specified distance after going to pregrasp_low, if needed:
