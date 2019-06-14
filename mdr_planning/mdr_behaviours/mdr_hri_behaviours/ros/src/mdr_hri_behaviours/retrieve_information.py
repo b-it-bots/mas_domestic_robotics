@@ -5,6 +5,7 @@ import rospkg
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from rasa_nlu.model import Interpreter
 from mdr_listen_action.msg import ListenAction, ListenGoal
+from mas_tools.ros_utils import get_package_path
 
 class RetrieveInformation(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
@@ -18,9 +19,9 @@ class RetrieveInformation(ScenarioStateBase):
         self.threshold = kwargs.get('threshold', 0.68)
 
 
-        rospack = rospkg.RosPack()
-        package_directory = rospack.get_path("mdr_hri_behaviours")
-        model_directory = (package_directory + '/common/models/')               # MODEL DIRECTORY
+        # Load rasa nlu model
+        model_directory = get_package_path('rasa_nlu_models','common',
+                                           'mdr_hri_behaviours_models','nlu')
         self.interpreter = Interpreter.load(model_directory)
 
     def execute(self, userdata):
