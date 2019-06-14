@@ -1,4 +1,8 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="mdr_find_people" type="find_people_server" name="find_people_server" output="screen" />
+    <arg name="pointcloud_topic" default="/mdr_perception/rectified_points"/>
+
+    <node pkg="mdr_find_people" type="find_people_server" name="find_people_server" output="screen" >
+        <param name="pointcloud_topic" type="string" value="$(arg pointcloud_topic)" />
+    </node>
 </launch>

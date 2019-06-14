@@ -5,8 +5,7 @@ from geometry_msgs.msg import PoseStamped, TwistStamped, Vector3Stamped, Twist
 from nav_msgs.msg import Path
 import tf
 import actionlib
-from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from ros_dmp.srv import GenerateMotion, GenerateMotionRequest
+from ros_dmp.roll_dmp import RollDmp
 
 
 class DMPExecutor(object):
@@ -22,62 +21,51 @@ class DMPExecutor(object):
         self.arm_controller_sigma_values_topic = rospy.get_param('~arm_controller_sigma_values_topic',
                                                                  '/arm_controller/sigma_values')
         self.dmp_executor_path_topic = rospy.get_param('~path_topic', '/dmp_executor/path')
-        self.move_base_server = rospy.get_param('~move_base_server', 'move_base/move')
 
-        # ros_dmp service
-        self.motion_client = rospy.ServiceProxy('/generate_motion_service', GenerateMotion)
-
-        self.number_of_sampling_points = 30
-        self.goal_tolerance = 0.05
         self.vel_publisher_arm = rospy.Publisher(self.cartesian_velocity_topic,
                                                  TwistStamped, queue_size=1)
         self.vel_publisher_base = rospy.Publisher(self.base_vel_topic, Twist, queue_size=1)
-        self.feedforward_gain = 30
-        self.feedback_gain = 10
-        self.sigma_threshold_upper = 0.12
-        self.sigma_threshold_lower = 0.07
-        self.base_feedback_gain = 2.0
+
+        self.time_step = rospy.get_param('~time_step', 0.001)
+        self.goal_tolerance = rospy.get_param('~goal_tolerance_m', 0.05)
+        self.feedforward_gain = rospy.get_param('~feedforward_gain', 30)
+        self.feedback_gain = rospy.get_param('~feedback_gain', 10)
+        self.sigma_threshold_upper = rospy.get_param('~sigma_threshold_upper', 0.12)
+        self.sigma_threshold_lower = rospy.get_param('~sigma_threshold_upper', 0.07)
+        self.use_whole_body_control = rospy.get_param('~use_whole_body_control', False)
+        self.linear_vel_limit = rospy.get_param('~linear_vel_limit', 0.05)
 
         rospy.Subscriber(self.arm_controller_sigma_values_topic,
                          Float32MultiArray, self.sigma_values_cb)
         self.path_pub = rospy.Publisher(self.dmp_executor_path_topic, Path, queue_size=1)
-        self.goal = None
+
         self.dmp_name = dmp_name
         self.tau = tau
+        self.roll_dmp = RollDmp(self.dmp_name, self.time_step, self.base_link_frame_name)
 
         self.min_sigma_value = None
-        self.deploy_wbc = True
-
-        # Move base server
-        self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
-        self.move_base_client.wait_for_server()
+        self.goal = None
+        self.motion_completed = False
+        self.motion_cancelled = False
 
     def sigma_values_cb(self, msg):
         self.min_sigma_value = min(msg.data)
 
-    def move_base(self):
-        move_base_goal = MoveBaseGoal()
-        move_base_goal.target_pose.header.frame_id = self.map_frame_name
-        print(self.move_base_client.send_goal(move_base_goal))
-
     def generate_trajectory(self, goal, initial_pos):
-        req = GenerateMotionRequest()
-        req.goal_pose.pose.position.x = goal[0]
-        req.goal_pose.pose.position.y = goal[1]
-        req.goal_pose.pose.position.z = goal[2]
-        req.initial_pose.pose.position.x = initial_pos[0]
-        req.initial_pose.pose.position.y = initial_pos[1]
-        req.initial_pose.pose.position.z = initial_pos[2]
-        req.dmp_name = self.dmp_name
-        req.tau = self.tau
-        req.dt = 0.001
+        initial_pose = np.array([initial_pos[0], initial_pos[1], initial_pos[2], 0., 0., 0.])
+        goal_pose = np.array([goal[0], goal[1], goal[2], 0., 0., 0.])
 
-        print('[dmp] Sending trajectory request: ', req)
-        response = self.motion_client(req)
+        print('[move_arm/dmp] Querying trajectory')
+        print('[move_arm/dmp] Initial pose: ', initial_pose)
+        print('[move_arm/dmp] Goal pose: ', goal_pose)
+        cartesian_trajectory, _ = self.roll_dmp.get_trajectory_and_path(goal_pose,
+                                                                        initial_pose,
+                                                                        self.tau)
+
         pos_x = []
         pos_y = []
         pos_z = []
-        for state in response.cart_traj.cartesian_state:
+        for state in cartesian_trajectory.cartesian_state:
             pos_x.append(state.pose.position.x)
             pos_y.append(state.pose.position.y)
             pos_z.append(state.pose.position.z)
@@ -122,8 +110,8 @@ class DMPExecutor(object):
         while not rospy.is_shutdown():
             try:
                 (trans, _) = self.tf_listener.lookupTransform(self.odom_frame_name,
-                                                                self.palm_link_name,
-                                                                rospy.Time(0))
+                                                              self.palm_link_name,
+                                                              rospy.Time(0))
                 break
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
@@ -132,11 +120,15 @@ class DMPExecutor(object):
         followed_trajectory = []
 
         old_pos_index = 0
-        while distance > self.goal_tolerance and not rospy.is_shutdown():
+        self.motion_completed = False
+        self.motion_cancelled = False
+        while not self.motion_completed and \
+              not self.motion_cancelled and \
+              not rospy.is_shutdown():
             try:
-                (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame_name,
-                                                                self.palm_link_name,
-                                                                rospy.Time(0))
+                (trans, _) = self.tf_listener.lookupTransform(self.odom_frame_name,
+                                                              self.palm_link_name,
+                                                              rospy.Time(0))
             except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
                 continue
             current_pos = np.array([trans[0], trans[1], trans[2]])
@@ -144,7 +136,7 @@ class DMPExecutor(object):
             dist = []
             for i in range(path.shape[1]):
                 dist.append(np.linalg.norm((path[:, i] - current_pos)))
-            index =  np.argmin(dist)
+            index = np.argmin(dist)
 
             if old_pos_index != index:
                 followed_trajectory.append(current_pos)
@@ -169,11 +161,11 @@ class DMPExecutor(object):
             vel_z = self.feedforward_gain * (path_z[ind] - path_z[index]) + self.feedback_gain * (path_z[ind] - current_pos[2])
 
             # limiting speed
-            norm_ = np.linalg.norm(np.array([vel_x, vel_y, vel_z]))
-            if norm_ > 0.05:
-                vel_x = vel_x * 0.05 / norm_
-                vel_y = vel_y * 0.05 / norm_
-                vel_z = vel_z * 0.05 / norm_
+            vel_norm = np.linalg.norm(np.array([vel_x, vel_y, vel_z]))
+            if vel_norm > self.linear_vel_limit:
+                vel_x = vel_x * self.linear_vel_limit / vel_norm
+                vel_y = vel_y * self.linear_vel_limit / vel_norm
+                vel_z = vel_z * self.linear_vel_limit / vel_norm
 
             vel_x_arm = vel_x
             vel_y_arm = vel_y
@@ -184,7 +176,9 @@ class DMPExecutor(object):
             vel_z_base = 0.0
             ratio = 1.0
 
-            if self.min_sigma_value != None and self.min_sigma_value < self.sigma_threshold_upper and self.deploy_wbc:
+            if self.min_sigma_value != None and \
+               self.min_sigma_value < self.sigma_threshold_upper and \
+               self.use_whole_body_control:
                 ratio = (self.min_sigma_value - self.sigma_threshold_lower) / (self.sigma_threshold_upper - self.sigma_threshold_lower)
 
                 vel_x_arm = vel_x * (ratio)
@@ -217,6 +211,9 @@ class DMPExecutor(object):
             self.vel_publisher_arm.publish(message_arm)
             count += 1
 
+            if distance <= self.goal_tolerance:
+                self.motion_completed = True
+
         # stop arm and base motion after converging
         message_base = Twist()
         message_base.linear.x = 0.0
@@ -231,7 +228,7 @@ class DMPExecutor(object):
         message_arm.twist.linear.z = 0
 
         self.vel_publisher_arm.publish(message_arm)
-        if self.deploy_wbc:
+        if self.use_whole_body_control:
             self.vel_publisher_base.publish(message_base)
 
     def execute(self, goal):
@@ -242,8 +239,8 @@ class DMPExecutor(object):
                                               rospy.Time.now(),
                                               rospy.Duration(30))
             (trans, _) = self.tf_listener.lookupTransform(self.base_link_frame_name,
-                                                            self.palm_link_name,
-                                                            rospy.Time(0))
+                                                          self.palm_link_name,
+                                                          rospy.Time(0))
             initial_pos = np.array(trans)
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             initial_pos = np.zeros(3)
@@ -269,10 +266,10 @@ class DMPExecutor(object):
                 break
             except:
                 continue
-        start_pose.pose.orientation.x = 0.529
-        start_pose.pose.orientation.y = -0.475
-        start_pose.pose.orientation.z = 0.467
-        start_pose.pose.orientation.w = 0.525
+        start_pose.pose.orientation.x = 0.
+        start_pose.pose.orientation.y = 0.
+        start_pose.pose.orientation.z = 0.
+        start_pose.pose.orientation.w = 1.
 
         rospy.loginfo('Executing motion')
         self.trajectory_controller()

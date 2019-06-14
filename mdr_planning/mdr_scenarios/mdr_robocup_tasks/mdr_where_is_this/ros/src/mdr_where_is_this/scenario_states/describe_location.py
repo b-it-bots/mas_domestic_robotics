@@ -4,6 +4,26 @@ from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from topological_map_ros.srv import TopologicalPath, TopologicalPathRequest, \
                                     TopologicalPosition, TopologicalPositionRequest
 
+
+def format_obj_next_to_list(obj_list):
+    obj_list_str = ''
+    for obj in range(len(obj_list)-2):
+        obj_list_str += obj + ', '
+    obj_list_str += ' and the ' + obj_list[-1]
+    return obj_list_str
+
+def format_location(location):
+    location_map = {'Kitchen': 'kitchen',
+                    'Bar': 'bar',
+                    'Hallway': 'hallway',
+                    'Bedroom': 'bedroom',
+                    'LivingRoom': 'living_room'}
+    if location in location_map:
+        return location_map[location]
+    else:
+        return location
+
+
 class DescribeLocation(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'describe_location',
@@ -67,7 +87,7 @@ class DescribeLocation(ScenarioStateBase):
 
         top_path_request = TopologicalPathRequest()
         top_path_request.source = self.current_top_pos
-        top_path_request.goal = self.format_location(location)
+        top_path_request.goal = format_location(location)
         try:
             top_path_result = self.topological_path_client(top_path_request)
             directions = top_path_result.directions
@@ -83,7 +103,9 @@ class DescribeLocation(ScenarioStateBase):
                 self.say('You can reach the {0} as follows'.format(location))
                 rospy.sleep(0.5)
                 for path_description in directions:
+                    rospy.sleep(1)
                     self.say(path_description)
+            rospy.sleep(5)
         elif userdata.target_entity['type'] == 'object':
             self.say('The {0} is in the {1}'.format(obj_name, location))
             rospy.sleep(0.5)
@@ -93,31 +115,14 @@ class DescribeLocation(ScenarioStateBase):
             else:
                 self.say('You can reach there as follows')
                 for path_description in directions:
+                    rospy.sleep(1)
                     self.say(path_description)
-            rospy.sleep(0.5)
+            rospy.sleep(5)
 
             objects_next_to = self.ontology_interface.get_objects_next_to(obj_name)
             if objects_next_to:
                 self.say('The {0} is next to {1}'.format(obj_name,
-                                                         self.format_obj_next_to_list(objects_next_to)))
+                                                         format_obj_next_to_list(objects_next_to)))
                 rospy.sleep(1.5)
         rospy.sleep(10.0)
         return 'succeeded'
-
-    def format_obj_next_to_list(self, obj_list):
-        obj_list_str = ''
-        for obj in range(len(obj_list)-2):
-            obj_list_str += obj + ', '
-        obj_list_str += ' and the ' + obj_list[-1]
-        return obj_list_str
-
-    def format_location(self, location):
-        location_map = {'Kitchen': 'kitchen',
-                        'Bar': 'bar',
-                        'Hallway': 'hallway',
-                        'Bedroom': 'bedroom',
-                        'LivingRoom': 'living_room'}
-        if location in location_map:
-            return location_map[location]
-        else:
-            return location

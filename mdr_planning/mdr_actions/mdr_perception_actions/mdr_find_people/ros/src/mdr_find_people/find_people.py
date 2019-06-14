@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 
 import os
-import json
-import cv2
 import numpy as np
-import tensorflow as tf
 
 from rospkg import RosPack
 
-from std_msgs.msg import String, Header
+from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
 from mas_perception_libs import ImageDetectionKey, ImageDetectorBase
-from mas_perception_libs.utils import cloud_msg_to_image_msg, crop_cloud_to_xyz
+from mas_perception_libs.utils import cloud_msg_to_image_msg, cloud_msg_to_cv_image, \
+                                      crop_cloud_to_xyz, draw_labeled_boxes
 from ssd_keras_ros import SSDKerasObjectDetector
 
 
@@ -53,7 +51,7 @@ class FindPeople(object):
         people_preds = []
         people_bbs = []
 
-        for i in range(len(predictions)):
+        for i, _ in enumerate(predictions):
             pred = predictions[i]
             bb2d = bounding_boxes[i]
 
@@ -68,8 +66,7 @@ class FindPeople(object):
     def get_people_poses(cloud_msg, predictions, bounding_boxes):
         poses = []
 
-        for i in range(len(predictions)):
-            pred = predictions[i]
+        for i, _ in enumerate(predictions):
             bb2d = bounding_boxes[i]
 
             cropped_cloud = crop_cloud_to_xyz(cloud_msg, bb2d)
