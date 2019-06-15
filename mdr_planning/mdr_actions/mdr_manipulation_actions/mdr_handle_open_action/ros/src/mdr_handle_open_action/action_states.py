@@ -110,8 +110,9 @@ class HandleOpenSM(ActionSMBase):
         # Moving robot base back (instead of moving arm back):
         rospy.loginfo('[handle_open] Moving the base back')
         ## TODO: define backward_movement_distance, a distance value (in m?)
-        self.__move_base_along_x(-0.5)
+        self.__move_base_along_x(-0.3)
 
+        rospy.sleep(5)
         rospy.loginfo('[handle_open] Opening the gripper...')
         self.gripper.open()
 
