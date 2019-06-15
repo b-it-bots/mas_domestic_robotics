@@ -13,33 +13,41 @@ if __name__ == '__main__':
     client = actionlib.SimpleActionClient('/handle_open_server', HandleOpenAction)
     client.wait_for_server()
 
+    random = True
+
     goal = HandleOpenGoal()
 
     goal.handle_pose.header.frame_id = 'base_link'
     goal.handle_pose.header.stamp = rospy.Time.now()
 
+    if random:
     # Sampling Grasp Positions From a Uniform Distribution:
     # ------------------------------------------------------------------
-    # z_lim = [0.62, 0.72]     # mid_point = 0.67 , range = +- 0.05
-    # x_lim = [0.65, 0.75]     # mid_point = 0.70 , range = +- 0.05
-    # y_lim = [-0.022, 0.178]  # mid_point = 0.078 , range = +- 0.1
+        z_lim = [0.62, 0.72]     # mid_point = 0.67 , range = +- 0.05
+        x_lim = [0.68, 0.71]     # mid_point = 0.70 , range = +- 0.05
+        y_lim = [0.00, 0.20]     # mid_point = 0.078 , range = +- 0.1
 
-    # sample_grasp_pose = [np.random.uniform(low=x_lim[0], high=x_lim[1]),
-    #                      np.random.uniform(low=y_lim[0], high=y_lim[1]),
-    #                      np.random.uniform(low=z_lim[0], high=z_lim[1])]
+        sample_grasp_pose = [np.random.uniform(low=x_lim[0], high=x_lim[1]),
+                         np.random.uniform(low=y_lim[0], high=y_lim[1]),
+                         np.random.uniform(low=z_lim[0], high=z_lim[1])]
 
-    # goal.handle_pose.pose.position.x = sample_grasp_pose[0]
-    # goal.handle_pose.pose.position.y = sample_grasp_pose[1]
-    # goal.handle_pose.pose.position.z = sample_grasp_pose[2]
-
+        goal.handle_pose.pose.position.x = sample_grasp_pose[0]
+        goal.handle_pose.pose.position.y = sample_grasp_pose[1]
+        goal.handle_pose.pose.position.z = sample_grasp_pose[2]
+    
+        rospy.loginfo('Sampled Grasp Position: ')
+        print(sample_grasp_pose)
+        print()
+    
     # Saving the sampled position in a file:
-    # with open("../../sample_grasp_poses.txt", "a") as file:
-    #     file.write(str(sample_grasp_pose[0])+' '+str(sample_grasp_pose[1])+' '+str(sample_grasp_pose[2])+'\n')
+        with open("../../sample_grasp_poses.txt", "a") as file:
+            file.write(str(sample_grasp_pose[0])+' '+str(sample_grasp_pose[1])+' '+str(sample_grasp_pose[2])+'\n')
     # ------------------------------------------------------------------
 
-    goal.handle_pose.pose.position.x = 0.750
-    goal.handle_pose.pose.position.y = 0.078
-    goal.handle_pose.pose.position.z = 0.670
+    else:
+        goal.handle_pose.pose.position.x = 0.710
+        goal.handle_pose.pose.position.y = 0.100
+        goal.handle_pose.pose.position.z = 0.670
 
     goal.handle_pose.pose.orientation.x = 0.000
     goal.handle_pose.pose.orientation.y = 0.000
