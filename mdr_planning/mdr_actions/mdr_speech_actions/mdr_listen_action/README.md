@@ -21,7 +21,7 @@ The `listen` part is supposed to be the action, which enables the listening mode
 ## How to run the code?
 
 ```bash
-$ rosrun mdr_listen_action listen
+$ roslaunch mdr_listen_action listen.launch
 ```
 
 ## How to run the demo?

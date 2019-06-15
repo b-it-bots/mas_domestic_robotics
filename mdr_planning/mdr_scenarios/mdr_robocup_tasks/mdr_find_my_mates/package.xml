@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mdr_find_my_mates</name>
+  <version>1.0.0</version>
+
+  <description>State machine and launch files for a RoboCup@Home "finy my mates" scenario</description>
+
+  <license>GPLv3</license>
+
+  <author email="patrick.nagel@h-brs.de">Patrick Nagel</author>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+
+  <build_depend>roslint</build_depend>
+  <build_depend>mdr_find_people</build_depend>
+
+  <build_depend>mas_execution_manager</build_depend>
+
+  <build_depend>mdr_move_base_action</build_depend>
+  <build_depend>mdr_navigation_behaviours</build_depend>
+  <build_depend>mdr_perception_behaviours</build_depend>
+
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>mas_execution_manager</exec_depend>
+
+  <exec_depend>mdr_find_people</exec_depend>
+
+  <exec_depend>mdr_move_base_action</exec_depend>
+  <exec_depend>mdr_navigation_behaviours</exec_depend>
+  <exec_depend>mdr_perception_behaviours</exec_depend>
+  <exec_depend>mdr_manipulation_behaviours</exec_depend>
+</package>

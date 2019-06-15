@@ -1,7 +1,6 @@
 import rospy
 import moveit_msgs.msg
 import std_msgs.msg
-import geometry_msgs.msg
 import grasp_planner
 
 class GraspPlannerRosInterface:
@@ -20,23 +19,23 @@ class GraspPlannerRosInterface:
         self.state = self._STATE_CREATED
         self.next_grasp = 0
         self.grasps = None
-        
+
         rospy.loginfo('Grasp planner running')
 
 
     def event_in(self, msg):
         '''
         Handle an incoming event.
-        
+
         :param msg: The event type. Valid events are:
         e_reset: Reset the planner and re-plan.
         e_trigger: Trigger the planner to send out the next grasp.
         :type msg: std_msgs.msg.String
         '''
-        if (msg.data == 'e_reset'):
+        if msg.data == 'e_reset':
             self.state = self._STATE_RESET
-        elif (msg.data == 'e_trigger'):
-            if (self.state != self._STATE_CREATED):
+        elif msg.data == 'e_trigger':
+            if self.state != self._STATE_CREATED:
                 self.state = self._STATE_TRIGGERED
             else:
                 rospy.logerr('Grasp planner is not initialized yet')
@@ -60,9 +59,9 @@ class GraspPlannerRosInterface:
         '''
         self.grasp_publisher.publish(self.grasps[self.next_grasp])
         self.next_grasp += 1
-        
+
         # if all grasps have been processed inform the external components
-        if (self.next_grasp == len(self.grasps)):
+        if self.next_grasp == len(self.grasps):
             self.next_grasp = 0
             self.event_publisher.publish('e_done')
 
@@ -72,14 +71,14 @@ class GraspPlannerRosInterface:
         Run one step of the state machine and execute the functionality
         associated with each state.
         '''
-        if (self.state == self._STATE_CREATED):
+        if self.state == self._STATE_CREATED:
             self.state = self._STATE_CREATED
-        elif (self.state == self._STATE_IDLE):
+        elif self.state == self._STATE_IDLE:
             self.state = self._STATE_IDLE
-        elif (self.state == self._STATE_RESET):
+        elif self.state == self._STATE_RESET:
             self.reset()
             self.state = self._STATE_IDLE
-        elif (self.state == self._STATE_TRIGGERED):
+        elif self.state == self._STATE_TRIGGERED:
             self.handle_request()
             self.state = self._STATE_IDLE
 
@@ -87,7 +86,6 @@ class GraspPlannerRosInterface:
 def main():
     rospy.init_node('grasp_planner')
     planner = GraspPlannerRosInterface()
-    
-    while (not rospy.is_shutdown()):
+    while not rospy.is_shutdown():
         planner.step()
         rospy.sleep(0.2)

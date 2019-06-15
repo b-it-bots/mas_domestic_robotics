@@ -51,7 +51,8 @@ std_msgs
 add_message_files(
   FILES
   FaceBoundingBox.msg
-#   Message2.msg
+  PersonInfo.msg
+  ObjectInfo.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -106,7 +107,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES mdr_perception_msgs
-CATKIN_DEPENDS 
+CATKIN_DEPENDS
 message_runtime
 std_msgs
 #  DEPENDS system_lib

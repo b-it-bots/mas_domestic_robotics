@@ -22,7 +22,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [TABLE]
+                value: [table]
             - argument:
                 name: number_of_retries
                 value: 3

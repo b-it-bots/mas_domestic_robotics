@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- NLU : Natural Language understanding -->
+    <arg name="ns" default="hri"/>
+
+    <!-- the string containing the sentence from which the intention and args will get extracted -->
+    <arg name="intention_input" default="/understood_intention" />
+
+    <arg name="recognized_sentence" default="/speech_recognizer" />
+    
+    <!-- mbot natural language understanding, inputs text, outputs intention and arguments -->
+    <node ns="$(arg ns)" pkg="mdr_mbot_logger" type="mbot_logger" name="mdr_mbot_logger" respawn="true" output="screen">
+        <remap from="~input_interpretation" to="$(arg intention_input)" />
+        <remap from="~input_sentence" to="$(arg recognized_sentence)" />
+        <param name="log_file" type="str" value='$(find mdr_mbot_logger)/ros/logs/nlu_logger.txt' />
+    </node>
+
+</launch>
+
+

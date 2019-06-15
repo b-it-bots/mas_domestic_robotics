@@ -1,0 +1,232 @@
+# Description: Defines a minimal state machine for a RoboCup@Home store groceries scenario for testing in a lab environment
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_store_groceries
+states: [GO_TO_CUPBOARD, PREPARE_TO_SCAN_CUPBOARD, PERCEIVE_SHELF, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_CUPBOARD, PLACE_OBJECT, CHECK_EMPTY_TABLE, GO_BACK_TO_TABLE, EXIT]
+outcomes: [DONE, TIMEOUT, FAILED]
+state_descriptions:
+    - state:
+        name: GO_TO_CUPBOARD
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PREPARE_TO_SCAN_CUPBOARD
+            - transition:
+                name: failed
+                state: GO_TO_CUPBOARD
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [shelf]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PREPARE_TO_SCAN_CUPBOARD
+        state_module_name: mdr_store_groceries.scenario_states
+        state_class_name: ScanCupboard
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_SHELF
+            - transition:
+                name: failed
+                state: PREPARE_TO_SCAN_CUPBOARD
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PERCEIVE_SHELF
+        state_module_name: mdr_perception_behaviours.perceive_planes
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_TABLE
+            - transition:
+                name: failed
+                state: PERCEIVE_SHELF
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: plane_prefix
+                value: shelf
+    - state:
+        name: GO_TO_TABLE
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed
+                state: GO_TO_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [shelf_cupboard]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PERCEIVE_TABLE
+        state_module_name: mdr_perception_behaviours.perceive_planes
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICK_OBJECT
+            - transition:
+                name: failed
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: plane_prefix
+                value: table
+    - state:
+        name: PICK_OBJECT
+        state_module_name: mdr_manipulation_behaviours.pick_closest_from_surface
+        state_class_name: PickClosestFromSurface
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_BACK_TO_CUPBOARD
+            - transition:
+                name: failed
+                state: PICK_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+            - transition:
+                name: find_objects_before_picking
+                state: FIND_OBJECTS_BEFORE_PICKING
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: picking_surface_prefix
+                value: table
+    - state:
+        name: FIND_OBJECTS_BEFORE_PICKING
+        state_module_name: mdr_perception_behaviours.perceive_planes
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICK_OBJECT
+            - transition:
+                name: failed
+                state: FIND_OBJECTS_BEFORE_PICKING
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: plane_prefix
+                value: table
+    - state:
+        name: GO_BACK_TO_CUPBOARD
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PLACE_OBJECT
+            - transition:
+                name: failed
+                state: GO_BACK_TO_CUPBOARD
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [shelf]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PLACE_OBJECT
+        state_module_name: mdr_manipulation_behaviours.place_based_on_category
+        state_class_name: PlaceBasedOnCategory
+        transitions:
+            - transition:
+                name: succeeded
+                state: CHECK_EMPTY_TABLE
+            - transition:
+                name: failed
+                state: PLACE_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: placing_surface_prefix
+                value: shelf
+    - state:
+        name: CHECK_EMPTY_TABLE
+        state_module_name: mdr_knowledge_behaviours.check_empty_surface
+        state_class_name: CheckEmptySurface
+        transitions:
+            - transition:
+                name: empty
+                state: DONE
+            - transition:
+                name: not_empty
+                state: GO_BACK_TO_TABLE
+        arguments:
+            - argument:
+                name: surface_prefix
+                value: table
+    - state:
+        name: GO_BACK_TO_TABLE
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICK_OBJECT
+            - transition:
+                name: failed
+                state: GO_BACK_TO_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [shelf_cupboard]
+            - argument:
+                name: number_of_retries
+                value: 3

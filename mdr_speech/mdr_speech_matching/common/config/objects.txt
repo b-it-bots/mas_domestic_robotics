@@ -1,0 +1,64 @@
+trashbag:
+apple juice:
+big coke:
+big lemon juice:
+big water:
+iso drink:
+milk:
+orange juice:
+red spritzer:
+sparkling water:
+lemon:
+orange:
+shower gel:
+soap:
+toothpaste:
+bouillon:
+cereal:
+corn:
+noodles:
+pepper:
+salt:
+sauerkraut:
+seasoning mix:
+tomatoes:
+basket:
+tray:
+bowl:
+cup:
+fork:
+knife:
+plate:
+spoon:
+cloth:
+dishwasher tab:
+cereal bar chocolate:
+cereal bar chocolate banana:
+cracker:
+fruit bar apple:
+fruit bar forest fruit:
+get it:
+nut fruit mix:
+peanut bits:
+bed:
+desk:
+side table:
+kitchen table:
+kitchen cabinet:
+dishwasher:
+white drawer:
+trash can:
+tv table:
+bookcase:
+couch:
+left arm chair:
+right arm chair:
+coffee table:
+sideboard:
+high table:
+trash bin:
+coathanger:
+cupboard:
+bar table:
+sofa:
+bookshelf:

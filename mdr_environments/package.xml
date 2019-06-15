@@ -12,6 +12,8 @@
 
 
   <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>mas_navigation_tools</build_depend>
+
   <test_depend>roslaunch</test_depend>
 
 </package>

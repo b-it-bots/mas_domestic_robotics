@@ -10,12 +10,14 @@ from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from mdr_place_action.msg import PlaceGoal, PlaceFeedback, PlaceResult
+from mdr_place_action.msg import PlaceFeedback, PlaceResult
 
 class PlaceSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mdr_gripper_controller',
                  preplace_config_name='pregrasp',
+                 preplace_low_config_name='pregrasp_low',
+                 preplace_height_threshold=0.5,
                  safe_arm_joint_config='folded',
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
@@ -33,6 +35,8 @@ class PlaceSM(ActionSMBase):
         self.gripper = GripperControllerClass()
 
         self.preplace_config_name = preplace_config_name
+        self.preplace_low_config_name = preplace_low_config_name
+        self.preplace_height_threshold = preplace_height_threshold
         self.safe_arm_joint_config = safe_arm_joint_config
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
@@ -81,7 +85,10 @@ class PlaceSM(ActionSMBase):
             pose_base_link.pose.position.y = self.base_elbow_offset
 
         rospy.loginfo('[place] Moving to a preplace configuration...')
-        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.preplace_config_name)
+        if pose_base_link.pose.position.z > self.preplace_height_threshold:
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.preplace_config_name)
+        else:
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.preplace_low_config_name)
 
         # we set up the arm group for moving
         rospy.loginfo('[place] Placing...')

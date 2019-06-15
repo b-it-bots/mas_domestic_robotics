@@ -42,6 +42,10 @@
     local-name: ftsm
     uri: https://github.com/b-it-bots/ftsm.git
     version: master
+- git:
+    local-name: topological_map
+    uri: https://github.com/b-it-bots/topological_map.git
+    version: master
 
 - git:
     local-name: zbar_ros
@@ -77,3 +81,8 @@
     local-name: kdl_parser
     uri: https://github.com/ros/kdl_parser.git
     version: kinetic-devel
+
+- git:
+    local-name: ros_dmp
+    uri: https://github.com/b-it-bots/ros_dmp.git
+    version: master

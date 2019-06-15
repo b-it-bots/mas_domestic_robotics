@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>mdr_speech_matching</name>
-  <version>0.0.1</version>
+  <version>0.0.2</version>
   <description>The mdr_speech_matching package</description>
 
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
@@ -11,20 +11,11 @@
 
   <license>GPLv3</license>
 
-  <!-- Url tags are optional, but multiple are allowed, one per tag -->
-  <!-- Optional attribute type can be: website, bugtracker, or repository -->
-  <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/mdr_speech_to_text_matching</url> -->
-
-
-  <!-- Author tags are optional, multiple are allowed, one per tag -->
-  <!-- Authors do not have to be maintainers, but could be -->
-  <!-- Example: -->
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>rospy</build_depend>
   <build_depend>message_generation</build_depend>
   <exec_depend>message_runtime</exec_depend>
+  <!-- <exec_depend>python-fuzzywuzzy</exec_depend> -->
 
 </package>

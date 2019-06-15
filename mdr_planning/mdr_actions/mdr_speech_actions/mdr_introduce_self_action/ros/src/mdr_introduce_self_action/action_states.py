@@ -2,8 +2,6 @@
 
 import rospy
 import smach
-import smach_ros
-import actionlib
 import std_msgs
 
 from mdr_introduce_self_action.msg import (IntroduceSelfFeedback,

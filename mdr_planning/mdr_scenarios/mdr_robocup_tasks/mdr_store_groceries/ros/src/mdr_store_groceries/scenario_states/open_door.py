@@ -1,14 +1,12 @@
 import rospy
 
-from std_msgs.msg import String
-
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class OpenDoor(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'open_door',
                                    save_sm_state=save_sm_state,
-                                   outcomes=['succeeded', 'waiting', 'failed'],
+                                   outcomes=['succeeded', 'waiting'],
                                    output_keys=['command'])
         self.timeout = rospy.Duration.from_sec(kwargs.get('timeout', 10.))
 

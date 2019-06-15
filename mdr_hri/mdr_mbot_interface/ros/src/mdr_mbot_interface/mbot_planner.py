@@ -1,12 +1,9 @@
 #!/usr/bin/env python
 
 import rospy
-import copy
-import rospkg
-from std_msgs.msg import String
 import diagnostic_msgs.msg as diag_msgs
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
-from mbot_nlu.msg import Slot, ActionSlot, ActionSlotArray
+from mbot_nlu.msg import Slot, ActionSlotArray
 
 class MbotPlanner(object):
     '''
