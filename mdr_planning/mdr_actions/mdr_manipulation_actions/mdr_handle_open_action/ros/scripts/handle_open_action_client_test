@@ -21,39 +21,50 @@ if __name__ == '__main__':
     goal.handle_pose.header.stamp = rospy.Time.now()
 
     if random:
-    # Sampling Grasp Positions From a Uniform Distribution:
-    # ------------------------------------------------------------------
+        # Sampling Grasp Positions From a Uniform Distribution:
+        # ------------------------------------------------------------------
         z_lim = [0.62, 0.72]     # mid_point = 0.67 , range = +- 0.05
         x_lim = [0.68, 0.71]     # mid_point = 0.70 , range = +- 0.05
         y_lim = [0.00, 0.20]     # mid_point = 0.078 , range = +- 0.1
 
         sample_grasp_pose = [np.random.uniform(low=x_lim[0], high=x_lim[1]),
-                         np.random.uniform(low=y_lim[0], high=y_lim[1]),
-                         np.random.uniform(low=z_lim[0], high=z_lim[1])]
-
-        goal.handle_pose.pose.position.x = sample_grasp_pose[0]
-        goal.handle_pose.pose.position.y = sample_grasp_pose[1]
-        goal.handle_pose.pose.position.z = sample_grasp_pose[2]
+                             np.random.uniform(low=y_lim[0], high=y_lim[1]),
+                             np.random.uniform(low=z_lim[0], high=z_lim[1])]
     
-        rospy.loginfo('Sampled Grasp Position: ')
-        print(sample_grasp_pose)
-        print()
-    
-    # Saving the sampled position in a file:
+        # Saving the sampled position in a file:
         with open("../../new_sample_grasp_poses.txt", "a") as file:
             file.write(str(sample_grasp_pose[0])+' '+str(sample_grasp_pose[1])+' '+str(sample_grasp_pose[2])+'\n')
-    # ------------------------------------------------------------------
-
-    posterior_mu_estimate [0.70064241 0.10315619 0.6579796 ]
-    posterior_sigma_estimate [4.48271554e-05 2.67117757e-03 4.27263449e-04]
+        # ------------------------------------------------------------------
 
     else:
-        goal.handle_pose.pose.position.x = np.random.multivariate_normal(np.array([mu_estimate[0]]), 
-                                                                         np.array([sigma_estimate[0]])[np.newaxis])[0]
-        goal.handle_pose.pose.position.y = np.random.multivariate_normal(np.array([mu_estimate[1]]), 
-                                                                         np.array([sigma_estimate[1]])[np.newaxis])[0]
-        goal.handle_pose.pose.position.z = np.random.multivariate_normal(np.array([mu_estimate[2]]), 
-                                                                         np.array([sigma_estimate[2]])[np.newaxis])[0]
+        # Sampling Grasp Positions From Learned Gaussian Distribution:
+        # ------------------------------------------------------------------
+
+        ## TODO: Perhaps sample and store positions, and use to continuously update parameters?
+        # At the moment, use the values learned from last experiment (13/09/19)
+        posterior_mu_estimate = [0.70064241, 0.10315619, 0.6579796]
+        posterior_sigma_estimate = [4.48271554e-05, 2.67117757e-03, 4.27263449e-04]
+
+        sample_grasp_pose = [np.random.multivariate_normal(np.array([posterior_mu_estimate[0]]),
+                                                           np.array([posterior_sigma_estimate[0]])[np.newaxis])[0],
+                             np.random.multivariate_normal(np.array([posterior_mu_estimate[1]]),
+                                                             np.array([posterior_sigma_estimate[1]])[np.newaxis])[0],
+                             np.random.multivariate_normal(np.array([posterior_mu_estimate[2]]),
+                                                             np.array([posterior_sigma_estimate[2]])[np.newaxis])[0]]
+
+        
+        # Saving the positions sampled from the new distribution in a file:
+        with open("../../new_sample_grasp_poses.txt", "a") as file:
+            file.write(str(sample_grasp_pose[0])+' '+str(sample_grasp_pose[1])+' '+str(sample_grasp_pose[2])+'\n')
+        # ------------------------------------------------------------------
+
+    rospy.loginfo('Sampled Grasp Position: ')
+    print(sample_grasp_pose)
+    print()
+
+    goal.handle_pose.pose.position.x = sample_grasp_pose[0]
+    goal.handle_pose.pose.position.y = sample_grasp_pose[1]
+    goal.handle_pose.pose.position.z = sample_grasp_pose[2]
 
     goal.handle_pose.pose.orientation.x = 0.000
     goal.handle_pose.pose.orientation.y = 0.000
