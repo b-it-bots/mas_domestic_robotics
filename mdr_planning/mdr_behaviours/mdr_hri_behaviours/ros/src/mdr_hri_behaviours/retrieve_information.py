@@ -1,6 +1,5 @@
 import rospy
 import actionlib
-import rospkg
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from rasa_nlu.model import Interpreter
