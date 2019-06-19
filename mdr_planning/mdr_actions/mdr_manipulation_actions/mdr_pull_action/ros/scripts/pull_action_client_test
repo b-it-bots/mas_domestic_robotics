@@ -13,6 +13,18 @@ if __name__ == '__main__':
     client.wait_for_server()
 
     goal = PullGoal()
+    goal.pose.header.frame_id = 'base_link'
+    goal.pose.header.stamp = rospy.Time.now()
+
+    goal.pose.pose.position.x = 0.6
+    goal.pose.pose.position.y = 0.078
+    goal.pose.pose.position.z = 0.8
+
+    goal.pose.pose.orientation.x = 0.758
+    goal.pose.pose.orientation.y = 0.000
+    goal.pose.pose.orientation.z = 0.652
+    goal.pose.pose.orientation.w = 0.000
+
     timeout = 15.0
     rospy.loginfo('Sending action lib goal to pull_server')
     client.send_goal(goal)
