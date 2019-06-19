@@ -36,16 +36,16 @@ class PullSM(ActionSMBase):
         super(PullSM, self).__init__('Pull', [], max_recovery_attempts)
         self.timeout = timeout
 
-        self.initial_pose = PickupGoal()
+        self.initial_pose = PullGoal()
         self.initial_pose.pose.header.frame_id = 'base_link'
         self.initial_pose.pose.header.stamp = rospy.Time.now()
-        self.initial_pose.pose.pose.position.x = 0.4
+        self.initial_pose.pose.pose.position.x = 0.62
         self.initial_pose.pose.pose.position.y = 0.078
-        self.initial_pose.pose.pose.position.z = 0.8
-        self.initial_pose.pose.pose.orientation.x = 0.000
+        self.initial_pose.pose.pose.position.z = 0.80
+        self.initial_pose.pose.pose.orientation.x = 0.758
         self.initial_pose.pose.pose.orientation.y = 0.000
-        self.initial_pose.pose.pose.orientation.z = 0.000
-        self.initial_pose.pose.pose.orientation.w = 1.000
+        self.initial_pose.pose.pose.orientation.z = 0.652
+        self.initial_pose.pose.pose.orientation.w = 0.000
 
         gripper_controller_module_name = '{0}.gripper_controller'.format(gripper_controller_pkg_name)
         GripperControllerClass = getattr(import_module(gripper_controller_module_name),
@@ -101,9 +101,9 @@ class PullSM(ActionSMBase):
         pose = self.goal.pose
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
-
         if self.base_elbow_offset > 0:
             self.__align_base_with_pose(pose_base_link)
+
 
             # the base is now correctly aligned with the pose, so we set the
             # y position of the goal pose to the elbow offset
@@ -119,34 +119,38 @@ class PullSM(ActionSMBase):
             self.gripper.open()
             print 'gripper opened'
 
-            #rospy.loginfo('[pickup] Preparing for grasp verification')
-            #self.gripper.init_grasp_verification()
-
             rospy.loginfo('[pickup] Preparing sideways graps')
-            # pose_base_link = self.__prepare_sideways_grasp(pose_base_link)
+#            pose_base_link = self.__prepare_sideways_grasp(pose_base_link)
             self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')
+            print 'at neutral'
 
             self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, self.initial_pose.pose)
+            print 'at pregrasp'
             rospy.loginfo('[pickup] Grasping...')
-            arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+            self.__move_base_along_x(pose_base_link.pose.position.x)
+#            arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+            print 'moved to pose'
             print pose_base_link
+            '''
             if not arm_motion_success:
                 rospy.logerr('[pickup] Arm motion unsuccessful')
                 self.result = self.set_result(False)
                 return FTSMTransitions.DONE
-
+            '''
             rospy.loginfo('[pickup] Arm motion successful')
 
             rospy.loginfo('[pickup] Closing the gripper')
             self.gripper.close()
+            self.__move_base_along_x(-0.1)
 
+            self.gripper.open()
+            self.__move_base_along_x(-0.1)
             rospy.loginfo('[pickup] Moving the arm back')
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
+#            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
 
             rospy.loginfo('[pickup] Moving the base back to the original position')
-            if abs(x_align_distance) > 0:
-                self.__move_base_along_x(-x_align_distance)
 
+#            self.__move_base_along_x(-0.1)
 
             self.result = self.set_result(True)
             return FTSMTransitions.DONE
@@ -238,6 +242,7 @@ class PullSM(ActionSMBase):
         self.move_forward_client.get_result()
 
     def set_result(self, success):
-        result = PickupResult()
+        result = PullResult()
         result.success = success
         return result
+

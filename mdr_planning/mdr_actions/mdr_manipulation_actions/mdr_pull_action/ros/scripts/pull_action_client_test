@@ -16,8 +16,8 @@ if __name__ == '__main__':
     goal.pose.header.frame_id = 'base_link'
     goal.pose.header.stamp = rospy.Time.now()
 
-    goal.pose.pose.position.x = 0.6
-    goal.pose.pose.position.y = 0.078
+    goal.pose.pose.position.x = 0.3
+    goal.pose.pose.position.y = 0.178
     goal.pose.pose.position.z = 0.8
 
     goal.pose.pose.orientation.x = 0.758

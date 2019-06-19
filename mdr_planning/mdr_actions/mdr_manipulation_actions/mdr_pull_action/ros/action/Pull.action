@@ -1,5 +1,5 @@
 # goal
-geometry_msgs/PoseStamped init_end_effector_pose
+geometry_msgs/PoseStamped pose
 geometry_msgs/Vector3 direction
 float64 duration
 ---
