@@ -17,18 +17,11 @@ from mdr_pull_action.msg import PullGoal, PullFeedback, PullResult
 class PullSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mas_hsr_gripper_controller',
-                 pregrasp_config_name='pregrasp',
-                 pregrasp_top_config_name='pregrasp_top',
-                 pregrasp_low_config_name='pregrasp_low',
-                 pregrasp_height_threshold=0.5,
-                 intermediate_grasp_offset=-1,
-                 safe_arm_joint_config='folded',
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  move_forward_server='move_forward_server',
                  base_elbow_offset=-1.,
                  arm_base_offset=-1.,
-                 grasping_orientation=list(),
                  grasping_dmp='',
                  dmp_tau=1.,
                  number_of_retries=0,
@@ -53,9 +46,6 @@ class PullSM(ActionSMBase):
         self.gripper = GripperControllerClass()
 
         self.pregrasp_config_name = 'neutral'
-        self.pregrasp_top_config_name = pregrasp_top_config_name
-        self.pregrasp_low_config_name = pregrasp_low_config_name
-        self.pregrasp_height_threshold = pregrasp_height_threshold
         self.intermediate_grasp_offset = intermediate_grasp_offset
         self.safe_arm_joint_config = 'neutral'
         self.move_arm_server = move_arm_server
@@ -117,20 +107,13 @@ class PullSM(ActionSMBase):
 
             rospy.loginfo('[pickup] Opening the gripper...')
             self.gripper.open()
-            print 'gripper opened'
 
-            rospy.loginfo('[pickup] Preparing sideways graps')
-#            pose_base_link = self.__prepare_sideways_grasp(pose_base_link)
             self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')
-            print 'at neutral'
 
             self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, self.initial_pose.pose)
-            print 'at pregrasp'
             rospy.loginfo('[pickup] Grasping...')
             self.__move_base_along_x(pose_base_link.pose.position.x)
 #            arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-            print 'moved to pose'
-            print pose_base_link
             '''
             if not arm_motion_success:
                 rospy.logerr('[pickup] Arm motion unsuccessful')
@@ -145,12 +128,12 @@ class PullSM(ActionSMBase):
 
             self.gripper.open()
             self.__move_base_along_x(-0.1)
-            rospy.loginfo('[pickup] Moving the arm back')
-#            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
 
             rospy.loginfo('[pickup] Moving the base back to the original position')
+            self.__move_base_along_x(-0.1)
 
-#            self.__move_base_along_x(-0.1)
+            rospy.loginfo('[pickup] Moving the arm back')
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')
 
             self.result = self.set_result(True)
             return FTSMTransitions.DONE
@@ -203,33 +186,6 @@ class PullSM(ActionSMBase):
         self.move_arm_client.wait_for_result()
         result = self.move_arm_client.get_result()
         return result
-
-    def __prepare_sideways_grasp(self, pose_base_link):
-        rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
-        if pose_base_link.pose.position.z > self.pregrasp_height_threshold:
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
-        else:
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_low_config_name)
-
-        if self.intermediate_grasp_offset > 0:
-            rospy.loginfo('[PICKUP] Moving to intermediate grasping pose...')
-            pose_base_link.pose.position.x -= self.intermediate_grasp_offset
-            self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-
-        if self.intermediate_grasp_offset > 0:
-            pose_base_link.pose.position.x += self.intermediate_grasp_offset
-
-        return pose_base_link
-
-    def __prepare_top_grasp(self, pose_base_link):
-        rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
-        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_top_config_name)
-        x_align_distance = 0
-        if self.arm_base_offset > 0:
-            x_align_distance = pose_base_link.pose.position.x - self.arm_base_offset
-            self.__move_base_along_x(x_align_distance)
-            pose_base_link.pose.position.x = self.arm_base_offset
-        return pose_base_link, x_align_distance
 
     def __move_base_along_x(self, distance_to_move):
         movement_speed = np.sign(distance_to_move) * 0.1 # m/s
