@@ -17,6 +17,21 @@ from mdr_move_arm_action.dmp import DMPExecutor
 
 from importlib import import_module
 
+#--------------------------
+# rospy for the subscriber
+import rospy
+# ROS Image message
+from sensor_msgs.msg import Image
+# ROS Image message -> OpenCV2 image converter
+from cv_bridge import CvBridge, CvBridgeError
+# OpenCV2 for saving an image
+import cv2
+import numpy as np
+
+
+
+#-----------------------------------------------
+
 class HandleOpenSM(ActionSMBase):
     ## TODO: determine any other needed parameters
     def __init__(self, timeout=120.0,
@@ -48,6 +63,14 @@ class HandleOpenSM(ActionSMBase):
         self.dmp_tau = dmp_tau
 
         self.tf_listener = tf.TransformListener()
+
+	self.Image_number = 0
+	self.Last_image = None
+	# Instantiate CvBridge
+	self.bridge = CvBridge()
+
+	self.failure_data = []
+
 
     def init(self):
         try:
@@ -107,11 +130,27 @@ class HandleOpenSM(ActionSMBase):
         rospy.loginfo('[handle_open] Closing the gripper')
         self.gripper.close()
 
+        image_topic = "/hsrb/hand_camera/image_raw"
+        # Set up your subscriber and define its callback
+	self.sub = rospy.Subscriber(image_topic, Image, self.image_callback)
+ 
+
         # Moving robot base back (instead of moving arm back):
         rospy.loginfo('[handle_open] Moving the base back')
         ## TODO: define backward_movement_distance, a distance value (in m?)
         self.__move_base_along_x(-0.3)
 
+        # New: grasp verification
+        # rospy.loginfo('[handle_open] Verifying whether handle was grasped...')
+        # grasp_successful = self.gripper.verify_grasp()
+        #if grasp_successful:
+        #    rospy.loginfo('[handle_open] Successfully grasped object')
+        #else:
+        #    rospy.loginfo('[handle_open] Grasp unsuccessful')
+     	self.sub.unregister()
+
+	mean = np.mean(np.array(self.failure_data))
+	print("======> MEAN :",mean)
         rospy.sleep(5)
         rospy.loginfo('[handle_open] Opening the gripper...')
         self.gripper.open()
@@ -129,6 +168,10 @@ class HandleOpenSM(ActionSMBase):
 
         rospy.loginfo('[handle_open] Opening the gripper...')
         self.gripper.open()
+            
+        # New: grasp verification initilisation
+        # rospy.loginfo('[pickup] Preparing for grasp verification')
+        # self.gripper.init_grasp_verification()
 
         ## TODO: Implement wrist rotation
         rospy.loginfo('[handle_open] Rotating the gripper...')
@@ -183,3 +226,32 @@ class HandleOpenSM(ActionSMBase):
         result = HandleOpenResult()
         result.success = success
         return result
+
+
+    def image_callback(self,msg):
+        print("Received an image!")
+        self.Image_number += 1	
+        try:
+        # Convert your ROS Image message to OpenCV2
+            cv2_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+	    if self.Last_image is not None :
+                diff_img = cv2.absdiff(self.Last_image,cv2_img)
+                black_percentage = (len(np.where(diff_img == 0)[0])/float(640*480*3))
+		print(diff_img.shape,black_percentage)
+		self.failure_data.append(black_percentage)
+	        if black_percentage > 0.3 :
+                    print(black_percentage," ----> FAILURE!!!")
+		else:
+		    print(black_percentage," ----> SUCCESS!!!")
+
+            self.Last_image = cv2_img
+
+        except :
+            pass
+
+        else:
+        # Save your OpenCV2 image as a jpeg 
+        #cv2.imwrite('Images/camera_image_'+str(Image_number)+'.jpeg', cv2_img)
+	    pass
+
+
