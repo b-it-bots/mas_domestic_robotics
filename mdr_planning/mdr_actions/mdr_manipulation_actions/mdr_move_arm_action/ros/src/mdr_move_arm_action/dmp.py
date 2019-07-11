@@ -31,7 +31,7 @@ class DMPExecutor(object):
         self.feedforward_gain = rospy.get_param('~feedforward_gain', 30)
         self.feedback_gain = rospy.get_param('~feedback_gain', 10)
         self.sigma_threshold_upper = rospy.get_param('~sigma_threshold_upper', 0.12)
-        self.sigma_threshold_lower = rospy.get_param('~sigma_threshold_upper', 0.07)
+        self.sigma_threshold_lower = rospy.get_param('~sigma_threshold_lower', 0.07)
         self.use_whole_body_control = rospy.get_param('~use_whole_body_control', False)
         self.linear_vel_limit = rospy.get_param('~linear_vel_limit', 0.05)
 
