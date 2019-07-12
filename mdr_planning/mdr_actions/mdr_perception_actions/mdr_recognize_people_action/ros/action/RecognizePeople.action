@@ -1,0 +1,8 @@
+# goal
+---
+# result
+mas_perception_msgs/PeopleScene people_scene
+---
+# feedback
+string current_state
+string message

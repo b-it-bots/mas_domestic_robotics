@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_recognize_people_action" type="recognize_people_action" name="recognize_people_server"
+          output="screen">
+    </node>
+</launch>

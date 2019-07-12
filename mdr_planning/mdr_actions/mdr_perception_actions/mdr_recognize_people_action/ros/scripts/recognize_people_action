@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+import rospy
+from actionlib import SimpleActionServer
+from mdr_recognize_people_action.action_states import RecognizePeopleSM
+from mdr_recognize_people_action.msg import RecognizePeopleAction
+
+
+class RecognizePeopleServer(object):
+    """A server exposing an action for recognizing the people in images.
+    """
+    def __init__(self):
+        config_file = rospy.get_param('~config_file', None)
+
+        rospy.loginfo('[recognize_people] Initialising state machine')
+        self.action_sm = RecognizePeopleSM(config_file=config_file)
+        rospy.loginfo('[recognize_people] State machine initialised')
+
+        self.action_server = SimpleActionServer('recognize_people_server', RecognizePeopleAction, self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('recognize_people action server ready')
+
+    def execute(self, goal):
+        rospy.loginfo('[recognize_people] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.result = None
+        self.action_sm.execution_requested = True
+        while not self.action_sm.result:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
+
+
+if __name__ == '__main__':
+    rospy.init_node('recognize_people_node')
+    recognize_people_server = RecognizePeopleServer()
+    try:
+        recognize_people_server.action_sm.run()
+        while recognize_people_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(recognize_people_server.action_sm.name))
+        recognize_people_server.action_sm.stop()

@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+from mdr_recognize_people_action.msg import RecognizePeopleAction, RecognizePeopleGoal
+
+
+def print_result(result):
+    rospy.loginfo("detected '{}' people".format(result.people_scene.num_detected_people))
+
+
+def main(server_name, timeout):
+    # creating a client for the recognizing people action
+    client = actionlib.SimpleActionClient(server_name, RecognizePeopleAction)
+    if not client.wait_for_server(timeout=rospy.Duration.from_sec(timeout)):
+        rospy.logerr("failed to wait for action server '{}' after '{}' seconds".format(server_name, timeout))
+        return
+
+    # creating a detect person action goal; the goal parameters
+    # use the results of the detect person action
+    rospy.loginfo("Sending action goal to server '{}'".format(server_name))
+    goal = RecognizePeopleGoal()
+    client.send_goal(goal)
+    if not client.wait_for_result(timeout=rospy.Duration.from_sec(timeout)):
+        rospy.logerr("failed to wait for result from server after '{}' seconds".format(timeout))
+        return
+    print_result(client.get_result())
+
+
+if __name__ == '__main__':
+    rospy.init_node('recognize_people_client_test')
+    server_name = rospy.get_param('~server_name', 'recognize_people_server')
+    timeout = rospy.get_param('~timeout', 45.0)
+    main(server_name, timeout)
