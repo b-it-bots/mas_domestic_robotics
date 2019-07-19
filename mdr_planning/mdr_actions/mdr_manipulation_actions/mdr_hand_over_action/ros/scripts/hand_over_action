@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_hand_over_action.msg import HandOverAction
+from mdr_hand_over_action.action_states import HandOverSM
+
+class HandOverServer(object):
+    '''A server exposing an action for handing objects over.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    '''
+    def __init__(self):
+        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name', 'mas_hsr_gripper_controller')
+        move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
+        init_config_name = rospy.get_param('~init_config_name', 'init_config_name')
+        hand_over_dmp = rospy.get_param('~hand_over_dmp', 'hand_over_dmp')
+        dmp_tau = rospy.get_param('~dmp_tau', 'dmp_tau')
+
+        rospy.loginfo('[hand_over] Initialising state machine')
+        self.action_sm = HandOverSM(gripper_controller_pkg_name=gripper_controller_pkg_name,
+                                      move_arm_server=move_arm_server,
+                                      init_config_name=init_config_name,
+                                      hand_over_dmp=hand_over_dmp,
+                                      dmp_tau=dmp_tau)
+        rospy.loginfo('[hand_over] State machine initialised')
+
+        self.action_server = actionlib.SimpleActionServer('hand_over_server',
+                                                          HandOverAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('hand_over action server ready')
+
+    def execute(self, goal):
+        rospy.loginfo('[hand_over] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.result = None
+        self.action_sm.execution_requested = True
+        while not self.action_sm.result:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
+
+if __name__ == '__main__':
+    rospy.init_node('hand_over_server')
+    hand_over_server = HandOverServer()
+    try:
+        hand_over_server.action_sm.run()
+        while hand_over_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(hand_over_server.action_sm.name))
+        hand_over_server.action_sm.stop()
