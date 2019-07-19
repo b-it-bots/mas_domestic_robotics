@@ -11,7 +11,7 @@ class HandOver(ScenarioStateBase):
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'],
                                    input_keys=['posture'])
         self.sm_id = kwargs.get('sm_id', 'mdr_demo_context_aware_hand_over')
-        self.action_server = kwargs.get('action_server', 'hand_over')
+        self.action_server = kwargs.get('action_server', 'hand_over_server')
         self.obstacle_present = kwargs.get('obstacle_present', False)
         self.timeout = kwargs.get('timeout', 120.)
 
