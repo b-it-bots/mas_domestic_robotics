@@ -1,0 +1,58 @@
+sm_id: mdr_demo_context_aware_hand_over
+states: [DETECT_PERSON, IDENTIFY_POSTURE, HAND_OVER]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: DETECT_PERSON
+        state_module_name: mdr_demo_context_aware_hand_over.scenario_states.detect_person
+        state_class_name: DetectPerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: IDENTIFY_POSTURE
+            - transition:
+                name: failed
+                state: DETECT_PERSON
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: IDENTIFY_POSTURE
+        state_module_name: mdr_demo_context_aware_hand_over.scenario_states.identify_posture
+        state_class_name: IdentifyPosture
+        transitions:
+            - transition:
+                name: succeeded
+                state: HAND_OVER
+        arguments:
+            - argument:
+                name: posture_height_width_ratio_ranges
+                value:
+                    standing: [2.0, 5.0]
+                    seated: [0.6, 2.0]
+                    lying: [0.0, 0.6]
+    - state:
+        name: HAND_OVER
+        state_module_name: mdr_demo_context_aware_hand_over.scenario_states.hand_over
+        state_class_name: HandOver
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: HAND_OVER
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: obstacle_present
+                value: False
