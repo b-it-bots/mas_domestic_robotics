@@ -32,8 +32,8 @@ state_descriptions:
             - argument:
                 name: posture_height_width_ratio_ranges
                 value:
-                    standing: [2.0, 5.0]
-                    seated: [0.6, 2.0]
+                    standing: [1.65, 5.0]
+                    seated: [0.6, 1.65]
                     lying: [0.0, 0.6]
     - state:
         name: HAND_OVER
@@ -55,4 +55,7 @@ state_descriptions:
                 value: 3
             - argument:
                 name: obstacle_present
+                value: False
+            - argument:
+                name: context_aware
                 value: False

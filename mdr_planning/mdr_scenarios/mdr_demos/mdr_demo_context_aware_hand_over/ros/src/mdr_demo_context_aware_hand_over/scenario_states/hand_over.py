@@ -14,6 +14,7 @@ class HandOver(ScenarioStateBase):
         self.action_server = kwargs.get('action_server', 'hand_over_server')
         self.obstacle_present = kwargs.get('obstacle_present', False)
         self.timeout = kwargs.get('timeout', 120.)
+        self.context_aware = kwargs.get('context_aware', True)
 
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
@@ -24,6 +25,7 @@ class HandOver(ScenarioStateBase):
         goal = HandOverGoal()
         goal.posture_type = userdata.posture
         goal.obstacle = self.obstacle_present
+        goal.context_aware = self.context_aware
 
         # calling the actionlib server and waiting for the execution to end
         rospy.loginfo('[hand_over] Sending action lib goal to {0}'.format(self.action_server))
