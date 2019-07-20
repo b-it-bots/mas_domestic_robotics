@@ -2,11 +2,14 @@
 from os.path import join
 import pickle
 import numpy as np
+from collections import deque
+from scipy.stats import norm
 
 import rospy
 import tf
 import actionlib
 from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import WrenchStamped
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -20,6 +23,7 @@ from importlib import import_module
 class HandOverSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mas_hsr_gripper_controller',
+                 force_sensor_topic='/hsrb/wrist_wrench/raw',
                  move_arm_server='move_arm_server',
                  init_config_name = 'neutral',
                  hand_over_policy_config_dir='',
@@ -50,6 +54,11 @@ class HandOverSM(ActionSMBase):
         self.hand_over_position_policy_parameters = self.load_policy_params_from_file(self.hand_over_position_policy_parameters_file)
 
         self.tf_listener = tf.TransformListener()
+        self.force_sensor_topic = force_sensor_topic
+
+        self.force_measurements_window_size = 5000
+        self.force_measurements_x = deque([], maxlen=self.force_measurements_window_size)
+        self.force_detection_threshold = 5.
 
     def init(self):
         try:
@@ -138,7 +147,7 @@ class HandOverSM(ActionSMBase):
         # rospy.loginfo('[hand_over] Moving back to pregrasp low position...')
         # self.__move_arm(MoveArmGoal.NAMED_TARGET, 'pregrasp_low')
 
-        # Initialize by grasping a provided object:
+        # # Initialize by grasping a provided object:
         # rospy.loginfo('[hand_over] Closing the gripper')
         # self.gripper.close() 
 
@@ -146,13 +155,28 @@ class HandOverSM(ActionSMBase):
         rospy.loginfo('[hand_over] Handing object over...')
         self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
 
-        # Wait for person to hold object:
-        rospy.loginfo('[hand_over] Waiting before releasing object...')
-        rospy.sleep(5.)
+        # Naive object release strategy:
+        # # --------------------------------------------------------------
+        # # Wait for person to hold object:
+        # rospy.loginfo('[hand_over] Waiting before releasing object...')
+        # rospy.sleep(5.)
+
+        # # Release the object:
+        # rospy.loginfo('[hand_over] Opening the gripper...')
+        # self.gripper.open()
+        # #  --------------------------------------------------------------
+
+        # Force sensing object release strategy:
+        # --------------------------------------------------------------
+        # Wait for person to pull object:
+        rospy.loginfo('[hand_over] Waiting for object to be received...')
+        object_reception_detected = self.detect_object_reception()
 
         # Release the object:
-        rospy.loginfo('[hand_over] Opening the gripper...')
-        self.gripper.open()
+        if object_reception_detected:
+            rospy.loginfo('[hand_over] Opening the gripper to release object...')
+            self.gripper.open()
+        #  --------------------------------------------------------------
 
         # Return to a neutral arm position:
         rospy.loginfo('[hand_over] Moving back to neutral position...')
@@ -196,3 +220,31 @@ class HandOverSM(ActionSMBase):
     def load_policy_params_from_file(self, filename):
         with open(filename, 'rb') as f:
             return pickle.load(f)
+
+    def detect_object_reception(self):
+        self.force_sensor_sub = rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
+        
+        mu_0 = -10
+        mu_1 = -20
+        std = 1
+        cumsum = 0
+
+        pdf_0 = norm(mu_0, std)
+        pdf_1 = norm(mu_1, std)
+
+        while cumsum >= self.force_detection_threshold:
+            for sensor_reading in self.force_measurements_x:
+                cumsum += np.log(pdf_1.pdf(sensor_reading) / pdf_0.pdf(sensor_reading))
+
+            print()
+            print('[hand_over DEBUG] Force Measurements:')
+            print(self.force_measurements_x)
+            print('[hand_over DEBUG] Current cumsum:', cumsum)
+                
+        rospy.loginfo('[hand_over] Object reception detected!')
+        return True
+        
+        # rospy.spin()
+        
+    def force_sensor_cb(self, force_sensor_msg):
+        self.force_measurements_x.append(force_sensor_msg.wrench.force.x)
