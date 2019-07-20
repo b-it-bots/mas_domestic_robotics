@@ -2,7 +2,6 @@
 from os.path import join
 import pickle
 import numpy as np
-from collections import deque
 from scipy.stats import norm
 
 import rospy
@@ -56,9 +55,12 @@ class HandOverSM(ActionSMBase):
         self.tf_listener = tf.TransformListener()
         self.force_sensor_topic = force_sensor_topic
 
-        self.force_measurements_window_size = 5000
-        self.force_measurements_x = deque([], maxlen=self.force_measurements_window_size)
+        self.latest_force_measurement_x = 0.
+        self.latest_force_measurement_z = 0.
+        self.cumsum = 0
+        self.cumsum_z = 0
         self.force_detection_threshold = 5.
+        self.object_reception_detected = False
 
     def init(self):
         try:
@@ -170,20 +172,31 @@ class HandOverSM(ActionSMBase):
         # --------------------------------------------------------------
         # Wait for person to pull object:
         rospy.loginfo('[hand_over] Waiting for object to be received...')
-        object_reception_detected = self.detect_object_reception()
+        rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
+        self.object_reception_detected = False
+        self.cumsum = 0.
+        self.cumsum_z = 0.
 
-        # Release the object:
-        if object_reception_detected:
+        start_time = rospy.get_time()
+        while (rospy.get_time() - start_time) < 50 and not self.object_reception_detected:
+            self.detect_object_reception()
+            rospy.sleep(0.1)
+
+        # If a pull is detected, release the object:
+        if self.object_reception_detected:        
             rospy.loginfo('[hand_over] Opening the gripper to release object...')
             self.gripper.open()
-        #  --------------------------------------------------------------
+        else:
+            rospy.loginfo('[hand_over] Keeping object since no reception was detected')
 
         # Return to a neutral arm position:
         rospy.loginfo('[hand_over] Moving back to neutral position...')
         self.__move_arm(MoveArmGoal.NAMED_TARGET, self.init_config_name)
 
-        # For now, assume unconditional success:
-        self.result = self.set_result(True)
+        if self.object_reception_detected:
+            self.result = self.set_result(True)
+        else:
+            self.result = self.set_result(False)
         return FTSMTransitions.DONE
 
     def __move_arm(self, goal_type, goal):
@@ -222,29 +235,30 @@ class HandOverSM(ActionSMBase):
             return pickle.load(f)
 
     def detect_object_reception(self):
-        self.force_sensor_sub = rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
-        
         mu_0 = -10
         mu_1 = -20
         std = 1
-        cumsum = 0
 
         pdf_0 = norm(mu_0, std)
         pdf_1 = norm(mu_1, std)
 
-        while cumsum >= self.force_detection_threshold:
-            for sensor_reading in self.force_measurements_x:
-                cumsum += np.log(pdf_1.pdf(sensor_reading) / pdf_0.pdf(sensor_reading))
-
-            print()
-            print('[hand_over DEBUG] Force Measurements:')
-            print(self.force_measurements_x)
-            print('[hand_over DEBUG] Current cumsum:', cumsum)
-                
-        rospy.loginfo('[hand_over] Object reception detected!')
-        return True
-        
-        # rospy.spin()
+        self.cumsum += max(0, np.log(pdf_1.pdf(self.latest_force_measurement_x) / pdf_0.pdf(self.latest_force_measurement_x)))
+        self.cumsum_z += max(0, np.log(pdf_1.pdf(self.latest_force_measurement_z) / pdf_0.pdf(self.latest_force_measurement_z)))
+        if self.cumsum > self.force_detection_threshold or self.cumsum_z > self.force_detection_threshold:
+            rospy.loginfo('[hand_over] Object reception detected!')
+            self.object_reception_detected = True
         
     def force_sensor_cb(self, force_sensor_msg):
-        self.force_measurements_x.append(force_sensor_msg.wrench.force.x)
+        self.latest_force_measurement_x = force_sensor_msg.wrench.force.x
+        self.latest_force_measurement_z = force_sensor_msg.wrench.force.z
+
+        print('[hand_over DEBUG] Force Measurements:')
+        # print(self.force_measurements_x)
+        print('[hand_over DEBUG] Current cumsum:', self.cumsum)
+        print('[hand_over DEBUG] Current cumsum in z:', self.cumsum_z)
+        print("*********************")
+        print('[hand_over DEBUG] Current Force Measurements, x:', force_sensor_msg.wrench.force.x)
+        print('[hand_over DEBUG] Current Force Measurements, y:', force_sensor_msg.wrench.force.y)
+        print('[hand_over DEBUG] Current Force Measurements, z:', force_sensor_msg.wrench.force.z)
+        print("\n\n")
+
