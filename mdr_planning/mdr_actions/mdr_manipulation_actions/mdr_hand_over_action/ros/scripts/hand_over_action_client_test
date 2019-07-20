@@ -4,31 +4,34 @@ import argparse
 import rospy
 import actionlib
 import numpy as np
+import ast
 
 from mdr_hand_over_action.msg import HandOverAction, HandOverGoal
 
 if __name__ == '__main__':
-    posture_contexts = ['standing', 'sitting', 'lying_down']
+    posture_contexts = ['standing', 'seated', 'lying']
     obstacle_contexts = [0, 1]                                 # 0: no obstacle, 1: obstacle
     
     parser = argparse.ArgumentParser(description='help text')
     parser.add_argument("--context", "-c", help="list of context parameters. E.g.: ['sitting', 0]") 
     args = parser.parse_args()
 
-    if not args.context:
+    context_params = ast.literal_eval(args.context)
+
+    if not context_params:
         print('No context parameters provided!')
         print('Example inputs: ')
         print('- python hand_over_action_client_test -c "[\'standing\', 0]"')
         print('- python hand_over_action_client_test -c "[\'sitting\', 1]"')
-    elif len(args.context) != 2:
+    elif len(context_params) != 2:
         print('Expected two context parameters: posture and obstacle!')
-    elif args.context[0] not in posture_contexts:
+    elif context_params[0] not in posture_contexts:
         print('Invalid posture context!')
-    elif args.context[1] not in obstacle_contexts:
+    elif context_params[1] not in obstacle_contexts:
         print('Invalid obstacle context!')
     else:
-        posture_context = args.context[0]
-        obstacle_context = args.context[1]
+        posture_context = context_params[0]
+        obstacle_context = bool(context_params[1])
 
         rospy.init_node('hand_over_action_client_test')
 
@@ -37,8 +40,9 @@ if __name__ == '__main__':
 
         goal = HandOverGoal()
 
-        goal.posture_type = args.context[0]
-        goal.obstacle = args.context[1]
+        rospy.loginfo('Setting goal for a %s person, with %s obstacle in-between...' % (posture_context, 'an' if obstacle_context else 'no'))
+        goal.posture_type = posture_context
+        goal.obstacle = obstacle_context
 
         timeout = 15.0
         rospy.loginfo('Sending action lib goal to hand_over_server')
