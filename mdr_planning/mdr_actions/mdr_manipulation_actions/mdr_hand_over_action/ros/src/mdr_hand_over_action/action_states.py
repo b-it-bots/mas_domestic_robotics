@@ -57,7 +57,7 @@ class HandOverSM(ActionSMBase):
 
         self.latest_force_measurement_x = 0.
         self.latest_force_measurement_z = 0.
-        self.cumsum = 0
+        self.cumsum_x = 0
         self.cumsum_z = 0
         self.force_detection_threshold = 5.
         self.object_reception_detected = False
@@ -76,29 +76,34 @@ class HandOverSM(ActionSMBase):
     def running(self):
         posture_type = self.goal.posture_type
         obstacle = self.goal.obstacle
-
-        # > Pick context-dependent hand-over position:
-        policy_parameter_a = self.hand_over_position_policy_parameters[0][0]
-        policy_parameter_A = self.hand_over_position_policy_parameters[0][1]
-
-        if posture_type == 'standing':
-            context_vector = np.array([0.0, 0.0, 0.4])
-        elif posture_type == 'seated':
-            context_vector = np.array([0.5, 0.0, 0.0])
-        elif posture_type == 'lying':
-            context_vector = np.array([0.0, 0.7, 0.0])
-        
-        # Sample upper-level policy (with no exploration) for hand-over position;
-        # by calculating the mean of the linear-Gaussian model, given context vector s:
-        hand_over_position = np.squeeze(policy_parameter_a + context_vector.dot(policy_parameter_A))
+        context_aware = self.goal.context_aware
 
         hand_over_pose = PoseStamped()
         hand_over_pose.header.frame_id = 'base_link'
         hand_over_pose.header.stamp = rospy.Time.now()
+        if context_aware:
+            # > Pick context-dependent hand-over position:
+            policy_parameter_a = self.hand_over_position_policy_parameters[0][0]
+            policy_parameter_A = self.hand_over_position_policy_parameters[0][1]
 
-        hand_over_pose.pose.position.x = hand_over_position[0]
-        hand_over_pose.pose.position.y = hand_over_position[1]
-        hand_over_pose.pose.position.z = hand_over_position[2]
+            if posture_type == 'standing':
+                context_vector = np.array([0.0, 0.0, 0.4])
+            elif posture_type == 'seated':
+                context_vector = np.array([0.5, 0.0, 0.0])
+            elif posture_type == 'lying':
+                context_vector = np.array([0.0, 0.7, 0.0])
+        
+            # Sample upper-level policy (with no exploration) for hand-over position;
+            # by calculating the mean of the linear-Gaussian model, given context vector s:
+            hand_over_position = np.squeeze(policy_parameter_a + context_vector.dot(policy_parameter_A))
+
+            hand_over_pose.pose.position.x = hand_over_position[0]
+            hand_over_pose.pose.position.y = hand_over_position[1]
+            hand_over_pose.pose.position.z = hand_over_position[2]
+        else:
+            hand_over_pose.pose.position.x = 0.5
+            hand_over_pose.pose.position.y = 0.078
+            hand_over_pose.pose.position.z = 0.8
 
         hand_over_pose.pose.orientation.x = 0.000
         hand_over_pose.pose.orientation.y = 0.000
@@ -174,7 +179,7 @@ class HandOverSM(ActionSMBase):
         rospy.loginfo('[hand_over] Waiting for object to be received...')
         rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
         self.object_reception_detected = False
-        self.cumsum = 0.
+        self.cumsum_x = 0.
         self.cumsum_z = 0.
 
         start_time = rospy.get_time()
@@ -242,9 +247,9 @@ class HandOverSM(ActionSMBase):
         pdf_0 = norm(mu_0, std)
         pdf_1 = norm(mu_1, std)
 
-        self.cumsum += max(0, np.log(pdf_1.pdf(self.latest_force_measurement_x) / pdf_0.pdf(self.latest_force_measurement_x)))
+        self.cumsum_x += max(0, np.log(pdf_1.pdf(self.latest_force_measurement_x) / pdf_0.pdf(self.latest_force_measurement_x)))
         self.cumsum_z += max(0, np.log(pdf_1.pdf(self.latest_force_measurement_z) / pdf_0.pdf(self.latest_force_measurement_z)))
-        if self.cumsum > self.force_detection_threshold or self.cumsum_z > self.force_detection_threshold:
+        if self.cumsum_x > self.force_detection_threshold or self.cumsum_z > self.force_detection_threshold:
             rospy.loginfo('[hand_over] Object reception detected!')
             self.object_reception_detected = True
         
@@ -252,13 +257,12 @@ class HandOverSM(ActionSMBase):
         self.latest_force_measurement_x = force_sensor_msg.wrench.force.x
         self.latest_force_measurement_z = force_sensor_msg.wrench.force.z
 
-        print('[hand_over DEBUG] Force Measurements:')
-        # print(self.force_measurements_x)
-        print('[hand_over DEBUG] Current cumsum:', self.cumsum)
-        print('[hand_over DEBUG] Current cumsum in z:', self.cumsum_z)
-        print("*********************")
-        print('[hand_over DEBUG] Current Force Measurements, x:', force_sensor_msg.wrench.force.x)
-        print('[hand_over DEBUG] Current Force Measurements, y:', force_sensor_msg.wrench.force.y)
-        print('[hand_over DEBUG] Current Force Measurements, z:', force_sensor_msg.wrench.force.z)
-        print("\n\n")
+        # print('[hand_over DEBUG] Force Measurements:')
+        # print('[hand_over DEBUG] Current cumsum in x:', self.cumsum_x)
+        # print('[hand_over DEBUG] Current cumsum in z:', self.cumsum_z)
+        # print("*********************")
+        # print('[hand_over DEBUG] Current Force Measurements, x:', force_sensor_msg.wrench.force.x)
+        # print('[hand_over DEBUG] Current Force Measurements, y:', force_sensor_msg.wrench.force.y)
+        # print('[hand_over DEBUG] Current Force Measurements, z:', force_sensor_msg.wrench.force.z)
+        # print("\n\n")
 
