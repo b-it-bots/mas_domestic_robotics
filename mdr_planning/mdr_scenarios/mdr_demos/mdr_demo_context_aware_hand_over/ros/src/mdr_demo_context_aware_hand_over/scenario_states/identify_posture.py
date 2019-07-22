@@ -12,7 +12,7 @@ class IdentifyPosture(ScenarioStateBase):
         self.posture_height_width_ratio_ranges = kwargs.get('posture_height_width_ratio_ranges', {})
 
     def execute(self, userdata):
-        self.say('I will only hand over the item to the first detected person')
+        self.say('I will hand over the object to the first detected person')
 
         first_person_image_bb_width = float(userdata.person_list.persons[0].rgb_image.width)
         first_person_image_bb_height = float(userdata.person_list.persons[0].rgb_image.height)

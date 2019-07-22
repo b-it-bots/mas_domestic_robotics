@@ -101,6 +101,7 @@ class HandOverSM(ActionSMBase):
             hand_over_pose.pose.position.y = hand_over_position[1]
             hand_over_pose.pose.position.z = hand_over_position[2]
         else:
+            # Pick context-independent hand-over position:
             hand_over_pose.pose.position.x = 0.5
             hand_over_pose.pose.position.y = 0.078
             hand_over_pose.pose.position.z = 0.8
@@ -112,7 +113,6 @@ class HandOverSM(ActionSMBase):
 
         pose_base_link = self.tf_listener.transformPose('base_link', hand_over_pose)
 
-        ## TODO:
         # > Pick context_dependent hand-over trajectory shape:
         if not obstacle:
             trajectory_weights_filename = 'grasp.yaml'
@@ -193,6 +193,7 @@ class HandOverSM(ActionSMBase):
             self.gripper.open()
         else:
             rospy.loginfo('[hand_over] Keeping object since no reception was detected')
+        # --------------------------------------------------------------        
 
         # Return to a neutral arm position:
         rospy.loginfo('[hand_over] Moving back to neutral position...')
@@ -249,6 +250,7 @@ class HandOverSM(ActionSMBase):
 
         self.cumsum_x += max(0, np.log(pdf_1.pdf(self.latest_force_measurement_x) / pdf_0.pdf(self.latest_force_measurement_x)))
         self.cumsum_z += max(0, np.log(pdf_1.pdf(self.latest_force_measurement_z) / pdf_0.pdf(self.latest_force_measurement_z)))
+        
         if self.cumsum_x > self.force_detection_threshold or self.cumsum_z > self.force_detection_threshold:
             rospy.loginfo('[hand_over] Object reception detected!')
             self.object_reception_detected = True
@@ -265,4 +267,3 @@ class HandOverSM(ActionSMBase):
         # print('[hand_over DEBUG] Current Force Measurements, y:', force_sensor_msg.wrench.force.y)
         # print('[hand_over DEBUG] Current Force Measurements, z:', force_sensor_msg.wrench.force.z)
         # print("\n\n")
-
