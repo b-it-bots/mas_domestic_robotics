@@ -4,7 +4,7 @@
     <arg name="detection_action_name" default="/mas_perception/detect_image"/>
 
     <arg name="recognition_service_name" default="/mdr_perception/recognize_image"/>
-    <arg name="recognition_model_name" default="athome_xception"/>
+    <arg name="recognition_model_name" default="athome_go_2018_objects_xception"/>
     <arg name="preprocess_input_module" default="keras.applications.xception"/>
     <arg name="classify_object" default="false"/>
 
