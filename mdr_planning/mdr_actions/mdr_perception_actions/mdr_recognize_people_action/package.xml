@@ -20,9 +20,10 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>actionlib</exec_depend>
   <exec_depend>actionlib_msgs</exec_depend>
-  <exec_depend>mas_execution_manager</exec_depend>
   <exec_depend>message_generation</exec_depend>
+  <exec_depend>mas_execution_manager</exec_depend>
   <exec_depend>mas_perception_msgs</exec_depend>
+  <exec_depend>mas_tools</exec_depend>
 
   <export></export>
 </package>

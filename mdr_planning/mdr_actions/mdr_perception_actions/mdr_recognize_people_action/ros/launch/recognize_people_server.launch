@@ -2,5 +2,6 @@
 <launch>
     <node pkg="mdr_recognize_people_action" type="recognize_people_action" name="recognize_people_server"
           output="screen">
+        <param name="config_file" value="$(find mdr_recognize_people_action)/config/people_recognition_configs.yaml" />
     </node>
 </launch>

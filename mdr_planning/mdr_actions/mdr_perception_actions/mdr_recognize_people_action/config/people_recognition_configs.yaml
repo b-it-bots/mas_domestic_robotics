@@ -1,0 +1,34 @@
+detection_models:
+  full_body:
+    type: 'ssd'
+    configs:
+      module: mas_image_detection.ssd_tensorflow
+      class: SSDTfModelsImageDetector
+      config_package: mas_image_detection
+      kwargs_file: configs/ssd_tensorflow_coco_kwargs.yml
+      class_file: configs/tf_models_coco_classes.yml
+      person_class: 1
+  face:
+    type: 'opencv'
+  keypoints:
+    model_path: /path/to/some/model
+# assuming all the recognition models are Keras
+recognition_models:
+  gender:
+    type: keras
+    configs:
+      model_package: perception_models
+      model_file: ["classifiers", "gender_simple_CNN.81-0.96.hdf5"]
+      class_file: ["classifiers", "gender_classes.yml"]
+  emotion:
+    type: keras
+    configs:
+      model_package: perception_models
+      model_file: ["classifiers", "emotion_classifier.hdf5"]
+      class_file: ["classifiers", "emotion_classes.yml"]
+identity_model:
+  package: package_name
+  path: path/to/identity_model.hdf5
+age_model:
+  package: package_name
+  path: path/to/age_model.hdf5
