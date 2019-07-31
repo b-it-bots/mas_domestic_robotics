@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_pull_action.msg import PullAction
+from mdr_pull_action.action_states import PullSM
+
+class PullServer(object):
+    '''A server exposing an object pulling action.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    ## TODO: list any expected parameters here
+
+    '''
+    def __init__(self):
+        ## TODO: read any configuration parameters for the action here
+        # param = rospy.get_param('~param_name', 'default_param_value')
+
+        rospy.loginfo('[pull] Initialising state machine')
+        self.action_sm = PullSM()
+        rospy.loginfo('[pull] State machine initialised')
+
+        self.action_server = actionlib.SimpleActionServer('pull_server',
+                                                          PullAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('pull action server ready')
+
+    def execute(self, goal):
+        rospy.loginfo('[pull] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.result = None
+        self.action_sm.execution_requested = True
+        while not self.action_sm.result:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
+
+if __name__ == '__main__':
+    rospy.init_node('pull_server')
+    pull_server = PullServer()
+    try:
+        pull_server.action_sm.run()
+        while pull_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(pull_server.action_sm.name))
+        pull_server.action_sm.stop()

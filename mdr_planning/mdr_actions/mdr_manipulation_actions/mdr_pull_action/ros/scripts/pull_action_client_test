@@ -1,0 +1,32 @@
+#! /usr/bin/env python
+from __future__ import print_function
+import rospy
+import actionlib
+
+from mdr_pull_action.msg import PullAction, PullGoal
+
+
+if __name__ == '__main__':
+    rospy.init_node('pull_action_client_test')
+
+    client = actionlib.SimpleActionClient('/pull_server', PullAction)
+    client.wait_for_server()
+
+    goal = PullGoal()
+    goal.pose.header.frame_id = 'base_link'
+    goal.pose.header.stamp = rospy.Time.now()
+
+    goal.pose.pose.position.x = 0.3
+    goal.pose.pose.position.y = 0.178
+    goal.pose.pose.position.z = 0.8
+
+    goal.pose.pose.orientation.x = 0.758
+    goal.pose.pose.orientation.y = 0.000
+    goal.pose.pose.orientation.z = 0.652
+    goal.pose.pose.orientation.w = 0.000
+
+    timeout = 15.0
+    rospy.loginfo('Sending action lib goal to pull_server')
+    client.send_goal(goal)
+    client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
+    print(client.get_result())
