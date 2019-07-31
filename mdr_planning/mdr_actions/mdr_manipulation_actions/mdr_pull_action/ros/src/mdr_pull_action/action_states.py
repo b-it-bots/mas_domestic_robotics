@@ -5,7 +5,8 @@ import numpy as np
 import rospy
 import tf
 import actionlib
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, WrenchStamped
+from std_msgs.msg import String
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -46,12 +47,12 @@ class PullSM(ActionSMBase):
         self.gripper = GripperControllerClass()
 
         self.pregrasp_config_name = 'neutral'
-        self.intermediate_grasp_offset = intermediate_grasp_offset
         self.safe_arm_joint_config = 'neutral'
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
         self.move_forward_server = move_forward_server
-        self.base_elbow_offset = base_elbow_offset
+        self.base_elbow_offset = 0.078
+        #self.base_elbow_offset = base_elbow_offset
         self.arm_base_offset = arm_base_offset
         self.grasping_dmp = grasping_dmp
         self.dmp_tau = dmp_tau
@@ -62,6 +63,9 @@ class PullSM(ActionSMBase):
         self.move_arm_client = None
         self.move_base_client = None
         self.move_forward_client = None
+        
+        self.record_data_pub = rospy.Publisher('/record_force_vals',String,queue_size = 1)
+    
 
     def init(self):
         try:
@@ -108,11 +112,13 @@ class PullSM(ActionSMBase):
             rospy.loginfo('[pickup] Opening the gripper...')
             self.gripper.open()
 
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')
+#            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')
 
             self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, self.initial_pose.pose)
             rospy.loginfo('[pickup] Grasping...')
-            self.__move_base_along_x(pose_base_link.pose.position.x)
+            #self.__move_base_along_x(pose_base_link.pose.position.x)
+            dist = 0.2
+            self.__move_base_along_x(dist)
 #            arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
             '''
             if not arm_motion_success:
@@ -124,16 +130,20 @@ class PullSM(ActionSMBase):
 
             rospy.loginfo('[pickup] Closing the gripper')
             self.gripper.close()
-            self.__move_base_along_x(-0.1)
+            self.record_data_pub.publish('start')
+            print ('start')
+            self.__move_base_along_x(-(dist-0.1))
+            print ('stop')
+            self.record_data_pub.publish('stop')
 
             self.gripper.open()
-            self.__move_base_along_x(-0.1)
+
 
             rospy.loginfo('[pickup] Moving the base back to the original position')
             self.__move_base_along_x(-0.1)
 
             rospy.loginfo('[pickup] Moving the arm back')
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')
+            #self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')
 
             self.result = self.set_result(True)
             return FTSMTransitions.DONE
