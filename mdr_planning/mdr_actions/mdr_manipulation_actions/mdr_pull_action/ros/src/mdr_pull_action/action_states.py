@@ -35,7 +35,7 @@ class PullSM(ActionSMBase):
         self.initial_pose.pose.header.stamp = rospy.Time.now()
         self.initial_pose.pose.pose.position.x = 0.62
         self.initial_pose.pose.pose.position.y = 0.078
-        self.initial_pose.pose.pose.position.z = 0.80
+        self.initial_pose.pose.pose.position.z = 0.8
         self.initial_pose.pose.pose.orientation.x = 0.758
         self.initial_pose.pose.pose.orientation.y = 0.000
         self.initial_pose.pose.pose.orientation.z = 0.652
@@ -65,6 +65,7 @@ class PullSM(ActionSMBase):
         self.move_forward_client = None
         
         self.record_data_pub = rospy.Publisher('/record_force_vals',String,queue_size = 1)
+        #self.record_data_santosh_pub = rospy.Publisher('/mcr_tools/rosbag_recorder/event_in',String,queue_size = 1)
     
 
     def init(self):
@@ -95,6 +96,7 @@ class PullSM(ActionSMBase):
         pose = self.goal.pose
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
+        y_offset_distance = pose_base_link.pose.position.y - self.base_elbow_offset 
         if self.base_elbow_offset > 0:
             self.__align_base_with_pose(pose_base_link)
 
@@ -114,11 +116,16 @@ class PullSM(ActionSMBase):
 
 #            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')
 
+            self.initial_pose.pose.pose.position.z = pose_base_link.pose.position.z
             self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, self.initial_pose.pose)
             rospy.loginfo('[pickup] Grasping...')
             #self.__move_base_along_x(pose_base_link.pose.position.x)
-            dist = 0.2
+            #self.record_data_santosh_pub.publish('e_start')
+            self.record_data_pub.publish('start')
+            dist = pose_base_link.pose.position.x
+            self.record_data_pub.publish('stop')
             self.__move_base_along_x(dist)
+            rospy.sleep(1)
 #            arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
             '''
             if not arm_motion_success:
@@ -137,6 +144,7 @@ class PullSM(ActionSMBase):
             self.record_data_pub.publish('stop')
 
             self.gripper.open()
+            #self.record_data_santosh_pub.publish('e_stop')
 
 
             rospy.loginfo('[pickup] Moving the base back to the original position')
@@ -144,6 +152,9 @@ class PullSM(ActionSMBase):
 
             rospy.loginfo('[pickup] Moving the arm back')
             #self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')
+
+            pose_base_link.pose.position.y = self.base_elbow_offset - y_offset_distance
+            self.__align_base_with_pose(pose_base_link)
 
             self.result = self.set_result(True)
             return FTSMTransitions.DONE

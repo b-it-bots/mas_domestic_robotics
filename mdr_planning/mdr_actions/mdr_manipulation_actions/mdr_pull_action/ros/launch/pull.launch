@@ -2,4 +2,9 @@
 <launch>
     <node pkg="mdr_pull_action" type="pull_action" name="pull_server" output="screen">
     </node>
+     <include file="$(find mcr_rosbag_recorder)/ros/launch/rosbag_recorder.launch" >
+        <arg name="file_path" value="~/bagfiles/"/>
+        <arg name="file_prefix" value="pick"/>
+        <arg name="topics" value="$(find mdr_pull_action)/config/topics.yaml"/>
+    </include>
 </launch>

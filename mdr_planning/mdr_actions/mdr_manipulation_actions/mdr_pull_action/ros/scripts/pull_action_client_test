@@ -2,6 +2,7 @@
 from __future__ import print_function
 import rospy
 import actionlib
+import numpy as np
 
 from mdr_pull_action.msg import PullAction, PullGoal
 
@@ -16,9 +17,12 @@ if __name__ == '__main__':
     goal.pose.header.frame_id = 'base_link'
     goal.pose.header.stamp = rospy.Time.now()
 
-    goal.pose.pose.position.x = 0.3
-    goal.pose.pose.position.y = 0.178
-    goal.pose.pose.position.z = 0.8
+    goal.pose.pose.position.x = np.random.uniform(0.43,0.5)
+    goal.pose.pose.position.y = np.random.uniform(0.048,0.108)
+    goal.pose.pose.position.z = np.random.uniform(0.8,0.9)
+    print(str(goal.pose.pose.position.x) + ', ' + str(goal.pose.pose.position.y) + ', ' + str(goal.pose.pose.position.z))
+    #goal.pose.pose.position.y = 0.078
+    #goal.pose.pose.position.z = 0.8
 
     goal.pose.pose.orientation.x = 0.758
     goal.pose.pose.orientation.y = 0.000
