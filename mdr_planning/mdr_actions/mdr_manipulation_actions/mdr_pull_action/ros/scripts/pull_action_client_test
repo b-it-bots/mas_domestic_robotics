@@ -6,6 +6,15 @@ import numpy as np
 
 from mdr_pull_action.msg import PullAction, PullGoal
 
+def distribution(occurrence, bins):
+    probabilities = []
+    for i in range(6):
+        prob = (bins[i+1]-bins[i])*occurrence[i]
+        probabilities.append(prob)
+    rdm_num = np.random.choice(range(6), p=probabilities)
+    chosen_num = np.random.uniform(bins[rdm_num-1],bins[rdm_num])
+    return chosen_num
+
 
 if __name__ == '__main__':
     rospy.init_node('pull_action_client_test')
@@ -17,9 +26,17 @@ if __name__ == '__main__':
     goal.pose.header.frame_id = 'base_link'
     goal.pose.header.stamp = rospy.Time.now()
 
-    goal.pose.pose.position.x = np.random.uniform(0.43,0.5)
-    goal.pose.pose.position.y = np.random.uniform(0.048,0.108)
-    goal.pose.pose.position.z = np.random.uniform(0.8,0.9)
+	x_combined = np.array([15.05025084, 17.55862598, 20.06700111, 12.5418757 , 12.5418757 , 12.5418757 ], [0.43336126, 0.44443528, 0.45550929, 0.4665833 , 0.47765731, 0.48873133, 0.49980534])
+	y_combined = np.array([ 4.53112131,  2.26556066, 27.18672786, 13.59336393, 27.18672786, 6.79668197], [0.0281443 , 0.04040518, 0.05266607, 0.06492695, 0.07718784, 0.08944872, 0.10170961])
+	z_combined = np.array([30.93126583,  7.2779449 ,  5.45845868,  9.09743113,  3.63897245, 9.09743113], [0.80334052, 0.81860734, 0.83387417, 0.84914099, 0.86440782, 0.87967464, 0.89494147])
+	
+	goal.pose.pose.position.x = distribution(x_combined[0], x_combined[1])
+    goal.pose.pose.position.y = distribution(y_combined[0], y_combined[1])
+    goal.pose.pose.position.z = distribution(z_combined[0], z_combined[1])
+
+    #goal.pose.pose.position.x = np.random.uniform(0.43,0.5)
+    #goal.pose.pose.position.y = np.random.uniform(0.048,0.108)
+    #goal.pose.pose.position.z = np.random.uniform(0.8,0.9)
     print(str(goal.pose.pose.position.x) + ', ' + str(goal.pose.pose.position.y) + ', ' + str(goal.pose.pose.position.z))
     #goal.pose.pose.position.y = 0.078
     #goal.pose.pose.position.z = 0.8
