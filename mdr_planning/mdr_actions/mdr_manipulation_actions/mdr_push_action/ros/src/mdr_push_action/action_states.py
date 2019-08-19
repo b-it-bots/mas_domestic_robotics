@@ -143,6 +143,45 @@ class PushSM(ActionSMBase):
         ## the recovery logic
         rospy.sleep(5.)
         return FTSMTransitions.DONE_RECOVERING
+       
+    def __move_arm(self, goal_type, goal):
+        '''Sends a request to the 'move_arm' action server and waits for the
+        results of the action execution.
+
+        Keyword arguments:
+        goal_type -- 'MoveArmGoal.NAMED_TARGET' or 'MoveArmGoal.END_EFFECTOR_POSE'
+        goal -- A string if 'goal_type' is 'MoveArmGoal.NAMED_TARGET';
+                a 'geometry_msgs/PoseStamped' if 'goal_type' is 'MoveArmGoal.END_EFFECTOR_POSE'
+
+        '''
+        move_arm_goal = MoveArmGoal()
+        move_arm_goal.goal_type = goal_type
+        if goal_type == MoveArmGoal.NAMED_TARGET:
+            move_arm_goal.named_target = goal
+        elif goal_type == MoveArmGoal.END_EFFECTOR_POSE:
+            move_arm_goal.end_effector_pose = goal
+            move_arm_goal.dmp_name = self.grasping_dmp
+            move_arm_goal.dmp_tau = self.dmp_tau
+        self.move_arm_client.send_goal(move_arm_goal)
+        self.move_arm_client.wait_for_result()
+        result = self.move_arm_client.get_result()
+        return result
+
+    def __prepare_sideways_grasp(self, pose_base_link):
+        rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
+        if pose_base_link.pose.position.z > self.pregrasp_height_threshold:
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+        else:
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_low_config_name)
+
+        if self.intermediate_grasp_offset > 0:
+            rospy.loginfo('[PICKUP] Moving to intermediate grasping pose...')
+            pose_base_link.pose.position.x -= self.intermediate_grasp_offset
+            self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+
+        if self.intermediate_grasp_offset > 0:
+            pose_base_link.pose.position.x += self.intermediate_grasp_offset
+        return pose_base_link
 
     def set_result(self, success):
         result = PushResult()
