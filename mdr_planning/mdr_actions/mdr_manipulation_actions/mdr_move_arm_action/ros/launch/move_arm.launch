@@ -8,5 +8,6 @@
         <param name="arm_controller_sigma_values_topic" value="/arm_1/arm_controller/sigma_values" />
         <param name="path_topic" value="/dmp_executor/path" />
         <param name="move_base_server" value="move_base" />
+        <rosparam command="load" file="$(find mdr_move_arm_action)/config/dmp.yaml" />
     </node>
 </launch>

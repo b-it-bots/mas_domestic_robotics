@@ -1,0 +1,43 @@
+#! /usr/bin/env python
+from __future__ import print_function
+from mas_tools.ros_utils import get_package_path
+
+import rospy
+import actionlib
+from geometry_msgs.msg import PoseStamped
+
+from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
+
+if __name__ == '__main__':
+    rospy.init_node('move_arm_client_test')
+
+    client = actionlib.SimpleActionClient('/move_arm_server', MoveArmAction)
+    client.wait_for_server()
+
+    goal = MoveArmGoal()
+    goal.goal_type = MoveArmGoal.END_EFFECTOR_POSE
+    pose = PoseStamped()
+    pose.header.frame_id = 'base_link'
+
+    pose.pose.position.x = 0.45
+    pose.pose.position.y = 0.078
+    pose.pose.position.z = 0.8
+
+    pose.pose.orientation.x = 0.
+    pose.pose.orientation.y = 0.
+    pose.pose.orientation.z = 0.
+    pose.pose.orientation.w = 1.
+
+    goal.end_effector_pose = pose
+    goal.dmp_name = get_package_path('mdr_pickup_action', 'config',
+                                     'trajectory_weights', 'weights_table_grasp.yaml')
+    goal.dmp_tau = 30.
+
+    timeout = 5.
+    rospy.loginfo('Sending action lib goal to move_arm_server')
+    goal_handle = client.send_goal(goal)
+    rospy.sleep(timeout)
+
+    rospy.loginfo('Preempting action')
+    client.cancel_all_goals()
+    print(client.get_result())

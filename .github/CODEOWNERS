@@ -1,7 +1,7 @@
 # Default owners for everything in the repo.
 # Unless a later match takes precedence, they will be requested for review
 # when someone opens a pull request.
-* @argenos @alex-mitrevski @PatrickNa
+* @argenos @alex-mitrevski @PatrickNa @b-it-bots/pullpanda-junior @b-it-bots/pullpanda-senior
 
 mdr_perception @minhnh
 mdr_navigation @argenos

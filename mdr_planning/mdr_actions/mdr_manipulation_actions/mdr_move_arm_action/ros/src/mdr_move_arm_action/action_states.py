@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from threading import Thread
 import numpy as np
 
 import rospy
@@ -42,7 +43,20 @@ class MoveArmSM(ActionSMBase):
             if dmp_name:
                 dmp_traj_executor = DMPExecutor(dmp_name, tau)
                 goal = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
-                dmp_traj_executor.execute(goal)
+
+                dmp_execution_thread = Thread(target=dmp_traj_executor.execute, args=(goal,))
+                dmp_execution_thread.start()
+                while not dmp_traj_executor.motion_completed and \
+                      not self.preempted:
+                    rospy.sleep(0.05)
+
+                if self.preempted:
+                    dmp_traj_executor.motion_cancelled = True
+                    self.preempted = False
+
+                    rospy.loginfo('[move_arm] Cancelled arm motion')
+                    self.result = self.set_result(False)
+                    return FTSMTransitions.DONE
             else:
                 self.arm.set_pose_reference_frame(pose.header.frame_id)
                 self.arm.set_pose_target(pose.pose)

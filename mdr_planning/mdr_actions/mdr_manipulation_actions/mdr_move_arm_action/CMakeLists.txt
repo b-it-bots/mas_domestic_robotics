@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   smach_ros
   geometry_msgs
   moveit_commander
+  ros_dmp
 )
 
 roslint_python()
@@ -38,6 +39,7 @@ catkin_package(
    smach_ros
    geometry_msgs
    moveit_commander
+   ros_dmp
 )
 
 include_directories(

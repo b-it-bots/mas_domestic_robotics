@@ -2,8 +2,8 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_store_groceries
-states: [GO_TO_CUPBOARD, SCAN_CUPBOARD, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_CUPBOARD, PLACE_OBJECT, CHECK_EMPTY_TABLE, GO_BACK_TO_TABLE, EXIT]
-outcomes: [DONE, TIMEOUT]
+states: [GO_TO_CUPBOARD, PREPARE_TO_SCAN_CUPBOARD, PERCEIVE_SHELF, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_CUPBOARD, PLACE_OBJECT, CHECK_EMPTY_TABLE, GO_BACK_TO_TABLE, EXIT]
+outcomes: [DONE, TIMEOUT, FAILED]
 state_descriptions:
     - state:
         name: GO_TO_CUPBOARD
@@ -12,7 +12,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: SCAN_CUPBOARD
+                state: PREPARE_TO_SCAN_CUPBOARD
             - transition:
                 name: failed
                 state: GO_TO_CUPBOARD
@@ -27,7 +27,7 @@ state_descriptions:
                 name: number_of_retries
                 value: 3
     - state:
-        name: SCAN_CUPBOARD
+        name: PREPARE_TO_SCAN_CUPBOARD
         state_module_name: mdr_store_groceries.scenario_states
         state_class_name: ScanCupboard
         transitions:
@@ -36,7 +36,7 @@ state_descriptions:
                 state: PERCEIVE_SHELF
             - transition:
                 name: failed
-                state: SCAN_CUPBOARD
+                state: PREPARE_TO_SCAN_CUPBOARD
             - transition:
                 name: failed_after_retrying
                 state: FAILED
@@ -65,7 +65,6 @@ state_descriptions:
             - argument:
                 name: plane_prefix
                 value: shelf
-
     - state:
         name: GO_TO_TABLE
         state_module_name: mdr_navigation_behaviours.move_base

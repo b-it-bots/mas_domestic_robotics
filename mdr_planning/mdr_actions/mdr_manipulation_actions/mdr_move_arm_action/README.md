@@ -66,8 +66,7 @@ mdr_move_arm_action
           |____mdr_move_arm_action
                |    __init__.py
                |    action_states.py
-               |    dmp.py
-               |____roll_dmp.py
+               |____dmp.py
 ```
 
 ## Dependencies

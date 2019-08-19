@@ -2,7 +2,7 @@
 
 import rospy
 from std_msgs.msg import String
-from mbot_nlu.msg import Slot, ActionSlotArray
+from mbot_nlu.msg import ActionSlotArray
 import datetime
 import time
 

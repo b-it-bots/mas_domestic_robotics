@@ -15,9 +15,6 @@ from cv_bridge import CvBridge
 from find_people import FindPeople
 
 
-POINTCLOUD_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
-
-
 class FindPeopleState(smach.State):
 
     @staticmethod
@@ -51,13 +48,14 @@ class FindPeopleState(smach.State):
                              output_keys=['find_people_result', 'error_message'])
 
         self._listener = tf.TransformListener()
+        self.pointcloud_topic = rospy.get_param("~pointcloud_topic", '/rectified_points')
 
 
     def execute(self, userdata):
         rospy.loginfo('Executing state FIND_PEOPLE')
 
         # Get the pointcloud
-        cloud_msg = rospy.wait_for_message(POINTCLOUD_TOPIC, PointCloud2)
+        cloud_msg = rospy.wait_for_message(self.pointcloud_topic, PointCloud2)
 
         # Get positions of people
         predictions, bb2ds, poses = FindPeople.detect(cloud_msg)
@@ -81,7 +79,7 @@ class FindPeopleState(smach.State):
 
         # Create the action result message
         pl = []
-        for i in range(len(predictions)):
+        for i, _ in enumerate(predictions):
             #if i in people_outside_arena:
             #    continue
 
