@@ -6,7 +6,16 @@ from mas_execution.action_sm_base import ActionSMBase
 from mdr_push_action.msg import PushGoal, PushResult
 
 class PushSM(ActionSMBase):
-    def __init__(self, timeout=120.0, max_recovery_attempts=1):
+    def __init__(self, timeout=120.0, max_recovery_attempts=1,
+                gripper_controller_pkg_name='mas_hsr_gripper_controller',
+                 move_arm_server='move_arm_server',
+                 move_base_server='move_base_server',
+                 move_forward_server='move_forward_server',
+                 base_elbow_offset=-1.,
+                 arm_base_offset=-1.,
+                 grasping_dmp='',
+                 dmp_tau=1.,
+                 number_of_retries=0):
         super(PushSM, self).__init__('Push', [], max_recovery_attempts)
         self.timeout = timeout
 
