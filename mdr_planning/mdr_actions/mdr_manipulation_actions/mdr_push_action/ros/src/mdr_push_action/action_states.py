@@ -22,6 +22,7 @@ class PushSM(ActionSMBase):
                  dmp_tau=1.,
                  number_of_retries=0,
                  safe_arm_joint_config='folded',
+                 initial_arm_config='neutral',
                  grasping_orientation=list()):
         super(PushSM, self).__init__('Push', [], max_recovery_attempts)
         self.timeout = timeout
@@ -41,7 +42,7 @@ class PushSM(ActionSMBase):
         self.grasping_dmp = grasping_dmp
         self.dmp_tau = dmp_tau
         self.number_of_retries = number_of_retries
-
+        self.initial_arm_config=initial_arm_config
         self.tf_listener = tf.TransformListener()
 
         
@@ -96,8 +97,11 @@ class PushSM(ActionSMBase):
             pose_base_link.pose.orientation.z = self.grasping_orientation[2]
             pose_base_link.pose.orientation.w = self.grasping_orientation[3]
         #opening the gripper
-        rospy.loginfo('[push] Opening the gripper...')
-        self.gripper.open()
+        #rospy.loginfo('[push] Opening the gripper...')
+        #self.gripper.open()
+        # neutral position
+        rospy.loginfo('[push] Initial position')
+        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.initial_arm_config)
 
         rospy.loginfo('[push] Preparing for grasp verification')
         self.gripper.init_grasp_verification()
@@ -174,22 +178,7 @@ class PushSM(ActionSMBase):
         result = self.move_arm_client.get_result()
         return result
 
-    def __prepare_sideways_grasp(self, pose_base_link):
-        rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
-        if pose_base_link.pose.position.z > self.pregrasp_height_threshold:
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
-        else:
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_low_config_name)
-
-        if self.intermediate_grasp_offset > 0:
-            rospy.loginfo('[PICKUP] Moving to intermediate grasping pose...')
-            pose_base_link.pose.position.x -= self.intermediate_grasp_offset
-            self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-
-        if self.intermediate_grasp_offset > 0:
-            pose_base_link.pose.position.x += self.intermediate_grasp_offset
-        return pose_base_link
-
+    
     def set_result(self, success):
         result = PushResult()
         result.success = success
