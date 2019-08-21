@@ -11,8 +11,18 @@ if __name__ == '__main__':
 
     client = actionlib.SimpleActionClient('/push_server', PushAction)
     client.wait_for_server()
-
     goal = PushGoal()
+    
+    goal.pose.pose.position.x = 0.418
+    goal.pose.pose.position.y = 0.078
+    goal.pose.pose.position.z = 0.842
+
+    goal.pose.pose.orientation.x = 0.758
+    goal.pose.pose.orientation.y = 0.000
+    goal.pose.pose.orientation.z = 0.652
+    goal.pose.pose.orientation.w = 0.000
+    
+
     timeout = 15.0
     rospy.loginfo('Sending action lib goal to push_server')
     client.send_goal(goal)
