@@ -79,10 +79,9 @@ class PushSM(ActionSMBase):
 
     def running(self):
         ## TODO: fill this method with the execution logic
-        pose = self.goal.pose
+        pose = self.goal.init_end_effector_pose
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
-
         grasp_successful = False
         if self.base_elbow_offset > 0:
             self.__align_base_with_pose(pose_base_link)
@@ -149,11 +148,7 @@ class PushSM(ActionSMBase):
         
         return FTSMTransitions.DONE
 
-    def recovering(self):
-        ## TODO: if recovery behaviours are appropriate, fill this method with
-        ## the recovery logic
-        rospy.sleep(5.)
-        return FTSMTransitions.DONE_RECOVERING
+
        
     def __move_arm(self, goal_type, goal):
         '''Sends a request to the 'move_arm' action server and waits for the
@@ -177,6 +172,30 @@ class PushSM(ActionSMBase):
         self.move_arm_client.wait_for_result()
         result = self.move_arm_client.get_result()
         return result
+    
+    def __prepare_handle_grasp(self, pose_base_link):
+        rospy.loginfo('[handle_open] Moving to a pregrasp configuration...')
+        # ...
+        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+
+        rospy.loginfo('[handle_open] Opening the gripper...')
+        self.gripper.open()
+            
+        # New: grasp verification initilisation
+        # rospy.loginfo('[pickup] Preparing for grasp verification')
+        # self.gripper.init_grasp_verification()
+
+        ## TODO: Implement wrist rotation
+        rospy.loginfo('[handle_open] Rotating the gripper...')
+        self.gripper.rotate_wrist(np.pi/2.)        
+
+        rospy.loginfo('[handle_open] Moving to intermediate grasping pose...')
+        ## TODO: Move arm a specified distance after going to pregrasp_low, if needed:
+        # pose_base_link.pose.position.x -= 0.02
+        # pose_base_link.pose.position.z += 0.02
+        self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+
+        return pose_base_link
 
     
     def set_result(self, success):
