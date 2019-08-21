@@ -15,9 +15,34 @@ class PushServer(object):
     def __init__(self):
         ## TODO: read any configuration parameters for the action here
         # param = rospy.get_param('~param_name', 'default_param_value')
+        move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
+        move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
+        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name',
+                                                      'mdr_gripper_controller')
+        pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp')
+        grasp_offset = float(rospy.get_param('~intermediate_grasp_offset', -1.))
+        safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
+        base_elbow_offset = float(rospy.get_param('~base_elbow_offset', -1.))
+        arm_base_offset = float(rospy.get_param('~arm_base_offset', -1.))
+        grasping_orientation = rospy.get_param('~grasping_orientation', list())
+        grasping_dmp = rospy.get_param('~grasping_dmp', '')
+        dmp_tau = float(rospy.get_param('~dmp_tau', 1.))
+        number_of_retries = int(rospy.get_param('~number_of_retries', 0))
 
         rospy.loginfo('[push] Initialising state machine')
-        self.action_sm = PushSM()
+        self.action_sm = PushSM(move_arm_server=move_arm_server,
+                                  move_base_server=move_base_server,
+                                  gripper_controller_pkg_name=gripper_controller_pkg_name,
+                                  pregrasp_config_name=pregrasp_config_name,
+                                  intermediate_grasp_offset=grasp_offset,
+                                  safe_arm_joint_config=safe_arm_joint_config,
+                                  base_elbow_offset=base_elbow_offset,
+                                  arm_base_offset=arm_base_offset,
+                                  grasping_orientation=grasping_orientation,
+                                  grasping_dmp=grasping_dmp,
+                                  dmp_tau=dmp_tau,
+                                  number_of_retries=number_of_retries)
+
         rospy.loginfo('[push] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('push_server',
