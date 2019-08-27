@@ -219,9 +219,13 @@ class PushSM(ActionSMBase):
             move_arm_goal.end_effector_pose = goal
             move_arm_goal.dmp_name = self.grasping_dmp
             move_arm_goal.dmp_tau = self.dmp_tau
+        print 'start move arm'
         self.move_arm_client.send_goal(move_arm_goal)
+        print 'wait'
         self.move_arm_client.wait_for_result()
+        print 'result'
         result = self.move_arm_client.get_result()
+        print result
         return result
 
     def __prepare_sideways_grasp(self, pose_base_link):
