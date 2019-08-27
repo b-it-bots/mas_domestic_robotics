@@ -33,7 +33,7 @@ class PushSM(ActionSMBase):
                  dmp_tau=1.,
                  number_of_retries=0,
                  max_recovery_attempts=1):
-        super(PushSM, self).__init__('Pick', [], max_recovery_attempts)
+        super(PushSM, self).__init__('Push', [], max_recovery_attempts)
         self.timeout = timeout
 
         gripper_controller_module_name = '{0}.gripper_controller'.format(gripper_controller_pkg_name)
