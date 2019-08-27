@@ -5,7 +5,7 @@ import actionlib
 from mdr_pickup_action.msg import PickupAction
 from mdr_pickup_action.action_states import PickupSM
 
-class PickupServer(object):
+class PushServer(object):
     '''A server exposing a pickup action.
 
     The server expects the following parameters to be made available on the ROS parameter server:
@@ -65,7 +65,7 @@ class PickupServer(object):
                                   number_of_retries=number_of_retries)
         rospy.loginfo('[pickup] State machine initialised')
 
-        self.action_server = actionlib.SimpleActionServer('pickup_server',
+        self.action_server = actionlib.SimpleActionServer('push_server',
                                                           PickupAction, self.execute, False)
         self.action_server.start()
         rospy.loginfo('pickup action server ready')
@@ -80,12 +80,12 @@ class PickupServer(object):
         self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
-    rospy.init_node('pickup_server')
-    pickup_server = PickupServer()
+    rospy.init_node('push_server')
+    push_server = PushServer()
     try:
-        pickup_server.action_sm.run()
-        while pickup_server.action_sm.is_running and not rospy.is_shutdown():
+        push_server.action_sm.run()
+        while push_server.action_sm.is_running and not rospy.is_shutdown():
             rospy.spin()
     except (KeyboardInterrupt, SystemExit):
-        print('{0} interrupted; exiting...'.format(pickup_server.action_sm.name))
-        pickup_server.action_sm.stop()
+        print('{0} interrupted; exiting...'.format(push_server.action_sm.name))
+        push_server.action_sm.stop()

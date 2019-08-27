@@ -5,9 +5,9 @@ import actionlib
 from mdr_pickup_action.msg import PickupAction, PickupGoal
 
 if __name__ == '__main__':
-    rospy.init_node('pickup_action_client_test')
+    rospy.init_node('push_action_client_test')
 
-    client = actionlib.SimpleActionClient('pickup_server', PickupAction)
+    client = actionlib.SimpleActionClient('push_server', PushAction)
     client.wait_for_server()
 
     goal = PickupGoal()
