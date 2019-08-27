@@ -2,10 +2,39 @@
 import rospy
 import actionlib
 
-from mdr_push_action.msg import PushAction
-from mdr_push_action.action_states import PushSM
+from mdr_pickup_action.msg import PickupAction
+from mdr_pickup_action.action_states import PickupSM
 
-class PushServer(object):
+class PickupServer(object):
+    '''A server exposing a pickup action.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * move_arm_server: Name of the move_arm action server (default: 'move_arm_server')
+    * move_base_server: Name of the move_base action server (default: 'move_base_server')
+    * gripper_controller_pkg_name: The name of a package that implements functionalities for
+                                   controlling a robot's gripper (default: 'mdr_gripper_controller')
+    * pregrasp_config_name: The name of the pregrasp configuration (default: 'pregrasp')
+    * intermediate_grasp_offset: An optional pose offset that creates an intermediate
+                                 trajectory goal following the pregrasp configuration (default: -1)
+    * safe_arm_joint_config: The name of a configuration in which the robot can
+                             safely move around the environment (default: 'folded')
+    * base_elbow_offset: An optional offset between base_link and the manipulator's elbow;
+                         used for aligning the base with the object to be grasped
+                         so that the manipulator can easily reach the object (default: -1)
+    * grasping_dmp: Path to a YAML file containing the weights of a dynamic motion primitive
+                    used for grasping (default: '')
+    * dmp_tau: The value of the temporal dynamic motion primitive parameter (default: 1)
+    * grasping_orientation: For more constrained manipulators, it might make sense to use
+                            a fixed grasping orientation (expressed as an (x, y, z, w) quaternion)
+                            to ensure easier reachability (default: [], in which case
+                            the argument is ignored)
+    * number_of_retries: Number of times a grasp should be repeated in case
+                         it fails the first time (default 0)
+
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
     def __init__(self):
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
         move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
@@ -21,8 +50,8 @@ class PushServer(object):
         dmp_tau = float(rospy.get_param('~dmp_tau', 1.))
         number_of_retries = int(rospy.get_param('~number_of_retries', 0))
 
-        rospy.loginfo('[push] Initialising state machine')
-        self.action_sm = PushSM(move_arm_server=move_arm_server,
+        rospy.loginfo('[pickup] Initialising state machine')
+        self.action_sm = PickupSM(move_arm_server=move_arm_server,
                                   move_base_server=move_base_server,
                                   gripper_controller_pkg_name=gripper_controller_pkg_name,
                                   pregrasp_config_name=pregrasp_config_name,
@@ -34,15 +63,15 @@ class PushServer(object):
                                   grasping_dmp=grasping_dmp,
                                   dmp_tau=dmp_tau,
                                   number_of_retries=number_of_retries)
-        rospy.loginfo('[push] State machine initialised')
+        rospy.loginfo('[pickup] State machine initialised')
 
-        self.action_server = actionlib.SimpleActionServer('push_server',
-                                                          PushAction, self.execute, False)
+        self.action_server = actionlib.SimpleActionServer('pickup_server',
+                                                          PickupAction, self.execute, False)
         self.action_server.start()
-        rospy.loginfo('push action server ready')
+        rospy.loginfo('pickup action server ready')
 
     def execute(self, goal):
-        rospy.loginfo('[push] Received an action request')
+        rospy.loginfo('[pickup] Received an action request')
         self.action_sm.goal = goal
         self.action_sm.result = None
         self.action_sm.execution_requested = True
@@ -51,12 +80,12 @@ class PushServer(object):
         self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
-    rospy.init_node('push_server')
-    push_server = PushServer()
+    rospy.init_node('pickup_server')
+    pickup_server = PickupServer()
     try:
-        push_server.action_sm.run()
-        while push_server.action_sm.is_running and not rospy.is_shutdown():
+        pickup_server.action_sm.run()
+        while pickup_server.action_sm.is_running and not rospy.is_shutdown():
             rospy.spin()
     except (KeyboardInterrupt, SystemExit):
-        print('{0} interrupted; exiting...'.format(push_server.action_sm.name))
-        push_server.action_sm.stop()
+        print('{0} interrupted; exiting...'.format(pickup_server.action_sm.name))
+        pickup_server.action_sm.stop()

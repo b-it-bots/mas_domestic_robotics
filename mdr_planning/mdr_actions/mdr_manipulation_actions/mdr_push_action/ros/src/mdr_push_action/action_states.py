@@ -12,9 +12,9 @@ from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from mdr_push_action.msg import PushGoal, PushResult
+from mdr_pickup_action.msg import PickupGoal, PickupResult
 
-class PushSM(ActionSMBase):
+class PickupSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mdr_gripper_controller',
                  pregrasp_config_name='pregrasp',
@@ -33,7 +33,7 @@ class PushSM(ActionSMBase):
                  dmp_tau=1.,
                  number_of_retries=0,
                  max_recovery_attempts=1):
-        super(PushSM, self).__init__('Push', [], max_recovery_attempts)
+        super(PickupSM, self).__init__('Pick', [], max_recovery_attempts)
         self.timeout = timeout
 
         gripper_controller_module_name = '{0}.gripper_controller'.format(gripper_controller_pkg_name)
@@ -66,24 +66,24 @@ class PushSM(ActionSMBase):
     def init(self):
         try:
             self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
-            rospy.loginfo('[push] Waiting for %s server', self.move_arm_server)
+            rospy.loginfo('[pickup] Waiting for %s server', self.move_arm_server)
             self.move_arm_client.wait_for_server()
         except:
-            rospy.logerr('[push] %s server does not seem to respond', self.move_arm_server)
+            rospy.logerr('[pickup] %s server does not seem to respond', self.move_arm_server)
 
         try:
             self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
-            rospy.loginfo('[push] Waiting for %s server', self.move_base_server)
+            rospy.loginfo('[pickup] Waiting for %s server', self.move_base_server)
             self.move_base_client.wait_for_server()
         except:
-            rospy.logerr('[push] %s server does not seem to respond', self.move_base_server)
+            rospy.logerr('[pickup] %s server does not seem to respond', self.move_base_server)
 
         try:
             self.move_forward_client = actionlib.SimpleActionClient(self.move_forward_server, MoveForwardAction)
-            rospy.loginfo('[push] Waiting for %s server', self.move_forward_server)
+            rospy.loginfo('[pickup] Waiting for %s server', self.move_forward_server)
             self.move_forward_client.wait_for_server()
         except:
-            rospy.logerr('[push] %s server does not seem to respond', self.move_forward_server)
+            rospy.logerr('[pickup] %s server does not seem to respond', self.move_forward_server)
 
         return FTSMTransitions.INITIALISED
 
@@ -109,69 +109,69 @@ class PushSM(ActionSMBase):
         retry_count = 0
         while (not grasp_successful) and (retry_count <= self.number_of_retries):
             if retry_count > 0:
-                rospy.loginfo('[push] Retrying grasp')
+                rospy.loginfo('[pickup] Retrying grasp')
 
-            rospy.loginfo('[push] Opening the gripper...')
+            rospy.loginfo('[pickup] Opening the gripper...')
             self.gripper.open()
 
-            rospy.loginfo('[push] Preparing for grasp verification')
+            rospy.loginfo('[pickup] Preparing for grasp verification')
             self.gripper.init_grasp_verification()
 
-            if self.goal.strategy == PushGoal.SIDEWAYS_GRASP:
-                rospy.loginfo('[push] Preparing sideways graps')
+            if self.goal.strategy == PickupGoal.SIDEWAYS_GRASP:
+                rospy.loginfo('[pickup] Preparing sideways graps')
                 pose_base_link = self.__prepare_sideways_grasp(pose_base_link)
 
-                rospy.loginfo('[push] Grasping...')
+                rospy.loginfo('[pickup] Grasping...')
                 arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
                 if not arm_motion_success:
-                    rospy.logerr('[push] Arm motion unsuccessful')
+                    rospy.logerr('[pickup] Arm motion unsuccessful')
                     self.result = self.set_result(False)
                     return FTSMTransitions.DONE
 
-                rospy.loginfo('[push] Arm motion successful')
-            elif self.goal.strategy == PushGoal.TOP_GRASP:
-                rospy.loginfo('[push] Preparing top grasp')
+                rospy.loginfo('[pickup] Arm motion successful')
+            elif self.goal.strategy == PickupGoal.TOP_GRASP:
+                rospy.loginfo('[pickup] Preparing top grasp')
                 pose_base_link, x_align_distance = self.__prepare_top_grasp(pose_base_link)
                 self.gripper.orient_z(pose_base_link.pose.orientation)
 
                 pose_base_link, _ = self.__prepare_top_grasp(pose_base_link)
-                rospy.loginfo('[push] Grasping...')
+                rospy.loginfo('[pickup] Grasping...')
                 arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
                 if not arm_motion_success:
-                    rospy.logerr('[push] Arm motion unsuccessful')
+                    rospy.logerr('[pickup] Arm motion unsuccessful')
                     self.result = self.set_result(False)
                     return FTSMTransitions.DONE
 
-                rospy.loginfo('[push] Arm motion successful')
+                rospy.loginfo('[pickup] Arm motion successful')
             else:
-                rospy.logerr('[push] Unknown grasping strategy requested; ignoring request')
+                rospy.logerr('[pickup] Unknown grasping strategy requested; ignoring request')
                 self.result = self.set_result(False)
                 return FTSMTransitions.DONE
 
-            rospy.loginfo('[push] Closing the gripper')
+            rospy.loginfo('[pickup] Closing the gripper')
             self.gripper.close()
 
-            rospy.loginfo('[push] Moving the arm back')
+            rospy.loginfo('[pickup] Moving the arm back')
             self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
 
-            if self.goal.strategy == PushGoal.TOP_GRASP:
-                rospy.loginfo('[push] Moving the base back to the original position')
+            if self.goal.strategy == PickupGoal.TOP_GRASP:
+                rospy.loginfo('[pickup] Moving the base back to the original position')
                 if abs(x_align_distance) > 0:
                     self.__move_base_along_x(-x_align_distance)
 
-            rospy.loginfo('[push] Verifying the grasp...')
+            rospy.loginfo('[pickup] Verifying the grasp...')
             grasp_successful = self.gripper.verify_grasp()
             if grasp_successful:
-                rospy.loginfo('[push] Successfully grasped object')
+                rospy.loginfo('[pickup] Successfully grasped object')
             else:
-                rospy.loginfo('[push] Grasp unsuccessful')
+                rospy.loginfo('[pickup] Grasp unsuccessful')
                 retry_count += 1
 
         if grasp_successful:
             self.result = self.set_result(True)
             return FTSMTransitions.DONE
 
-        rospy.loginfo('[push] Grasp could not be performed successfully')
+        rospy.loginfo('[pickup] Grasp could not be performed successfully')
         self.result = self.set_result(False)
         return FTSMTransitions.DONE
 
@@ -219,24 +219,20 @@ class PushSM(ActionSMBase):
             move_arm_goal.end_effector_pose = goal
             move_arm_goal.dmp_name = self.grasping_dmp
             move_arm_goal.dmp_tau = self.dmp_tau
-        print 'start move arm'
         self.move_arm_client.send_goal(move_arm_goal)
-        print 'wait'
         self.move_arm_client.wait_for_result()
-        print 'result'
         result = self.move_arm_client.get_result()
-        print result
         return result
 
     def __prepare_sideways_grasp(self, pose_base_link):
-        rospy.loginfo('[Push] Moving to a pregrasp configuration...')
+        rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
         if pose_base_link.pose.position.z > self.pregrasp_height_threshold:
             self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
         else:
             self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_low_config_name)
 
         if self.intermediate_grasp_offset > 0:
-            rospy.loginfo('[Push] Moving to intermediate grasping pose...')
+            rospy.loginfo('[PICKUP] Moving to intermediate grasping pose...')
             pose_base_link.pose.position.x -= self.intermediate_grasp_offset
             self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
 
@@ -245,7 +241,7 @@ class PushSM(ActionSMBase):
         return pose_base_link
 
     def __prepare_top_grasp(self, pose_base_link):
-        rospy.loginfo('[Push] Moving to a pregrasp configuration...')
+        rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
         self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_top_config_name)
         x_align_distance = 0
         if self.arm_base_offset > 0:
@@ -265,6 +261,6 @@ class PushSM(ActionSMBase):
         self.move_forward_client.get_result()
 
     def set_result(self, success):
-        result = PushResult()
+        result = PickupResult()
         result.success = success
         return result
