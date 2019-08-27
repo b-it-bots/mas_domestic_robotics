@@ -6,15 +6,7 @@ from mdr_push_action.msg import PushAction
 from mdr_push_action.action_states import PushSM
 
 class PushServer(object):
-    '''A server exposing an object pushing action.
-
-    The server expects the following parameters to be made available on the ROS parameter server:
-    ## TODO: list any expected parameters here
-
-    '''
     def __init__(self):
-        ## TODO: read any configuration parameters for the action here
-        # param = rospy.get_param('~param_name', 'default_param_value')
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
         move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
         gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name',
@@ -42,12 +34,10 @@ class PushServer(object):
                                   grasping_dmp=grasping_dmp,
                                   dmp_tau=dmp_tau,
                                   number_of_retries=number_of_retries)
-
         rospy.loginfo('[push] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('push_server',
-                                                          PushAction,
-                                                          self.execute, False)
+                                                          PushAction, self.execute, False)
         self.action_server.start()
         rospy.loginfo('push action server ready')
 

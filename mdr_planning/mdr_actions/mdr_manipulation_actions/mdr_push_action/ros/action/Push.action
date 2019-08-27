@@ -1,7 +1,9 @@
 # goal
-geometry_msgs/PoseStamped init_end_effector_pose
-geometry_msgs/Vector3 direction
-float64 duration
+uint32 SIDEWAYS_GRASP=0
+uint32 TOP_GRASP=1
+
+geometry_msgs/PoseStamped pose
+uint32 strategy
 ---
 # result
 bool success

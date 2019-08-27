@@ -1,30 +1,39 @@
 #!/usr/bin/python
+from importlib import import_module
+import numpy as np
+
 import rospy
 import tf
 import actionlib
+from geometry_msgs.msg import PoseStamped
+
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
-from mdr_push_action.msg import PushGoal, PushResult
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from importlib import import_module
+from mdr_push_action.msg import PushGoal, PushResult
 
 class PushSM(ActionSMBase):
-    def __init__(self, timeout=120.0, max_recovery_attempts=1,
-                gripper_controller_pkg_name='mas_hsr_gripper_controller',
+    def __init__(self, timeout=120.0,
+                 gripper_controller_pkg_name='mdr_gripper_controller',
+                 pregrasp_config_name='pregrasp',
+                 pregrasp_top_config_name='pregrasp_top',
+                 pregrasp_low_config_name='pregrasp_low',
+                 pregrasp_height_threshold=0.5,
+                 intermediate_grasp_offset=-1,
+                 safe_arm_joint_config='folded',
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  move_forward_server='move_forward_server',
                  base_elbow_offset=-1.,
                  arm_base_offset=-1.,
+                 grasping_orientation=list(),
                  grasping_dmp='',
                  dmp_tau=1.,
                  number_of_retries=0,
-                 safe_arm_joint_config='folded',
-                 initial_arm_config='neutral',
-                 grasping_orientation=list()):
-        super(PushSM, self).__init__('Push', [], max_recovery_attempts)
+                 max_recovery_attempts=1):
+        super(PushSM, self).__init__('Pick', [], max_recovery_attempts)
         self.timeout = timeout
 
         gripper_controller_module_name = '{0}.gripper_controller'.format(gripper_controller_pkg_name)
@@ -32,6 +41,11 @@ class PushSM(ActionSMBase):
                                          'GripperController')
         self.gripper = GripperControllerClass()
 
+        self.pregrasp_config_name = pregrasp_config_name
+        self.pregrasp_top_config_name = pregrasp_top_config_name
+        self.pregrasp_low_config_name = pregrasp_low_config_name
+        self.pregrasp_height_threshold = pregrasp_height_threshold
+        self.intermediate_grasp_offset = intermediate_grasp_offset
         self.safe_arm_joint_config = safe_arm_joint_config
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
@@ -42,15 +56,12 @@ class PushSM(ActionSMBase):
         self.grasping_dmp = grasping_dmp
         self.dmp_tau = dmp_tau
         self.number_of_retries = number_of_retries
-        self.initial_arm_config=initial_arm_config
-        self.tf_listener = tf.TransformListener()
 
-        
+        self.tf_listener = tf.TransformListener()
 
         self.move_arm_client = None
         self.move_base_client = None
         self.move_forward_client = None
-
 
     def init(self):
         try:
@@ -59,7 +70,6 @@ class PushSM(ActionSMBase):
             self.move_arm_client.wait_for_server()
         except:
             rospy.logerr('[push] %s server does not seem to respond', self.move_arm_server)
-            return FTSMTransitions.INIT_FAILED
 
         try:
             self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
@@ -67,22 +77,21 @@ class PushSM(ActionSMBase):
             self.move_base_client.wait_for_server()
         except:
             rospy.logerr('[push] %s server does not seem to respond', self.move_base_server)
-            return FTSMTransitions.INIT_FAILED
+
         try:
             self.move_forward_client = actionlib.SimpleActionClient(self.move_forward_server, MoveForwardAction)
             rospy.loginfo('[push] Waiting for %s server', self.move_forward_server)
             self.move_forward_client.wait_for_server()
         except:
             rospy.logerr('[push] %s server does not seem to respond', self.move_forward_server)
-            return FTSMTransitions.INIT_FAILED
+
         return FTSMTransitions.INITIALISED
 
     def running(self):
-        ## TODO: fill this method with the execution logic
-        pose = self.goal.init_end_effector_pose
+        pose = self.goal.pose
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
-        grasp_successful = False
+
         if self.base_elbow_offset > 0:
             self.__align_base_with_pose(pose_base_link)
 
@@ -95,61 +104,103 @@ class PushSM(ActionSMBase):
             pose_base_link.pose.orientation.y = self.grasping_orientation[1]
             pose_base_link.pose.orientation.z = self.grasping_orientation[2]
             pose_base_link.pose.orientation.w = self.grasping_orientation[3]
-        #opening the gripper
-        #rospy.loginfo('[push] Opening the gripper...')
-        #self.gripper.open()
-        # neutral position
-        rospy.loginfo('[push] Initial position')
-        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.initial_arm_config)
 
-        rospy.loginfo('[push] Preparing for grasp verification')
-        self.gripper.init_grasp_verification()
+        grasp_successful = False
+        retry_count = 0
+        while (not grasp_successful) and (retry_count <= self.number_of_retries):
+            if retry_count > 0:
+                rospy.loginfo('[push] Retrying grasp')
 
-        #move to the object
-        rospy.loginfo('[push] Preparing sideways graps')
-        pose_base_link = self.__prepare_sideways_grasp(pose_base_link)
+            rospy.loginfo('[push] Opening the gripper...')
+            self.gripper.open()
 
-        rospy.loginfo('[push] Grasping...')
-        arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-        
-        if not arm_motion_success:
-            rospy.logerr('[push] Arm motion unsuccessful')
-            self.result = self.set_result(False)
-            return FTSMTransitions.DONE
-        
-        rospy.loginfo('[push] Arm motion successful')
+            rospy.loginfo('[push] Preparing for grasp verification')
+            self.gripper.init_grasp_verification()
 
-        #grasping
-        rospy.loginfo('[push] Closing the gripper')
-        self.gripper.close()
-        
-        rospy.loginfo('[push] Verifying the grasp...')
-        grasp_successful = self.gripper.verify_grasp()
+            if self.goal.strategy == PushGoal.SIDEWAYS_GRASP:
+                rospy.loginfo('[push] Preparing sideways graps')
+                pose_base_link = self.__prepare_sideways_grasp(pose_base_link)
+
+                rospy.loginfo('[push] Grasping...')
+                arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+                if not arm_motion_success:
+                    rospy.logerr('[push] Arm motion unsuccessful')
+                    self.result = self.set_result(False)
+                    return FTSMTransitions.DONE
+
+                rospy.loginfo('[push] Arm motion successful')
+            elif self.goal.strategy == PushGoal.TOP_GRASP:
+                rospy.loginfo('[push] Preparing top grasp')
+                pose_base_link, x_align_distance = self.__prepare_top_grasp(pose_base_link)
+                self.gripper.orient_z(pose_base_link.pose.orientation)
+
+                pose_base_link, _ = self.__prepare_top_grasp(pose_base_link)
+                rospy.loginfo('[push] Grasping...')
+                arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+                if not arm_motion_success:
+                    rospy.logerr('[push] Arm motion unsuccessful')
+                    self.result = self.set_result(False)
+                    return FTSMTransitions.DONE
+
+                rospy.loginfo('[push] Arm motion successful')
+            else:
+                rospy.logerr('[push] Unknown grasping strategy requested; ignoring request')
+                self.result = self.set_result(False)
+                return FTSMTransitions.DONE
+
+            rospy.loginfo('[push] Closing the gripper')
+            self.gripper.close()
+
+            rospy.loginfo('[push] Moving the arm back')
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
+
+            if self.goal.strategy == PushGoal.TOP_GRASP:
+                rospy.loginfo('[push] Moving the base back to the original position')
+                if abs(x_align_distance) > 0:
+                    self.__move_base_along_x(-x_align_distance)
+
+            rospy.loginfo('[push] Verifying the grasp...')
+            grasp_successful = self.gripper.verify_grasp()
+            if grasp_successful:
+                rospy.loginfo('[push] Successfully grasped object')
+            else:
+                rospy.loginfo('[push] Grasp unsuccessful')
+                retry_count += 1
+
         if grasp_successful:
-            rospy.loginfo('[push] Successfully grasped object')
-        else:
-            rospy.loginfo('[push] Grasp unsuccessful')
-                
-        #move to goal position
-        rospy.loginfo('[push] Moving the arm forward')
-        #change self.safe_arm_joint_config to goal position
-        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.goal_config)
-        
-        #release the object
-        rospy.loginfo('[push] Opening the gripper')
-        self.gripper.open()
+            self.result = self.set_result(True)
+            return FTSMTransitions.DONE
 
-        # move to safe arm position
-        rospy.loginfo('[push] Move the arm to safe position')
-        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
-
-
-            
-        
+        rospy.loginfo('[push] Grasp could not be performed successfully')
+        self.result = self.set_result(False)
         return FTSMTransitions.DONE
 
+    def __align_base_with_pose(self, pose_base_link):
+        '''Moves the base so that the elbow is aligned with the goal pose.
 
-       
+        Keyword arguments:
+        pose_base_link -- a 'geometry_msgs/PoseStamped' message representing
+                          the goal pose in the base link frame
+
+        '''
+        aligned_base_pose = PoseStamped()
+        aligned_base_pose.header.frame_id = 'base_link'
+        aligned_base_pose.header.stamp = rospy.Time.now()
+        aligned_base_pose.pose.position.x = 0.
+        aligned_base_pose.pose.position.y = pose_base_link.pose.position.y - self.base_elbow_offset
+        aligned_base_pose.pose.position.z = 0.
+        aligned_base_pose.pose.orientation.x = 0.
+        aligned_base_pose.pose.orientation.y = 0.
+        aligned_base_pose.pose.orientation.z = 0.
+        aligned_base_pose.pose.orientation.w = 1.
+
+        move_base_goal = MoveBaseGoal()
+        move_base_goal.goal_type = MoveBaseGoal.POSE
+        move_base_goal.pose = aligned_base_pose
+        self.move_base_client.send_goal(move_base_goal)
+        self.move_base_client.wait_for_result()
+        self.move_base_client.get_result()
+
     def __move_arm(self, goal_type, goal):
         '''Sends a request to the 'move_arm' action server and waits for the
         results of the action execution.
@@ -172,32 +223,43 @@ class PushSM(ActionSMBase):
         self.move_arm_client.wait_for_result()
         result = self.move_arm_client.get_result()
         return result
-    
-    def __prepare_handle_grasp(self, pose_base_link):
-        rospy.loginfo('[handle_open] Moving to a pregrasp configuration...')
-        # ...
-        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
 
-        rospy.loginfo('[handle_open] Opening the gripper...')
-        self.gripper.open()
-            
-        # New: grasp verification initilisation
-        # rospy.loginfo('[pickup] Preparing for grasp verification')
-        # self.gripper.init_grasp_verification()
+    def __prepare_sideways_grasp(self, pose_base_link):
+        rospy.loginfo('[Push] Moving to a pregrasp configuration...')
+        if pose_base_link.pose.position.z > self.pregrasp_height_threshold:
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+        else:
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_low_config_name)
 
-        ## TODO: Implement wrist rotation
-        rospy.loginfo('[handle_open] Rotating the gripper...')
-        self.gripper.rotate_wrist(np.pi/2.)        
+        if self.intermediate_grasp_offset > 0:
+            rospy.loginfo('[Push] Moving to intermediate grasping pose...')
+            pose_base_link.pose.position.x -= self.intermediate_grasp_offset
+            self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
 
-        rospy.loginfo('[handle_open] Moving to intermediate grasping pose...')
-        ## TODO: Move arm a specified distance after going to pregrasp_low, if needed:
-        # pose_base_link.pose.position.x -= 0.02
-        # pose_base_link.pose.position.z += 0.02
-        self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-
+        if self.intermediate_grasp_offset > 0:
+            pose_base_link.pose.position.x += self.intermediate_grasp_offset
         return pose_base_link
 
-    
+    def __prepare_top_grasp(self, pose_base_link):
+        rospy.loginfo('[Push] Moving to a pregrasp configuration...')
+        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_top_config_name)
+        x_align_distance = 0
+        if self.arm_base_offset > 0:
+            x_align_distance = pose_base_link.pose.position.x - self.arm_base_offset
+            self.__move_base_along_x(x_align_distance)
+            pose_base_link.pose.position.x = self.arm_base_offset
+        return pose_base_link, x_align_distance
+
+    def __move_base_along_x(self, distance_to_move):
+        movement_speed = np.sign(distance_to_move) * 0.1 # m/s
+        movement_duration = distance_to_move / movement_speed
+        move_forward_goal = MoveForwardGoal()
+        move_forward_goal.movement_duration = movement_duration
+        move_forward_goal.speed = movement_speed
+        self.move_forward_client.send_goal(move_forward_goal)
+        self.move_forward_client.wait_for_result()
+        self.move_forward_client.get_result()
+
     def set_result(self, success):
         result = PushResult()
         result.success = success
