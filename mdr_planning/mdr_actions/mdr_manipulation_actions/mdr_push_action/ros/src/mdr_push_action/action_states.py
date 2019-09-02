@@ -116,45 +116,16 @@ class PushSM(ActionSMBase):
 
 #            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')
 
-            self.initial_pose.pose.pose.position.z = pose_base_link.pose.position.z
-            self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, self.initial_pose.pose)
-            rospy.loginfo('[pickup] Grasping...')
-            #self.__move_base_along_x(pose_base_link.pose.position.x)
-            #self.record_data_santosh_pub.publish('e_start')
-            self.record_data_pub.publish('start')
-            dist = pose_base_link.pose.position.x
-            self.record_data_pub.publish('stop')
-            self.__move_base_along_x(dist)
-            rospy.sleep(1)
-#            arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-            '''
-            if not arm_motion_success:
-                rospy.logerr('[pickup] Arm motion unsuccessful')
-                self.result = self.set_result(False)
-                return FTSMTransitions.DONE
-            '''
-            rospy.loginfo('[pickup] Arm motion successful')
+           
 
             rospy.loginfo('[pickup] Closing the gripper')
             self.gripper.close()
-            self.record_data_pub.publish('start')
-            print ('start')
-            self.__move_base_along_x(-(dist-0.1))
-            print ('stop')
-            self.record_data_pub.publish('stop')
-
+            
             self.gripper.open()
             #self.record_data_santosh_pub.publish('e_stop')
 
 
-            rospy.loginfo('[pickup] Moving the base back to the original position')
-            self.__move_base_along_x(-0.1)
-
-            rospy.loginfo('[pickup] Moving the arm back')
-            #self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')
-
-            pose_base_link.pose.position.y = self.base_elbow_offset - y_offset_distance
-            self.__align_base_with_pose(pose_base_link)
+           
 
             self.result = self.set_result(True)
             return FTSMTransitions.DONE

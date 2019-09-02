@@ -2,8 +2,8 @@
 import rospy
 import actionlib
 
-from mdr_pickup_action.msg import PickupAction
-from mdr_pickup_action.action_states import PickupSM
+from mdr_push_action.msg import PushAction
+from mdr_push_action.action_states import PushSM
 
 class PushServer(object):
     '''A server exposing a pickup action.
@@ -50,8 +50,8 @@ class PushServer(object):
         dmp_tau = float(rospy.get_param('~dmp_tau', 1.))
         number_of_retries = int(rospy.get_param('~number_of_retries', 0))
 
-        rospy.loginfo('[pickup] Initialising state machine')
-        self.action_sm = PickupSM(move_arm_server=move_arm_server,
+        rospy.loginfo('[Push] Initialising state machine')
+        self.action_sm = PushSM(move_arm_server=move_arm_server,
                                   move_base_server=move_base_server,
                                   gripper_controller_pkg_name=gripper_controller_pkg_name,
                                   pregrasp_config_name=pregrasp_config_name,
@@ -63,15 +63,15 @@ class PushServer(object):
                                   grasping_dmp=grasping_dmp,
                                   dmp_tau=dmp_tau,
                                   number_of_retries=number_of_retries)
-        rospy.loginfo('[pickup] State machine initialised')
+        rospy.loginfo('[Push] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('push_server',
-                                                          PickupAction, self.execute, False)
+                                                          PushAction, self.execute, False)
         self.action_server.start()
-        rospy.loginfo('pickup action server ready')
+        rospy.loginfo('Push action server ready')
 
     def execute(self, goal):
-        rospy.loginfo('[pickup] Received an action request')
+        rospy.loginfo('[Push] Received an action request')
         self.action_sm.goal = goal
         self.action_sm.result = None
         self.action_sm.execution_requested = True
