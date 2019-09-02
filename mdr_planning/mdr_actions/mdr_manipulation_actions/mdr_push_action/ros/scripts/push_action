@@ -6,63 +6,11 @@ from mdr_push_action.msg import PushAction
 from mdr_push_action.action_states import PushSM
 
 class PushServer(object):
-    '''A server exposing a pickup action.
 
-    The server expects the following parameters to be made available on the ROS parameter server:
-    * move_arm_server: Name of the move_arm action server (default: 'move_arm_server')
-    * move_base_server: Name of the move_base action server (default: 'move_base_server')
-    * gripper_controller_pkg_name: The name of a package that implements functionalities for
-                                   controlling a robot's gripper (default: 'mdr_gripper_controller')
-    * pregrasp_config_name: The name of the pregrasp configuration (default: 'pregrasp')
-    * intermediate_grasp_offset: An optional pose offset that creates an intermediate
-                                 trajectory goal following the pregrasp configuration (default: -1)
-    * safe_arm_joint_config: The name of a configuration in which the robot can
-                             safely move around the environment (default: 'folded')
-    * base_elbow_offset: An optional offset between base_link and the manipulator's elbow;
-                         used for aligning the base with the object to be grasped
-                         so that the manipulator can easily reach the object (default: -1)
-    * grasping_dmp: Path to a YAML file containing the weights of a dynamic motion primitive
-                    used for grasping (default: '')
-    * dmp_tau: The value of the temporal dynamic motion primitive parameter (default: 1)
-    * grasping_orientation: For more constrained manipulators, it might make sense to use
-                            a fixed grasping orientation (expressed as an (x, y, z, w) quaternion)
-                            to ensure easier reachability (default: [], in which case
-                            the argument is ignored)
-    * number_of_retries: Number of times a grasp should be repeated in case
-                         it fails the first time (default 0)
-
-    @author Alex Mitrevski
-    @contact aleksandar.mitrevski@h-brs.de
-
-    '''
     def __init__(self):
-        move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
-        move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
-        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name',
-                                                      'mas_hsr_gripper_controller')
-        pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp')
-        grasp_offset = float(rospy.get_param('~intermediate_grasp_offset', -1.))
-        safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
-        base_elbow_offset = float(rospy.get_param('~base_elbow_offset', -1.))
-        arm_base_offset = float(rospy.get_param('~arm_base_offset', -1.))
-        grasping_orientation = rospy.get_param('~grasping_orientation', list())
-        grasping_dmp = rospy.get_param('~grasping_dmp', '')
-        dmp_tau = float(rospy.get_param('~dmp_tau', 1.))
-        number_of_retries = int(rospy.get_param('~number_of_retries', 0))
-
+        
         rospy.loginfo('[Push] Initialising state machine')
-        self.action_sm = PushSM(move_arm_server=move_arm_server,
-                                  move_base_server=move_base_server,
-                                  gripper_controller_pkg_name=gripper_controller_pkg_name,
-                                  pregrasp_config_name=pregrasp_config_name,
-                                  intermediate_grasp_offset=grasp_offset,
-                                  safe_arm_joint_config=safe_arm_joint_config,
-                                  base_elbow_offset=base_elbow_offset,
-                                  arm_base_offset=arm_base_offset,
-                                  grasping_orientation=grasping_orientation,
-                                  grasping_dmp=grasping_dmp,
-                                  dmp_tau=dmp_tau,
-                                  number_of_retries=number_of_retries)
+        self.action_sm = PushSM()
         rospy.loginfo('[Push] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('push_server',
