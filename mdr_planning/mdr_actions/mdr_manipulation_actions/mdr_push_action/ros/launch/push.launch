@@ -3,7 +3,7 @@
     <node pkg="mdr_pickup_action" type="pickup_action" name="pickup_server" output="screen">
         <param name="move_arm_server" value="move_arm_server" />
         <param name="move_base_server" value="move_base_server" />
-        <param name="gripper_controller_pkg_name" value="mdr_gripper_controller" />
+        <param name="gripper_controller_pkg_name" value="mas_hsr_gripper_controller" />
         <param name="pregrasp_config_name" value="pregrasp" />
         <param name="intermediate_grasp_offset" value="0.1" />
         <param name="safe_arm_joint_config" value="folded" />

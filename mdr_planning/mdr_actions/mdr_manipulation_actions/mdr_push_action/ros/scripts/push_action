@@ -39,7 +39,7 @@ class PushServer(object):
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
         move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
         gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name',
-                                                      'mdr_gripper_controller')
+                                                      'mas_hsr_gripper_controller')
         pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp')
         grasp_offset = float(rospy.get_param('~intermediate_grasp_offset', -1.))
         safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
