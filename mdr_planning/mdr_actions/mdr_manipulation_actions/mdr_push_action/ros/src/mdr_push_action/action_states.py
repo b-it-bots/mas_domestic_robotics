@@ -13,7 +13,7 @@ from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from mdr_Push_action.msg import PushGoal, PushFeedback, PushResult
+from mdr_push_action.msg import PushGoal, PushFeedback, PushResult
 
 class PushSM(ActionSMBase):
     def __init__(self, timeout=120.0,
@@ -21,8 +21,6 @@ class PushSM(ActionSMBase):
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  move_forward_server='move_forward_server',
-                 base_elbow_offset=-1.,
-                 arm_base_offset=-1.,
                  grasping_dmp='',
                  dmp_tau=1.,
                  number_of_retries=0,
@@ -30,30 +28,14 @@ class PushSM(ActionSMBase):
         super(PushSM, self).__init__('Push', [], max_recovery_attempts)
         self.timeout = timeout
 
-        self.initial_pose = PushGoal()
-        self.initial_pose.pose.header.frame_id = 'base_link'
-        self.initial_pose.pose.header.stamp = rospy.Time.now()
-        self.initial_pose.pose.pose.position.x = 0.62
-        self.initial_pose.pose.pose.position.y = 0.078
-        self.initial_pose.pose.pose.position.z = 0.8
-        self.initial_pose.pose.pose.orientation.x = 0.758
-        self.initial_pose.pose.pose.orientation.y = 0.000
-        self.initial_pose.pose.pose.orientation.z = 0.652
-        self.initial_pose.pose.pose.orientation.w = 0.000
-
         gripper_controller_module_name = '{0}.gripper_controller'.format(gripper_controller_pkg_name)
         GripperControllerClass = getattr(import_module(gripper_controller_module_name),
                                          'GripperController')
         self.gripper = GripperControllerClass()
 
-        self.pregrasp_config_name = 'neutral'
-        self.safe_arm_joint_config = 'neutral'
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
         self.move_forward_server = move_forward_server
-        self.base_elbow_offset = 0.078
-        #self.base_elbow_offset = base_elbow_offset
-        self.arm_base_offset = arm_base_offset
         self.grasping_dmp = grasping_dmp
         self.dmp_tau = dmp_tau
         self.number_of_retries = number_of_retries
@@ -93,66 +75,39 @@ class PushSM(ActionSMBase):
         return FTSMTransitions.INITIALISED
 
     def running(self):
-        pose = self.goal.pose
-        pose.header.stamp = rospy.Time(0)
-        pose_base_link = self.tf_listener.transformPose('base_link', pose)
-        y_offset_distance = pose_base_link.pose.position.y - self.base_elbow_offset 
-        if self.base_elbow_offset > 0:
-            self.__align_base_with_pose(pose_base_link)
-
-
-            # the base is now correctly aligned with the pose, so we set the
-            # y position of the goal pose to the elbow offset
-            pose_base_link.pose.position.y = self.base_elbow_offset
-
         grasp_successful = False
         retry_count = 0
         while (not grasp_successful) and (retry_count <= self.number_of_retries):
             if retry_count > 0:
                 rospy.loginfo('[pickup] Retrying grasp')
 
-            rospy.loginfo('[pickup] Opening the gripper...')
-            self.gripper.open()
+            #rospy.loginfo('[pickup] Opening the gripper...')
+            #self.gripper.open()
 
-#            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')
+            self.pose1 = PushGoal()
+            self.pose1.pose.header.frame_id = 'base_link'
+            self.pose1.pose.header.stamp = rospy.Time.now()
+            self.pose1.pose.pose.position.x = 0.1 + num * 0.1 
+            self.pose1.pose.pose.position.y = 0.078
+            self.pose1.pose.pose.position.z = 0.8
+            self.pose1.pose.pose.orientation.x = 0.758
+            self.pose1.pose.pose.orientation.y = 0.000
+            self.pose1.pose.pose.orientation.z = 0.652
+            self.pose1.pose.pose.orientation.w = 0.000
 
-           
+            self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, self.pose1.pose)
+            #self.gripper.close()
 
-            rospy.loginfo('[pickup] Closing the gripper')
-            self.gripper.close()
+            #Push
+            #self.__move_base_along_x(0.05)
             
-            self.gripper.open()
-            #self.record_data_santosh_pub.publish('e_stop')
-
-
-           
+            #self.gripper.open()
+            
+            #self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')           
+            #self.__move_base_along_x(-0.05)		
 
             self.result = self.set_result(True)
             return FTSMTransitions.DONE
-
-    def __align_base_with_pose(self, pose_base_link):
-        '''Moves the base so that the elbow is aligned with the goal pose.
-        Keyword arguments:
-        pose_base_link -- a 'geometry_msgs/PoseStamped' message representing
-                          the goal pose in the base link frame
-        '''
-        aligned_base_pose = PoseStamped()
-        aligned_base_pose.header.frame_id = 'base_link'
-        aligned_base_pose.header.stamp = rospy.Time.now()
-        aligned_base_pose.pose.position.x = 0.
-        aligned_base_pose.pose.position.y = pose_base_link.pose.position.y - self.base_elbow_offset
-        aligned_base_pose.pose.position.z = 0.
-        aligned_base_pose.pose.orientation.x = 0.
-        aligned_base_pose.pose.orientation.y = 0.
-        aligned_base_pose.pose.orientation.z = 0.
-        aligned_base_pose.pose.orientation.w = 1.
-
-        move_base_goal = MoveBaseGoal()
-        move_base_goal.goal_type = MoveBaseGoal.POSE
-        move_base_goal.pose = aligned_base_pose
-        self.move_base_client.send_goal(move_base_goal)
-        self.move_base_client.wait_for_result()
-        self.move_base_client.get_result()
 
     def __move_arm(self, goal_type, goal):
         '''Sends a request to the 'move_arm' action server and waits for the
