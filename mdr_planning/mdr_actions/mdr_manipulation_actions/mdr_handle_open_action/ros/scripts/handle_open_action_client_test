@@ -32,8 +32,9 @@ if __name__ == '__main__':
                              np.random.uniform(low=z_lim[0], high=z_lim[1])]
     
         # Saving the sampled position in a file:
-        with open("../../new_sample_grasp_poses.txt", "a") as file:
-            file.write(str(sample_grasp_pose[0])+' '+str(sample_grasp_pose[1])+' '+str(sample_grasp_pose[2])+'\n')
+        ## Temporarily stop saving poses:
+        #with open("../../new_sample_grasp_poses.txt", "a") as file:
+        #    file.write(str(sample_grasp_pose[0])+' '+str(sample_grasp_pose[1])+' '+str(sample_grasp_pose[2])+'\n')
         # ------------------------------------------------------------------
 
     else:
@@ -52,10 +53,11 @@ if __name__ == '__main__':
                              np.random.multivariate_normal(np.array([posterior_mu_estimate[2]]),
                                                              np.array([posterior_sigma_estimate[2]])[np.newaxis])[0]]
 
-        
+    sample_grasp_pose = [0.715, 0.1, 0.65]        
         # Saving the positions sampled from the new distribution in a file:
-        with open("../../new_sample_grasp_poses.txt", "a") as file:
-            file.write(str(sample_grasp_pose[0])+' '+str(sample_grasp_pose[1])+' '+str(sample_grasp_pose[2])+'\n')
+        ## Temporarily stop saving poses:
+        #with open("../../new_sample_grasp_poses.txt", "a") as file:
+        #    file.write(str(sample_grasp_pose[0])+' '+str(sample_grasp_pose[1])+' '+str(sample_grasp_pose[2])+'\n')
         # ------------------------------------------------------------------
 
     rospy.loginfo('Sampled Grasp Position: ')

@@ -5,6 +5,9 @@ import rospy
 import tf
 import actionlib
 from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import WrenchStamped
+
+from scipy.stats import norm
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -26,7 +29,6 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 # OpenCV2 for saving an image
 import cv2
-import numpy as np
 
 
 
@@ -39,6 +41,7 @@ class HandleOpenSM(ActionSMBase):
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  move_forward_server='move_forward_server',
+                 force_sensor_topic='/hsrb/wrist_wrench/raw',
                  pregrasp_config_name='pregrasp_low',
                  final_config_name = 'neutral',
                  handle_open_dmp = '',
@@ -64,12 +67,19 @@ class HandleOpenSM(ActionSMBase):
 
         self.tf_listener = tf.TransformListener()
 
-	self.Image_number = 0
-	self.Last_image = None
-	# Instantiate CvBridge
-	self.bridge = CvBridge()
+        self.force_sensor_topic = force_sensor_topic
 
-	self.failure_data = []
+        self.latest_force_measurement_x = 0.
+        self.cumsum_x = 0
+        self.force_detection_threshold = 15.
+        self.handle_slip_detected = False
+
+        self.Image_number = 0
+        self.Last_image = None
+        # Instantiate CvBridge
+        self.bridge = CvBridge()
+
+        self.failure_data = []
 
 
     def init(self):
@@ -129,10 +139,10 @@ class HandleOpenSM(ActionSMBase):
 
         rospy.loginfo('[handle_open] Closing the gripper')
         self.gripper.close()
-
-        image_topic = "/hsrb/hand_camera/image_raw"
+    	print("HELLOO!!!!!!")
+        image_topic = '/hsrb/hand_camera/image_raw'
         # Set up your subscriber and define its callback
-	self.sub = rospy.Subscriber(image_topic, Image, self.image_callback)
+        self.sub = rospy.Subscriber(image_topic, Image, self.image_callback)
  
 
         # Moving robot base back (instead of moving arm back):
@@ -140,30 +150,47 @@ class HandleOpenSM(ActionSMBase):
         ## TODO: define backward_movement_distance, a distance value (in m?)
         self.__move_base_along_x(-0.3)
 
-        # New: grasp verification
-        # rospy.loginfo('[handle_open] Verifying whether handle was grasped...')
-        # grasp_successful = self.gripper.verify_grasp()
-        #if grasp_successful:
-        #    rospy.loginfo('[handle_open] Successfully grasped object')
-        #else:
-        #    rospy.loginfo('[handle_open] Grasp unsuccessful')
-     	self.sub.unregister()
+        # Force sensing grasp monitoring strategy:
+        # --------------------------------------------------------------
+        rospy.loginfo('[handle_open] Monitoring grasp on handle...')
+        rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
+        self.cumsum_x = 0.
 
-	mean = np.mean(np.array(self.failure_data))
-	print("======> MEAN :",mean)
+        handle_slip_detected = False
+        while not self.move_forward_client.get_result() and not handle_slip_detected:
+            handle_slip_detected = self.detect_handle_slip()
+            print('=======> move forward client result: ', self.move_forward_client.get_result())
+            rospy.sleep(1)
+
+        # print('=======> move forward client result: ', self.move_forward_client.get_result())
+
+        if handle_slip_detected:
+            rospy.loginfo('[handle_open] Failure detected!')
+            self.result = self.set_result(False)
+            for _ in range(20):
+                print("******************************\n")
+            ## TODO: Implement recovery; abort move base, re-try, etc.
+        else:
+            rospy.loginfo('[handle_open] No failure detected')
+            self.result = self.set_result(True)
+        # --------------------------------------------------------------  
+
+            	
+        self.sub.unregister()
+
+        #mean = np.mean(np.array(self.failure_data))
+        #print("======> MEAN :",mean)
         rospy.sleep(5)
+
         rospy.loginfo('[handle_open] Opening the gripper...')
         self.gripper.open()
 
         self.__move_arm(MoveArmGoal.NAMED_TARGET, self.final_config_name)
 
-        # For now, assume success:
-        self.result = self.set_result(True)
         return FTSMTransitions.DONE
 
     def __prepare_handle_grasp(self, pose_base_link):
         rospy.loginfo('[handle_open] Moving to a pregrasp configuration...')
-        # ...
         self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
 
         rospy.loginfo('[handle_open] Opening the gripper...')
@@ -173,12 +200,11 @@ class HandleOpenSM(ActionSMBase):
         # rospy.loginfo('[pickup] Preparing for grasp verification')
         # self.gripper.init_grasp_verification()
 
-        ## TODO: Implement wrist rotation
         rospy.loginfo('[handle_open] Rotating the gripper...')
         self.gripper.rotate_wrist(np.pi/2.)        
 
         rospy.loginfo('[handle_open] Moving to intermediate grasping pose...')
-        ## TODO: Move arm a specified distance after going to pregrasp_low, if needed:
+        # Move arm a specified distance after going to pregrasp_low, if needed:
         # pose_base_link.pose.position.x -= 0.02
         # pose_base_link.pose.position.z += 0.02
         self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
@@ -213,8 +239,9 @@ class HandleOpenSM(ActionSMBase):
         move_forward_goal.movement_duration = movement_duration
         move_forward_goal.speed = movement_speed
         self.move_forward_client.send_goal(move_forward_goal)
-        self.move_forward_client.wait_for_result()
-        self.move_forward_client.get_result()
+        # self.move_forward_client.wait_for_result()
+        ## TODO: determine if really necessary:
+        # self.move_forward_client.get_result()
 
     def recovering(self):
         ## TODO: if recovery behaviours are appropriate, fill this method with
@@ -230,7 +257,7 @@ class HandleOpenSM(ActionSMBase):
 
     def image_callback(self,msg):
         print("Received an image!")
-        self.Image_number += 1	
+        #self.Image_number += 1	
         try:
         # Convert your ROS Image message to OpenCV2
             cv2_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
@@ -249,9 +276,37 @@ class HandleOpenSM(ActionSMBase):
         except :
             pass
 
-        else:
-        # Save your OpenCV2 image as a jpeg 
-        #cv2.imwrite('Images/camera_image_'+str(Image_number)+'.jpeg', cv2_img)
-	    pass
 
 
+    def detect_handle_slip(self):
+        '''
+        Detecting change in force readings using CUSUM. Taken from hand_over action.
+        '''
+        mu_0 = -12  # <--- -16
+        mu_1 = -15
+        std = 1.5
+
+        pdf_0 = norm(mu_0, std)
+        pdf_1 = norm(mu_1, std)
+
+        self.cumsum_x += max(0, np.log(pdf_1.pdf(self.latest_force_measurement_x) / pdf_0.pdf(self.latest_force_measurement_x)))
+
+        if self.cumsum_x > self.force_detection_threshold:
+            rospy.loginfo('[handle_open] Handle slip detected!')
+            return True
+        return False
+        
+    def force_sensor_cb(self, force_sensor_msg):
+        '''
+        Force sensor callback. Taken from hand_over action.
+        '''
+        self.latest_force_measurement_x = force_sensor_msg.wrench.force.x
+
+        print('[hand_over DEBUG] Force Measurements:')
+        print('[hand_over DEBUG] Current cumsum in x:', self.cumsum_x)
+        print("*********************")
+        # print('[hand_over DEBUG] Current Force Measurements, x:', force_sensor_msg.wrench.force.x)
+        # print('[hand_over DEBUG] Current Force Measurements, y:', force_sensor_msg.wrench.force.y)
+        # print('[hand_over DEBUG] Current Force Measurements, z:', force_sensor_msg.wrench.force.z)
+        # print('{0}\t{1}\t{2}'.format(force_sensor_msg.wrench.force.x, force_sensor_msg.wrench.force.y, force_sensor_msg.wrench.force.z))
+        # print("\n\n")
