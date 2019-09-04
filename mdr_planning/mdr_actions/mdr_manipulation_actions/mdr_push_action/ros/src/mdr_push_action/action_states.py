@@ -1,6 +1,11 @@
 #!/usr/bin/python
 from importlib import import_module
 import numpy as np
+from sensor_msgs.msg import Image
+# ROS Image message -> OpenCV2 image converter
+from cv_bridge import CvBridge, CvBridgeError
+# OpenCV2 for saving an image
+import cv2
 
 import rospy
 import tf
@@ -33,6 +38,7 @@ class PushSM(ActionSMBase):
                                          'GripperController')
         self.gripper = GripperControllerClass()
 
+        self.force_sensor_topic='/hsrb/wrist_wrench/raw'
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
         self.move_forward_server = move_forward_server
@@ -46,8 +52,10 @@ class PushSM(ActionSMBase):
         self.move_base_client = None
         self.move_forward_client = None
         
-        self.record_data_pub = rospy.Publisher('/record_force_vals',String,queue_size = 1)
-        #self.record_data_santosh_pub = rospy.Publisher('/mcr_tools/rosbag_recorder/event_in',String,queue_size = 1)
+        rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
+        image_topic = '/hsrb/hand_camera/image_raw'
+        # Set up your subscriber and define its callback
+        self.sub = rospy.Subscriber(image_topic, Image, self.image_callback)
     
 
     def init(self):
@@ -77,37 +85,51 @@ class PushSM(ActionSMBase):
     def running(self):
         grasp_successful = False
         retry_count = 0
+        
         while (not grasp_successful) and (retry_count <= self.number_of_retries):
             if retry_count > 0:
-                rospy.loginfo('[pickup] Retrying grasp')
+                rospy.loginfo('[push] Retrying grasp')
 
-            #rospy.loginfo('[pickup] Opening the gripper...')
-            #self.gripper.open()
+            #rospy.loginfo('[push] Opening the gripper...')
+            self.gripper.open()
 
             self.pose1 = PushGoal()
             self.pose1.pose.header.frame_id = 'base_link'
             self.pose1.pose.header.stamp = rospy.Time.now()
-            self.pose1.pose.pose.position.x = 0.1 + num * 0.1 
+            self.pose1.pose.pose.position.x = 0.62
             self.pose1.pose.pose.position.y = 0.078
-            self.pose1.pose.pose.position.z = 0.8
+            self.pose1.pose.pose.position.z = 0.84+(np.random.random()/50)
             self.pose1.pose.pose.orientation.x = 0.758
             self.pose1.pose.pose.orientation.y = 0.000
             self.pose1.pose.pose.orientation.z = 0.652
             self.pose1.pose.pose.orientation.w = 0.000
 
             self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, self.pose1.pose)
-            #self.gripper.close()
+            
+            self.gripper.close()
 
             #Push
-            #self.__move_base_along_x(0.05)
+            self.__move_base_along_x(0.05)
             
-            #self.gripper.open()
+            self.gripper.open()
             
-            #self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')           
-            #self.__move_base_along_x(-0.05)		
-
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')           
+            self.__move_base_along_x(-0.05)
+            grasp_successful = self.gripper.verify_grasp()
+            if grasp_successful:
+                rospy.loginfo('[push] Successfully grasped object')
+            else:
+                rospy.loginfo('[push] Grasp unsuccessful')
+                retry_count += 1
+	    
+         		
+        if grasp_successful:
             self.result = self.set_result(True)
             return FTSMTransitions.DONE
+
+        rospy.loginfo('[push] Grasp could not be performed successfully')
+        self.result = self.set_result(False)
+        return FTSMTransitions.DONE
 
     def __move_arm(self, goal_type, goal):
         '''Sends a request to the 'move_arm' action server and waits for the
@@ -139,6 +161,30 @@ class PushSM(ActionSMBase):
         self.move_forward_client.send_goal(move_forward_goal)
         self.move_forward_client.wait_for_result()
         self.move_forward_client.get_result()
+
+    def force_sensor_cb(self, force_sensor_msg):
+        '''
+        Force sensor callback. Taken from hand_over action.
+        '''
+        self.latest_force_measurement_x = force_sensor_msg.wrench.force.x
+
+        print('[push] Force Measurements:')
+        
+        print('[push] Current Force Measurements, x:', force_sensor_msg.wrench.force.x)
+        print('[push] Current Force Measurements, y:', force_sensor_msg.wrench.force.y)
+        print('[push] Current Force Measurements, z:', force_sensor_msg.wrench.force.z)
+
+    def image_callback(self,msg):
+        bridge = CvBridge()
+        print("Received an image!")
+        try:
+            # Convert your ROS Image message to OpenCV2
+            cv2_img = bridge.imgmsg_to_cv2(msg, "bgr8")
+        except CvBridgeError, e:
+            print(e)
+        else:
+            # Save your OpenCV2 image as a jpeg 
+            cv2.imwrite('camera_image.jpeg', cv2_img)
 
     def set_result(self, success):
         result = PushResult()
