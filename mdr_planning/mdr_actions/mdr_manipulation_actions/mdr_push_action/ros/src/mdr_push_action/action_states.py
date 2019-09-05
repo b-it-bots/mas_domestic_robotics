@@ -51,8 +51,10 @@ class PushSM(ActionSMBase):
         self.move_arm_client = None
         self.move_base_client = None
         self.move_forward_client = None
+
+        self.take_image = False
         
-        rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
+        #rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
         image_topic = '/hsrb/hand_camera/image_raw'
         # Set up your subscriber and define its callback
         self.sub = rospy.Subscriber(image_topic, Image, self.image_callback)
@@ -109,25 +111,26 @@ class PushSM(ActionSMBase):
             self.gripper.close()
 
             #Push
-            self.__move_base_along_x(0.05)
+            #self.__move_base_along_x(0.05)
             
-            self.gripper.open()
+            #self.gripper.open()
             
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')           
-            self.__move_base_along_x(-0.05)
+            #self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')           
+            #self.__move_base_along_x(-0.05)
             grasp_successful = self.gripper.verify_grasp()
-            if grasp_successful:
-                rospy.loginfo('[push] Successfully grasped object')
-            else:
-                rospy.loginfo('[push] Grasp unsuccessful')
-                retry_count += 1
+            #if grasp_successful:
+                #rospy.loginfo('[push] Successfully grasped object')
+            #else:
+                #rospy.loginfo('[push] Grasp unsuccessful')
+                #retry_count += 1
 	    
-         		
+        self.take_image = True
+ 		
         if grasp_successful:
             self.result = self.set_result(True)
             return FTSMTransitions.DONE
 
-        rospy.loginfo('[push] Grasp could not be performed successfully')
+        #rospy.loginfo('[push] Grasp could not be performed successfully')
         self.result = self.set_result(False)
         return FTSMTransitions.DONE
 
@@ -166,25 +169,23 @@ class PushSM(ActionSMBase):
         '''
         Force sensor callback. Taken from hand_over action.
         '''
-        self.latest_force_measurement_x = force_sensor_msg.wrench.force.x
+        print(force_sensor_msg.wrench.force.x, force_sensor_msg.wrench.force.y, force_sensor_msg.wrench.force.z)
 
-        print('[push] Force Measurements:')
-        
-        print('[push] Current Force Measurements, x:', force_sensor_msg.wrench.force.x)
-        print('[push] Current Force Measurements, y:', force_sensor_msg.wrench.force.y)
-        print('[push] Current Force Measurements, z:', force_sensor_msg.wrench.force.z)
-
-    def image_callback(self,msg):
-        bridge = CvBridge()
-        print("Received an image!")
-        try:
-            # Convert your ROS Image message to OpenCV2
-            cv2_img = bridge.imgmsg_to_cv2(msg, "bgr8")
-        except CvBridgeError, e:
-            print(e)
-        else:
-            # Save your OpenCV2 image as a jpeg 
-            cv2.imwrite('camera_image.jpeg', cv2_img)
+    def image_callback(self, msg):
+        #taken from https://gist.github.com/rethink-imcmahon/77a1a4d5506258f3dc1f
+        if self.take_image == True:
+            bridge = CvBridge()
+            print("Received an image!")
+            try:
+                # Convert your ROS Image message to OpenCV2
+                cv2_img = bridge.imgmsg_to_cv2(msg, "bgr8")
+            except CvBridgeError, e:
+                print(e)
+            else:
+                # Save your OpenCV2 image as a jpeg 
+                print("Save an image")
+                cv2.imwrite('grasp_model3.jpeg', cv2_img)
+            self.take_image = False
 
     def set_result(self, success):
         result = PushResult()
