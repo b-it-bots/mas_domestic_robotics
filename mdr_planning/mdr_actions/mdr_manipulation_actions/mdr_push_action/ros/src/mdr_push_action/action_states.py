@@ -110,12 +110,14 @@ class PushSM(ActionSMBase):
             
             self.gripper.close()
 
+            self.take_image = True
+
             #Push
             #self.__move_base_along_x(0.05)
             
-            #self.gripper.open()
+            self.gripper.open()
             
-            #self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')           
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')           
             #self.__move_base_along_x(-0.05)
             grasp_successful = self.gripper.verify_grasp()
             #if grasp_successful:
@@ -124,7 +126,7 @@ class PushSM(ActionSMBase):
                 #rospy.loginfo('[push] Grasp unsuccessful')
                 #retry_count += 1
 	    
-        self.take_image = True
+        
  		
         if grasp_successful:
             self.result = self.set_result(True)
@@ -183,9 +185,11 @@ class PushSM(ActionSMBase):
                 print(e)
             else:
                 # Save your OpenCV2 image as a jpeg 
+                #cv2.imwrite("current_image.jpeg", cv2_img)
                 print("Comparing images")
                 #value of structural similarity of image where value lies between -1 to 1 and 1 is perfect match
-                val_ssim= self.compare_images(cv2_img)
+                val_ssim = self.compare_images(cv2_img)
+                #self.compare_images()
                 
                 if val_ssim > 0.40:
                     print("Grasp successful")
@@ -194,17 +198,23 @@ class PushSM(ActionSMBase):
 
             self.take_image = False
 
-    def compare_images(self,imageB):
+    def compare_images(self, imageB):
 
         # compute the mean squared error and structural similarity
         # index for the images
         imageA = cv2.imread("grasp_model4.jpeg")
+        #imageB = cv2.imread("current_image.jpeg", 0)
+        #print imageA
         gray1 = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
         gray2 = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
-        similarity_of_structure = measure.compare_ssim(gray1, gray2)
+        val_ssim = measure.compare_ssim(gray1, gray2)
  
-        return similarity_of_structure 
+        #if val_ssim > 0.40:
+        #    print("Grasp successful")
+        #else :
+        #    print("Grasp failed") 
 
+        return val_ssim
 
     def set_result(self, success):
         result = PushResult()
