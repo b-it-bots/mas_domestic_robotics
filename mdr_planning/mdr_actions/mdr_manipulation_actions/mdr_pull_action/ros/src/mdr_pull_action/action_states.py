@@ -29,7 +29,7 @@ class PullSM(ActionSMBase):
                  base_elbow_offset=0.078,
                  grasping_dmp='',
                  dmp_tau=1.,
-                 number_of_retries=0,
+                 number_of_retries=1,
                  max_recovery_attempts=1):
         super(PullSM, self).__init__('Pull', [], max_recovery_attempts)
         self.grasped_limits = np.load(rospkg.RosPack().get_path('mdr_pull_action')+"/ros/scripts/grasped_limits.npy")
@@ -65,7 +65,6 @@ class PullSM(ActionSMBase):
         self.move_base_client = None
         self.move_forward_client = None
         
-        self.record_data_pub = rospy.Publisher('/record_force_vals',String,queue_size = 1)
         self.speech_pub = rospy.Publisher('/say',String,queue_size = 1)
         rospy.Subscriber('hsrb/wrist_wrench/raw', WrenchStamped, self.wrist_force_cb, queue_size = 1)
         self.record_wrist_force_vals = False
@@ -82,7 +81,17 @@ class PullSM(ActionSMBase):
         self.grasped_state = False
         self.empty_state = False
 
-        #self.record_data_santosh_pub = rospy.Publisher('/mcr_tools/rosbag_recorder/event_in',String,queue_size = 1)
+    def distribution(self,occurrence, bins):
+        probabilities = []
+        bin_size = (bins[1]-bins[0])/6
+        init_val = bins[0]
+        for i in range(5):
+            prob = bin_size*occurrence[i]
+            probabilities.append(prob)
+        probabilities.append(1-np.sum(probabilities))
+        rdm_num = np.random.choice(range(6), p=probabilities)
+        chosen_num = np.random.uniform(init_val+(bin_size*rdm_num),init_val+(bin_size*(rdm_num+1)))
+        return chosen_num
    
     def get_mean_freq_and_sig(self,signal):
         freq_list = []
@@ -115,17 +124,16 @@ class PullSM(ActionSMBase):
                     self.sliding_window[1:] = self.sliding_window[:-1] + likelihood
                     self.sliding_window[0] = likelihood
                 sliding_window_len = len(self.sliding_window)
-                if self.grasped_state == False and len(np.where(self.sliding_window < self.empty_limits[:sliding_window_len])[0])>0: 
+                if (self.grasped_state == False and len(np.where(self.sliding_window < self.empty_limits[:sliding_window_len])[0])>0) and self.empty_state == False: 
                     self.grasped_state = True
                     self.speech_pub.publish("Object Grasped")
                 if self.empty_state == False and len(np.where(self.sliding_window > self.grasped_limits[:sliding_window_len])[0])>0: 
                     self.empty_state = True
                     if self.grasped_state == True:
                         self.speech_pub.publish("Lost Grip of Object")
+                        self.grip_lost_time = rospy.get_time()
                     else:
                         self.speech_pub.publish("Grasp Failed")
-
-
 
     def init(self):
         try:
@@ -155,16 +163,36 @@ class PullSM(ActionSMBase):
         pose = self.goal.pose
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
-        if pose_base_link.pose.position.y != self.base_elbow_offset:
-            base_motion_y = pose_base_link.pose.position.y - self.base_elbow_offset 
-            self.__align_base_with_pose(pose_base_link)
-            pose_base_link.pose.position.y = self.base_elbow_offset
 
-        grasp_successful = False
+        action_status = 'fail'
         retry_count = 0
-        while (not grasp_successful) and (retry_count <= self.number_of_retries):
+        while (not action_status=='success') and (retry_count <= self.number_of_retries):
             if retry_count > 0:
                 rospy.loginfo('[pickup] Retrying grasp')
+                if action_status == 'grasp_fail':
+                    self.speech_pub.publish("Re trying grasp")
+                    x_0 = np.array([32.06432054, 16.03216027, 40.08040067, 0, 0, 8.01608013])
+                    x_1 = np.array([0.43498565, 0.49736027])
+                    y_0 = np.array([13.51563889, 27.03127777, 0, 27.03127777, 54.06255555, 40.54691666])
+                    y_1 = np.array([0.05675844, 0.09375263])
+                    z_0 = np.array([109.2043287, 27.30108217, 27.30108217, 54.60216435, 81.90324652, 27.30108217])
+                    z_1 = np.array([0.80388078, 0.82219507])
+    
+                    pose_base_link.pose.position.x = self.distribution(x_0, x_1)
+                    pose_base_link.pose.position.y = self.distribution(y_0, y_1)
+                    pose_base_link.pose.position.z = self.distribution(z_0, z_1)
+                else :    #i.e action_status == 'grasp_lost'
+                    self.speech_pub.publish("Trying to grasp lost object")
+                    pose_base_link.pose.position.x = (self.base_motion_end_time - self.grip_lost_time)*0.1 + 0.25
+        
+            goal_str = "Attempting to pick object at: x=%.3f,y=%.3f,z=%.3f" % (pose_base_link.pose.position.x, pose_base_link.pose.position.y, pose_base_link.pose.position.z)
+            rospy.loginfo(goal_str)
+            
+            base_motion_y = 0
+            if pose_base_link.pose.position.y != self.base_elbow_offset:
+                base_motion_y = pose_base_link.pose.position.y - self.base_elbow_offset 
+                self.__align_base_with_pose(pose_base_link)
+                pose_base_link.pose.position.y = self.base_elbow_offset
 
             rospy.loginfo('[pickup] Opening the gripper...')
 
@@ -175,16 +203,13 @@ class PullSM(ActionSMBase):
             rospy.sleep(0.5)
             self.gripper.close()
             rospy.sleep(0.5)
-            self.record_data_pub.publish('start')
             self.record_wrist_force_vals = True 
             rospy.sleep(2)
             self.record_wrist_force_vals = False    
-            self.record_data_pub.publish('stop')
             self.wrist_sig_mean, self.wrist_freq_mean = self.get_mean_freq_and_sig(self.wrist_force_list)
             self.wrist_force_list = []
             self.gripper.open()
             
-            #self.record_data_santosh_pub.publish('e_start')
             dist = pose_base_link.pose.position.x
             self.__move_base_along_x(dist)
             rospy.sleep(0.5)
@@ -193,28 +218,29 @@ class PullSM(ActionSMBase):
             rospy.loginfo('[pickup] Closing the gripper')
             self.gripper.close()
             rospy.sleep(1.5)
-            self.record_data_pub.publish('start')
-            print ('start')
             self.execute_fdd = True
             self.__move_base_along_x(-(dist-0.1))
+            self.base_motion_end_time = rospy.get_time()
             rospy.sleep(1)
             self.execute_fdd = False
             if self.grasped_state == True and self.empty_state == False:
                 self.speech_pub.publish("Pull Action Complete")
+                action_status = 'success'
             else:
+                retry_count += 1
                 self.speech_pub.publish("Pull Action Failed")
+                if self.grasped_state == False:
+                    action_status = 'grasp_fail'
+                else:
+                    action_status = 'grasp_lost'
 
             self.empty_state = False
             self.grasped_state = False
             self.wrist_force_list = []
             self.sliding_window = np.array([])
-            print ('stop')
-            self.record_data_pub.publish('stop')
 
             self.gripper.open()
             rospy.sleep(0.5)
-            #self.record_data_santosh_pub.publish('e_stop')
-
 
             rospy.loginfo('[pickup] Moving the base back to the original position')
             self.__move_base_along_x(-0.1)
@@ -223,9 +249,14 @@ class PullSM(ActionSMBase):
 
             pose_base_link.pose.position.y = self.base_elbow_offset - base_motion_y
             self.__align_base_with_pose(pose_base_link)
+            pose_base_link.pose.position.y = self.base_elbow_offset + base_motion_y
 
+        if action_status == 'success':
             self.result = self.set_result(True)
             return FTSMTransitions.DONE
+    
+        self.result = self.set_result(False)
+        return FTSMTransitions.DONE
 
     def __align_base_with_pose(self, pose_base_link):
         '''Moves the base so that the elbow is aligned with the goal pose.
