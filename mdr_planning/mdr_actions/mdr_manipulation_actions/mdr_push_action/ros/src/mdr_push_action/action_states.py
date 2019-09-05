@@ -6,7 +6,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 # OpenCV2 for saving an image
 import cv2
-
+from skimage import measure
 import rospy
 import tf
 import actionlib
@@ -183,9 +183,28 @@ class PushSM(ActionSMBase):
                 print(e)
             else:
                 # Save your OpenCV2 image as a jpeg 
-                print("Save an image")
-                cv2.imwrite('grasp_model3.jpeg', cv2_img)
+                print("Comparing images")
+                #value of structural similarity of image where value lies between -1 to 1 and 1 is perfect match
+                val_ssim= self.compare_images(cv2_img)
+                
+                if val_ssim > 0.40:
+                    print("Grasp successful")
+                else :
+                    print("Grasp failed") 
+
             self.take_image = False
+
+    def compare_images(self,imageB):
+
+        # compute the mean squared error and structural similarity
+        # index for the images
+        imageA = cv2.imread("grasp_model4.jpeg")
+        gray1 = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
+        gray2 = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
+        similarity_of_structure = measure.compare_ssim(gray1, gray2)
+ 
+        return similarity_of_structure 
+
 
     def set_result(self, success):
         result = PushResult()
