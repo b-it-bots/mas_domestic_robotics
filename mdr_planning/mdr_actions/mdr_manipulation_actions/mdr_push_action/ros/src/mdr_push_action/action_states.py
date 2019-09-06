@@ -39,6 +39,8 @@ class PushSM(ActionSMBase):
         self.gripper = GripperControllerClass()
 
         self.force_sensor_topic='/hsrb/wrist_wrench/raw'
+        #self.base_pose_topic = '/hsrb/base_pose'
+        
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
         self.move_forward_server = move_forward_server
@@ -53,47 +55,53 @@ class PushSM(ActionSMBase):
         self.move_forward_client = None
 
         self.take_image = False
+        self.get_sensor_val = False
         
-        #rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
+        rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
+        #rospy.Subscriber(self.base_pose_topic, PoseStamped, self.base_cb)
         image_topic = '/hsrb/hand_camera/image_raw'
         # Set up your subscriber and define its callback
         self.sub = rospy.Subscriber(image_topic, Image, self.image_callback)
+        
+        self.file = open("/home/lucy/ros/kinetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_manipulation_actions/mdr_push_action/ros/src/mdr_push_action/nonfaulty.txt","w+")
     
 
     def init(self):
         try:
             self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
-            rospy.loginfo('[pickup] Waiting for %s server', self.move_arm_server)
+            rospy.loginfo('[push] Waiting for %s server', self.move_arm_server)
             self.move_arm_client.wait_for_server()
         except:
-            rospy.logerr('[pickup] %s server does not seem to respond', self.move_arm_server)
+            rospy.logerr('[push] %s server does not seem to respond', self.move_arm_server)
 
         try:
             self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
-            rospy.loginfo('[pickup] Waiting for %s server', self.move_base_server)
+            rospy.loginfo('[push] Waiting for %s server', self.move_base_server)
             self.move_base_client.wait_for_server()
         except:
-            rospy.logerr('[pickup] %s server does not seem to respond', self.move_base_server)
+            rospy.logerr('[push] %s server does not seem to respond', self.move_base_server)
 
         try:
             self.move_forward_client = actionlib.SimpleActionClient(self.move_forward_server, MoveForwardAction)
-            rospy.loginfo('[pickup] Waiting for %s server', self.move_forward_server)
+            rospy.loginfo('[push] Waiting for %s server', self.move_forward_server)
             self.move_forward_client.wait_for_server()
         except:
-            rospy.logerr('[pickup] %s server does not seem to respond', self.move_forward_server)
+            rospy.logerr('[push] %s server does not seem to respond', self.move_forward_server)
 
         return FTSMTransitions.INITIALISED
 
     def running(self):
         grasp_successful = False
         retry_count = 0
-        
-        while (not grasp_successful) and (retry_count <= self.number_of_retries):
+        num = 0
+        while ((not grasp_successful) and (retry_count <= self.number_of_retries) or (num < 10)):
             if retry_count > 0:
                 rospy.loginfo('[push] Retrying grasp')
 
             #rospy.loginfo('[push] Opening the gripper...')
             self.gripper.open()
+
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral') 
 
             self.pose1 = PushGoal()
             self.pose1.pose.header.frame_id = 'base_link'
@@ -111,23 +119,26 @@ class PushSM(ActionSMBase):
             self.gripper.close()
 
             self.take_image = True
-
+            print ("pushing the object")
+            self.get_sensor_val = True
             #Push
-            #self.__move_base_along_x(0.05)
-            
+            self.get_pose = True
+            self.__move_base_along_x(0.05)
+            print ("done pushing object")
+            self.get_pose = True
+            self.get_sensor_val= False
             self.gripper.open()
             
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral')           
-            #self.__move_base_along_x(-0.05)
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral') 
+            self.get_pose = True
+            self.__move_base_along_x(-0.05)
+            self.get_pose = True
             grasp_successful = self.gripper.verify_grasp()
-            #if grasp_successful:
-                #rospy.loginfo('[push] Successfully grasped object')
-            #else:
-                #rospy.loginfo('[push] Grasp unsuccessful')
-                #retry_count += 1
-	    
+           
+            num += 1
         
- 		
+        self.file.close()
+
         if grasp_successful:
             self.result = self.set_result(True)
             return FTSMTransitions.DONE
@@ -171,7 +182,9 @@ class PushSM(ActionSMBase):
         '''
         Force sensor callback. Taken from hand_over action.
         '''
-        print(force_sensor_msg.wrench.force.x, force_sensor_msg.wrench.force.y, force_sensor_msg.wrench.force.z)
+        if self.get_sensor_val:
+            self.file.write("%f, %f, %f\n" % (force_sensor_msg.wrench.force.x, force_sensor_msg.wrench.force.y, force_sensor_msg.wrench.force.z))
+            
 
     def image_callback(self, msg):
         #taken from https://gist.github.com/rethink-imcmahon/77a1a4d5506258f3dc1f
@@ -202,7 +215,7 @@ class PushSM(ActionSMBase):
 
         # compute the mean squared error and structural similarity
         # index for the images
-        imageA = cv2.imread("grasp_model4.jpeg")
+        imageA = cv2.imread("/home/lucy/ros/kinetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_manipulation_actions/mdr_push_action/ros/src/mdr_push_action/grasp_model4.jpeg")
         #imageB = cv2.imread("current_image.jpeg", 0)
         #print imageA
         gray1 = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
@@ -215,6 +228,8 @@ class PushSM(ActionSMBase):
         #    print("Grasp failed") 
 
         return val_ssim
+
+
 
     def set_result(self, success):
         result = PushResult()

@@ -1,14 +1,11 @@
 <?xml version="1.0"?>
 <launch>
-    <node pkg="mdr_pickup_action" type="pickup_action" name="pickup_server" output="screen">
+    <node pkg="mdr_push_action" type="push_action" name="push_server" output="screen">
         <param name="move_arm_server" value="move_arm_server" />
         <param name="move_base_server" value="move_base_server" />
         <param name="gripper_controller_pkg_name" value="mas_hsr_gripper_controller" />
         <param name="pregrasp_config_name" value="pregrasp" />
-        <param name="intermediate_grasp_offset" value="0.1" />
-        <param name="safe_arm_joint_config" value="folded" />
-        <param name="base_elbow_offset" value="-1." />
-        <param name="grasping_dmp" value="$(find mdr_pickup_action)/config/trajectory_weights/weights_table_grasp.yaml" />
+        <param name="grasping_dmp" value="$(find mdr_push_action)/config/trajectory_weights/weights_table_grasp.yaml" />
         <param name="dmp_tau" value="30" />
         <rosparam param="grasping_orientation">[0, 0, 0, 1]</rosparam>
         <param name="number_of_retries" value="0" />
