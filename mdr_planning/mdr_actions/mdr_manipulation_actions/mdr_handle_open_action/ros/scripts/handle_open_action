@@ -9,18 +9,25 @@ class HandleOpenServer(object):
     '''A server exposing an action for opening doors and furniture with handles.
 
     The server expects the following parameters to be made available on the ROS parameter server:
-    ## TODO: list any expected parameters here
+    * gripper_controller_pkg_name: The name of a package that implements functionalities
+                                   for controlling a robot's gripper (default: 'mdr_gripper_controller')
+    * move_arm_server: Name of the move_arm action server (default: 'move_arm_server')
+    * move_forward_server: Name of the move_forward action server (default: 'move_forward_server')
+    * pregrasp_config_name: Name of the pregrasp configuration (default: 'pregrasp_low')
+    * final_config_name: Name of the final configuration (default: 'neutral')
+    * handle_open_dmp: Path to a YAML file containing the weights of a dynamic
+                       motion primitive used for opening handles (default: '')
+    * dmp_tau: The value of the temporal dynamic motion primitive parameter (default: 30)
+    * force_sensor_topic: Name of topic for wrist force sensor measurements (default: '/hsrb/wrist_wrench/raw')
 
     '''
     def __init__(self):
-        ## TODO: read any configuration parameters for the action here
-        # param = rospy.get_param('~param_name', 'default_param_value')
         gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name', 'mas_hsr_gripper_controller')
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
-        move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
         move_forward_server = rospy.get_param('~move_forward_server', 'move_forward_server')
+        force_sensor_topic = rospy.get_param('~force_sensor_topic', 'force_sensor_topic')
         pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp_config_name')
-        final_config_name = rospy.get_param('~sfinal_config_name', 'neutral')
+        final_config_name = rospy.get_param('~sfinal_config_name', 'final_config_name')
         handle_open_dmp = rospy.get_param('~handle_open_dmp', 'handle_open_dmp')
         dmp_tau = rospy.get_param('~dmp_tau', 'dmp_tau')
 
@@ -28,6 +35,7 @@ class HandleOpenServer(object):
         self.action_sm = HandleOpenSM(gripper_controller_pkg_name=gripper_controller_pkg_name,
                                       move_arm_server=move_arm_server,
                                       move_base_server=move_base_server,
+                                      force_sensor_topic=force_sensor_topic,
                                       move_forward_server=move_forward_server,
                                       pregrasp_config_name=pregrasp_config_name,
                                       final_config_name=final_config_name,
