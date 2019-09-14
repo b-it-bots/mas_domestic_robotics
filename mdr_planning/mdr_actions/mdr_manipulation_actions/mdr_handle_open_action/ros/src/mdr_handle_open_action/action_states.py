@@ -1,12 +1,15 @@
 #!/usr/bin/python
 import numpy as np
 from scipy.stats import norm
+import cv2
+from cv_bridge import CvBridge, CvBridgeError
 
 import rospy
 import tf
 import actionlib
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import WrenchStamped
+from sensor_msgs.msg import Image
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -56,6 +59,13 @@ class HandleOpenSM(ActionSMBase):
         self.force_detection_threshold = 15.
         self.handle_slip_detected = False
 
+        # For Perception-based failure detection
+        self.image_number = 0
+        self.last_image = None
+        self.bridge = CvBridge()
+        self.failure_data = []
+
+
     def init(self):
         try:
             self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
@@ -103,7 +113,7 @@ class HandleOpenSM(ActionSMBase):
 
         rospy.loginfo('[handle_open] Arm motion successful')
         rospy.loginfo('[handle_open] Closing the gripper')
-        self.gripper.close() 
+        self.gripper.close()
 
         # Moving robot base back (instead of moving arm back):
         rospy.loginfo('[handle_open] Moving the base back')
@@ -128,7 +138,11 @@ class HandleOpenSM(ActionSMBase):
         else:
             rospy.loginfo('[handle_open] No failure detected')
             self.result = self.set_result(True)
-        # --------------------------------------------------------------  
+        
+        # TODO: Perception based grasp monitoring strategy:
+        # --------------------------------------------------------------
+        # image_topic = "/hsrb/hand_camera/image_raw"
+        # self.sub = rospy.Subscriber(image_topic, Image, self.image_cb)
 
         rospy.loginfo('[handle_open] Opening the gripper...')
         self.gripper.open()
@@ -145,7 +159,7 @@ class HandleOpenSM(ActionSMBase):
         self.gripper.open()
 
         rospy.loginfo('[handle_open] Rotating the gripper...')
-        self.gripper.rotate_wrist(np.pi/2.)        
+        self.gripper.rotate_wrist(np.pi/2.)
 
         rospy.loginfo('[handle_open] Moving to intermediate grasping pose...')
         # Move arm a specified distance after going to pregrasp_low, if needed:
@@ -213,7 +227,7 @@ class HandleOpenSM(ActionSMBase):
             rospy.loginfo('[handle_open] Handle slip detected!')
             return True
         return False
-        
+
     def force_sensor_cb(self, force_sensor_msg):
         '''
         Force sensor callback. Taken from hand_over action.
@@ -228,3 +242,25 @@ class HandleOpenSM(ActionSMBase):
         # print('[hand_over DEBUG] Current Force Measurements, z:', force_sensor_msg.wrench.force.z)
         # print('{0}\t{1}\t{2}'.format(force_sensor_msg.wrench.force.x, force_sensor_msg.wrench.force.y, force_sensor_msg.wrench.force.z))
         # print("\n\n")
+
+    def image_cb(self,msg):
+        '''
+        Callback for receiving wrist camera image
+        '''
+        try:
+            # Convert your ROS Image message to OpenCV2
+            cv2_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+            if self.last_image is not None :
+                diff_img = cv2.absdiff(self.last_image,cv2_img)
+                black_percentage = (len(np.where(diff_img == 0)[0])/float(640*480*3))
+
+            self.failure_data.append(black_percentage)
+            if black_percentage > 0.3 :
+                rospy.loginfo(" [handle_open] Handle slip detected!  ")
+
+            self.last_image = cv2_img
+
+        except :
+            # Exception when the image is 'None'
+            pass
+
