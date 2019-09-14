@@ -2,23 +2,19 @@
 import numpy as np
 from scipy.stats import norm
 import cv2
-from cv_bridge import CvBridge, CvBridgeError
+from cv_bridge import CvBridge
 
 import rospy
 import tf
 import actionlib
-from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import WrenchStamped
-from sensor_msgs.msg import Image
+# from sensor_msgs.msg import Image
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
-from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from mdr_handle_open_action.msg import HandleOpenGoal, HandleOpenResult
-
-from mdr_move_arm_action.dmp import DMPExecutor
+from mdr_handle_open_action.msg import HandleOpenResult
 
 from importlib import import_module
 
@@ -256,11 +252,11 @@ class HandleOpenSM(ActionSMBase):
 
             self.failure_data.append(black_percentage)
             if black_percentage > 0.3 :
-                rospy.loginfo(" [handle_open] Handle slip detected!  ")
+                rospy.loginfo("[handle_open] Handle slip detected!")
 
             self.last_image = cv2_img
 
-        except :
+        except Exception as e:
             # Exception when the image is 'None'
-            pass
+            rospy.loginfo("Error '{0}' occured".format(e.message))
 
