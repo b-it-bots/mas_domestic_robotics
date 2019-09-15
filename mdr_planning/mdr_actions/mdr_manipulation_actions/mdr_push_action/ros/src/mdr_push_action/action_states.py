@@ -36,10 +36,7 @@ class PushSM(ActionSMBase):
         gripper_controller_module_name = '{0}.gripper_controller'.format(gripper_controller_pkg_name)
         GripperControllerClass = getattr(import_module(gripper_controller_module_name),
                                          'GripperController')
-        self.gripper = GripperControllerClass()
-
-        self.force_sensor_topic='/hsrb/wrist_wrench/raw'
-       
+        self.gripper = GripperControllerClass()       
         
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
@@ -54,17 +51,20 @@ class PushSM(ActionSMBase):
         self.move_base_client = None
         self.move_forward_client = None
 
+        #Data Collection Variable
         self.take_image = False
         self.get_sensor_val = False
-        
-        rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
+        self.force = []
 
-        image_topic = '/hsrb/hand_camera/image_raw'
-        # Set up your subscriber and define its callback
-        self.sub = rospy.Subscriber(image_topic, Image, self.image_callback)
+        self.grasp_successful = False
         
-        self.file = open("/home/lucy/ros/kinetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_manipulation_actions/mdr_push_action/ros/src/mdr_push_action/nonfaulty.txt","w+")
-    
+        # Set up subscriber and define its callback
+        force_sensor_topic='/hsrb/wrist_wrench/raw'
+        image_topic = '/hsrb/hand_camera/image_raw'
+        rospy.Subscriber(force_sensor_topic, WrenchStamped, self.force_sensor_cb)
+        rospy.Subscriber(image_topic, Image, self.image_callback)
+        
+        #self.file = open("/home/lucy/ros/kinetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_manipulation_actions/mdr_push_action/ros/src/mdr_push_action/nonfaulty.txt","w+")
 
     def init(self):
         try:
@@ -91,18 +91,19 @@ class PushSM(ActionSMBase):
         return FTSMTransitions.INITIALISED
 
     def running(self):
-        grasp_successful = False
         retry_count = 0
-        num = 0
-        while ((not grasp_successful) and (retry_count <= self.number_of_retries)):
+        pushing_successful = False
+        overall_successful = False
+        
+        while ((not overall_successful) and (retry_count <= self.number_of_retries)):
             if retry_count > 0:
                 rospy.loginfo('[push] Retrying grasp')
 
-            rospy.loginfo('[push] Opening the gripper...')
+            rospy.loginfo('[push] Starting')
             self.gripper.open()
-
             self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral') 
 
+            rospy.loginfo('[push] Reach the object')
             self.pose1 = PushGoal()
             self.pose1.pose.header.frame_id = 'base_link'
             self.pose1.pose.header.stamp = rospy.Time.now()
@@ -116,30 +117,36 @@ class PushSM(ActionSMBase):
 
             self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, self.pose1.pose)
             
+            rospy.loginfo('[push] Grasp the object')
             self.gripper.close()
 
+            rospy.loginfo('[push] Push the object')
             self.take_image = True
-            print ("pushing the object")
             self.get_sensor_val = True
-            #Push
-            self.get_pose = True
             self.__move_base_along_x(0.05)
-            print ("done pushing object")
             self.get_pose = True
             self.get_sensor_val= False
+
+            #Check Force Sensor
+            mean = np.mean(self.force)
+            if mean < -8.5:
+                pushing_successful = True
+            else:
+                pushing_successful = False
+
+            rospy.loginfo('[push] Release the object')
             self.gripper.open()
             
+            rospy.loginfo('[push] Return to initial position')
             self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral') 
-            self.get_pose = True
             self.__move_base_along_x(-0.05)
-            self.get_pose = True
-            grasp_successful = self.gripper.verify_grasp()
-           
-            
-        
-        self.file.close()
 
-        if grasp_successful:
+            if pushing_successful and self.grasp_successful:
+                overall_successful = True
+        
+        #self.file.close()
+
+        if overall_successful:
             self.result = self.set_result(True)
             return FTSMTransitions.DONE
 
@@ -148,13 +155,6 @@ class PushSM(ActionSMBase):
         return FTSMTransitions.DONE
 
     def __move_arm(self, goal_type, goal):
-        '''Sends a request to the 'move_arm' action server and waits for the
-        results of the action execution.
-        Keyword arguments:
-        goal_type -- 'MoveArmGoal.NAMED_TARGET' or 'MoveArmGoal.END_EFFECTOR_POSE'
-        goal -- A string if 'goal_type' is 'MoveArmGoal.NAMED_TARGET';
-                a 'geometry_msgs/PoseStamped' if 'goal_type' is 'MoveArmGoal.END_EFFECTOR_POSE'
-        '''
         move_arm_goal = MoveArmGoal()
         move_arm_goal.goal_type = goal_type
         if goal_type == MoveArmGoal.NAMED_TARGET:
@@ -179,12 +179,9 @@ class PushSM(ActionSMBase):
         self.move_forward_client.get_result()
 
     def force_sensor_cb(self, force_sensor_msg):
-        '''
-        Force sensor callback. Taken from hand_over action.
-        '''
         if self.get_sensor_val:
-            self.file.write("%f, %f, %f\n" % (force_sensor_msg.wrench.force.x, force_sensor_msg.wrench.force.y, force_sensor_msg.wrench.force.z))
-            
+            #self.file.write("%f, %f, %f\n" % (force_sensor_msg.wrench.force.x, force_sensor_msg.wrench.force.y, force_sensor_msg.wrench.force.z))
+            self.force.append(force_sensor_msg.wrench.force.x)
 
     def image_callback(self, msg):
         #taken from https://gist.github.com/rethink-imcmahon/77a1a4d5506258f3dc1f
@@ -202,12 +199,13 @@ class PushSM(ActionSMBase):
                 print("Comparing images")
                 #value of structural similarity of image where value lies between -1 to 1 and 1 is perfect match
                 val_ssim = self.compare_images(cv2_img)
-                #self.compare_images()
                 
                 if val_ssim > 0.59:
                     print("Grasp successful")
+                    self.grasp_successful = True
                 else :
                     print("Grasp failed") 
+                    self.grasp_successful = False
 
             self.take_image = False
 
@@ -215,15 +213,13 @@ class PushSM(ActionSMBase):
         # taken from https://www.pyimagesearch.com/2014/09/15/python-compare-two-images/
         # compute the mean squared error and structural similarity
         # index for the images
-        imageA = cv2.imread("/home/lucy/ros/kinetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_manipulation_actions/mdr_push_action/ros/src/mdr_push_action/grasp_model4.jpeg")
+        imageA = cv2.imread("/home/lucy/ros/kinetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_manipulation_actions/mdr_push_action/ros/src/mdr_push_action/grasp_model6.jpeg")
         
         gray1 = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
         gray2 = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
         val_ssim = measure.compare_ssim(gray1, gray2)
 
         return val_ssim
-
-
 
     def set_result(self, success):
         result = PushResult()
