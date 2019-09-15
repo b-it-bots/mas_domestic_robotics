@@ -97,7 +97,7 @@ class PushSM(ActionSMBase):
         
         while ((not overall_successful) and (retry_count <= self.number_of_retries)):
             if retry_count > 0:
-                rospy.loginfo('[push] Retrying grasp')
+                rospy.loginfo('[push] Retrying push')
 
             rospy.loginfo('[push] Starting')
             self.gripper.open()
@@ -211,9 +211,8 @@ class PushSM(ActionSMBase):
 
     def compare_images(self, imageB):
         # taken from https://www.pyimagesearch.com/2014/09/15/python-compare-two-images/
-        # compute the mean squared error and structural similarity
-        # index for the images
-        imageA = cv2.imread("/home/lucy/ros/kinetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_manipulation_actions/mdr_push_action/ros/src/mdr_push_action/grasp_model6.jpeg")
+        # compute the mean squared error and structural similarity index for the images
+        imageA = cv2.imread("/home/lucy/ros/kinetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_manipulation_actions/mdr_push_action/ros/src/images/grasp_model6.jpeg")
         
         gray1 = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
         gray2 = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
