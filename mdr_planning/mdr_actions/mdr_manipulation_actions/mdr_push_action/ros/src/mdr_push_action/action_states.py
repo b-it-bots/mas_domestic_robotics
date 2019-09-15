@@ -39,7 +39,7 @@ class PushSM(ActionSMBase):
         self.gripper = GripperControllerClass()
 
         self.force_sensor_topic='/hsrb/wrist_wrench/raw'
-        #self.base_pose_topic = '/hsrb/base_pose'
+       
         
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
@@ -58,7 +58,7 @@ class PushSM(ActionSMBase):
         self.get_sensor_val = False
         
         rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
-        #rospy.Subscriber(self.base_pose_topic, PoseStamped, self.base_cb)
+
         image_topic = '/hsrb/hand_camera/image_raw'
         # Set up your subscriber and define its callback
         self.sub = rospy.Subscriber(image_topic, Image, self.image_callback)
@@ -94,11 +94,11 @@ class PushSM(ActionSMBase):
         grasp_successful = False
         retry_count = 0
         num = 0
-        while ((not grasp_successful) and (retry_count <= self.number_of_retries) or (num < 10)):
+        while ((not grasp_successful) and (retry_count <= self.number_of_retries)):
             if retry_count > 0:
                 rospy.loginfo('[push] Retrying grasp')
 
-            #rospy.loginfo('[push] Opening the gripper...')
+            rospy.loginfo('[push] Opening the gripper...')
             self.gripper.open()
 
             self.__move_arm(MoveArmGoal.NAMED_TARGET, 'neutral') 
@@ -135,7 +135,7 @@ class PushSM(ActionSMBase):
             self.get_pose = True
             grasp_successful = self.gripper.verify_grasp()
            
-            num += 1
+            
         
         self.file.close()
 
@@ -204,7 +204,7 @@ class PushSM(ActionSMBase):
                 val_ssim = self.compare_images(cv2_img)
                 #self.compare_images()
                 
-                if val_ssim > 0.40:
+                if val_ssim > 0.59:
                     print("Grasp successful")
                 else :
                     print("Grasp failed") 
@@ -212,20 +212,14 @@ class PushSM(ActionSMBase):
             self.take_image = False
 
     def compare_images(self, imageB):
-
+        # taken from https://www.pyimagesearch.com/2014/09/15/python-compare-two-images/
         # compute the mean squared error and structural similarity
         # index for the images
         imageA = cv2.imread("/home/lucy/ros/kinetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_manipulation_actions/mdr_push_action/ros/src/mdr_push_action/grasp_model4.jpeg")
-        #imageB = cv2.imread("current_image.jpeg", 0)
-        #print imageA
+        
         gray1 = cv2.cvtColor(imageA, cv2.COLOR_BGR2GRAY)
         gray2 = cv2.cvtColor(imageB, cv2.COLOR_BGR2GRAY)
         val_ssim = measure.compare_ssim(gray1, gray2)
- 
-        #if val_ssim > 0.40:
-        #    print("Grasp successful")
-        #else :
-        #    print("Grasp failed") 
 
         return val_ssim
 
