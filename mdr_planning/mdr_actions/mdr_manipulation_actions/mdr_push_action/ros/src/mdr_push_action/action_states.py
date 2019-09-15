@@ -91,6 +91,32 @@ class PushSM(ActionSMBase):
         return FTSMTransitions.INITIALISED
 
     def running(self):
+        '''
+        Fault detection algorithm checks two things: pushing and grasping. If at least one of them raise the
+        fault alarm, the whole pushing action are repeated. 
+
+        Pushing action flow:
+        1. Initial Movement
+            The robot starts the action by opening the gripper and moving the manipulator to neutral position.
+        2. Reaching the Object
+            The end effector pose are fixed beside the z-axis pose. The z-axis pose will be set using normal
+            distribution for certain range. Therefore the robot will not grasp the object at the same location
+            all the time.
+        3. Grasp the Object
+            An image is taken after the grasping is done. The success result is determined by comparing the image
+            with the model. (1st fault detection)
+        4. Push the Object
+            The robot moves its base forward while maintaining the manipulator configuration to emulates 
+            the push action. Force data starting from before the base moves forward until it stops are saved in
+            the list. The mean value is calculated and compared with the set threshold. (2nd fault detection)
+        5. Release the Object
+        6. Return to Initial Position
+            The robot returns to initial position by first retracting its manipulator to neutral position, 
+            then move its base back. If both fault detection returns false (success == True), it will exit the 
+            loop function. The variable retry_count determine how many retries the algorithm allows until the 
+            pushing action is done properly.
+        '''
+
         retry_count = 0
         pushing_successful = False
         overall_successful = False
@@ -119,9 +145,9 @@ class PushSM(ActionSMBase):
             
             rospy.loginfo('[push] Grasp the object')
             self.gripper.close()
+            self.take_image = True
 
             rospy.loginfo('[push] Push the object')
-            self.take_image = True
             self.get_sensor_val = True
             self.__move_base_along_x(0.05)
             self.get_pose = True
