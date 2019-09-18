@@ -7,8 +7,10 @@ outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
         name: REF_BOX
-        state_module_name: mdr_sciroc_elevator.scenario_states.ref_box
-        state_class_name: RefBox
+        state_module_name: mdr_sciroc_elevator.scenario_states.wait_for_command
+        state_class_name: WaitForCommand
+        # state_module_name: mdr_sciroc_elevator.scenario_states.ref_box
+        # state_class_name: RefBox
         transitions:
             - transition:
                 name: succeeded
