@@ -1,12 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_where_is_this)
+project(mdr_sciroc_elevator)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
   roslint
   std_msgs
   geometry_msgs
-  topological_map_ros
   mas_execution_manager
   mas_knowledge_base
   mdr_listen_action
@@ -20,7 +19,6 @@ catkin_package(
     rospy
     std_msgs
     geometry_msgs
-    topological_map_ros
     mas_execution_manager
     mas_knowledge_base
     mdr_listen_action

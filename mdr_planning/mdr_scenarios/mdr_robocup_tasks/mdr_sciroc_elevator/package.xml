@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>mdr_where_is_this</name>
+  <name>mdr_sciroc_elevator</name>
   <version>0.0.0</version>
   <description>State machine and launch files for performing the Where is this? task</description>
   <license>GPLv3</license>
@@ -23,7 +23,6 @@
   <build_depend>rospy</build_depend>
   <build_depend>mas_execution_manager</build_depend>
   <build_depend>mdr_listen_action</build_depend>
-  <build_depend>topological_map_ros</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>mdr_speech_matching</build_depend>
@@ -32,7 +31,6 @@
   <exec_depend>rospy</exec_depend>
   <exec_depend>mas_execution_manager</exec_depend>
   <exec_depend>mdr_listen_action</exec_depend>
-  <exec_depend>topological_map_ros</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>mdr_speech_matching</exec_depend>
