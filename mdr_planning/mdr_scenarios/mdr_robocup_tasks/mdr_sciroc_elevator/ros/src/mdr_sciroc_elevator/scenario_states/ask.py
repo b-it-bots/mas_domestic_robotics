@@ -7,7 +7,7 @@ from mdr_listen_action.msg import ListenAction, ListenGoal
 from speech_matching.speech_matching import SpeechMatching
 from mas_tools.ros_utils import get_package_path
 
-class AskFloor(ScenarioStateBase):
+class Ask(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'listening',
                                    save_sm_state=save_sm_state,
@@ -42,10 +42,18 @@ class AskFloor(ScenarioStateBase):
         goal = ListenGoal()
 
         if not self.number_of_retries == 0:
-            if self.state_name == "ASK_HELP":
+            if self.state_name == "ASK_TO_OPEN":
+                self.say('Could you open the elevator door please?')
+                rospy.sleep(5)
+                return "succeeded"
+            elif self.state_name == "ASK_HELP":
                 self.say('Can you please press number ' + self.floor_number + '?')
             elif self.state_name == "ASK_FLOOR":
                 self.say('Are we in floor number ' + self.floor_number + '?')
+            elif self.state_name == "ASK_TO_MOVE":
+                self.say('Would you be so kind to move out of the way please?')
+                rospy.sleep(5)
+                return "succeeded"
             rospy.sleep(1)
         # Ask again if not understood the first time
         elif self.number_of_retries < 3:
