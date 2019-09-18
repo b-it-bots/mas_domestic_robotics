@@ -1,0 +1,25 @@
+# Description: Defines a state machine for sciroc "elevator" scenario
+# Author: Erick Kramer
+# Email: erick.romero@smail.inf.h-brs.de
+sm_id: mdr_sciroc_elevator
+states: [REF_BOX, GO_TO_DOOR, DETECT_DOOR, ASK_TO_OPEN, GO_INSIDE, ASK_TO_MOVE, ASK_HELP, LISTENING, CHECK_FLOOR, FINAL_GOAL]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: REF_BOX
+        state_module_name: mdr_sciroc_elevator.scenario_states.detect_person
+        state_class_name: DetectPerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: RECEIVE_INFORMATION_FROM_OPERATOR
+            - transition:
+                name: failed
+                state: DETECT_PERSON
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3

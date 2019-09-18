@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mdr_where_is_this</name>
+  <version>0.0.0</version>
+  <description>State machine and launch files for performing the Where is this? task</description>
+  <license>GPLv3</license>
+
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
+  <author email="argentina.ortega@h-brs.de">Argentina Ortega</author>
+  <author email="patrick.nagel@h-brs.de">Patrick Nagel</author>
+  <author email="henrik.schnor@smail.inf.h-brs.de">Henrik Schnor</author>
+  <author email="roberto.cai@smail.inf.h-brs.de">Roberto Cai Wu</author>
+  <author email="erick.romero@smail.inf.h-brs.de">Erick Romero Kramer</author>
+  <author email="minh.nguyen@smail.inf.h-brs.de">Minh Nguyen</author>
+  <author email="rohan.haseloff@smail.inf.h-brs.de">Rohan Haseloff</author>
+
+  <license>GPLv3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>mas_execution_manager</build_depend>
+  <build_depend>mdr_listen_action</build_depend>
+  <build_depend>topological_map_ros</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>mdr_speech_matching</build_depend>
+  <build_depend>mas_knowledge_base</build_depend>
+
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>mas_execution_manager</exec_depend>
+  <exec_depend>mdr_listen_action</exec_depend>
+  <exec_depend>topological_map_ros</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>mdr_speech_matching</exec_depend>
+  <exec_depend>mas_knowledge_base</exec_depend>
+
+
+  <export>
+  </export>
+</package>
