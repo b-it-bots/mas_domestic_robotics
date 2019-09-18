@@ -10,7 +10,7 @@ class MoveBase(ScenarioStateBase):
         ScenarioStateBase.__init__(self, 'move_base',
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'])
-        self.sm_id = kwargs.get('sm_id', 'mdr_robot_inspection')
+        self.sm_id = kwargs.get('sm_id', 'mdr_sciroc_elevator')
         self.state_name = kwargs.get('state_name', 'move_base')
         self.action_server = kwargs.get('action_server', 'move_base_server')
         self.destination_locations = list(kwargs.get('destination_locations', list()))
