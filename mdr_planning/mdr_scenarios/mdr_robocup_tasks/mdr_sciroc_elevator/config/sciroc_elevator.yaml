@@ -6,6 +6,29 @@ states: [REF_BOX, GO_TO_DOOR, WAIT_FOR_DOOR, ASK_TO_OPEN, GO_INSIDE, ASK_TO_MOVE
 outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
+        name: GO_TO_START
+        #state_module_name: mdr_navigation_behaviours.move_base
+        #state_class_name: MoveBase
+        state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
+        state_class_name: SimulatedGoTo
+        transitions:
+            - transition:
+                name: succeeded
+                state: REF_BOX
+            - transition:
+                name: failed
+                state: GO_TO_START
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [START]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
         name: REF_BOX
         state_module_name: mdr_sciroc_elevator.scenario_states.wait_for_command
         state_class_name: WaitForCommand
@@ -44,7 +67,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [door]
+                value: [ELEVATOR_ENTRANCE]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -103,7 +126,7 @@ state_descriptions:
         arguments:
             - argument: 
                 name: destination_locations
-                value: [elevator]
+                value: [INSIDE_ELEVATOR]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -180,7 +203,7 @@ state_descriptions:
         arguments:
             - argument: 
                 name: destination_locations
-                value: [goal]
+                value: [STOP]
             - argument:
                 name: number_of_retries
                 value: 3
