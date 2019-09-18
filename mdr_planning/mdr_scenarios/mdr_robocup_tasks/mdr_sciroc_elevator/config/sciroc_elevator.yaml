@@ -148,7 +148,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: DETECT_DOOR
+                state: FINAL_GOAL
             - transition:
                 name: failed
                 state: CHECK_FLOOR
