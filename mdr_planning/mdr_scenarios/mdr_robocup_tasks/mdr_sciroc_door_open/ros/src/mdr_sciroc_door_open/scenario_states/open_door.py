@@ -19,6 +19,10 @@ class OpenDoor(ScenarioStateBase):
                                                      userdata.handle_pose.pose.position.y,
                                                      userdata.handle_pose.pose.position.z))
         rospy.sleep(5.0)
+        if self.number_of_retries > 0:
+            self.number_of_retries -= 1
+        else:
+            return 'failed_after_retrying'
         return 'failed'
 
 
