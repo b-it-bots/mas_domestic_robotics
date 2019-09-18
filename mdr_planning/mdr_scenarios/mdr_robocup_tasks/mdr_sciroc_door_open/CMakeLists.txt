@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   mas_execution_manager
   mas_knowledge_base
+  handle_detector
 )
 
 catkin_python_setup()
@@ -19,6 +20,7 @@ catkin_package(
     geometry_msgs
     mas_execution_manager
     mas_knowledge_base
+    handle_detector
 )
 
 include_directories()

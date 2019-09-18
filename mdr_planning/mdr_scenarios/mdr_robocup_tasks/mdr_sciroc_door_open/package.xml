@@ -25,13 +25,14 @@
   <build_depend>geometry_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>mas_knowledge_base</build_depend>
+  <build_depend>handle_detector</build_depend>
 
   <exec_depend>rospy</exec_depend>
   <exec_depend>mas_execution_manager</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>mas_knowledge_base</exec_depend>
-
+  <exec_depend>handle_detector</exec_depend>
 
   <export>
   </export>

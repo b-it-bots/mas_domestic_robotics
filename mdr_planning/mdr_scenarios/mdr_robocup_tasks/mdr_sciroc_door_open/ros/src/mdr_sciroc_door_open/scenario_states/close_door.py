@@ -1,3 +1,4 @@
+import rospy
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 
@@ -14,4 +15,5 @@ class CloseDoor(ScenarioStateBase):
 
     def execute(self, userdata):
         self.say('trying to close door')
+        rospy.sleep(5.0)
         return 'succeeded'

@@ -1,3 +1,4 @@
+import rospy
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 
@@ -14,6 +15,7 @@ class WaitForCommand(ScenarioStateBase):
 
     def execute(self, userdata):
         self.say('waiting for command from the data hub')
+        rospy.sleep(5.0)
         return 'succeeded'
 
 
@@ -33,4 +35,5 @@ class SimulatedGoTo(ScenarioStateBase):
     def execute(self, userdata):
         for dest in self.destination_locations:
             self.say('going to ' + dest)
+            rospy.sleep(5.0)
         return 'succeeded'
