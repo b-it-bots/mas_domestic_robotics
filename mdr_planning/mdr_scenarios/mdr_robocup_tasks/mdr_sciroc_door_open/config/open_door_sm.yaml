@@ -1,0 +1,136 @@
+# Description: Defines a state machine for a scenario in which a robot patrols a certain area
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_demo_patrol
+states: [GO_TO_START, WAIT_FOR_COMMAND, GO_TO_DOOR, OPEN_DOOR, GO_THROUGH_DOOR, CLOSE_DOOR]
+outcomes: [DONE, TIMEOUT, FAILED]
+state_descriptions:
+    - state:
+        name: GO_TO_START
+        # state_module_name: mdr_navigation_behaviours.move_base
+        # state_class_name: MoveBase
+        state_module_name: mdr_sciroc_door_open.wait_for_command
+        state_class_name: SimulatedGoTo
+        transitions:
+            - transition:
+                name: succeeded
+                state: WAIT_FOR_COMMAND
+            - transition:
+                name: failed
+                state: GO_TO_START
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [START_DOOR]
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    - state:
+        name: WAIT_FOR_COMMAND
+        state_module_name: mdr_sciroc_door_open.wait_for_command
+        state_class_name: WaitForCommand
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_DOOR
+            - transition:
+                name: failed
+                state: WAIT_FOR_COMMAND
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    - state:
+        name: GO_TO_DOOR
+        # state_module_name: mdr_navigation_behaviours.move_base
+        # state_class_name: MoveBase
+        state_module_name: mdr_sciroc_door_open.wait_for_command
+        state_class_name: SimulatedGoTo
+        transitions:
+            - transition:
+                name: succeeded
+                state: OPEN_DOOR
+            - transition:
+                name: failed
+                state: GO_TO_DOOR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                # alternatively DOOR_CENTER
+                value: [DOOR_HANDLE]
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    - state:
+        name: OPEN_DOOR
+        state_module_name: mdr_sciroc_door_open.open_door
+        state_class_name: OpenDoor
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_THROUGH_DOOR
+            - transition:
+                name: failed
+                state: OPEN_DOOR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    - state:
+        name: GO_THROUGH_DOOR
+        # state_module_name: mdr_navigation_behaviours.move_base
+        # state_class_name: MoveBase
+        state_module_name: mdr_sciroc_door_open.wait_for_command
+        state_class_name: SimulatedGoTo
+        transitions:
+            - transition:
+                name: succeeded
+                state: CLOSE_DOOR
+            - transition:
+                name: failed
+                state: GO_THROUGH_DOOR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [OTHER_SIDE_OF_DOOR]
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    - state:
+        name: CLOSE_DOOR
+        state_module_name: mdr_sciroc_door_open.close_door
+        state_class_name: CloseDoor
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: CLOSE_DOOR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
