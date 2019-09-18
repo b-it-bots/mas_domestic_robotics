@@ -7,19 +7,172 @@ outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
         name: REF_BOX
-        state_module_name: mdr_sciroc_elevator.scenario_states.detect_person
-        state_class_name: DetectPerson
+        state_module_name: mdr_sciroc_elevator.scenario_states.ref_box
+        state_class_name: RefBox
         transitions:
             - transition:
                 name: succeeded
-                state: RECEIVE_INFORMATION_FROM_OPERATOR
+                state: GO_TO_DOOR
             - transition:
                 name: failed
-                state: DETECT_PERSON
+                state: REF_BOX
             - transition:
                 name: failed_after_retrying
                 state: FAILED
         arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_DOOR
+        state_module_name: mdr_sciroc_elevator.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: DETECT_DOOR
+            - transition:
+                name: failed
+                state: GO_TO_DOOR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [door]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: DETECT_DOOR
+        state_module_name: mdr_sciroc_elevator.scenario_states.enter
+        state_class_name: Enter
+        transitions:
+            - transition:
+                name: close
+                state: ASK_TO_OPEN
+            - transition:
+                name: open
+                state: GO_INSIDE
+            - transition:
+                name: failed
+                state: DETECT_DOOR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: ASK_TO_OPEN
+        state_module_name: mdr_sciroc_elevator.scenario_states.ask
+        state_class_name: AskOpen
+        transitions:
+            - transition:
+                name: succeeded
+                state: DETECT_DOOR
+            - transition:
+                name: failed
+                state: ASK_TO_OPEN
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_INSIDE
+        state_module_name: mdr_sciroc_elevator.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: ASK_HELP
+            - transition:
+                name: failed
+                state: ASK_TO_MOVE
+        arguments:
+            - argument: 
+                name: destination_locations
+                value: [elevator]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: ASK_TO_MOVE
+        state_module_name: mdr_sciroc_elevator.scenario_states.ask
+        state_class_name: AskMove
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_INSIDE
+            - transition:
+                name: failed
+                state: ASK_TO_MOVE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: ASK_HELP
+        state_module_name: mdr_sciroc_elevator.scenario_states.ask
+        state_class_name: AskHelp
+        transitions:
+            - transition:
+                name: succeeded
+                state: CHECK_FLOOR
+            - transition:
+                name: failed
+                state: ASK_HELP
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: CHECK_FLOOR
+        state_module_name: mdr_sciroc_elevator.scenario_states.ask
+        state_class_name: AskFloor
+        transitions:
+            - transition:
+                name: succeeded
+                state: DETECT_DOOR
+            - transition:
+                name: failed
+                state: CHECK_FLOOR
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 10
+    - state:
+        name: FINAL_GOAL
+        state_module_name: mdr_sciroc_elevator.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: FINAL_GOAL
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument: 
+                name: destination_locations
+                value: [goal]
             - argument:
                 name: number_of_retries
                 value: 3
