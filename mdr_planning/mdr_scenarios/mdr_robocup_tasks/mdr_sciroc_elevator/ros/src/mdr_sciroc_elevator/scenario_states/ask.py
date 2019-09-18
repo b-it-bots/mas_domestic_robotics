@@ -25,7 +25,7 @@ class Ask(ScenarioStateBase):
 
         # Load the rasa model
         model_directory = get_package_path('rasa_nlu_models', 'common',
-                                           'where_is_this', 'nlu')
+                                           'where_is_this','nlu')
         self.interpreter = Interpreter.load(model_directory)
 
         # wait for listen action server

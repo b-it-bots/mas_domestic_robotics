@@ -2,7 +2,7 @@
 # Author: Erick Kramer
 # Email: erick.romero@smail.inf.h-brs.de
 sm_id: mdr_sciroc_elevator
-states: [REF_BOX, GO_TO_DOOR, WAIT_FOR_DOOR, ASK_TO_OPEN, GO_INSIDE, ASK_TO_MOVE, ASK_HELP, CHECK_FLOOR, FINAL_GOAL]
+states: [GO_TO_START, REF_BOX, GO_TO_DOOR, WAIT_FOR_DOOR, ASK_TO_OPEN, GO_INSIDE, ASK_TO_MOVE, ASK_HELP, CHECK_FLOOR, FINAL_GOAL]
 outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
@@ -73,7 +73,7 @@ state_descriptions:
                 value: 3
     - state:
         name: WAIT_FOR_DOOR
-        state_module_name: mdr_sciroc_elevator.scenario_states.enter
+        state_module_name: mdr_robot_inspection.scenario_states.enter
         state_class_name: Enter
         transitions:
             - transition:
