@@ -9,7 +9,7 @@ state_descriptions:
         name: GO_TO_START
         # state_module_name: mdr_navigation_behaviours.move_base
         # state_class_name: MoveBase
-        state_module_name: mdr_sciroc_door_open.wait_for_command
+        state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
         state_class_name: SimulatedGoTo
         transitions:
             - transition:
@@ -31,7 +31,7 @@ state_descriptions:
 
     - state:
         name: WAIT_FOR_COMMAND
-        state_module_name: mdr_sciroc_door_open.wait_for_command
+        state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
         state_class_name: WaitForCommand
         transitions:
             - transition:
@@ -52,7 +52,7 @@ state_descriptions:
         name: GO_TO_DOOR
         # state_module_name: mdr_navigation_behaviours.move_base
         # state_class_name: MoveBase
-        state_module_name: mdr_sciroc_door_open.wait_for_command
+        state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
         state_class_name: SimulatedGoTo
         transitions:
             - transition:
@@ -75,7 +75,7 @@ state_descriptions:
 
     - state:
         name: OPEN_DOOR
-        state_module_name: mdr_sciroc_door_open.open_door
+        state_module_name: mdr_sciroc_door_open.scenario_states.open_door
         state_class_name: OpenDoor
         transitions:
             - transition:
@@ -96,7 +96,7 @@ state_descriptions:
         name: GO_THROUGH_DOOR
         # state_module_name: mdr_navigation_behaviours.move_base
         # state_class_name: MoveBase
-        state_module_name: mdr_sciroc_door_open.wait_for_command
+        state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
         state_class_name: SimulatedGoTo
         transitions:
             - transition:
@@ -118,7 +118,7 @@ state_descriptions:
 
     - state:
         name: CLOSE_DOOR
-        state_module_name: mdr_sciroc_door_open.close_door
+        state_module_name: mdr_sciroc_door_open.scenario_states.close_door
         state_class_name: CloseDoor
         transitions:
             - transition:
