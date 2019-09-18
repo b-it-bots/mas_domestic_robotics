@@ -2,7 +2,7 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_demo_patrol
-states: [GO_TO_START, WAIT_FOR_COMMAND, GO_TO_DOOR, DETECT_HANDLE, OPEN_DOOR, ASK_TO_OPEN_DOOR, WAIT_FOR_DOOR_OPEN, GO_THROUGH_DOOR, CLOSE_DOOR]
+states: [GO_TO_START, WAIT_FOR_COMMAND, GO_TO_DOOR, DETECT_HANDLE, OPEN_DOOR, ASK_TO_OPEN_DOOR, GO_THROUGH_DOOR, CLOSE_DOOR]
 outcomes: [DONE, TIMEOUT, FAILED]
 state_descriptions:
     - state:
@@ -125,25 +125,6 @@ state_descriptions:
             - transition:
                 name: succeeded
                 state: GO_THROUGH_DOOR
-
-    - state:
-        name: WAIT_FOR_DOOR_OPEN
-        state_module_name: mdr_robot_inspection.scenario_states.enter
-        state_class_name: Enter
-        transitions:
-            - transition:
-                name: succeeded
-                state: GO_THROUGH_DOOR
-            - transition:
-                name: failed
-                state: WAIT_FOR_DOOR_OPEN
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: number_of_retries
-                value : 3
 
     - state:
         name: GO_THROUGH_DOOR

@@ -35,5 +35,5 @@ class AskToOpenDoor(ScenarioStateBase):
 
     def execute(self, userdata):
         self.say('I cannot open the door myself, can you please open the door')
-        rospy.sleep(10.0)
+        rospy.sleep(15.0)
         return 'succeeded'
