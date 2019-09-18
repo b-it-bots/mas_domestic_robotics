@@ -21,6 +21,8 @@ catkin_package(
     mas_execution_manager
     mas_knowledge_base
     handle_detector
+    mdr_move_forward_action
+    mdr_move_arm_action
 )
 
 include_directories()
