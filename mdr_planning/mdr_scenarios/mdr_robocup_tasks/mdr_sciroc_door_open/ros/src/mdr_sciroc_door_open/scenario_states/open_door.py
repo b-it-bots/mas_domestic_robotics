@@ -71,7 +71,7 @@ class OpenDoor(ScenarioStateBase):
         joint_goal = MoveArmJointsGoal()
         joint_goal.arm_joint_names = ['arm_flex_joint', 'arm_roll_joint',
                                       'arm_lift_joint', 'wrist_roll_joint', 'wrist_flex_joint']
-        joint_goal.arm_joint_values = [0.0, 0.0, 0.23, -1.57, 0.]
+        joint_goal.arm_joint_values = [0.0, 0.0, 0.23, 1.57, -1.57]
         self.move_arm_joints_client.send_goal(joint_goal)
         self.move_arm_joints_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
 
