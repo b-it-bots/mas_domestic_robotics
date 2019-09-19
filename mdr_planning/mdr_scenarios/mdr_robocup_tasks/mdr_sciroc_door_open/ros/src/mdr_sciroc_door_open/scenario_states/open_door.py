@@ -42,7 +42,7 @@ class AskToOpenDoor(ScenarioStateBase):
 
     def execute(self, userdata):
         self.say('I cannot open the door myself, can you please open the door')
-        rospy.sleep(15.0)
+        rospy.sleep(5.0)
         return 'succeeded'
 
 
@@ -50,7 +50,7 @@ class PushDoorOpen(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'push_door_open',
                                    save_sm_state=save_sm_state,
-                                   outcomes=['succeeded', 'failed', 'failed_after_retry'])
+                                   outcomes=['succeeded', 'failed', 'failed_after_retrying'])
 
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'push_door_open')
@@ -60,7 +60,7 @@ class PushDoorOpen(ScenarioStateBase):
         # move forward
         self.movement_duration = float(rospy.get_param('~movement_duration', 5.))
         self.speed = float(rospy.get_param('~speed', 0.1))
-        move_forward_server_name = rospy.get_param('~move_forward_server', '/mdr_actions/move_forward_server')
+        move_forward_server_name = rospy.get_param('~move_forward_server', '/move_forward_server')
         self.move_forward_client = actionlib.SimpleActionClient(move_forward_server_name, MoveForwardAction)
         rospy.loginfo('[push_door] Waiting for %s server', move_forward_server_name)
         if not self.move_forward_client.wait_for_server(rospy.Duration(self.timeout)):
@@ -84,7 +84,7 @@ class PushDoorOpen(ScenarioStateBase):
             if self.number_of_retries > 0:
                 self.number_of_retries -= 1
                 return 'failed'
-            return 'failed_after_retry'
+            return 'failed_after_retrying'
 
         goal = MoveForwardGoal()
         goal.movement_duration = self.movement_duration
@@ -94,5 +94,5 @@ class PushDoorOpen(ScenarioStateBase):
             if self.number_of_retries > 0:
                 self.number_of_retries -= 1
                 return 'failed'
-            return 'failed_after_retry'
+            return 'failed_after_retrying'
         return 'succeeded'

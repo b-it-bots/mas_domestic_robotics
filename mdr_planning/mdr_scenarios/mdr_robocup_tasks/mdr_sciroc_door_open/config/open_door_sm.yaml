@@ -2,7 +2,8 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_demo_patrol
-states: [GO_TO_START, WAIT_FOR_COMMAND, GO_TO_DOOR, DETECT_HANDLE, OPEN_DOOR, ASK_TO_OPEN_DOOR, PUSH_DOOR_OPEN, GO_THROUGH_DOOR, CLOSE_DOOR]
+states: [GO_TO_START, WAIT_FOR_COMMAND, GO_TO_DOOR, DETECT_HANDLE, OPEN_DOOR, ASK_TO_OPEN_DOOR, PUSH_DOOR_OPEN,
+         GO_TO_DOOR_CENTER, GO_THROUGH_DOOR, GO_BACK_TO_DOOR_CENTER, CLOSE_DOOR]
 outcomes: [DONE, TIMEOUT, FAILED]
 state_descriptions:
     - state:
@@ -27,7 +28,7 @@ state_descriptions:
                 value: [START_DOOR]
             - argument:
                 name: number_of_retries
-                value: 3
+                value: 1
 
     - state:
         name: WAIT_FOR_COMMAND
@@ -46,7 +47,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: number_of_retries
-                value: 3
+                value: 1
 
     - state:
         name: GO_TO_DOOR
@@ -71,7 +72,7 @@ state_descriptions:
                 value: [DOOR_HANDLE]
             - argument:
                 name: number_of_retries
-                value: 3
+                value: 1
 
     - state:
         name: DETECT_HANDLE
@@ -90,7 +91,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: number_of_retries
-                value: 3
+                value: 2
 
     - state:
         name: OPEN_DOOR
@@ -118,7 +119,31 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
+                state: GO_TO_DOOR_CENTER
+
+    - state:
+        name: GO_TO_DOOR_CENTER
+        #state_module_name: mdr_navigation_behaviours.move_base
+        #state_class_name: MoveBase
+        state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
+        state_class_name: SimulatedGoTo
+        transitions:
+            - transition:
+                name: succeeded
                 state: PUSH_DOOR_OPEN
+            - transition:
+                name: failed
+                state: GO_TO_DOOR_CENTER
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [DOOR_CENTER]
+            - argument:
+                name: number_of_retries
+                value: 1
 
     - state:
         name: PUSH_DOOR_OPEN
@@ -127,7 +152,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: GO_THROUGH_DOOR
+                state: GO_BACK_TO_DOOR_CENTER
             - transition:
                 name: failed
                 state: PUSH_DOOR_OPEN
@@ -135,6 +160,30 @@ state_descriptions:
                 name: failed_after_retrying
                 state: FAILED
         arguments:
+            - argument:
+                name: number_of_retries
+                value: 1
+
+    - state:
+        name: GO_BACK_TO_DOOR_CENTER
+        #state_module_name: mdr_navigation_behaviours.move_base
+        #state_class_name: MoveBase
+        state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
+        state_class_name: SimulatedGoTo
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_THROUGH_DOOR
+            - transition:
+                name: failed
+                state: GO_BACK_TO_DOOR_CENTER
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [DOOR_CENTER]
             - argument:
                 name: number_of_retries
                 value: 1
@@ -161,7 +210,7 @@ state_descriptions:
                 value: [OTHER_SIDE_OF_DOOR]
             - argument:
                 name: number_of_retries
-                value: 3
+                value: 1
 
     - state:
         name: CLOSE_DOOR
@@ -180,4 +229,4 @@ state_descriptions:
         arguments:
             - argument:
                 name: number_of_retries
-                value: 3
+                value: 1
