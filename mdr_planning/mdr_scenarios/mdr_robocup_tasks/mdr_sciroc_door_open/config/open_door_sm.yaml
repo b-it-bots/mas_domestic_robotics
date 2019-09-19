@@ -100,7 +100,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: GO_THROUGH_DOOR
+                state: GO_TO_DOOR_CENTER
             - transition:
                 name: failed
                 state: OPEN_DOOR
@@ -110,10 +110,16 @@ state_descriptions:
         arguments:
             - argument:
                 name: number_of_retries
-                value: 1
+                value: 0
             - argument:
                 name: gripper_package
                 value: mas_hsr_gripper_controller
+            - argument:
+                name: dmp_weight_paths
+                value: ["mdr_pickup_action", "config", "trajectory_weights", "weights_table_grasp.yaml"]
+            - argument:
+                name: dmp_tau
+                value: 30
 
     - state:
         name: ASK_TO_OPEN_DOOR
@@ -168,7 +174,7 @@ state_descriptions:
                 value: 1
             - argument:
                 name: movement_duration
-                value: 10
+                value: 8
             - argument:
                 name: movement_speed
                 value: 0.1

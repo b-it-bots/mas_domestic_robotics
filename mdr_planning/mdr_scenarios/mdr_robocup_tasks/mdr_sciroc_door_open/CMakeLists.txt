@@ -23,6 +23,7 @@ catkin_package(
     handle_detector
     mdr_move_forward_action
     mdr_move_arm_action
+    mas_tools
 )
 
 include_directories()

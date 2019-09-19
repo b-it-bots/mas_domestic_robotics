@@ -35,6 +35,7 @@
   <exec_depend>handle_detector</exec_depend>
   <exec_depend>mdr_move_forward_action</exec_depend>
   <exec_depend>mdr_move_arm_action</exec_depend>
+  <exec_depend>mas_tools</exec_depend>
 
   <export>
   </export>

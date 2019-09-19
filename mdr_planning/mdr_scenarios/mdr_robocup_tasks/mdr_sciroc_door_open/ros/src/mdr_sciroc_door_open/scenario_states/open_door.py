@@ -1,6 +1,7 @@
 from importlib import import_module
 import rospy
 import actionlib
+from mas_tools.ros_utils import get_package_path
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
@@ -19,11 +20,16 @@ class OpenDoor(ScenarioStateBase):
 
         # get gripper controller
         gripper_package = kwargs.get('gripper_package', 'mdr_gripper_controller')
-        gripper_module = gripper_package + '.gripper_controller'
+        gripper_module = '{0}.gripper_controller'.format(gripper_package)
+        rospy.loginfo("importing 'GripperController' from '{}' module".format(gripper_module))
         GripperControllerClass = getattr(import_module(gripper_module), 'GripperController')
         self.gripper_controller = GripperControllerClass()
 
         # move arm action
+        dmp_weight_paths = kwargs.get('dmp_weight_paths', list())
+        self.dmp_name = get_package_path(*dmp_weight_paths)
+        self.dmp_tau = kwargs.get('dmp_tau', 1)
+        rospy.loginfo("using dmp_tau={} dmp_name='{}'".format(self.dmp_tau, self.dmp_name))
         move_arm_server_name = kwargs.get('move_arm_server', '/move_arm_server')
         self.move_arm_client = actionlib.SimpleActionClient(move_arm_server_name, MoveArmAction)
         rospy.loginfo('[push_door] Waiting for %s server', move_arm_server_name)
@@ -38,8 +44,9 @@ class OpenDoor(ScenarioStateBase):
         # move arm
         arm_goal = MoveArmGoal()
         arm_goal.goal_type = MoveArmGoal.END_EFFECTOR_POSE
+        arm_goal.dmp_name = self.dmp_name
+        arm_goal.dmp_tau = self.dmp_tau
         arm_goal.end_effector_pose = userdata.handle_pose
-        arm_goal.dmp_name = ''
         self.move_arm_client.send_goal(arm_goal)
         if not self.move_arm_client.wait_for_result(rospy.Duration.from_sec(self.timeout)):
             if self.number_of_retries > 0:
