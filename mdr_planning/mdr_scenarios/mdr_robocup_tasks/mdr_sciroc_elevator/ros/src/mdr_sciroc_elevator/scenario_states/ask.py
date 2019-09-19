@@ -57,7 +57,7 @@ class Ask(ScenarioStateBase):
         self.listen_client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
         listen_result = self.listen_client.get_result()
 
-        if listen_result is None:
+        if listen_result is None || listen_result.message.strip() == "":
             rospy.logerr("Could not get input, listen action returned None")
             return "failed"
         rospy.loginfo("Understood: {}".format(listen_result.message))
@@ -66,9 +66,11 @@ class Ask(ScenarioStateBase):
         # rasa_result = self.interpreter.parse(listen_result.message)
         # speech_intent = rasa_result["intent"]
         rospy.wait_for_service('rasa_server')
+        rospy.loginfo('waiting for rasa_server')
         try:
-            rasa_interpreter = rospy.ServiceProxy('rasa_interpreter_pub', rasa_interpreter)
+            rasa_interpreter = rospy.ServiceProxy('rasa_server', rasa_interpreter)
             speech_intent = rasa_interpreter(listen_result.message)
+            rospy.loginfo("speech_intent: %s"%speech_intent)
         except rospy.ServiceException, e:
             rospy.logerr("Service call failed: %s"%e)
             return "failed"
