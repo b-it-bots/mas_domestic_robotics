@@ -1,11 +1,10 @@
 import rospy
 import actionlib
-from rasa_nlu.model import Interpreter
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from mdr_listen_action.msg import ListenAction, ListenGoal
-from speech_matching.speech_matching import SpeechMatching
 from mas_tools.ros_utils import get_package_path
+from mdr_sciroc_elevator.srv import *
 
 class Ask(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
@@ -33,6 +32,7 @@ class Ask(ScenarioStateBase):
         listen_wait_result = self.listen_client.wait_for_server(timeout=rospy.Duration(self.timeout))
         if not listen_wait_result:
             raise RuntimeError('failed to wait for "listen_server" action')
+
 
         # Speech Matcher
         self.speech_matcher = SpeechMatching()
@@ -71,27 +71,24 @@ class Ask(ScenarioStateBase):
         rospy.loginfo("Understood: {}".format(listen_result.message))
 
         # Try to get the intent
-        rasa_result = self.interpreter.parse(listen_result.message)
-        speech_intent = rasa_result["intent"]
+        # rasa_result = self.interpreter.parse(listen_result.message)
+        # speech_intent = rasa_result["intent"]
+        rospy.wait_for_service('rasa_server')
+        try:
+            rasa_interpreter = rospy.ServiceProxy('rasa_interpreter_pub', rasa_interpreter)
+            speech_intent = rasa_interpreter(listen_result.message)
+        except rospy.ServiceException, e:
+            rospy.logerr("Service call failed: %s"%e)
+            return "failed"
+
 
         # Check if the intention and the confidence are right
-        if speech_intent["name"] != "affirmation":
+        if speech_intent != "affirmation":
             rospy.logerr(' -> Intent is not affirmation')
-
-            if speech_intent["confidence"] < self.threshold:
-                rospy.logerr(' -> Confidence for the intent is too low: {}'.format(speech_intent["confidence"]))
-
-            if len(rasa_result["entities"]) < 1:
-                rospy.logerr(' -> Could not extract object entity')
             return "failed"
         else:
-            # Focus on one entity first
-            if len(rasa_result["entities"]) == 0:
-                return "failed"
-            else:
-
-                rospy.loginfo('Successfully got affirmation!')
-                return 'succeeded'
+            rospy.loginfo('Successfully got affirmation!')
+            return 'succeeded'
 
         # Conversation has exceeded the maximum number of retries at this point
         rospy.loginfo('Could not understand you, aborting operation. ')
