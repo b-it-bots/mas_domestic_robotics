@@ -2,19 +2,14 @@
 <package format="2">
   <name>mdr_sciroc_elevator</name>
   <version>0.0.0</version>
-  <description>State machine and launch files for performing the Where is this? task</description>
+  <description>State machine and launch files for performing the elevator sciroc task</description>
   <license>GPLv3</license>
 
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
-  <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
-  <author email="argentina.ortega@h-brs.de">Argentina Ortega</author>
-  <author email="patrick.nagel@h-brs.de">Patrick Nagel</author>
-  <author email="henrik.schnor@smail.inf.h-brs.de">Henrik Schnor</author>
   <author email="roberto.cai@smail.inf.h-brs.de">Roberto Cai Wu</author>
   <author email="erick.romero@smail.inf.h-brs.de">Erick Romero Kramer</author>
   <author email="minh.nguyen@smail.inf.h-brs.de">Minh Nguyen</author>
-  <author email="rohan.haseloff@smail.inf.h-brs.de">Rohan Haseloff</author>
 
   <license>GPLv3</license>
 

@@ -17,7 +17,7 @@ catkin_python_setup()
 
 add_service_files(
     FILES
-    rasa_interpreter.srv
+    RasaInterpreter.srv
 )
 
 generate_messages(
