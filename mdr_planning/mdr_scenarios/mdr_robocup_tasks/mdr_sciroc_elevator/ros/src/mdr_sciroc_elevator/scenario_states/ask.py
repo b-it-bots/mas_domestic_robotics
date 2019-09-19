@@ -22,20 +22,12 @@ class Ask(ScenarioStateBase):
         self.threshold = kwargs.get('threshold', 0.68)
         self.floor_number = kwargs.get('floor_number', '')
 
-        # Load the rasa model
-        model_directory = get_package_path('rasa_nlu_models', 'common',
-                                           'where_is_this','nlu')
-        self.interpreter = Interpreter.load(model_directory)
-
         # wait for listen action server
         self.listen_client = actionlib.SimpleActionClient("listen_server", ListenAction)
         listen_wait_result = self.listen_client.wait_for_server(timeout=rospy.Duration(self.timeout))
         if not listen_wait_result:
             raise RuntimeError('failed to wait for "listen_server" action')
 
-
-        # Speech Matcher
-        self.speech_matcher = SpeechMatching()
 
     def execute(self, userdata):
         # Setup the listen goal
