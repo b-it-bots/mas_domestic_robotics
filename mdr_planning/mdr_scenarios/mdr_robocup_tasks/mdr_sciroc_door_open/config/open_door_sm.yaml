@@ -239,3 +239,9 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 1
+            - argument:
+                name: movement_duration
+                value: 5
+            - argument:
+                name: movement_speed
+                value: 0.1
