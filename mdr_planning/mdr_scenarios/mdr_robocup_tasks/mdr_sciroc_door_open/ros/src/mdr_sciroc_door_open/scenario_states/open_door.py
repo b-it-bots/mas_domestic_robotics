@@ -5,6 +5,7 @@ from mas_tools.ros_utils import get_package_path
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
+from mas_hsr_move_arm_joints_action.msg import MoveArmJointsGoal, MoveArmJointsAction
 
 
 class OpenDoor(ScenarioStateBase):
@@ -23,7 +24,7 @@ class OpenDoor(ScenarioStateBase):
         gripper_module = '{0}.gripper_controller'.format(gripper_package)
         rospy.loginfo("importing 'GripperController' from '{}' module".format(gripper_module))
         # GripperControllerClass = getattr(import_module(gripper_module), 'GripperController')
-        # self.gripper_controller = GripperControllerClass()
+        # self.gripper_controller = GripperController()
 
         # move arm action
         dmp_weight_paths = kwargs.get('dmp_weight_paths', list())
@@ -34,7 +35,13 @@ class OpenDoor(ScenarioStateBase):
         self.move_arm_client = actionlib.SimpleActionClient(move_arm_server_name, MoveArmAction)
         rospy.loginfo('[push_door] Waiting for %s server', move_arm_server_name)
         if not self.move_arm_client.wait_for_server(rospy.Duration.from_sec(self.timeout)):
-            raise RuntimeError("[push_door] timeout waiting for '{}' server".format(move_arm_server_name))
+            raise RuntimeError("[open_door] timeout waiting for '{}' server".format(move_arm_server_name))
+
+        # move arm joints action
+        move_arm_joints_server_name = kwargs.get('action_server', '/mas_hsr_move_arm_joints_server')
+        self.move_arm_joints_client = actionlib.SimpleActionClient(move_arm_joints_server_name, MoveArmJointsAction)
+        if not self.move_arm_client.wait_for_server(rospy.Duration.from_sec(self.timeout)):
+            raise RuntimeError("[open_door] failed to wait for '{}' server".format(move_arm_joints_server_name))
 
     def execute(self, userdata):
         self.say('trying to open door')
@@ -54,12 +61,19 @@ class OpenDoor(ScenarioStateBase):
         arm_goal.dmp_name = self.dmp_name
         arm_goal.dmp_tau = self.dmp_tau
         arm_goal.end_effector_pose = userdata.handle_pose
-        self.move_arm_client.send_goal(arm_goal)
-        self.move_arm_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
+        # self.move_arm_client.send_goal(arm_goal)
+        # self.move_arm_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
         # if self.number_of_retries > 0:
         #     self.number_of_retries -= 1
         #     return 'failed'
         # return 'failed_after_retrying'
+
+        joint_goal = MoveArmJointsGoal()
+        joint_goal.arm_joint_names = ['arm_flex_joint', 'arm_roll_joint',
+                                      'arm_lift_joint', 'wrist_roll_joint', 'wrist_flex_joint']
+        joint_goal.arm_joint_values = [0.0, 0.0, 0.23, -1.57, 0.]
+        self.move_arm_joints_client.send_goal(joint_goal)
+        self.move_arm_joints_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
 
         # rotate gripper
         # self.gripper_controller.rotate_wrist(1.57)
