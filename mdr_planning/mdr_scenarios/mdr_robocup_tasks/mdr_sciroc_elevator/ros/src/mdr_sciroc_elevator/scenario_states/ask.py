@@ -42,9 +42,9 @@ class Ask(ScenarioStateBase):
                 rospy.sleep(10.)
                 return "succeeded"
             elif self.state_name == "ASK_HELP":
-                self.say('Can you please press number ' + self.floor_number + '?')
+                self.say('Can you please press number ' + userdata.floor + '?')
             elif self.state_name == "CHECK_FLOOR":
-                self.say('Are we in floor number ' + self.floor_number + '?')
+                self.say('Are we in floor number ' + userdata.floor + '?')
             elif self.state_name == "ASK_TO_MOVE":
                 self.say('Would you be so kind to move out of the way please?')
                 rospy.sleep(5)
