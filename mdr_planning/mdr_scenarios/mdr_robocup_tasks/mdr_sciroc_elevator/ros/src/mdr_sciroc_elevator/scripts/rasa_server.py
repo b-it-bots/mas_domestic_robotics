@@ -1,5 +1,6 @@
 #!/usr/bin/env python3 
-
+import warnings
+warnings.filterwarnings("ignore", category=FutureWarning)
 from rasa.nlu.model import Interpreter 
 import rospy 
 from mdr_sciroc_elevator.srv import RasaInterpreter, RasaInterpreterResponse 
@@ -14,7 +15,7 @@ class RasaNLU():
         print("Ready to extract intent of the message")
     
     def extract_intent(self,msg):
-        intepretation = self.interpreter.parse(msg.message)
+        interpretation = self.interpreter.parse(msg.message)
         return RasaInterpreterResponse(interpretation['intent']['name'])
         
 if __name__ == "__main__":
