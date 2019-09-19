@@ -1,3 +1,4 @@
+from importlib import import_module
 import rospy
 import actionlib
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
@@ -14,19 +15,41 @@ class OpenDoor(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'open_door')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
-        self.timeout = kwargs.get('timeout', 25)
+        self.timeout = kwargs.get('timeout', 15)
+
+        # get gripper controller
+        gripper_package = kwargs.get('gripper_package', 'mdr_gripper_controller')
+        gripper_module = gripper_package + '.gripper_controller'
+        GripperControllerClass = getattr(import_module(gripper_module), 'GripperController')
+        self.gripper_controller = GripperControllerClass()
+
+        # move arm action
+        move_arm_server_name = rospy.get_param('~move_arm_server', '/move_arm_server')
+        self.move_arm_client = actionlib.SimpleActionClient(move_arm_server_name, MoveArmAction)
+        rospy.loginfo('[push_door] Waiting for %s server', move_arm_server_name)
+        if not self.move_arm_client.wait_for_server(rospy.Duration(self.timeout)):
+            raise RuntimeError("[push_door] timeout waiting for '{}' server".format(move_arm_server_name))
 
     def execute(self, userdata):
         self.say('trying to open door')
         rospy.loginfo('handle pose: {} {} {}'.format(userdata.handle_pose.pose.position.x,
                                                      userdata.handle_pose.pose.position.y,
                                                      userdata.handle_pose.pose.position.z))
-        rospy.sleep(5.0)
-        if self.number_of_retries > 0:
-            self.number_of_retries -= 1
-        else:
+        # move arm
+        arm_goal = MoveArmGoal()
+        arm_goal.goal_type = MoveArmGoal.END_EFFECTOR_POSE
+        arm_goal.end_effector_pose = userdata.handle_pose
+        arm_goal.dmp_name = ''
+        self.move_arm_client.send_goal(arm_goal)
+        if not self.move_arm_client.wait_for_result(rospy.Duration.from_sec(self.timeout)):
+            if self.number_of_retries > 0:
+                self.number_of_retries -= 1
+                return 'failed'
             return 'failed_after_retrying'
-        return 'failed'
+
+        # rotate gripper
+        self.gripper_controller.rotate_wrist(1.57)
+        return 'failed_after_retrying'
 
 
 class AskToOpenDoor(ScenarioStateBase):
@@ -38,7 +61,7 @@ class AskToOpenDoor(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'ask_to_open_door')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
-        self.timeout = kwargs.get('timeout', 25)
+        self.timeout = kwargs.get('timeout', 15)
 
     def execute(self, userdata):
         self.say('I cannot open the door myself, can you please open the door')
@@ -55,11 +78,11 @@ class PushDoorOpen(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'push_door_open')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
-        self.timeout = kwargs.get('timeout', 25)
+        self.timeout = kwargs.get('timeout', 15)
 
         # move forward
-        self.movement_duration = float(rospy.get_param('~movement_duration', 5.))
-        self.speed = float(rospy.get_param('~speed', 0.1))
+        self.movement_duration = kwargs.get('~movement_duration', 5.)
+        self.speed = kwargs.get('~movement_speed', 0.1)
         move_forward_server_name = rospy.get_param('~move_forward_server', '/move_forward_server')
         self.move_forward_client = actionlib.SimpleActionClient(move_forward_server_name, MoveForwardAction)
         rospy.loginfo('[push_door] Waiting for %s server', move_forward_server_name)

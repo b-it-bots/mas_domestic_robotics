@@ -111,6 +111,9 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 1
+            - argument:
+                name: gripper_package
+                value: mas_hsr_gripper_controller
 
     - state:
         name: ASK_TO_OPEN_DOOR
@@ -163,6 +166,12 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 1
+            - argument:
+                name: movement_duration
+                value: 10
+            - argument:
+                name: movement_speed
+                value: 0.1
 
     - state:
         name: GO_BACK_TO_DOOR_CENTER

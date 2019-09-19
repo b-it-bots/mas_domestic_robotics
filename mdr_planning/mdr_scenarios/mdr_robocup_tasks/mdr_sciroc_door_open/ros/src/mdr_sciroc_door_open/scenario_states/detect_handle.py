@@ -24,7 +24,7 @@ class DetectHandle(ScenarioStateBase):
 
         handle_pose.pose.position.x = 0.418
         handle_pose.pose.position.y = 0.078
-        handle_pose.pose.position.z = 0.842
+        handle_pose.pose.position.z = 0.75
 
         handle_pose.pose.orientation.x = 0.758
         handle_pose.pose.orientation.y = 0.000
