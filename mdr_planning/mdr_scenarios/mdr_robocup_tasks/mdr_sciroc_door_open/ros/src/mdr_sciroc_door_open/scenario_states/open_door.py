@@ -173,7 +173,7 @@ class PushDoorOpen(ScenarioStateBase):
 
         # turn right
         twist_msg = Twist()
-        twist_msg.angular.z = 0.1
+        twist_msg.angular.z = -0.1
         start_time = rospy.Time.now()
         turn_duration = rospy.Duration.from_sec(3.0)
         while rospy.Time.now() - start_time < turn_duration:
