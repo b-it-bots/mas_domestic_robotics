@@ -10,11 +10,13 @@
 
     <include file="$(find mdr_listen_action)/ros/launch/listen.launch" />
     <include file="$(find mas_hsr_enter_door_action)/ros/launch/enter_door.launch">
-        <arg name="movement_duration" value="5" /> 
+        <arg name="movement_duration" value="1" /> 
         <arg name="movement_speed" value="0.1" /> 
     </include>
-    <include file="$(find mas_hsr_move_forward_action)/ros/launch/move_forward.launch" />
+    <!--include file="$(find mas_hsr_move_forward_action)/ros/launch/move_forward.launch" /-->
     
+    <node name="nlu_model" type="rasa_server.py" pkg="mdr_sciroc_elevator" />
+
     <!-- State machine -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="sciroc_elevator" output="screen">
         <param name="sm_config_file" type="str" value="$(find mdr_sciroc_elevator)/config/sciroc_elevator.yaml" />
