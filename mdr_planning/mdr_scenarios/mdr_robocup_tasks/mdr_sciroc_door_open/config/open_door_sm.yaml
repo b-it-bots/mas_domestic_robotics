@@ -103,14 +103,17 @@ state_descriptions:
                 state: GO_TO_DOOR_CENTER
             - transition:
                 name: failed
-                state: OPEN_DOOR
-            - transition:
-                name: failed_after_retrying
                 state: ASK_TO_OPEN_DOOR
         arguments:
             - argument:
                 name: number_of_retries
                 value: 0
+            - argument:
+                name: door_open_event_in
+                value: '/open_door_node/event_in'
+            - argument:
+                name: door_open_event_out
+                value: '/open_door_node/event_out'
             - argument:
                 name: gripper_package
                 value: mas_hsr_gripper_controller

@@ -1,6 +1,6 @@
-from importlib import import_module
 import rospy
 import actionlib
+from std_msgs.msg import String as StringMsg
 from mas_tools.ros_utils import get_package_path
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
@@ -12,19 +12,24 @@ class OpenDoor(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'open_door',
                                    save_sm_state=save_sm_state, input_keys=['handle_pose'],
-                                   outcomes=['succeeded', 'failed', 'failed_after_retrying'])
+                                   outcomes=['succeeded', 'failed'])
 
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'open_door')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.timeout = kwargs.get('timeout', 15)
 
+        # door open topics
+        event_in_topic_name = kwargs.get('door_open_event_in', '~event_in')
+        self.door_open_event_in_pub = rospy.Publisher(event_in_topic_name, StringMsg, queue_size=10)
+        event_out_topic_name = kwargs.get('door_open_event_out', '~event_out')
+        self.door_open_event_out_sub = rospy.Subscriber(event_out_topic_name, StringMsg, self.door_open_event_out_cb)
+        self.event_out_msg = None
+
         # get gripper controller
         gripper_package = kwargs.get('gripper_package', 'mdr_gripper_controller')
         gripper_module = '{0}.gripper_controller'.format(gripper_package)
         rospy.loginfo("importing 'GripperController' from '{}' module".format(gripper_module))
-        # GripperControllerClass = getattr(import_module(gripper_module), 'GripperController')
-        # self.gripper_controller = GripperController()
 
         # move arm action
         dmp_weight_paths = kwargs.get('dmp_weight_paths', list())
@@ -42,6 +47,9 @@ class OpenDoor(ScenarioStateBase):
         self.move_arm_joints_client = actionlib.SimpleActionClient(move_arm_joints_server_name, MoveArmJointsAction)
         if not self.move_arm_client.wait_for_server(rospy.Duration.from_sec(self.timeout)):
             raise RuntimeError("[open_door] failed to wait for '{}' server".format(move_arm_joints_server_name))
+
+    def door_open_event_out_cb(self, msg):
+        self.event_out_msg = msg.data
 
     def execute(self, userdata):
         self.say('trying to open door')
@@ -75,9 +83,22 @@ class OpenDoor(ScenarioStateBase):
         self.move_arm_joints_client.send_goal(joint_goal)
         self.move_arm_joints_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
 
+        # send signal to door opening node
+        start_time = rospy.Time.now()
+        timeout_duration = rospy.Duration.from_sec(self.timeout + 10)
+        self.door_open_event_in_pub.publish(StringMsg('e_start'))
+        while not self.event_out_msg:
+            if rospy.Time.now() - start_time > timeout_duration:
+                self.event_out_msg = None
+                return 'failed'
+        msg = self.event_out_msg
+        self.event_out_msg = None
+        if msg == 'e_success':
+            return 'succeeded'
+
         # rotate gripper
         # self.gripper_controller.rotate_wrist(1.57)
-        return 'failed_after_retrying'
+        return 'failed'
 
 
 class AskToOpenDoor(ScenarioStateBase):
