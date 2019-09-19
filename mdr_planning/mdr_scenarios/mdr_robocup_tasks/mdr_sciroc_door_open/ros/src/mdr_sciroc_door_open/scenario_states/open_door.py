@@ -1,6 +1,7 @@
 import rospy
 import actionlib
 from std_msgs.msg import String as StringMsg
+from geometry_msgs.msg import Twist
 from mas_tools.ros_utils import get_package_path
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
@@ -71,10 +72,6 @@ class OpenDoor(ScenarioStateBase):
         arm_goal.end_effector_pose = userdata.handle_pose
         # self.move_arm_client.send_goal(arm_goal)
         # self.move_arm_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
-        # if self.number_of_retries > 0:
-        #     self.number_of_retries -= 1
-        #     return 'failed'
-        # return 'failed_after_retrying'
 
         joint_goal = MoveArmJointsGoal()
         joint_goal.arm_joint_names = ['arm_flex_joint', 'arm_roll_joint',
@@ -85,12 +82,14 @@ class OpenDoor(ScenarioStateBase):
 
         # send signal to door opening node
         start_time = rospy.Time.now()
-        timeout_duration = rospy.Duration.from_sec(self.timeout + 10)
+        timeout_duration = rospy.Duration.from_sec(self.timeout + 45)  # 1 minute
         self.door_open_event_in_pub.publish(StringMsg('e_start'))
-        while not self.event_out_msg:
+        while self.event_out_msg is None:
             if rospy.Time.now() - start_time > timeout_duration:
                 self.event_out_msg = None
                 return 'failed'
+            continue
+
         msg = self.event_out_msg
         self.event_out_msg = None
         if msg == 'e_success':
@@ -114,7 +113,7 @@ class AskToOpenDoor(ScenarioStateBase):
 
     def execute(self, userdata):
         self.say('I cannot open the door myself, can you please open the door')
-        rospy.sleep(5.0)
+        rospy.sleep(self.timeout)
         return 'succeeded'
 
 
@@ -145,6 +144,10 @@ class PushDoorOpen(ScenarioStateBase):
         if not self.move_arm_client.wait_for_server(rospy.Duration.from_sec(self.timeout)):
             raise RuntimeError("[push_door] timeout waiting for '{}' server".format(move_arm_server_name))
 
+        # base command_velocity topic
+        base_cmd_vel_topic = kwargs.get('base_cmd_vel_topic', '~cmd_vel')
+        self.cmd_vel_pub = rospy.Publisher(base_cmd_vel_topic, Twist, queue_size=1)
+
     def execute(self, userdata):
         self.say('Pushing open door')
         arm_goal = MoveArmGoal()
@@ -167,4 +170,12 @@ class PushDoorOpen(ScenarioStateBase):
                 self.number_of_retries -= 1
                 return 'failed'
             return 'failed_after_retrying'
+
+        # turn right
+        twist_msg = Twist()
+        twist_msg.angular.z = 0.1
+        start_time = rospy.Time.now()
+        turn_duration = rospy.Duration.from_sec(3.0)
+        while rospy.Time.now() - start_time < turn_duration:
+            self.cmd_vel_pub.publish(twist_msg)
         return 'succeeded'
