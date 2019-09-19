@@ -10,10 +10,20 @@ find_package(catkin REQUIRED COMPONENTS
   mas_knowledge_base
   mdr_listen_action
   mdr_speech_matching
+  message_generation
 )
 
 catkin_python_setup()
 
+add_service_files(
+    FILES
+    RasaInterpreter.srv
+)
+
+generate_messages(
+    DEPENDENCIES
+    std_msgs
+)
 catkin_package(
   CATKIN_DEPENDS
     rospy
@@ -23,7 +33,9 @@ catkin_package(
     mas_knowledge_base
     mdr_listen_action
     mdr_speech_matching
+    message_runtime
 )
+
 
 include_directories()
 

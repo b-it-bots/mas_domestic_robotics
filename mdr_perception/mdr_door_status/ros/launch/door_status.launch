@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-  <node pkg="mdr_door_status" type="door_status_node" name="door_status" ns="mcr_perception" output="screen">
+  <node pkg="mdr_door_status" type="door_status_node" name="door_status" ns="mdr_perception" output="screen">
     <param name="angular_range" value="12.0" />	 <!-- in degree -->
     <param name="distance_threshold" value="1.2" />  <!-- in meter -->
     

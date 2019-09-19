@@ -33,6 +33,8 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>mas_knowledge_base</exec_depend>
   <exec_depend>handle_detector</exec_depend>
+  <exec_depend>mdr_move_forward_action</exec_depend>
+  <exec_depend>mdr_move_arm_action</exec_depend>
 
   <export>
   </export>

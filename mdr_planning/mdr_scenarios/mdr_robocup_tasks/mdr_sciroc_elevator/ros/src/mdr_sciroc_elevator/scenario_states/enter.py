@@ -10,7 +10,7 @@ class Enter(ScenarioStateBase):
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'],
                                    output_keys=['enter_door_feedback'])
-        self.timeout = kwargs.get('timeout', 120.)
+        self.timeout = kwargs.get('timeout', 10.)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
 

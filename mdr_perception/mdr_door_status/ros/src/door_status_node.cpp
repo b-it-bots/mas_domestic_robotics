@@ -42,12 +42,12 @@ bool publish_door_state()
     //check mean distance to decide weather door is open or not
     if (dSummedDistance > dDistanceThreshold)
     {
-        ROS_INFO("door status: door is OPEN");
+        //ROS_INFO("door status: door is OPEN");
         return true;
     }
     else
     {
-        ROS_INFO("door status: door is CLOSED");
+        //ROS_INFO("door status: door is CLOSED");
         return false;
     }
 
