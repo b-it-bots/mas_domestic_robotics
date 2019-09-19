@@ -22,8 +22,8 @@ class OpenDoor(ScenarioStateBase):
         gripper_package = kwargs.get('gripper_package', 'mdr_gripper_controller')
         gripper_module = '{0}.gripper_controller'.format(gripper_package)
         rospy.loginfo("importing 'GripperController' from '{}' module".format(gripper_module))
-        GripperControllerClass = getattr(import_module(gripper_module), 'GripperController')
-        self.gripper_controller = GripperControllerClass()
+        # GripperControllerClass = getattr(import_module(gripper_module), 'GripperController')
+        # self.gripper_controller = GripperControllerClass()
 
         # move arm action
         dmp_weight_paths = kwargs.get('dmp_weight_paths', list())
@@ -43,19 +43,26 @@ class OpenDoor(ScenarioStateBase):
                                                      userdata.handle_pose.pose.position.z))
         # move arm
         arm_goal = MoveArmGoal()
+        # to neutral
+        arm_goal.goal_type = MoveArmGoal.NAMED_TARGET
+        arm_goal.named_target = 'neutral'
+        self.move_arm_client.send_goal(arm_goal)
+        self.move_arm_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
+
+        # to pose
         arm_goal.goal_type = MoveArmGoal.END_EFFECTOR_POSE
         arm_goal.dmp_name = self.dmp_name
         arm_goal.dmp_tau = self.dmp_tau
         arm_goal.end_effector_pose = userdata.handle_pose
         self.move_arm_client.send_goal(arm_goal)
-        if not self.move_arm_client.wait_for_result(rospy.Duration.from_sec(self.timeout)):
-            if self.number_of_retries > 0:
-                self.number_of_retries -= 1
-                return 'failed'
-            return 'failed_after_retrying'
+        self.move_arm_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
+        # if self.number_of_retries > 0:
+        #     self.number_of_retries -= 1
+        #     return 'failed'
+        # return 'failed_after_retrying'
 
         # rotate gripper
-        self.gripper_controller.rotate_wrist(1.57)
+        # self.gripper_controller.rotate_wrist(1.57)
         return 'failed_after_retrying'
 
 

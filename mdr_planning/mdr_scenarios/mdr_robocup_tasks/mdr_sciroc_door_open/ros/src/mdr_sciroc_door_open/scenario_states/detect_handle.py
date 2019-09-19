@@ -22,7 +22,7 @@ class DetectHandle(ScenarioStateBase):
         handle_pose.header.frame_id = 'base_link'
         handle_pose.header.stamp = rospy.Time.now()
 
-        handle_pose.pose.position.x = 0.418
+        handle_pose.pose.position.x = 0.318
         handle_pose.pose.position.y = 0.078
         handle_pose.pose.position.z = 0.75
 
