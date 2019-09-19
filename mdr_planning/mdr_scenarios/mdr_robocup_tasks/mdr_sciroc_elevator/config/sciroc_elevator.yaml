@@ -73,7 +73,8 @@ state_descriptions:
                 value: 3
     - state:
         name: WAIT_FOR_DOOR
-        state_module_name: mdr_robot_inspection.scenario_states.enter
+        state_module_name: mdr_sciroc_elevator.scenario_states.enter
+        # state_module_name: mdr_robot_inspection.scenario_states.enter
         state_class_name: Enter
         transitions:
             - transition:
@@ -96,7 +97,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: WAIT_FOR_DOOR
+                state: GO_INSIDE
             - transition:
                 name: failed
                 state: ASK_TO_OPEN
