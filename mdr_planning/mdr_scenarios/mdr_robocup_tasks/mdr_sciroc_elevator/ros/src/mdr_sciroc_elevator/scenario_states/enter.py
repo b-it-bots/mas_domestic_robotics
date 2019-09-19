@@ -10,7 +10,7 @@ class Enter(ScenarioStateBase):
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'],
                                    output_keys=['enter_door_feedback'])
-        self.timeout = kwargs.get('timeout', 10.)
+        self.timeout = kwargs.get('timeout', 3.)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
 
@@ -22,7 +22,7 @@ class Enter(ScenarioStateBase):
     def execute(self, userdata):
         goal = EnterDoorGoal()
         rospy.loginfo('[ENTER_DOOR] Calling door entering action')
-        self.say('Entering elevator')
+        # self.say('Entering elevator')
         self.enter_action_client.send_goal(goal)
         duration = rospy.Duration.from_sec(self.timeout)
         success = self.enter_action_client.wait_for_result(duration)
