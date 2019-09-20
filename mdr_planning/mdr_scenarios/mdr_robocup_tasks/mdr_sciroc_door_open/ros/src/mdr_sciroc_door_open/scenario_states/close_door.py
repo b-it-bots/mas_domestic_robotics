@@ -1,5 +1,6 @@
 import rospy
 import actionlib
+from std_msgs.msg import String as StringMsg
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
@@ -15,6 +16,10 @@ class CloseDoor(ScenarioStateBase):
         self.state_name = kwargs.get('state_name', 'close_door')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.timeout = kwargs.get('timeout', 15)
+
+        # door open topics
+        event_in_topic_name = kwargs.get('door_open_event_in', '~event_in')
+        self.door_open_event_in_pub = rospy.Publisher(event_in_topic_name, StringMsg, queue_size=10)
 
         # move forward
         self.movement_duration = kwargs.get('movement_duration', 5.)
@@ -54,4 +59,5 @@ class CloseDoor(ScenarioStateBase):
                 self.number_of_retries -= 1
                 return 'failed'
             return 'failed_after_retrying'
+        self.door_open_event_in_pub.publish(StringMsg('e_close'))
         return 'succeeded'

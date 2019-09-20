@@ -263,3 +263,6 @@ state_descriptions:
             - argument:
                 name: movement_speed
                 value: 0.13
+            - argument:
+                name: door_open_event_in
+                value: '/open_door_node/event_in'
