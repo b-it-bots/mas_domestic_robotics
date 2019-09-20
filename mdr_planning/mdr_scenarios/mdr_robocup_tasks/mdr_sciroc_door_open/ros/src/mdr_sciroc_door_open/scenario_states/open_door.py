@@ -120,7 +120,7 @@ class AskToOpenDoor(ScenarioStateBase):
 class PushDoorOpen(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'push_door_open',
-                                   save_sm_state=save_sm_state, input_keys=['handle_pose'],
+                                   save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'])
 
         self.sm_id = kwargs.get('sm_id', '')
@@ -186,7 +186,19 @@ class PushDoorOpen(ScenarioStateBase):
         arm_goal.goal_type = MoveArmGoal.END_EFFECTOR_POSE
         arm_goal.dmp_name = self.dmp_name
         arm_goal.dmp_tau = self.dmp_tau
-        arm_goal.end_effector_pose = userdata.handle_pose
+
+        arm_goal.end_effector_pose.header.frame_id = 'base_link'
+        arm_goal.end_effector_pose.header.stamp = rospy.Time.now()
+
+        arm_goal.end_effector_pose.pose.position.x = 0.5
+        arm_goal.end_effector_pose.pose.position.y = 0.078
+        arm_goal.end_effector_pose.pose.position.z = 0.7
+
+        arm_goal.end_effector_pose.pose.orientation.x = 0.758
+        arm_goal.end_effector_pose.pose.orientation.y = 0.000
+        arm_goal.end_effector_pose.pose.orientation.z = 0.8
+        arm_goal.end_effector_pose.pose.orientation.w = 0.000
+
         self.move_arm_client.send_goal(arm_goal)
         self.move_arm_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
         return 'succeeded'
