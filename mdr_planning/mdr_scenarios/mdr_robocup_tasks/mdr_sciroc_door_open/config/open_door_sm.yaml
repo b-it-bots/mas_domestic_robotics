@@ -8,10 +8,10 @@ outcomes: [DONE, TIMEOUT, FAILED]
 state_descriptions:
     - state:
         name: GO_TO_START
-        #state_module_name: mdr_navigation_behaviours.move_base
-        #state_class_name: MoveBase
-        state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
-        state_class_name: SimulatedGoTo
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        #state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
+        #state_class_name: SimulatedGoTo
         transitions:
             - transition:
                 name: succeeded
@@ -51,10 +51,10 @@ state_descriptions:
 
     - state:
         name: GO_TO_DOOR
-        #state_module_name: mdr_navigation_behaviours.move_base
-        #state_class_name: MoveBase
-        state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
-        state_class_name: SimulatedGoTo
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        #state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
+        #state_class_name: SimulatedGoTo
         transitions:
             - transition:
                 name: succeeded
@@ -135,10 +135,10 @@ state_descriptions:
 
     - state:
         name: GO_TO_DOOR_CENTER
-        #state_module_name: mdr_navigation_behaviours.move_base
-        #state_class_name: MoveBase
-        state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
-        state_class_name: SimulatedGoTo
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        #state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
+        #state_class_name: SimulatedGoTo
         transitions:
             - transition:
                 name: succeeded
@@ -177,17 +177,20 @@ state_descriptions:
                 value: 1
             - argument:
                 name: movement_duration
-                value: 8
+                value: 7.5
             - argument:
                 name: movement_speed
                 value: 0.1
+            - argument:
+                name: base_cmd_vel_topic
+                value: /hsrb/command_velocity
 
     - state:
         name: GO_BACK_TO_DOOR_CENTER
-        #state_module_name: mdr_navigation_behaviours.move_base
-        #state_class_name: MoveBase
-        state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
-        state_class_name: SimulatedGoTo
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        #state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
+        #state_class_name: SimulatedGoTo
         transitions:
             - transition:
                 name: succeeded
@@ -208,10 +211,10 @@ state_descriptions:
 
     - state:
         name: GO_THROUGH_DOOR
-        #state_module_name: mdr_navigation_behaviours.move_base
-        #state_class_name: MoveBase
-        state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
-        state_class_name: SimulatedGoTo
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        #state_module_name: mdr_sciroc_door_open.scenario_states.wait_for_command
+        #state_class_name: SimulatedGoTo
         transitions:
             - transition:
                 name: succeeded
@@ -250,7 +253,7 @@ state_descriptions:
                 value: 1
             - argument:
                 name: movement_duration
-                value: 5
+                value: 8
             - argument:
                 name: movement_speed
-                value: 0.1
+                value: 0.13

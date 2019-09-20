@@ -8,6 +8,8 @@
         <arg name="strl_file_path" value="$(find mdr_sciroc_door_open)/config/plan.strl" />
     </include>
 
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
+
     <!-- State machine -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="where_is_this" output="screen">
         <param name="sm_config_file" type="str" value="$(find mdr_sciroc_door_open)/config/open_door_sm.yaml" />
