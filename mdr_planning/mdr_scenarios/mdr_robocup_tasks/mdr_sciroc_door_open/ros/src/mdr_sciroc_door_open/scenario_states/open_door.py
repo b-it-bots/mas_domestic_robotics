@@ -36,10 +36,10 @@ class OpenDoor(ScenarioStateBase):
         dmp_weight_paths = kwargs.get('dmp_weight_paths', list())
         self.dmp_name = get_package_path(*dmp_weight_paths)
         self.dmp_tau = kwargs.get('dmp_tau', 1)
-        rospy.loginfo("using dmp_tau={} dmp_name='{}'".format(self.dmp_tau, self.dmp_name))
+        rospy.loginfo("[open_door] using dmp_tau={} dmp_name='{}'".format(self.dmp_tau, self.dmp_name))
         move_arm_server_name = kwargs.get('move_arm_server', '/move_arm_server')
         self.move_arm_client = actionlib.SimpleActionClient(move_arm_server_name, MoveArmAction)
-        rospy.loginfo('[push_door] Waiting for %s server', move_arm_server_name)
+        rospy.loginfo('[open_door] Waiting for %s server', move_arm_server_name)
         if not self.move_arm_client.wait_for_server(rospy.Duration.from_sec(self.timeout)):
             raise RuntimeError("[open_door] timeout waiting for '{}' server".format(move_arm_server_name))
 
@@ -82,7 +82,7 @@ class OpenDoor(ScenarioStateBase):
 
         # send signal to door opening node
         start_time = rospy.Time.now()
-        timeout_duration = rospy.Duration.from_sec(self.timeout + 45)  # 1 minute
+        timeout_duration = rospy.Duration.from_sec(self.timeout + 75)  # 1.5 minute
         self.door_open_event_in_pub.publish(StringMsg('e_start'))
         while self.event_out_msg is None:
             if rospy.Time.now() - start_time > timeout_duration:
@@ -120,7 +120,7 @@ class AskToOpenDoor(ScenarioStateBase):
 class PushDoorOpen(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'push_door_open',
-                                   save_sm_state=save_sm_state,
+                                   save_sm_state=save_sm_state, input_keys=['handle_pose'],
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'])
 
         self.sm_id = kwargs.get('sm_id', '')
@@ -138,6 +138,9 @@ class PushDoorOpen(ScenarioStateBase):
             raise RuntimeError("[push_door] timeout waiting for '{}' server".format(move_forward_server_name))
 
         # move arm action
+        dmp_weight_paths = kwargs.get('dmp_weight_paths', list())
+        self.dmp_name = get_package_path(*dmp_weight_paths)
+        self.dmp_tau = kwargs.get('dmp_tau', 1)
         move_arm_server_name = kwargs.get('move_arm_server', '/move_arm_server')
         self.move_arm_client = actionlib.SimpleActionClient(move_arm_server_name, MoveArmAction)
         rospy.loginfo('[push_door] Waiting for %s server', move_arm_server_name)
@@ -178,4 +181,12 @@ class PushDoorOpen(ScenarioStateBase):
         turn_duration = rospy.Duration.from_sec(3.0)
         while rospy.Time.now() - start_time < turn_duration:
             self.cmd_vel_pub.publish(twist_msg)
+
+        # push door open
+        arm_goal.goal_type = MoveArmGoal.END_EFFECTOR_POSE
+        arm_goal.dmp_name = self.dmp_name
+        arm_goal.dmp_tau = self.dmp_tau
+        arm_goal.end_effector_pose = userdata.handle_pose
+        self.move_arm_client.send_goal(arm_goal)
+        self.move_arm_client.wait_for_result(rospy.Duration.from_sec(self.timeout))
         return 'succeeded'

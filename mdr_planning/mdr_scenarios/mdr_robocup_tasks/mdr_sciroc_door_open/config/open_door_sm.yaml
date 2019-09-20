@@ -184,6 +184,12 @@ state_descriptions:
             - argument:
                 name: base_cmd_vel_topic
                 value: /hsrb/command_velocity
+            - argument:
+                name: dmp_weight_paths
+                value: ["mdr_pickup_action", "config", "trajectory_weights", "weights_table_grasp.yaml"]
+            - argument:
+                name: dmp_tau
+                value: 30
 
     - state:
         name: GO_BACK_TO_DOOR_CENTER
