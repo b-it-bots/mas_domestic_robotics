@@ -10,7 +10,7 @@ class Ask(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'listening',
                                    save_sm_state=save_sm_state,
-                                   input_keys=[],
+                                   input_keys=['floor', 'description'],
                                    output_keys=['target_entity'],
                                    outcomes=['succeeded', 'failed',
                                              'failed_after_retrying'])
@@ -21,8 +21,6 @@ class Ask(ScenarioStateBase):
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.timeout = kwargs.get('timeout', 25)
         self.threshold = kwargs.get('threshold', 0.68)
-        # self.floor_number = kwargs.get('floor_number', '')
-        self.floor_number = '2'
         # wait for listen action server
         self.listen_client = actionlib.SimpleActionClient("listen_server", ListenAction)
         listen_wait_result = self.listen_client.wait_for_server(timeout=rospy.Duration(self.timeout))
@@ -42,9 +40,9 @@ class Ask(ScenarioStateBase):
                 rospy.sleep(10.)
                 return "succeeded"
             elif self.state_name == "ASK_HELP":
-                self.say('Can you please press number ' + userdata.floor + '?')
+                self.say('Can you please press number ' + str(userdata.floor) + '?')
             elif self.state_name == "CHECK_FLOOR":
-                self.say('Are we in floor number ' + userdata.floor + '?')
+                self.say('Are we in floor number ' + str(userdata.floor) + '?')
             elif self.state_name == "ASK_TO_MOVE":
                 self.say('Would you be so kind to move out of the way please?')
                 rospy.sleep(5)

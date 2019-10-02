@@ -18,7 +18,7 @@ class SpeechRecognizer(object):
             try:
                 self.recognizer.load_kaldi_model(model_directory=self.model_directory)
             except:
-                self.use_kaldi = False
+                self.use_kaldi = True
                 rospy.logerr(sys.exc_info()[0])
                 rospy.logerr('Unable to load Kaldi model. Using PocketSphinx as offline speech recognition')
         self.microphone = sr.Microphone()
@@ -50,11 +50,11 @@ class SpeechRecognizer(object):
                 use google, otherwise use pocketsphinx for speech recognition.
                 """
                 recognized_speech = ""
-                if SpeechRecognizer.check_internet_connection():
+                if not SpeechRecognizer.check_internet_connection():
                     try:
                         recognized_speech = self.recognizer.recognize_google(audio)
                     except sr.UnknownValueError:
-                        rospy.logerr("Could not understand audio.")
+                           rospy.logerr("Could not understand audio.")
                     except sr.RequestError:
                         rospy.logerr("Could not request results.")
                 else:
@@ -64,6 +64,7 @@ class SpeechRecognizer(object):
                         else:
                             recognized_speech = self.recognizer.recognize_sphinx(audio)
                     except sr.UnknownValueError:
+                        rospy.logerr(sr.UnknownValueError)
                         rospy.logerr("Could not understand audio.")
                     except sr.RequestError:
                         rospy.logerr("Could not request results.")

@@ -7,6 +7,7 @@ class WaitForCommand(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'wait_for_command',
                                    save_sm_state=save_sm_state,
+                                   output_keys=['floor', 'description'],
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'])
 
         self.sm_id = kwargs.get('sm_id', '')
@@ -20,7 +21,10 @@ class WaitForCommand(ScenarioStateBase):
         shop = self.data_hub.get_shop()
         print("Shop ", shop)
         userdata.floor = shop['floor']
-        rospy.sleep(5.0)
+        userdata.description = shop['description']
+        self.say("Oh! I need to go to store {} located in floor number {}"\
+            .format(shop['description'], str(shop['floor'])))
+        rospy.sleep(7.0)
         return 'succeeded'
 
 
