@@ -22,7 +22,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [kitchen, living_room, table, shelf, table]
+                value: [start_c069, vc_hall_align, vc_glass_align, vc_pre_inter, vc_post_inter]
             - argument:
                 name: number_of_retries
                 value: 3
