@@ -1,6 +1,6 @@
 # Setup instructions
 
-## Lucy
+## Lucy: Change map
 
 - Use lucy account:
     ```
@@ -14,6 +14,10 @@
     ```
     export ROBOT_ENV=brsu-c069
     ```
+- Copy map folder to `etc/opt/tmc/robot/conf.d`
+
+- Update map path in `etc/opt/tmc/robot/docker-hsr.user`
+    
 - Restart Lucy after changing ROBOT_ENV
 
 
