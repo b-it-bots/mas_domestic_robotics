@@ -44,7 +44,7 @@ class MoveArmSM(ActionSMBase):
                 dmp_traj_executor = DMPExecutor(dmp_name, tau)
                 goal = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
 
-                dmp_execution_thread = Thread(target=dmp_traj_executor.execute, args=(goal,))
+                dmp_execution_thread = Thread(target=dmp_traj_executor.move_to, args=(goal,))
                 dmp_execution_thread.start()
                 while not dmp_traj_executor.motion_completed and \
                       not self.preempted:
