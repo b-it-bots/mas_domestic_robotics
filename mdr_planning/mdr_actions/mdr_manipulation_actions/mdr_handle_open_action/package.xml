@@ -4,6 +4,9 @@
   <version>1.0.0</version>
   <description>An action for opening doors and furniture with handles</description>
 
+  <author email="ahmed.abdelrahman@smail.inf.h-brs.de">Ahmed Abdelrahman</author>
+  <author email="anirudh.narasimamurthy@smail.inf.h-brs.de">Anirudh Narasimamurthy</author>
+  <author email="sasi-kiran.gaddipati@smail.inf.h-brs.de">Sasi Kiran Gaddipati</author>
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <license>GPLv3</license>
