@@ -8,7 +8,7 @@ from mdr_handle_open_action.msg import HandleOpenAction, HandleOpenGoal
 
 def save_samples_to_file(filename):
     with open("../../"+filename+".txt", "a") as file:
-    file.write(str(sample_grasp_pose[0])+' '+str(sample_grasp_pose[1])+' '+str(sample_grasp_pose[2])+'\n')
+        file.write(str(sample_grasp_pose[0])+' '+str(sample_grasp_pose[1])+' '+str(sample_grasp_pose[2])+'\n')
 
 if __name__ == '__main__':
     rospy.init_node('handle_open_action_client_test')
@@ -33,7 +33,7 @@ if __name__ == '__main__':
         sample_grasp_pose = [np.random.uniform(low=x_lim[0], high=x_lim[1]),
                              np.random.uniform(low=y_lim[0], high=y_lim[1]),
                              np.random.uniform(low=z_lim[0], high=z_lim[1])]
-    
+
         # Saving the sampled position in a file:
         # save_samples_to_file('sample_grasp_poses')
 
@@ -51,7 +51,7 @@ if __name__ == '__main__':
                                                              np.array([posterior_sigma_estimate[1]])[np.newaxis])[0],
                              np.random.multivariate_normal(np.array([posterior_mu_estimate[2]]),
                                                              np.array([posterior_sigma_estimate[2]])[np.newaxis])[0]]
-     
+
         # Saving the positions sampled from the new distribution in a file:
         # save_samples_to_file('new_sample_grasp_poses')
 
