@@ -83,7 +83,6 @@ class HandleOpenSM(ActionSMBase):
     def running(self):
         pose = self.goal.handle_pose
         # string handle_type = self.goal.handle_type
-        # init_end_effector_pose = self.goal.init_end_effector_pose
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
 
