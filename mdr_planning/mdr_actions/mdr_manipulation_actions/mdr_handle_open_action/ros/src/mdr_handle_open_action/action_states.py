@@ -8,11 +8,12 @@ from cv_bridge import CvBridge
 import rospy
 import tf
 import actionlib
-from geometry_msgs.msg import WrenchStamped
+from geometry_msgs.msg import PoseStamped, WrenchStamped
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
+from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_handle_open_action.msg import HandleOpenResult
 
@@ -20,10 +21,12 @@ class HandleOpenSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mdr_gripper_controller',
                  move_arm_server='move_arm_server',
+                 move_base_server='move_base_server',
                  move_forward_server='move_forward_server',
                  force_sensor_topic='/force_wrist/raw',
                  pregrasp_config_name='pregrasp_low',
                  final_config_name='pregrasp',
+                 base_elbow_offset=-1.,
                  handle_open_dmp='',
                  dmp_tau=30.,
                  max_recovery_attempts=1):
@@ -35,24 +38,24 @@ class HandleOpenSM(ActionSMBase):
         self.gripper = GripperControllerClass()
 
         self.move_arm_server = move_arm_server
+        self.move_base_server = move_base_server
         self.move_forward_server = move_forward_server
-
+        self.force_sensor_topic = force_sensor_topic
         self.pregrasp_config_name = pregrasp_config_name
         self.final_config_name = final_config_name
-
+        self.base_elbow_offset = base_elbow_offset
         self.handle_open_dmp = handle_open_dmp
         self.dmp_tau = dmp_tau
 
         self.tf_listener = tf.TransformListener()
 
-        self.force_sensor_topic = force_sensor_topic
-
+        # used for slip detection based on force measurements
         self.latest_force_measurement_x = 0.
         self.cumsum_x = 0
         self.force_detection_threshold = 15.
         self.handle_slip_detected = False
 
-        # For Perception-based failure detection
+        # used for slip detection baesd on perception-based failure detection
         self.image_number = 0
         self.last_image = None
         self.bridge = CvBridge()
@@ -71,6 +74,13 @@ class HandleOpenSM(ActionSMBase):
             return FTSMTransitions.INIT_FAILED
 
         try:
+            self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
+            rospy.loginfo('[pickup] Waiting for %s server', self.move_base_server)
+            self.move_base_client.wait_for_server()
+        except:
+            rospy.logerr('[pickup] %s server does not seem to respond', self.move_base_server)
+
+        try:
             self.move_forward_client = actionlib.SimpleActionClient(self.move_forward_server, MoveForwardAction)
             rospy.loginfo('[pickup] Waiting for %s server', self.move_forward_server)
             self.move_forward_client.wait_for_server()
@@ -82,17 +92,15 @@ class HandleOpenSM(ActionSMBase):
 
     def running(self):
         pose = self.goal.handle_pose
-        # string handle_type = self.goal.handle_type
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
 
-        ## TODO: determine whether this step is necessary for handle_open action:
-        # if self.base_elbow_offset > 0:
-        #     self.__align_base_with_pose(pose_base_link)
+        if self.base_elbow_offset > 0:
+            self.__align_base_with_pose(pose_base_link)
 
-        #     # the base is now correctly aligned with the pose, so we set the
-        #     # y position of the goal pose to the elbow offset
-        #     pose_base_link.pose.position.y = self.base_elbow_offset
+            # the base is now correctly aligned with the pose, so we set the
+            # y position of the goal pose to the elbow offset
+            pose_base_link.pose.position.y = self.base_elbow_offset
 
         rospy.loginfo('[handle_open] Preparing grasping pose')
         pose_base_link = self.__prepare_handle_grasp(pose_base_link)
@@ -184,6 +192,32 @@ class HandleOpenSM(ActionSMBase):
         result = self.move_arm_client.get_result()
         return result
 
+    def __align_base_with_pose(self, pose_base_link):
+        '''Moves the base so that the elbow is aligned with the goal pose.
+
+        Keyword arguments:
+        pose_base_link -- a 'geometry_msgs/PoseStamped' message representing
+                          the goal pose in the base link frame
+
+        '''
+        aligned_base_pose = PoseStamped()
+        aligned_base_pose.header.frame_id = 'base_link'
+        aligned_base_pose.header.stamp = rospy.Time.now()
+        aligned_base_pose.pose.position.x = 0.
+        aligned_base_pose.pose.position.y = pose_base_link.pose.position.y - self.base_elbow_offset
+        aligned_base_pose.pose.position.z = 0.
+        aligned_base_pose.pose.orientation.x = 0.
+        aligned_base_pose.pose.orientation.y = 0.
+        aligned_base_pose.pose.orientation.z = 0.
+        aligned_base_pose.pose.orientation.w = 1.
+
+        move_base_goal = MoveBaseGoal()
+        move_base_goal.goal_type = MoveBaseGoal.POSE
+        move_base_goal.pose = aligned_base_pose
+        self.move_base_client.send_goal(move_base_goal)
+        self.move_base_client.wait_for_result()
+        self.move_base_client.get_result()
+
     def __move_base_along_x(self, distance_to_move):
         movement_speed = np.sign(distance_to_move) * 0.1 # m/s
         movement_duration = distance_to_move / movement_speed
@@ -242,7 +276,7 @@ class HandleOpenSM(ActionSMBase):
         Callback for receiving wrist camera image
         '''
         try:
-            # Convert your ROS Image message to OpenCV2
+            # Convert ROS Image message to OpenCV2
             cv2_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
             if self.last_image is not None:
                 diff_img = cv2.absdiff(self.last_image, cv2_img)
@@ -253,5 +287,4 @@ class HandleOpenSM(ActionSMBase):
                 rospy.loginfo("[handle_open] Handle slip detected!")
             self.last_image = cv2_img
         except Exception as e:
-            # Exception when the image is 'None'
-            rospy.loginfo("Error '{0}' occured".format(e.message))
+            rospy.loginfo('[handle_open] Error: {0}'.format(e.message))
