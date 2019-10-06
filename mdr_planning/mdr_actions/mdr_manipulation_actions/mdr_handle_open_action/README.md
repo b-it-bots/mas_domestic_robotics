@@ -46,3 +46,11 @@ An action for manipulating handles.
 * ``mdr_move_arm_action``
 * ``mdr_move_base_action``
 * ``mdr_move_forward_action``
+
+## Learning data
+
+The package additionally includes some data (under `learning_data`) that was collected in an experiment in which the robot was learning the best grasping position of a handle in our lab while standing at a predefined position in front of our handle. The robot was learning this by experience, namely by sampling grasping poses and labelling those based on the execution success; given those data, a success distribution was learned.
+
+There are two sets of poses there:
+* `sample_grasp_poses_uniform`: Poses sampled from a uniform distribution
+* `sample_grasp_poses_learned`: Poses sampled from the learned success distribution
