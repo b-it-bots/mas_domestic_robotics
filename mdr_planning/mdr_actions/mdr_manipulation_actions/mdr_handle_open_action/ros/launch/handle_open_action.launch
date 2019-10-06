@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="mdr_handle_open_action" type="handle_open_action" name="handle_open_server" output="screen">
-        <param name="gripper_controller_pkg_name" value="mas_hsr_gripper_controller" />
+        <param name="gripper_controller_pkg_name" value="mdr_gripper_controller" />
         <param name="move_arm_server" value="move_arm_server" />
         <param name="move_forward_server" value="move_forward_server" />
-        <param name="force_sensor_topic" value="/hsrb/wrist_wrench/raw"/>
+        <param name="force_sensor_topic" value="/wrist_force/raw"/>
         <param name="pregrasp_config_name" value="pregrasp_low" />
-        <param name="final_config_name" value="neutral" />
+        <param name="final_config_name" value="pregrasp" />
         <param name="handle_open_dmp" value="$(find mdr_place_action)/config/trajectory_weights/weights_table_place.yaml" />
         <param name="dmp_tau" value="30" />
     </node>
