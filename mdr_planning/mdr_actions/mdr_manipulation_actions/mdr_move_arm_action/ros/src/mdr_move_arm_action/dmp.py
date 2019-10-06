@@ -230,7 +230,8 @@ class DMPExecutor(object):
             self.vel_publisher_base.publish(twist_base)
 
     def get_transform(self, target_frame, source_frame, tf_time):
-        '''Returns the translation and rotation
+        '''Returns the translation and rotation of the source frame
+        with respect to the target frame at the given time.
 
         Keyword arguments:
         target_frame: str -- name of the transformation target frame
@@ -274,7 +275,7 @@ class DMPExecutor(object):
         return np.array([pose_.pose.position.x, pose_.pose.position.y, pose_.pose.position.z])
 
     def publish_path(self, path):
-        '''Publishes the given path using self.path_pub.
+        '''Publishes the given path to the topic specified by self.dmp_executor_path_topic.
 
         Keyword arguments:
         path: np.array -- a 2D array of points in which each row represents a position
