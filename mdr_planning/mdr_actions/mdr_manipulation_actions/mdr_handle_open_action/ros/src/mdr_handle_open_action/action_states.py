@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from importlib import import_module
 import numpy as np
 from scipy.stats import norm
 import cv2
@@ -8,7 +9,6 @@ import rospy
 import tf
 import actionlib
 from geometry_msgs.msg import WrenchStamped
-# from sensor_msgs.msg import Image
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -16,21 +16,18 @@ from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_handle_open_action.msg import HandleOpenResult
 
-from importlib import import_module
-
 class HandleOpenSM(ActionSMBase):
     def __init__(self, timeout=120.0,
-                 gripper_controller_pkg_name='mas_hsr_gripper_controller',
+                 gripper_controller_pkg_name='mdr_gripper_controller',
                  move_arm_server='move_arm_server',
                  move_forward_server='move_forward_server',
-                 force_sensor_topic='/hsrb/wrist_wrench/raw',
+                 force_sensor_topic='/force_wrist/raw',
                  pregrasp_config_name='pregrasp_low',
-                 final_config_name = 'neutral',
-                 handle_open_dmp = '',
-                 dmp_tau = 30.,
+                 final_config_name='pregrasp',
+                 handle_open_dmp='',
+                 dmp_tau=30.,
                  max_recovery_attempts=1):
-        super(HandleOpenSM, self).__init__(
-            'HandleOpen', [], max_recovery_attempts)
+        super(HandleOpenSM, self).__init__('HandleOpen', [], max_recovery_attempts)
         self.timeout = timeout
 
         gripper_controller_module_name = '{0}.gripper_controller'.format(gripper_controller_pkg_name)
@@ -61,6 +58,8 @@ class HandleOpenSM(ActionSMBase):
         self.bridge = CvBridge()
         self.failure_data = []
 
+        self.move_arm_client = None
+        self.move_forward_client = None
 
     def init(self):
         try:
@@ -134,7 +133,7 @@ class HandleOpenSM(ActionSMBase):
         else:
             rospy.loginfo('[handle_open] No failure detected')
             self.result = self.set_result(True)
-        
+
         # TODO: Perception based grasp monitoring strategy:
         # --------------------------------------------------------------
         # image_topic = "/hsrb/hand_camera/image_raw"
@@ -246,17 +245,14 @@ class HandleOpenSM(ActionSMBase):
         try:
             # Convert your ROS Image message to OpenCV2
             cv2_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
-            if self.last_image is not None :
-                diff_img = cv2.absdiff(self.last_image,cv2_img)
+            if self.last_image is not None:
+                diff_img = cv2.absdiff(self.last_image, cv2_img)
                 black_percentage = (len(np.where(diff_img == 0)[0])/float(640*480*3))
-
             self.failure_data.append(black_percentage)
-            if black_percentage > 0.3 :
+
+            if black_percentage > 0.3:
                 rospy.loginfo("[handle_open] Handle slip detected!")
-
             self.last_image = cv2_img
-
         except Exception as e:
             # Exception when the image is 'None'
             rospy.loginfo("Error '{0}' occured".format(e.message))
-
