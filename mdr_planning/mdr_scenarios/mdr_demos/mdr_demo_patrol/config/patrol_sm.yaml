@@ -22,7 +22,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [start_c069, vc_hall_align, vc_glass_align, vc_pre_inter, vc_post_inter]
+		value: [start_c069, vc_hall_align, vc_glass_align, vc_pre_inter, vc_post_inter, c064, c063, c060, c058, c059, c053, under_stairs_1, under_stairs_2, c005, ropod_hall, c001, entrance_stairs, side_entrance, caf_exit, desk, caf_entrance, desk_back, caf_exit_back, side_entrance_back, entrance_stairs_back, c001_back, ropod_hall_back, c005_back, under_stairs2_back, under_stairs_1_back, c053_back, c059_back, c058_back, c060_back, c063_back, c064_back, vc_post_inter_back, vc_pre_inter_back]
             - argument:
                 name: number_of_retries
                 value: 3
