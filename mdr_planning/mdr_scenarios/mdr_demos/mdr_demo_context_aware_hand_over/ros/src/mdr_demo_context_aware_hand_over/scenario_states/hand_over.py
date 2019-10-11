@@ -30,7 +30,7 @@ class HandOver(ScenarioStateBase):
         # calling the actionlib server and waiting for the execution to end
         rospy.loginfo('[hand_over] Sending action lib goal to {0}'.format(self.action_server))
 	    # Disabled temporarily for hand-over experiments:
-        # self.say('Handing item over to a {0} person'.format(userdata.posture))
+        self.say('Handing item over to a {0} person'.format(userdata.posture))
         self.client.send_goal(goal)
         self.client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
         result = self.client.get_result()

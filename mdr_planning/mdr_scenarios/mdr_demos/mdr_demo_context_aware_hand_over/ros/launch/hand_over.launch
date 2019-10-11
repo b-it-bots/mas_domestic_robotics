@@ -9,8 +9,6 @@
     </include>
 
     <!-- Actions -->
-    <include file="$(find mas_hsr_move_arm_action)/ros/launch/move_arm.launch" />
-    <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" />
     <include file="$(find mdr_find_people)/ros/launch/find_people.launch" />
     <include file="$(find mdr_hand_over_action)/ros/launch/hand_over.launch" />
 
