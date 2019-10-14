@@ -1,7 +1,2 @@
-image: map.pgm
-resolution: 0.050000
-origin: [-102.424995, -102.424995, 0.000000]
-negate: 0
-occupied_thresh: 0.65
-free_thresh: 0.196
-
+{free_thresh: 0.1, image: map.pgm, latitude: 50.7800401, longitude: 7.18226,
+  negate: 0, occupied_thresh: 0.9, origin: [-110, -4.574188705533743, 0.0], resolution: 0.02}
