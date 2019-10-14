@@ -1,2 +1,8 @@
-{free_thresh: 0.1, image: map.pgm, latitude: 50.7800401, longitude: 7.18226,
-  negate: 0, occupied_thresh: 0.9, origin: [-110, -4.574188705533743, 0.0], resolution: 0.02}
+image: map.pgm
+resolution: 0.02
+origin: [-110, -4.574188705533743, 0.0]
+negate: 0
+occupied_thresh: 0.9
+free_thresh: 0.1
+latitude: 50.7800401
+longitude: 7.18226
