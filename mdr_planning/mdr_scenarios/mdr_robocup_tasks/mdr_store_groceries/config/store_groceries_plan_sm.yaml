@@ -1,0 +1,38 @@
+# Description: Defines a state machine for a RoboCup@Home store groceries scenario
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_store_groceries
+states: [SCAN_PLANES, STORE_GROCERIES]
+outcomes: [DONE, TIMEOUT]
+state_descriptions:
+    - state:
+        name: SCAN_PLANES
+        state_module_name: mde_store_groceries.scenario_states.goal_selector
+        state_class_name: StoreGroceriesGoalSelector
+        transitions:
+            - transition:
+                name: succeeded
+                state: STORE_GROCERIES
+            - transition:
+                name: failed
+                state: SCAN_PLANES
+        arguments:
+            - argument:
+                name: number_of_shelves
+                value: 1
+    - state:
+        name: STORE_GROCERIES
+        state_module_name: mde_store_groceries.scenario_states.goal_selector
+        state_class_name: StoreGroceriesGoalSelector
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: STORE_GROCERIES
+        arguments:
+            - argument:
+                name: number_of_shelves
+                value: 1
+
