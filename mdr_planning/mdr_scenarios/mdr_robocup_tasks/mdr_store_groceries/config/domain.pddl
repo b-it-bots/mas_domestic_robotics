@@ -8,7 +8,10 @@
         robot
         door
         plane
+        context
     )
+
+    (:constants place place_to_store pick pick_to_store - context)
 
     (:predicates
         (robot_name ?bot - robot)
@@ -58,9 +61,10 @@
         )
     )
 
-    (:action pick_to_store
-        :parameters (?obj - object ?x ?y - plane ?bot - robot ?wp - waypoint)
+    (:action pickup
+        :parameters (?obj - object ?x ?y - plane ?bot - robot ?wp - waypoint ?context - context)
         :precondition (and
+            (= ?context pick_to_store)
             (robot_at ?bot ?wp)
             (plane_at ?x ?wp)
             (explored ?x)
@@ -76,9 +80,10 @@
         )
     )
 
-    (:action place_to_store
-        :parameters (?obj - object ?plane - plane ?bot - robot ?wp - waypoint)
+    (:action place
+        :parameters (?obj - object ?plane - plane ?bot - robot ?wp - waypoint ?context - context)
         :precondition (and
+            (= ?context place_to_store)
             (stored_on ?obj ?plane)
             (robot_at ?bot ?wp)
             (plane_at ?plane ?wp)
