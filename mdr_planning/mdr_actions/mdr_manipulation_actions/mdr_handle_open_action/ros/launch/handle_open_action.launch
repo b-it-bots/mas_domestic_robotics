@@ -8,7 +8,7 @@
         <param name="force_sensor_topic" value="/wrist_force/raw"/>
         <param name="pregrasp_config_name" value="pregrasp_low" />
         <param name="final_config_name" value="pregrasp" />
-        <param name="handle_open_dmp" value="$(find mdr_place_action)/config/trajectory_weights/weights_table_place.yaml" />
+        <param name="handle_open_dmp" value="$(find mdr_handle_open_action)/config/trajectory_weights/weights_grasp_handle.yaml" />
         <param name="dmp_tau" value="30" />
     </node>
 </launch>
