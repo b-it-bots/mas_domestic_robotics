@@ -119,7 +119,9 @@ class HandleOpenSM(ActionSMBase):
 
         # Moving robot base back (instead of moving arm back):
         rospy.loginfo('[handle_open] Moving the base back')
-        ## TODO: define backward_movement_distance
+
+        # TODO: define the movement distance based on
+        # what kind of handle we are opening
         self.__move_base_along_x(-0.3)
 
         # Force sensing grasp monitoring strategy:
@@ -141,7 +143,7 @@ class HandleOpenSM(ActionSMBase):
             rospy.loginfo('[handle_open] No failure detected')
             self.result = self.set_result(True)
 
-        # TODO: Perception based grasp monitoring strategy:
+        # TODO: Perception based grasp monitoring strategy (not fully implemented)
         # --------------------------------------------------------------
         # image_topic = "/hsrb/hand_camera/image_raw"
         # self.sub = rospy.Subscriber(image_topic, Image, self.image_cb)
@@ -150,7 +152,6 @@ class HandleOpenSM(ActionSMBase):
         self.gripper.open()
 
         self.__move_arm(MoveArmGoal.NAMED_TARGET, self.final_config_name)
-
         return FTSMTransitions.DONE
 
     def __prepare_handle_grasp(self, pose_base_link):
@@ -219,14 +220,16 @@ class HandleOpenSM(ActionSMBase):
         self.move_base_client.get_result()
 
     def __move_base_along_x(self, distance_to_move):
+        '''Sends a MoveForwardGoal to move the base for the given distance.
+        The call is non-blocking, i.e. the function returns immediately after
+        sending the goal without waiting for the action to complete.
+        '''
         movement_speed = np.sign(distance_to_move) * 0.1 # m/s
         movement_duration = distance_to_move / movement_speed
         move_forward_goal = MoveForwardGoal()
         move_forward_goal.movement_duration = movement_duration
         move_forward_goal.speed = movement_speed
         self.move_forward_client.send_goal(move_forward_goal)
-        # self.move_forward_client.wait_for_result()
-        # self.move_forward_client.get_result()
 
     def recovering(self):
         ## TODO: implement any recovery behaviours here
@@ -239,8 +242,7 @@ class HandleOpenSM(ActionSMBase):
         return result
 
     def detect_handle_slip(self):
-        '''
-        Detecting change in force readings using CUSUM.
+        '''Detecting change in force readings using the CUSUM algorithm.
         '''
         mu_0 = -12
         mu_1 = -15
@@ -262,21 +264,10 @@ class HandleOpenSM(ActionSMBase):
         '''
         self.latest_force_measurement_x = force_sensor_msg.wrench.force.x
 
-        # print('[hand_over DEBUG] Force Measurements:')
-        # print('[hand_over DEBUG] Current cumsum in x:', self.cumsum_x)
-        # print("*********************")
-        # print('[hand_over DEBUG] Current Force Measurements, x:', force_sensor_msg.wrench.force.x)
-        # print('[hand_over DEBUG] Current Force Measurements, y:', force_sensor_msg.wrench.force.y)
-        # print('[hand_over DEBUG] Current Force Measurements, z:', force_sensor_msg.wrench.force.z)
-        # print('{0}\t{1}\t{2}'.format(force_sensor_msg.wrench.force.x, force_sensor_msg.wrench.force.y, force_sensor_msg.wrench.force.z))
-        # print("\n\n")
-
     def image_cb(self,msg):
-        '''
-        Callback for receiving wrist camera image
+        '''Callback for receiving wrist camera image.
         '''
         try:
-            # Convert ROS Image message to OpenCV2
             cv2_img = self.bridge.imgmsg_to_cv2(msg, "bgr8")
             if self.last_image is not None:
                 diff_img = cv2.absdiff(self.last_image, cv2_img)
