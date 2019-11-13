@@ -45,7 +45,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [INSIDE_ARENA]
+                value: [inside_arena]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -66,7 +66,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [BIN]
+                value: [bin]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -87,7 +87,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [BIN]
+                value: [bin]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -144,7 +144,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [COLLECTION_ZONE]
+                value: [collection_zone]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -243,7 +243,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [OUTSIDE_ARENA]
+                value: [outside_arena]
             - argument:
                 name: number_of_retries
                 value: 3

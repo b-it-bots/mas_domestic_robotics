@@ -1,6 +1,7 @@
 import rospy
 import actionlib
 import rospkg
+from rasa_nlu.model import Interpreter
 
 from mas_perception_msgs.msg import Person
 from mdr_perception_msgs.msg import PersonInfo

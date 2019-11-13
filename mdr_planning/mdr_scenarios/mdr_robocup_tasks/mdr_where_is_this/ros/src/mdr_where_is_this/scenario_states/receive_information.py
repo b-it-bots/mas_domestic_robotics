@@ -1,21 +1,13 @@
-import os
 import rospy
 import actionlib
-import rospkg
+from rasa_nlu.model import Interpreter
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
-
-from rasa_nlu.training_data import load_data
-from rasa_nlu import config
-from rasa_nlu.components import ComponentBuilder
-from rasa_nlu.model import Interpreter, Metadata, Trainer
-
 from mdr_listen_action.msg import ListenAction, ListenGoal
-
 from speech_matching.speech_matching import SpeechMatching
+from mas_tools.ros_utils import get_package_path
 
 class ReceiveInformation(ScenarioStateBase):
-
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'receive_information',
                                    save_sm_state=save_sm_state,
@@ -24,7 +16,6 @@ class ReceiveInformation(ScenarioStateBase):
                                    outcomes=['succeeded', 'failed',
                                              'failed_after_retrying'])
 
-        # Get parameters
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'receive_information')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
@@ -32,9 +23,8 @@ class ReceiveInformation(ScenarioStateBase):
         self.threshold = kwargs.get('threshold', 0.68)
 
         # Load the rasa model
-        rospack = rospkg.RosPack()
-        package_directory = rospack.get_path("mdr_where_is_this")
-        model_directory = os.path.join(package_directory, 'common', 'model', 'current', 'nlu')
+        model_directory = get_package_path('rasa_nlu_models', 'common',
+                                           'where_is_this', 'nlu')
         self.interpreter = Interpreter.load(model_directory)
 
         # wait for listen action server
@@ -51,12 +41,6 @@ class ReceiveInformation(ScenarioStateBase):
         goal = ListenGoal()
 
         if not self.number_of_retries == 0:
-            self.say('Please speak into my microphone')
-            rospy.sleep(1)
-
-            self.say('The microphone is on the top of my head')
-            rospy.sleep(1)
-
             self.say('What are you looking for?')
             rospy.sleep(1)
         # Ask again if not understood the first time
@@ -118,7 +102,6 @@ class ReceiveInformation(ScenarioStateBase):
 
                 userdata["target_entity"] = target_entity
                 rospy.loginfo('Successfully got wanted object/location: {}'.format(target_entity))
-                self.say('Thank you! I will describe you now how to get there.')
                 return 'succeeded'
 
         # Conversation has exceeded the maximum number of retries at this point

@@ -22,10 +22,14 @@ class SpeechMatcher(object):
         if sentence_type == "nothing":
             rospy.logerr("No match found.")
             return
-        elif sentence_type == "question":
-            self.result.type = MatchedSentence.TYPE_QUESTION
-        elif sentence_type == "command":
-            self.result.type = MatchedSentence.TYPE_COMMAND
+        else:
+            self.result.type = 0
+
+        # TODO change sentence type to string in order to allow a variety of sentence types.
+        # elif sentence_type == "question":
+        #     self.result.type = MatchedSentence.TYPE_QUESTION
+        # elif sentence_type == "command":
+        #     self.result.type = MatchedSentence.TYPE_COMMAND
 
         self.result.matched_sentence = matching_result[1][0]
         self.result.similarity = matching_result[1][1]

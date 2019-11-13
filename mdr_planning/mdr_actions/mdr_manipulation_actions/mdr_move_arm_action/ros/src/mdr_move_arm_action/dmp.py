@@ -4,9 +4,7 @@ from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import PoseStamped, TwistStamped, Vector3Stamped, Twist
 from nav_msgs.msg import Path
 import tf
-import actionlib
-from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from ros_dmp.srv import GenerateMotion, GenerateMotionRequest
+from ros_dmp.roll_dmp import RollDmp
 
 
 class DMPExecutor(object):
@@ -22,219 +20,42 @@ class DMPExecutor(object):
         self.arm_controller_sigma_values_topic = rospy.get_param('~arm_controller_sigma_values_topic',
                                                                  '/arm_controller/sigma_values')
         self.dmp_executor_path_topic = rospy.get_param('~path_topic', '/dmp_executor/path')
-        self.move_base_server = rospy.get_param('~move_base_server', 'move_base/move')
 
-        # ros_dmp service
-        self.motion_client = rospy.ServiceProxy('/generate_motion_service', GenerateMotion)
-
-        self.number_of_sampling_points = 30
-        self.goal_tolerance = 0.05
         self.vel_publisher_arm = rospy.Publisher(self.cartesian_velocity_topic,
                                                  TwistStamped, queue_size=1)
         self.vel_publisher_base = rospy.Publisher(self.base_vel_topic, Twist, queue_size=1)
-        self.feedforward_gain = 30
-        self.feedback_gain = 10
-        self.sigma_threshold_upper = 0.12
-        self.sigma_threshold_lower = 0.07
-        self.base_feedback_gain = 2.0
+
+        self.time_step = rospy.get_param('~time_step', 0.001)
+        self.goal_tolerance = rospy.get_param('~goal_tolerance_m', 0.05)
+        self.feedforward_gain = rospy.get_param('~feedforward_gain', 30)
+        self.feedback_gain = rospy.get_param('~feedback_gain', 10)
+        self.sigma_threshold_upper = rospy.get_param('~sigma_threshold_upper', 0.12)
+        self.sigma_threshold_lower = rospy.get_param('~sigma_threshold_lower', 0.07)
+        self.use_whole_body_control = rospy.get_param('~use_whole_body_control', False)
+        self.linear_vel_limit = rospy.get_param('~linear_vel_limit', 0.05)
 
         rospy.Subscriber(self.arm_controller_sigma_values_topic,
                          Float32MultiArray, self.sigma_values_cb)
         self.path_pub = rospy.Publisher(self.dmp_executor_path_topic, Path, queue_size=1)
-        self.goal = None
+
         self.dmp_name = dmp_name
         self.tau = tau
+        self.roll_dmp = RollDmp(self.dmp_name, self.time_step, self.base_link_frame_name)
 
         self.min_sigma_value = None
-        self.deploy_wbc = True
+        self.goal = None
+        self.motion_completed = False
+        self.motion_cancelled = False
 
-        # Move base server
-        self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
-        self.move_base_client.wait_for_server()
+    def move_to(self, goal):
+        '''Moves the end effector to the given goal position (which is expected
+        to be given with respect to the base link frame) by following a trajectory
+        as encoded by self.dmp_name.
 
-    def sigma_values_cb(self, msg):
-        self.min_sigma_value = min(msg.data)
+        Keyword arguments:
+        goal: np.array -- end effector goal position in the base link frame
 
-    def move_base(self):
-        move_base_goal = MoveBaseGoal()
-        move_base_goal.target_pose.header.frame_id = self.map_frame_name
-        print(self.move_base_client.send_goal(move_base_goal))
-
-    def generate_trajectory(self, goal, initial_pos):
-        req = GenerateMotionRequest()
-        req.goal_pose.pose.position.x = goal[0]
-        req.goal_pose.pose.position.y = goal[1]
-        req.goal_pose.pose.position.z = goal[2]
-        req.initial_pose.pose.position.x = initial_pos[0]
-        req.initial_pose.pose.position.y = initial_pos[1]
-        req.initial_pose.pose.position.z = initial_pos[2]
-        req.dmp_name = self.dmp_name
-        req.tau = self.tau
-        req.dt = 0.001
-
-        print('[dmp] Sending trajectory request: ', req)
-        response = self.motion_client(req)
-        pos_x = []
-        pos_y = []
-        pos_z = []
-        for state in response.cart_traj.cartesian_state:
-            pos_x.append(state.pose.position.x)
-            pos_y.append(state.pose.position.y)
-            pos_z.append(state.pose.position.z)
-        self.pos = np.array(pos_x)
-        self.pos = np.vstack((self.pos, np.array(pos_y)))
-        self.pos = np.vstack((self.pos, np.array(pos_z)))
-
-    def tranform_pose(self, pose):
-        #transform goals to odom frame
-        pose_msg = PoseStamped()
-        pose_msg.header.frame_id = self.base_link_frame_name
-        pose_msg.pose.position.x = pose[0]
-        pose_msg.pose.position.y = pose[1]
-        pose_msg.pose.position.z = pose[2]
-
-        while not rospy.is_shutdown():
-            try:
-                pose_ = self.tf_listener.transformPose(self.odom_frame_name, pose_msg)
-                break
-            except:
-                continue
-        return np.array([pose_.pose.position.x, pose_.pose.position.y, pose_.pose.position.z])
-
-    def publish_path(self):
-        path = Path()
-        path.header.frame_id = self.odom_frame_name
-        for itr in range(self.pos.shape[0]):
-            pose_stamped = PoseStamped()
-            pose_stamped.pose.position.x = self.pos[itr, 0]
-            pose_stamped.pose.position.y = self.pos[itr, 1]
-            pose_stamped.pose.position.z = self.pos[itr, 2]
-            path.poses.append(pose_stamped)
-        self.path_pub.publish(path)
-
-    def trajectory_controller(self):
-        count = 0
-        previous_index = 0
-        path = self.pos
-        path_x = path[0, :]
-        path_y = path[1, :]
-        path_z = path[2, :]
-        while not rospy.is_shutdown():
-            try:
-                (trans, _) = self.tf_listener.lookupTransform(self.odom_frame_name,
-                                                                self.palm_link_name,
-                                                                rospy.Time(0))
-                break
-            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                continue
-        current_pos = np.array([trans[0], trans[1], trans[2]])
-        distance = np.linalg.norm((np.array(path[:, path.shape[1] - 1]) - current_pos))
-        followed_trajectory = []
-
-        old_pos_index = 0
-        while distance > self.goal_tolerance and not rospy.is_shutdown():
-            try:
-                (trans, rot) = self.tf_listener.lookupTransform(self.odom_frame_name,
-                                                                self.palm_link_name,
-                                                                rospy.Time(0))
-            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                continue
-            current_pos = np.array([trans[0], trans[1], trans[2]])
-            distance = np.linalg.norm((np.array(path[:, path.shape[1] - 1]) - current_pos))
-            dist = []
-            for i in range(path.shape[1]):
-                dist.append(np.linalg.norm((path[:, i] - current_pos)))
-            index =  np.argmin(dist)
-
-            if old_pos_index != index:
-                followed_trajectory.append(current_pos)
-                old_pos_index = index
-
-            if index < previous_index:
-                index = previous_index
-            else:
-                previous_index = index
-
-            # Delete this block later
-            if index > path.shape[1] - 1:
-                break
-
-            if index == path.shape[1] - 1:
-                ind = index
-            else:
-                ind = index + 1
-
-            vel_x = self.feedforward_gain * (path_x[ind] - path_x[index]) + self.feedback_gain * (path_x[ind] - current_pos[0])
-            vel_y = self.feedforward_gain * (path_y[ind] - path_y[index]) + self.feedback_gain * (path_y[ind] - current_pos[1])
-            vel_z = self.feedforward_gain * (path_z[ind] - path_z[index]) + self.feedback_gain * (path_z[ind] - current_pos[2])
-
-            # limiting speed
-            norm_ = np.linalg.norm(np.array([vel_x, vel_y, vel_z]))
-            if norm_ > 0.05:
-                vel_x = vel_x * 0.05 / norm_
-                vel_y = vel_y * 0.05 / norm_
-                vel_z = vel_z * 0.05 / norm_
-
-            vel_x_arm = vel_x
-            vel_y_arm = vel_y
-            vel_z_arm = vel_z
-
-            vel_x_base = 0.0
-            vel_y_base = 0.0
-            vel_z_base = 0.0
-            ratio = 1.0
-
-            if self.min_sigma_value != None and self.min_sigma_value < self.sigma_threshold_upper and self.deploy_wbc:
-                ratio = (self.min_sigma_value - self.sigma_threshold_lower) / (self.sigma_threshold_upper - self.sigma_threshold_lower)
-
-                vel_x_arm = vel_x * (ratio)
-                vel_y_arm = vel_y * (ratio)
-                vel_x_base = vel_x * (1 - ratio)
-                vel_y_base = vel_y * (1 - ratio)
-
-                # Publish base velocity inside the if consition
-                vector_ = Vector3Stamped()
-                vector_.header.seq = count
-                vector_.header.frame_id = self.odom_frame_name
-                vector_.vector.x = vel_x_base
-                vector_.vector.y = vel_y_base
-                vector_.vector.z = vel_z_base
-
-                vector_ = self.tf_listener.transformVector3(self.base_link_frame_name, vector_)
-
-                message_base = Twist()
-                message_base.linear.x = vector_.vector.x
-                message_base.linear.y = vector_.vector.y
-                message_base.linear.z = vector_.vector.z
-                self.vel_publisher_base.publish(message_base)
-
-            message_arm = TwistStamped()
-            message_arm.header.seq = count
-            message_arm.header.frame_id = self.odom_frame_name
-            message_arm.twist.linear.x = vel_x_arm
-            message_arm.twist.linear.y = vel_y_arm
-            message_arm.twist.linear.z = vel_z_arm
-            self.vel_publisher_arm.publish(message_arm)
-            count += 1
-
-        # stop arm and base motion after converging
-        message_base = Twist()
-        message_base.linear.x = 0.0
-        message_base.linear.y = 0.0
-        message_base.linear.z = 0.0
-
-        message_arm = TwistStamped()
-        message_arm.header.seq = count
-        message_arm.header.frame_id = self.odom_frame_name
-        message_arm.twist.linear.x = 0
-        message_arm.twist.linear.y = 0
-        message_arm.twist.linear.z = 0
-
-        self.vel_publisher_arm.publish(message_arm)
-        if self.deploy_wbc:
-            self.vel_publisher_base.publish(message_base)
-
-    def execute(self, goal):
+        '''
         initial_pos = None
         try:
             self.tf_listener.waitForTransform(self.base_link_frame_name,
@@ -242,37 +63,241 @@ class DMPExecutor(object):
                                               rospy.Time.now(),
                                               rospy.Duration(30))
             (trans, _) = self.tf_listener.lookupTransform(self.base_link_frame_name,
-                                                            self.palm_link_name,
-                                                            rospy.Time(0))
+                                                          self.palm_link_name,
+                                                          rospy.Time(0))
             initial_pos = np.array(trans)
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             initial_pos = np.zeros(3)
 
-        self.generate_trajectory(goal, initial_pos)
-        pos = []
-        for i in range(self.pos.shape[1]):
-            pos.append(self.tranform_pose(self.pos[:, i]))
-        pos = np.array(pos)
-        self.pos = pos.T
-        self.publish_path()
+        path = self.generate_trajectory(initial_pos, goal)
+        path_odom = np.array([self.transform_pose(position, self.base_link_frame_name, self.odom_frame_name)
+                             for position in path])
+        self.publish_path(path_odom)
+        self.follow_path(path_odom)
 
-        # transform pose to base link
-        start_pose = PoseStamped()
-        start_pose.header.frame_id = self.odom_frame_name
-        start_pose.pose.position.x = self.pos[0, 0]
-        start_pose.pose.position.y = self.pos[0, 1]
-        start_pose.pose.position.z = self.pos[0, 2]
+    def generate_trajectory(self, initial_pos, goal):
+        '''Returns a 2D numpy array representing a path of [x, y, z] points
+        from "initial_pos" to "goal" that follows the trajectory encoded
+        by self.dmp_name. Each row in the resulting array is a single point
+        on the path.
+
+        Keyword arguments:
+        initial_pos: np.array -- initial position for the motion
+        goal: np.array -- goal position
+
+        '''
+        initial_pose = np.array([initial_pos[0], initial_pos[1], initial_pos[2], 0., 0., 0.])
+        goal_pose = np.array([goal[0], goal[1], goal[2], 0., 0., 0.])
+
+        print('[move_arm/dmp] Querying trajectory')
+        print('[move_arm/dmp] Initial pose: ', initial_pose)
+        print('[move_arm/dmp] Goal pose: ', goal_pose)
+        cartesian_trajectory, _ = self.roll_dmp.get_trajectory_and_path(goal_pose,
+                                                                        initial_pose,
+                                                                        self.tau)
+
+        path = np.array([[state.pose.position.x,
+                          state.pose.position.y,
+                          state.pose.position.z]
+                         for state in cartesian_trajectory.cartesian_state])
+        return path
+
+    def follow_path(self, path):
+        '''Moves a manipulator so that it follows the given path. If whole body
+        motion is enabled and some points on the path lie outside the reachable
+        workspace, the base is moved accordingly as well. The path is followed
+        by sending velocity commands.
+
+        At each time step, the following rule is used for calculating the
+        desired velocity command:
+
+        v = k * (path_{i+1} - path_{i}) + g * (path_{i} - p)
+
+        where:
+        * v is the velocity (x, y, and z - no angular velocity)
+        * p is the current position of the end effector
+        * g is a feedback gain
+        * k is a feedforward gain
+
+        If whole body motion is used and the minimum singular value of the manipulator's
+        Jacobian falls below a predefined threshold, v is split between the arm and the base as
+
+        v_{arm} = v * c
+        v_{base} = v * (1 - c)
+
+        where:
+
+        * c = (\sigma_{min} - \sigma_{low}) / (\sigma{high} - \sigma_{low})
+        * \sigma_{min} is the current minimum singular value of the manipulator's Jacobian
+        * \sigma_{high} and \sigma_{low} are upper and lower thresholds on the
+          minimum sigma value (determined experimentally)
+
+        Keyword arguments:
+        path: np.array -- a 2D array of points (each row represents a point)
+
+        '''
+        # sanity check - we only consider the path if it contains any points
+        if path is None or path.shape[0] == 0:
+            rospy.logerr('[move_arm/dmp/follow_path] No points in path; aborting execution')
+            return
+
+        rospy.loginfo('[move_arm/dmp/follow_path] Executing motion')
+        trans, _ = self.get_transform(self.odom_frame_name, self.palm_link_name, rospy.Time(0))
+        current_pos = np.array([trans[0], trans[1], trans[2]])
+        distance_to_goal = np.linalg.norm((path[-1] - current_pos))
+
+        self.motion_completed = False
+        self.motion_cancelled = False
+        cmd_count = 0
+        while not self.motion_completed and \
+              not self.motion_cancelled and \
+              not rospy.is_shutdown():
+
+            trans, _ = self.get_transform(self.odom_frame_name, self.palm_link_name, rospy.Time(0))
+            current_pos = np.array([trans[0], trans[1], trans[2]])
+
+            # if the end effector has reached the goal (within the allowed
+            # tolerance threshold), we stop the motion
+            distance_to_goal = np.linalg.norm((path[-1] - current_pos))
+            if distance_to_goal <= self.goal_tolerance:
+                self.motion_completed = True
+                break
+
+            path_point_distances = [np.linalg.norm(p - current_pos) for p in path]
+            min_dist_idx = np.argmin(path_point_distances)
+
+            next_goal_idx = -1
+            if min_dist_idx == path.shape[0] - 1:
+                next_goal_idx = min_dist_idx
+            else:
+                next_goal_idx = min_dist_idx + 1
+
+            vel = self.feedforward_gain * (path[next_goal_idx] - path[min_dist_idx]) + self.feedback_gain * (path[next_goal_idx] - current_pos)
+
+            # we limit the speed if it is above the allowed limit
+            velocity_norm = np.linalg.norm(vel)
+            if velocity_norm > self.linear_vel_limit:
+                vel = vel * self.linear_vel_limit / velocity_norm
+
+            vel_arm = np.array(vel)
+            vel_base = np.zeros(3)
+
+            # if we want to use whole body control and the minimum
+            # sigma value is below the allowed threshold, we split
+            # the velocity command between the arm and the base
+            if self.use_whole_body_control and \
+               self.min_sigma_value is not None and \
+               self.min_sigma_value < self.sigma_threshold_upper:
+
+                # we set the arm and base velocity based on the value of the
+                # so-called capability coefficient, which is calculated as
+                #     (\sigma_{min} - \sigma_{low}) / (\sigma{high} - \sigma_{low})
+                c = (self.min_sigma_value - self.sigma_threshold_lower) / (self.sigma_threshold_upper - self.sigma_threshold_lower)
+                vel_arm[0:2] = vel[0] * c
+                vel_base[0:2] = vel[0] * (1 - c)
+
+                odom_vel_vector = Vector3Stamped()
+                odom_vel_vector.header.seq = cmd_count
+                odom_vel_vector.header.frame_id = self.odom_frame_name
+                odom_vel_vector.vector.x = vel_base[0]
+                odom_vel_vector.vector.y = vel_base[1]
+                odom_vel_vector.vector.z = vel_base[2]
+                base_vel_vector = self.tf_listener.transformVector3(self.base_link_frame_name, odom_vel_vector)
+
+                twist_base = Twist()
+                twist_base.linear.x = base_vel_vector.vector.x
+                twist_base.linear.y = base_vel_vector.vector.y
+                twist_base.linear.z = base_vel_vector.vector.z
+                self.vel_publisher_base.publish(twist_base)
+
+            twist_arm = TwistStamped()
+            twist_arm.header.seq = cmd_count
+            twist_arm.header.frame_id = self.odom_frame_name
+            twist_arm.twist.linear.x = vel_arm[0]
+            twist_arm.twist.linear.y = vel_arm[1]
+            twist_arm.twist.linear.z = vel_arm[2]
+            self.vel_publisher_arm.publish(twist_arm)
+            cmd_count += 1
+
+        # stop arm and base motion after converging
+        twist_arm = TwistStamped()
+        twist_arm.header.seq = cmd_count
+        twist_arm.header.frame_id = self.odom_frame_name
+        self.vel_publisher_arm.publish(twist_arm)
+
+        twist_base = Twist()
+        if self.use_whole_body_control:
+            self.vel_publisher_base.publish(twist_base)
+
+    def get_transform(self, target_frame, source_frame, tf_time):
+        '''Returns the translation and rotation of the source frame
+        with respect to the target frame at the given time.
+
+        Keyword arguments:
+        target_frame: str -- name of the transformation target frame
+        source_frame: str -- name of the transformation source frame
+        tf_time: rospy.rostime.Time -- time of the transform
+
+        '''
+        trans = None
+        rot = None
+        while not rospy.is_shutdown():
+            try:
+                (trans, rot) = self.tf_listener.lookupTransform(target_frame, source_frame, tf_time)
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+        return (trans, rot)
+
+    def transform_pose(self, position, source_frame, target_frame):
+        '''Transforms a given (x, y, z) position (assuming a (0, 0, 0) rotation)
+        from the source frame to the target frame. Returns a numpy array with the
+        (x, y, z) position represented in the target frame.
+
+        Keyword arguments:
+        position: np.array -- (x, y, z) position to be transformed
+        source_frame: str -- name of the transformation source frame
+        target_frame: str -- name of the transformation target frame
+
+        '''
+        pose_msg = PoseStamped()
+        pose_msg.header.frame_id = source_frame
+        pose_msg.pose.position.x = position[0]
+        pose_msg.pose.position.y = position[1]
+        pose_msg.pose.position.z = position[2]
 
         while not rospy.is_shutdown():
             try:
-                start_pose = self.tf_listener.transformPose(self.base_link_frame_name, start_pose)
+                pose_ = self.tf_listener.transformPose(target_frame, pose_msg)
                 break
             except:
                 continue
-        start_pose.pose.orientation.x = 0.529
-        start_pose.pose.orientation.y = -0.475
-        start_pose.pose.orientation.z = 0.467
-        start_pose.pose.orientation.w = 0.525
+        return np.array([pose_.pose.position.x, pose_.pose.position.y, pose_.pose.position.z])
 
-        rospy.loginfo('Executing motion')
-        self.trajectory_controller()
+    def publish_path(self, path):
+        '''Publishes the given path to the topic specified by self.dmp_executor_path_topic.
+
+        Keyword arguments:
+        path: np.array -- a 2D array of points in which each row represents a position
+
+        '''
+        path_msg = Path()
+        path_msg.header.frame_id = self.odom_frame_name
+        for i in range(path.shape[0]):
+            pose_stamped = PoseStamped()
+            pose_stamped.pose.position.x = path[i,0]
+            pose_stamped.pose.position.y = path[i,1]
+            pose_stamped.pose.position.z = path[i,2]
+            path_msg.poses.append(pose_stamped)
+        self.path_pub.publish(path_msg)
+
+    def sigma_values_cb(self, msg):
+        '''Callback function for registering the singular values
+        of a manipulator's Jacobian. Saves the lowest value given
+        in the input message in self.min_sigma_value.
+
+        Keyword arguments:
+        msg: std_msgs.msg.Float32MultiArray
+
+        '''
+        self.min_sigma_value = min(msg.data)
