@@ -193,8 +193,8 @@ class DMPExecutor(object):
                 # so-called capability coefficient, which is calculated as
                 #     (\sigma_{min} - \sigma_{low}) / (\sigma{high} - \sigma_{low})
                 c = (self.min_sigma_value - self.sigma_threshold_lower) / (self.sigma_threshold_upper - self.sigma_threshold_lower)
-                vel_arm[0:2] = vel[0] * c
-                vel_base[0:2] = vel[0] * (1 - c)
+                vel_arm[0:2] = vel[0:2] * c
+                vel_base[0:2] = vel[0:2] * (1 - c)
 
                 odom_vel_vector = Vector3Stamped()
                 odom_vel_vector.header.seq = cmd_count
