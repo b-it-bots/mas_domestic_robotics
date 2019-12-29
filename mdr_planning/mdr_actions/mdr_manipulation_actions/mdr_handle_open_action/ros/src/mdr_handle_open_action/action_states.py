@@ -115,7 +115,7 @@ class HandleOpenSM(ActionSMBase):
             return FTSMTransitions.DONE
 
         rospy.loginfo('[handle_open] Detected %d handles; taking closest handle',
-                      len(detected_handles.objects.objects))
+                      len(detection_result.objects.objects))
         handle = self.__get_closest_handle(detection_result.objects.objects)
         if self.goal.handle_type and self.goal.handle_type != HandleOpenGoal.UNKNOWN:
             if self.goal_handle_type != handle.category:
