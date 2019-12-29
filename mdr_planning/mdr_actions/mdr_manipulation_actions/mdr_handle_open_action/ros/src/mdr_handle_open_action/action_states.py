@@ -1,4 +1,3 @@
-#!/usr/bin/python
 from importlib import import_module
 import numpy as np
 from scipy.stats import norm
@@ -9,13 +8,14 @@ import rospy
 import tf
 import actionlib
 from geometry_msgs.msg import PoseStamped, WrenchStamped
+from mas_perception_msgs.msg import DetectObjectsAction, DetectObjectsGoal
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from mdr_handle_open_action.msg import HandleOpenResult
+from mdr_handle_open_action.msg import HandleOpenGoal, HandleOpenResult
 
 class HandleOpenSM(ActionSMBase):
     def __init__(self, timeout=120.0,
@@ -23,6 +23,7 @@ class HandleOpenSM(ActionSMBase):
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  move_forward_server='move_forward_server',
+                 detect_handle_server='detect_handle_server',
                  force_sensor_topic='/force_wrist/raw',
                  pregrasp_config_name='pregrasp_low',
                  final_config_name='pregrasp',
@@ -40,6 +41,7 @@ class HandleOpenSM(ActionSMBase):
         self.move_arm_server = move_arm_server
         self.move_base_server = move_base_server
         self.move_forward_server = move_forward_server
+        self.detect_handle_server = detect_handle_server
         self.force_sensor_topic = force_sensor_topic
         self.pregrasp_config_name = pregrasp_config_name
         self.final_config_name = final_config_name
@@ -62,7 +64,9 @@ class HandleOpenSM(ActionSMBase):
         self.failure_data = []
 
         self.move_arm_client = None
+        self.move_base_client = None
         self.move_forward_client = None
+        self.detect_handle_client = None
 
     def init(self):
         try:
@@ -88,11 +92,39 @@ class HandleOpenSM(ActionSMBase):
             rospy.logerr('[handle_open] %s', str(exc))
             return FTSMTransitions.INIT_FAILED
 
+        try:
+            self.detect_handle_client = actionlib.SimpleActionClient(self.detect_handle_server, DetectObjectsAction)
+            rospy.loginfo('[pickup] Waiting for %s server', self.detect_handle_server)
+            self.detect_handle_client.wait_for_server()
+        except Exception as exc:
+            rospy.logerr('[handle_open] %s', str(exc))
+            return FTSMTransitions.INIT_FAILED
+
         return FTSMTransitions.INITIALISED
 
     def running(self):
-        pose = self.goal.handle_pose
-        pose.header.stamp = rospy.Time(0)
+        rospy.loginfo('[handle_open] Detecting handle')
+        self.detect_handle_client.send_goal(DetectObjectsGoal())
+        self.detect_handle_client.wait_for_result(timeout=self.timeout)
+        detection_result = self.detect_handle_client.get_result()
+
+        # if a handle could not be detected, the action is aborted
+        if not detection_result.objects.objects:
+            rospy.loginfo('[handle_open] Could not detect handle')
+            self.result = self.set_result(False)
+            return FTSMTransitions.DONE
+
+        rospy.loginfo('[handle_open] Detected %d handles; taking closest handle',
+                      len(detected_handles.objects.objects))
+        handle = self.__get_closest_handle(detection_result.objects.objects)
+        if self.goal.handle_type and self.goal.handle_type != HandleOpenGoal.UNKNOWN:
+            if self.goal_handle_type != handle.category:
+                rospy.loginfo('[handle_open] Type of detected handle does not match expected type %s',
+                              self.goal.handle_type)
+                self.result = self.set_result(False)
+                return FTSMTransitions.DONE
+
+        handle.pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
 
         if self.base_elbow_offset > 0:
@@ -153,6 +185,24 @@ class HandleOpenSM(ActionSMBase):
 
         self.__move_arm(MoveArmGoal.NAMED_TARGET, self.final_config_name)
         return FTSMTransitions.DONE
+
+    def __get_closest_handle(self, detected_handles):
+        '''Returns the handle closest to the robot.
+
+        Keyword arguments:
+        detected_handles: Sequence[mas_perception_msgs.msg.Object]
+
+        '''
+        if len(detected_handles) == 1:
+            return detected_handles[0]
+
+        handle_distances = []
+        for handle in detected_handles:
+            pose_base_link = self.tf_listener.transformPose('base_link', handle.pose)
+            handle_distances.append(np.linalg.norm([pose_base_link.pose.position.x,
+                                                    pose_base_link.pose.position.y,
+                                                    pose_base_link.pose.position.z]))
+        return detected_handles[np.argmin(handle_distances)]
 
     def __prepare_handle_grasp(self, pose_base_link):
         rospy.loginfo('[handle_open] Moving to a pregrasp configuration...')
