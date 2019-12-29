@@ -1,6 +1,11 @@
-# goal
+string PULL=pull_knob
+string LEVER=lever_knob
+string ROUND=round_knob
+string UNKNOWN=unknown
+
+# optional handle type for cross-checking
+# the results of the online handle detection
 string handle_type
-geometry_msgs/PoseStamped handle_pose
 ---
 # result
 bool success
