@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_head_controller" type="head_controller" name="mdr_head_controller" output="screen">
+    </node>
+</launch>
