@@ -30,6 +30,4 @@ class WaitForContinueConfirmation(ScenarioStateBase):
         return 'stop'
 
     def proceed_cb(self, msg):
-        if msg.data:
-            self.proceed = True
-        self.proceed = False
+        self.proceed = msg.data
