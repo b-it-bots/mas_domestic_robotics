@@ -105,7 +105,7 @@ class HandleOpenSM(ActionSMBase):
     def running(self):
         rospy.loginfo('[handle_open] Detecting handle')
         self.detect_handle_client.send_goal(DetectObjectsGoal())
-        self.detect_handle_client.wait_for_result(timeout=self.timeout)
+        self.detect_handle_client.wait_for_result(timeout=rospy.Duration.from_sec(self.timeout))
         detection_result = self.detect_handle_client.get_result()
 
         # if a handle could not be detected, the action is aborted
