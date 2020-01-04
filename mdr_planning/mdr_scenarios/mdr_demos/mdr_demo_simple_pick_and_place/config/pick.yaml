@@ -2,30 +2,9 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_demo_simple_pick
-states: [GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, WAIT_FOR_CONTINUE_CONFIRMATION]
+states: [PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, WAIT_FOR_CONTINUE_CONFIRMATION]
 outcomes: [DONE, FAILED]
 state_descriptions:
-    - state:
-        name: GO_TO_TABLE
-        state_module_name: mdr_navigation_behaviours.move_base
-        state_class_name: MoveBase
-        transitions:
-            - transition:
-                name: succeeded
-                state: PERCEIVE_TABLE
-            - transition:
-                name: failed
-                state: GO_TO_TABLE
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: destination_locations
-                value: [table]
-            - argument:
-                name: number_of_retries
-                value: 3
     - state:
         name: PERCEIVE_TABLE
         state_module_name: mdr_perception_behaviours.perceive_planes
@@ -43,7 +22,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: number_of_retries
-                value: 3
+                value: 10
             - argument:
                 name: plane_prefix
                 value: table
@@ -88,7 +67,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: number_of_retries
-                value: 3
+                value: 10
             - argument:
                 name: plane_prefix
                 value: table
@@ -99,7 +78,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: continue
-                state: GO_TO_TABLE
+                state: PERCEIVE_TABLE
             - transition:
                 name: stop
                 state: DONE
