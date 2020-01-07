@@ -125,7 +125,7 @@ class HandleOpenSM(ActionSMBase):
                 return FTSMTransitions.DONE
 
         handle.pose.header.stamp = rospy.Time(0)
-        pose_base_link = self.tf_listener.transformPose('base_link', pose)
+        pose_base_link = self.tf_listener.transformPose('base_link', handle.pose)
 
         if self.base_elbow_offset > 0:
             self.__align_base_with_pose(pose_base_link)
