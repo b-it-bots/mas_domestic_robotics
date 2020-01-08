@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_push_pull_object_action.msg import PushPullObjectAction
+from mdr_push_pull_object_action.action_states import PushPullSM
+
+class PushPullServer(object):
+    '''A server exposing an action for pushing an object to a predefined goal region.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * ``gripper_controller_pkg_name: The name of a package that implements
+                                     functionalities for controlling a robot's gripper
+                                     (default: 'mdr_gripper_controller')
+    * pregrasp_config_name: The name of the default pregrasp configuration for
+                            side grasps (default: 'pregrasp')
+    * pregrasp_low_config_name: The name of a pregrasp configuration for
+                                low sideways grasps (default: 'pregrasp_low')
+    * pregrasp_height_threshold: Height threshold for selecting high or
+                                 low pregrasp poses (default: 0.5)
+    * move_arm_server: Name of the `move_arm` action server (default: 'move_arm_server')
+    * move_base_server: Name of the `move_base` action server (default: 'move_base_server')
+    * cmd_vel_topic: Name of a topic on which base velocity commands
+                     can be sent (default '/cmd_vel')
+    * movement_speed_ms: Base movement speed during pushing/pulling (default: 0.1)
+    * safe_arm_joint_config: The name of a configuration in which the robot
+                             can safely move around the environment (default: 'folded')
+    * grasping_orientation: For more constrained manipulators, it might make sense
+                            to use a fixed grasping orientation (expressed as an
+                            (x, y, z, w) quaternion) to ensure easier reachability
+                            (default: [], in which case the argument is ignored)
+    * base_elbow_offset: An optional offset between `base_link` and the manipulator's elbow;
+                         used for aligning the base with the object to be grasped so that
+                         the manipulator can easily reach the object (default: -1)
+    * grasping_dmp:  Path to a YAML file containing the weights of a dynamic motion
+                     primitive used for grasping (default: '')
+    * dmp_tau: The value of the temporal dynamic motion primitive parameter (default: 1)
+    * number_of_retries: Number of times a grasp should be repeated in case
+                         it fails the first time.
+
+    '''
+    def __init__(self):
+        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name',
+                                                      'mdr_gripper_controller')
+        pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp')
+        pregrasp_low_config_name = rospy.get_param('~pregrasp_low_config_name', 'pregrasp_low')
+        pregrasp_height_threshold = float(rospy.get_param('~pregrasp_height_threshold', 0.5))
+        move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
+        move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
+        cmd_vel_topic = rospy.get_param('~cmd_vel_topic', '/cmd_vel')
+        movement_speed_ms = rospy.get_param('~movement_speed_ms', 0.1)
+        safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
+        base_elbow_offset = float(rospy.get_param('~base_elbow_offset', -1.))
+        grasping_orientation = rospy.get_param('~grasping_orientation', list())
+        grasping_dmp = rospy.get_param('~grasping_dmp', '')
+        dmp_tau = float(rospy.get_param('~dmp_tau', 1.))
+        number_of_retries = int(rospy.get_param('~number_of_retries', 0))
+
+        rospy.loginfo('[push_pull] Initialising state machine')
+        self.action_sm = PushPullSM(gripper_controller_pkg_name=gripper_controller_pkg_name,
+                                    pregrasp_config_name=pregrasp_config_name,
+                                    pregrasp_low_config_name=pregrasp_low_config_name,
+                                    pregrasp_height_threshold=pregrasp_height_threshold,
+                                    safe_arm_joint_config=safe_arm_joint_config,
+                                    move_arm_server=move_arm_server,
+                                    move_base_server=move_base_server,
+                                    cmd_vel_topic=cmd_vel_topic,
+                                    movement_speed_ms=movement_speed_ms,
+                                    base_elbow_offset=base_elbow_offset,
+                                    grasping_orientation=grasping_orientation,
+                                    grasping_dmp=grasping_dmp,
+                                    dmp_tau=dmp_tau,
+                                    number_of_retries=number_of_retries)
+        rospy.loginfo('[push_pull] State machine initialised')
+
+        self.action_server = actionlib.SimpleActionServer('push_pull_object_server',
+                                                          PushPullObjectAction, self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('push_pull action server ready')
+
+    def execute(self, goal):
+        rospy.loginfo('[push_pull] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.result = None
+        self.action_sm.execution_requested = True
+        while not self.action_sm.result:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
+
+if __name__ == '__main__':
+    rospy.init_node('push_pull_server')
+    push_pull_server = PushPullServer()
+    try:
+        push_pull_server.action_sm.run()
+        while push_pull_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(push_pull_server.action_sm.name))
+        push_pull_server.action_sm.stop()
