@@ -29,8 +29,6 @@ if __name__ == '__main__':
     goal.goal_pose.pose.position.x = 0.518
     goal.goal_pose.pose.position.y = 0.078
 
-    goal.goal_distance_tolerance_m = 0.1
-
     client.send_goal(goal)
     client.wait_for_result()
 

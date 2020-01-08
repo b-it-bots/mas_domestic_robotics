@@ -8,7 +8,7 @@ An action for pushing an object to a predefined goal region.
 
 * ``geometry_msgs/PoseStamped object_pose``: Pose of the object to be pushed
 * ``geometry_msgs/PoseStamped goal_pose``: Pose to which the object should be pushed
-* ``float32 goal_distance_tolerance_m``: Goal tolerance in meters; this defines a goal region
+* ``float32 goal_distance_tolerance_m``: Goal tolerance in meters; this defines a goal region (currently unused)
 
 ### Result:
 
