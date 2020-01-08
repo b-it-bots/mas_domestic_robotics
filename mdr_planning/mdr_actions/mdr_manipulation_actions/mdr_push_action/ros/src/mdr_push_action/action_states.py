@@ -224,6 +224,19 @@ class PushSM(ActionSMBase):
         motion_duration_x = distance_to_move.x / self.movement_speed_ms
         motion_duration_y = distance_to_move.y / self.movement_speed_ms
 
+        # we push the object by moving the base
+        self.__send_base_vel(np.sign(distance_to_move.x) * self.movement_speed_ms,
+                             np.sign(distance_to_move.y) * self.movement_speed_ms,
+                             motion_duration_x,
+                             motion_duration_y)
+
+        # we return the base back to its original position
+        self.__send_base_vel(-np.sign(distance_to_move.x) * self.movement_speed_ms,
+                             -np.sign(distance_to_move.y) * self.movement_speed_ms,
+                             motion_duration_x,
+                             motion_duration_y)
+
+    def __send_base_vel(self, vel_x, vel_y, motion_duration_x, motion_duration_y):
         duration_x = rospy.Duration.from_sec(motion_duration_x)
         duration_y = rospy.Duration.from_sec(motion_duration_y)
         max_duration = rospy.Duration.from_sec(max(motion_duration_x,
@@ -231,8 +244,8 @@ class PushSM(ActionSMBase):
 
         rate = rospy.Rate(5)
         twist = Twist()
-        twist.linear.x = np.sign(distance_to_move.x) * self.movement_speed_ms
-        twist.linear.y = np.sign(distance_to_move.y) * self.movement_speed_ms
+        twist.linear.x = vel_x
+        twist.linear.y = vel_y
 
         start_time = rospy.Time.now()
         time_diff = rospy.Time.now() - start_time
