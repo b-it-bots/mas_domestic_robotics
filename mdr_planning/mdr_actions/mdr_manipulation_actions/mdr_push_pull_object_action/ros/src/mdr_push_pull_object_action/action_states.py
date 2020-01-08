@@ -11,7 +11,7 @@ from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from mdr_push_action.msg import PushPullObjectResult
+from mdr_push_pull_object_action.msg import PushPullObjectResult
 
 class PushPullSM(ActionSMBase):
     def __init__(self, timeout=120.0,

@@ -2,7 +2,7 @@
 import rospy
 import actionlib
 
-from mdr_push_action.msg import PushPullObjectAction, PushPullObjectGoal
+from mdr_push_pull_object_action.msg import PushPullObjectAction, PushPullObjectGoal
 
 if __name__ == '__main__':
     rospy.init_node('push_pull_object_action_client_test')
