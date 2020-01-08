@@ -217,8 +217,8 @@ class PushSM(ActionSMBase):
         return result
 
     def __push_object(self, distance_to_move, goal_tolerance):
-        motion_duration_x = distance_to_move.x / self.movement_speed_ms
-        motion_duration_y = distance_to_move.y / self.movement_speed_ms
+        motion_duration_x = abs(distance_to_move.x) / self.movement_speed_ms
+        motion_duration_y = abs(distance_to_move.y) / self.movement_speed_ms
 
         # we push the object by moving the base
         rospy.loginfo('[push] Pushing...')
