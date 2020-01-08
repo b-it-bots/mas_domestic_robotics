@@ -1,5 +1,7 @@
 # goal
-geometry_msgs/PoseStamped pose
+geometry_msgs/PoseStamped object_pose
+geometry_msgs/PoseStamped goal_pose
+float32 goal_distance_tolerance_m
 ---
 # result
 bool success

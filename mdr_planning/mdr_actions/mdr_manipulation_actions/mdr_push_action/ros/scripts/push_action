@@ -6,21 +6,38 @@ from mdr_push_action.msg import PushAction
 from mdr_push_action.action_states import PushSM
 
 class PushServer(object):
-
     def __init__(self):
+        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name',
+                                                      'mdr_gripper_controller')
+        pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp')
+        pregrasp_low_config_name = rospy.get_param('~pregrasp_low_config_name', 'pregrasp_low')
+        pregrasp_height_threshold = float(rospy.get_param('~pregrasp_height_threshold', 0.5))
+        move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
+        move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
+        cmd_vel_topic = rospy.get_param('~cmd_vel_topic', '/cmd_vel')
+        movement_speed_ms = rospy.get_param('~movement_speed_ms', 0.1)
+        safe_arm_joint_config = rospy.get_param('~safe_arm_joint_config', 'folded')
+        base_elbow_offset = float(rospy.get_param('~base_elbow_offset', -1.))
+        grasping_orientation = rospy.get_param('~grasping_orientation', list())
         grasping_dmp = rospy.get_param('~grasping_dmp', '')
         dmp_tau = float(rospy.get_param('~dmp_tau', 1.))
+        number_of_retries = int(rospy.get_param('~number_of_retries', 0))
 
         rospy.loginfo('[Push] Initialising state machine')
-        self.action_sm = PushSM(timeout=120.0,
-                 gripper_controller_pkg_name='mas_hsr_gripper_controller',
-                 move_arm_server='move_arm_server',
-                 move_base_server='move_base_server',
-                 move_forward_server='move_forward_server',
-                 grasping_dmp=grasping_dmp,
-                 dmp_tau=dmp_tau,
-                 number_of_retries=0,
-                 max_recovery_attempts=1)
+        self.action_sm = PushSM(gripper_controller_pkg_name=gripper_controller_pkg_name,
+                                pregrasp_config_name=pregrasp_config_name,
+                                pregrasp_low_config_name=pregrasp_low_config_name,
+                                pregrasp_height_threshold=pregrasp_height_threshold,
+                                safe_arm_joint_config=safe_arm_joint_config,
+                                move_arm_server=move_arm_server,
+                                move_base_server=move_base_server,
+                                cmd_vel_topic=cmd_vel_topic,
+                                movement_speed_ms=movement_speed_ms,
+                                base_elbow_offset=base_elbow_offset,
+                                grasping_orientation=grasping_orientation,
+                                grasping_dmp=grasping_dmp,
+                                dmp_tau=dmp_tau,
+                                number_of_retries=number_of_retries)
         rospy.loginfo('[Push] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('push_server',
