@@ -158,10 +158,6 @@ class PushSM(ActionSMBase):
             rospy.loginfo('[push] Pushing the object')
             self.__push_object(pose_diff_vector, self.goal.goal_distance_tolerance_m)
 
-            rospy.loginfo('[push] Releasing the object')
-            self.gripper.open()
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
-
             # TODO: reintegrate fault detection!
             succeeded = True
 
@@ -225,12 +221,18 @@ class PushSM(ActionSMBase):
         motion_duration_y = distance_to_move.y / self.movement_speed_ms
 
         # we push the object by moving the base
+        rospy.loginfo('[push] Pushing...')
         self.__send_base_vel(np.sign(distance_to_move.x) * self.movement_speed_ms,
                              np.sign(distance_to_move.y) * self.movement_speed_ms,
                              motion_duration_x,
                              motion_duration_y)
 
+        rospy.loginfo('[push] Releasing the object')
+        self.gripper.open()
+        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
+
         # we return the base back to its original position
+        rospy.loginfo('[push] Moving back...')
         self.__send_base_vel(-np.sign(distance_to_move.x) * self.movement_speed_ms,
                              -np.sign(distance_to_move.y) * self.movement_speed_ms,
                              motion_duration_x,
