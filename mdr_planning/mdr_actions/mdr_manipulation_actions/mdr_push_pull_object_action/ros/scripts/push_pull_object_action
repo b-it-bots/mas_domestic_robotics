@@ -2,10 +2,10 @@
 import rospy
 import actionlib
 
-from mdr_push_action.msg import PushAction
-from mdr_push_action.action_states import PushSM
+from mdr_push_pull_object_action.msg import PushPullObjectAction
+from mdr_push_pull_object_action.action_states import PushPullSM
 
-class PushServer(object):
+class PushPullServer(object):
     '''A server exposing an action for pushing an object to a predefined goal region.
 
     The server expects the following parameters to be made available on the ROS parameter server:
@@ -22,7 +22,7 @@ class PushServer(object):
     * move_base_server: Name of the `move_base` action server (default: 'move_base_server')
     * cmd_vel_topic: Name of a topic on which base velocity commands
                      can be sent (default '/cmd_vel')
-    * movement_speed_ms: Base movement speed during pushing (default: 0.1)
+    * movement_speed_ms: Base movement speed during pushing/pulling (default: 0.1)
     * safe_arm_joint_config: The name of a configuration in which the robot
                              can safely move around the environment (default: 'folded')
     * grasping_orientation: For more constrained manipulators, it might make sense
@@ -57,29 +57,29 @@ class PushServer(object):
         number_of_retries = int(rospy.get_param('~number_of_retries', 0))
 
         rospy.loginfo('[Push] Initialising state machine')
-        self.action_sm = PushSM(gripper_controller_pkg_name=gripper_controller_pkg_name,
-                                pregrasp_config_name=pregrasp_config_name,
-                                pregrasp_low_config_name=pregrasp_low_config_name,
-                                pregrasp_height_threshold=pregrasp_height_threshold,
-                                safe_arm_joint_config=safe_arm_joint_config,
-                                move_arm_server=move_arm_server,
-                                move_base_server=move_base_server,
-                                cmd_vel_topic=cmd_vel_topic,
-                                movement_speed_ms=movement_speed_ms,
-                                base_elbow_offset=base_elbow_offset,
-                                grasping_orientation=grasping_orientation,
-                                grasping_dmp=grasping_dmp,
-                                dmp_tau=dmp_tau,
-                                number_of_retries=number_of_retries)
-        rospy.loginfo('[Push] State machine initialised')
+        self.action_sm = PushPullSM(gripper_controller_pkg_name=gripper_controller_pkg_name,
+                                    pregrasp_config_name=pregrasp_config_name,
+                                    pregrasp_low_config_name=pregrasp_low_config_name,
+                                    pregrasp_height_threshold=pregrasp_height_threshold,
+                                    safe_arm_joint_config=safe_arm_joint_config,
+                                    move_arm_server=move_arm_server,
+                                    move_base_server=move_base_server,
+                                    cmd_vel_topic=cmd_vel_topic,
+                                    movement_speed_ms=movement_speed_ms,
+                                    base_elbow_offset=base_elbow_offset,
+                                    grasping_orientation=grasping_orientation,
+                                    grasping_dmp=grasping_dmp,
+                                    dmp_tau=dmp_tau,
+                                    number_of_retries=number_of_retries)
+        rospy.loginfo('[push_pull] State machine initialised')
 
-        self.action_server = actionlib.SimpleActionServer('push_server',
-                                                          PushAction, self.execute, False)
+        self.action_server = actionlib.SimpleActionServer('push_pull_object_server',
+                                                          PushPullObjectAction, self.execute, False)
         self.action_server.start()
-        rospy.loginfo('Push action server ready')
+        rospy.loginfo('push/pull action server ready')
 
     def execute(self, goal):
-        rospy.loginfo('[Push] Received an action request')
+        rospy.loginfo('[push_pull] Received an action request')
         self.action_sm.goal = goal
         self.action_sm.result = None
         self.action_sm.execution_requested = True
@@ -88,12 +88,12 @@ class PushServer(object):
         self.action_server.set_succeeded(self.action_sm.result)
 
 if __name__ == '__main__':
-    rospy.init_node('push_server')
-    push_server = PushServer()
+    rospy.init_node('push_pull_server')
+    push_pull_server = PushPullServer()
     try:
-        push_server.action_sm.run()
-        while push_server.action_sm.is_running and not rospy.is_shutdown():
+        push_pull_server.action_sm.run()
+        while push_pull_server.action_sm.is_running and not rospy.is_shutdown():
             rospy.spin()
     except (KeyboardInterrupt, SystemExit):
-        print('{0} interrupted; exiting...'.format(push_server.action_sm.name))
-        push_server.action_sm.stop()
+        print('{0} interrupted; exiting...'.format(push_pull_server.action_sm.name))
+        push_pull_server.action_sm.stop()

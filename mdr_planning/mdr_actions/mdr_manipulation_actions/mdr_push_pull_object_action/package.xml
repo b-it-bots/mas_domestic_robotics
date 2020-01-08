@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>mdr_push_action</name>
+  <name>mdr_push_pull_object_action</name>
   <version>1.0.0</version>
   <description>An action for pushing objects</description>
 

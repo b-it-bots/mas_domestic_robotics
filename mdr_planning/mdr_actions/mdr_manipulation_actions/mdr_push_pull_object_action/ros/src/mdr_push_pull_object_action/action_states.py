@@ -11,9 +11,9 @@ from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from mdr_push_action.msg import PushGoal, PushFeedback, PushResult
+from mdr_push_action.msg import PushPullObjectResult
 
-class PushSM(ActionSMBase):
+class PushPullSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mdr_gripper_controller',
                  pregrasp_config_name='pregrasp',
@@ -30,7 +30,7 @@ class PushSM(ActionSMBase):
                  dmp_tau=1.,
                  number_of_retries=0,
                  max_recovery_attempts=1):
-        super(PushSM, self).__init__('Push', [], max_recovery_attempts)
+        super(PushPullSM, self).__init__('PushPull', [], max_recovery_attempts)
         self.timeout = timeout
 
         gripper_controller_module_name = '{0}.gripper_controller'.format(gripper_controller_pkg_name)
@@ -265,6 +265,6 @@ class PushSM(ActionSMBase):
         self.cmd_vel_pub.publish(zero_twist)
 
     def set_result(self, success):
-        result = PushResult()
+        result = PushPullObjectResult()
         result.success = success
         return result

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(mdr_push_action)
+project(mdr_push_pull_object_action)
 
 find_package(catkin REQUIRED COMPONENTS
   rospy
@@ -16,7 +16,7 @@ catkin_python_setup()
 
 add_action_files(DIRECTORY ros/action
   FILES
-  Push.action
+  PushPullObject.action
 )
 
 generate_messages(
@@ -39,7 +39,7 @@ include_directories(
 )
 
 install(PROGRAMS
-  ros/scripts/push_action
-  ros/scripts/push_action_client_test
+  ros/scripts/push_pull_object_action
+  ros/scripts/push_pull_object_action_client_test
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}/scripts
 )

@@ -1,6 +1,6 @@
-# mdr_push_action
+# mdr_push_pull_object_action
 
-An action for pushing an object to a predefined goal region.
+An action for pushing or pulling an object to a predefined goal region.
 
 ## Action definition
 
@@ -22,24 +22,24 @@ An action for pushing an object to a predefined goal region.
 ## Directory structure
 
 ```
-mdr_push_action
+mdr_push_pull_object_action
 |    CMakeLists.txt
 |    package.xml
 |    setup.py
 |    README.md
 |____ros
      |____action
-     |    |_____Push.action
+     |    |_____PushPullObject.action
      |    |
      |____launch
-     |    |_____push_action.launch
+     |    |_____push_pull_object.launch
      |    |
      |    scripts
-     |    |     push_action
-     |    |_____push_action_client_test
+     |    |     push_pull_object_action
+     |    |_____push_pull_object_action_client_test
      |    |
      |____src
-          |____mdr_push_action
+          |____mdr_push_pull_object_action
                |    __init__.py
                |____action_states.py
 ```
@@ -87,4 +87,4 @@ The action performs grasping and then pushing with respect to the `base_link` fr
 1. Run the ``move_arm`` action server: ``roslaunch mas_<robot>_move_arm_action move_arm.launch``
 2. Run the ``move_base`` action server: ``roslaunch mas_<robot>_move_base_action move_base.launch``
 3. Run the action server: ``roslaunch mas_<robot>_push_action push.launch``
-4. Run the client example: ``rosrun mdr_push_action push_action_client_test``; the client example uses predefined object and goal poses
+4. Run the client example: ``rosrun mdr_push_pull_object_action push_pull_action_client_test``; the client example uses predefined object and goal poses
