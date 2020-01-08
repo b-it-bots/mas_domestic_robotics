@@ -221,9 +221,13 @@ class PushSM(ActionSMBase):
         return result
 
     def __push_object(self, distance_to_move, goal_tolerance):
-        duration_x = rospy.Duration.from_sec(distance_to_move.x / self.movement_speed_ms)
-        duration_y = rospy.Duration.from_sec(distance_to_move.y / self.movement_speed_ms)
-        max_duration = rospy.Duration.from_sec(max(duration_x, duration_y))
+        motion_duration_x = distance_to_move.x / self.movement_speed_ms
+        motion_duration_y = distance_to_move.y / self.movement_speed_ms
+
+        duration_x = rospy.Duration.from_sec(motion_duration_x)
+        duration_y = rospy.Duration.from_sec(motion_duration_y)
+        max_duration = rospy.Duration.from_sec(max(motion_duration_x,
+                                                   motion_duration_y))
 
         rate = rospy.Rate(5)
         twist = Twist()
@@ -237,12 +241,13 @@ class PushSM(ActionSMBase):
                 twist.linear.x = 0.
             if time_diff >= duration_y:
                 twist.linear.y = 0.
-            self.velocity_pub.publish(twist)
+            self.cmd_vel_pub.publish(twist)
             rate.sleep()
+            time_diff = rospy.Time.now() - start_time
 
         # we publish a zero twist at the end so that the robot stops moving
         zero_twist = Twist()
-        self.velocity_pub.publish(zero_twist)
+        self.cmd_vel_pub.publish(zero_twist)
 
     def set_result(self, success):
         result = PushResult()
