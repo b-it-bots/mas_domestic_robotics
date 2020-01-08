@@ -145,8 +145,8 @@ class PushSM(ActionSMBase):
                                                  object_pose_base_link)
             if not arm_motion_success:
                 rospy.logerr('[push] Arm motion unsuccessful')
-                self.result = self.set_result(False)
-                return FTSMTransitions.DONE
+                retry_count += 1
+                continue
 
             rospy.loginfo('[push] Grasping the object')
             self.gripper.close()
