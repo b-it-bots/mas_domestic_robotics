@@ -62,19 +62,19 @@ class PushPullSM(ActionSMBase):
     def init(self):
         try:
             self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
-            rospy.loginfo('[push] Waiting for %s server', self.move_arm_server)
+            rospy.loginfo('[push_pull] Waiting for %s server', self.move_arm_server)
             self.move_arm_client.wait_for_server()
         except:
-            rospy.logerr('[push] %s server does not seem to respond', self.move_arm_server)
+            rospy.logerr('[push_pull] %s server does not seem to respond', self.move_arm_server)
 
         try:
             self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
-            rospy.loginfo('[push] Waiting for %s server', self.move_base_server)
+            rospy.loginfo('[push_pull] Waiting for %s server', self.move_base_server)
             self.move_base_client.wait_for_server()
         except:
-            rospy.logerr('[push] %s server does not seem to respond', self.move_base_server)
+            rospy.logerr('[push_pull] %s server does not seem to respond', self.move_base_server)
 
-        rospy.loginfo('[push] Creating a %s publisher', self.cmd_vel_topic)
+        rospy.loginfo('[push_pull] Creating a %s publisher', self.cmd_vel_topic)
         self.cmd_vel_pub = rospy.Publisher(self.cmd_vel_topic, Twist, queue_size=1)
 
         return FTSMTransitions.INITIALISED
@@ -111,7 +111,7 @@ class PushPullSM(ActionSMBase):
 
         while not succeeded and (retry_count <= self.number_of_retries):
             if retry_count > 0:
-                rospy.loginfo('[push] Retrying push')
+                rospy.loginfo('[push_pull] Retrying push')
 
             object_pose = self.goal.object_pose
             object_pose.header.stamp = rospy.Time(0)
@@ -134,28 +134,28 @@ class PushPullSM(ActionSMBase):
                 object_pose_base_link.pose.orientation.z = self.grasping_orientation[2]
                 object_pose_base_link.pose.orientation.w = self.grasping_orientation[3]
 
-            rospy.loginfo('[push] Opening gripper')
+            rospy.loginfo('[push_pull] Opening gripper')
             self.gripper.open()
 
-            rospy.loginfo('[push] Preparing sideways graps')
+            rospy.loginfo('[push_pull] Preparing sideways graps')
             object_pose_base_link = self.__prepare_sideways_grasp(object_pose_base_link)
 
-            rospy.loginfo('[push] Reaching the object...')
+            rospy.loginfo('[push_pull] Reaching the object...')
             arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE,
                                                  object_pose_base_link)
             if not arm_motion_success:
-                rospy.logerr('[push] Arm motion unsuccessful')
+                rospy.logerr('[push_pull] Arm motion unsuccessful')
                 retry_count += 1
                 continue
 
-            rospy.loginfo('[push] Grasping the object')
+            rospy.loginfo('[push_pull] Grasping the object')
             self.gripper.close()
 
             pose_diff_vector = Vector3()
             pose_diff_vector.x = goal_pose_base_link.pose.position.x - object_pose_base_link.pose.position.x
             pose_diff_vector.y = goal_pose_base_link.pose.position.y - object_pose_base_link.pose.position.y
 
-            rospy.loginfo('[push] Pushing the object')
+            rospy.loginfo('[push_pull] Pushing the object')
             self.__push_object(pose_diff_vector, self.goal.goal_distance_tolerance_m)
 
             # TODO: reintegrate fault detection!
@@ -195,7 +195,7 @@ class PushPullSM(ActionSMBase):
         self.move_base_client.get_result()
 
     def __prepare_sideways_grasp(self, pose_base_link):
-        rospy.loginfo('[push] Moving to a pregrasp configuration...')
+        rospy.loginfo('[push_pull] Moving to a pregrasp configuration...')
         if pose_base_link.pose.position.z > self.pregrasp_height_threshold:
             self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
         else:
@@ -221,18 +221,18 @@ class PushPullSM(ActionSMBase):
         motion_duration_y = abs(distance_to_move.y) / self.movement_speed_ms
 
         # we push the object by moving the base
-        rospy.loginfo('[push] Pushing...')
+        rospy.loginfo('[push_pull] Pushing...')
         self.__send_base_vel(np.sign(distance_to_move.x) * self.movement_speed_ms,
                              np.sign(distance_to_move.y) * self.movement_speed_ms,
                              motion_duration_x,
                              motion_duration_y)
 
-        rospy.loginfo('[push] Releasing the object')
+        rospy.loginfo('[push_pull] Releasing the object')
         self.gripper.open()
         self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
 
         # we return the base back to its original position
-        rospy.loginfo('[push] Moving back...')
+        rospy.loginfo('[push_pull] Moving back...')
         self.__send_base_vel(-np.sign(distance_to_move.x) * self.movement_speed_ms,
                              -np.sign(distance_to_move.y) * self.movement_speed_ms,
                              motion_duration_x,

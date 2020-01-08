@@ -56,7 +56,7 @@ class PushPullServer(object):
         dmp_tau = float(rospy.get_param('~dmp_tau', 1.))
         number_of_retries = int(rospy.get_param('~number_of_retries', 0))
 
-        rospy.loginfo('[Push] Initialising state machine')
+        rospy.loginfo('[push_pull] Initialising state machine')
         self.action_sm = PushPullSM(gripper_controller_pkg_name=gripper_controller_pkg_name,
                                     pregrasp_config_name=pregrasp_config_name,
                                     pregrasp_low_config_name=pregrasp_low_config_name,
@@ -76,7 +76,7 @@ class PushPullServer(object):
         self.action_server = actionlib.SimpleActionServer('push_pull_object_server',
                                                           PushPullObjectAction, self.execute, False)
         self.action_server.start()
-        rospy.loginfo('push/pull action server ready')
+        rospy.loginfo('push_pull action server ready')
 
     def execute(self, goal):
         rospy.loginfo('[push_pull] Received an action request')
