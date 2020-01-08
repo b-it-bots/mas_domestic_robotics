@@ -107,9 +107,9 @@ class PushSM(ActionSMBase):
         '''
 
         retry_count = 0
-        overall_successful = False
+        succeeded = False
 
-        while (not overall_successful) and (retry_count <= self.number_of_retries):
+        while not succeeded and (retry_count <= self.number_of_retries):
             if retry_count > 0:
                 rospy.loginfo('[push] Retrying push')
 
