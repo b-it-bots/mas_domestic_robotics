@@ -43,7 +43,7 @@ class MoveToPerson(ScenarioStateBase):
 
         person_to_interview = people_identifiers[0]
         person_info = self.kb_interface.get_obj_instance(person_to_interview, Person._type)
-        person_pose = MoveToPerson.pose_subtract(person_info.pose, 1)
+        person_pose = MoveToPerson.subtract_distance_from_pose(person_info.pose, 1)
 
         move_base_goal = MoveBaseGoal()
         move_base_goal.goal_type = MoveBaseGoal.POSE
@@ -67,7 +67,7 @@ class MoveToPerson(ScenarioStateBase):
         return 'failed'
 
     @staticmethod
-    def subtract_pose(pose, distance):
+    def subtract_distance_from_pose(pose, distance):
 	point = pose.pose.position
 	plen = math.sqrt(point.x ** 2 + point.y ** 2 + point.z ** 2)
 	new_len = max(0, plen - distance)
