@@ -1,4 +1,6 @@
 #!/usr/bin/python
+from importlib import import_module
+
 import rospy
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -11,6 +13,7 @@ class PerceivePlaneSM(ActionSMBase):
                  recog_service_name,
                  recog_model_name,
                  preprocess_input_module,
+                 head_controller_pkg_name='mdr_head_controller',
                  classify_object=True,
                  target_frame=None,
                  timeout_duration=1,
@@ -23,6 +26,11 @@ class PerceivePlaneSM(ActionSMBase):
         self._timeout_duration = timeout_duration
         self._target_frame = target_frame
         self._detecting_done = False
+
+        head_controller_module_name = '{0}.head_controller'.format(head_controller_pkg_name)
+        HeadControllerClass = getattr(import_module(head_controller_module_name),
+                                      'HeadController')
+        self._head = HeadControllerClass()
 
     def running(self):
         detected_planes = None
