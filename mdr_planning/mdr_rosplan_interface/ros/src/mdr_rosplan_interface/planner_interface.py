@@ -1,6 +1,7 @@
 import rospy
 from std_srvs.srv import Empty
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
+import rosplan_dispatch_msgs.srv as plan_dispatch_srvs
 from mas_knowledge_base.domestic_kb_interface import DomesticKBInterface
 
 class PlannerInterface(object):
@@ -56,7 +57,8 @@ class PlannerInterface(object):
                                             '/rosplan_plan_dispatcher/dispatch_plan')
         try:
             rospy.wait_for_service(plan_dispatch_srv, 5.)
-            self.plan_dispatch_proxy = rospy.ServiceProxy(plan_dispatch_srv, Empty)
+            self.plan_dispatch_proxy = rospy.ServiceProxy(plan_dispatch_srv,
+                                                          plan_dispatch_srvs.DispatchService)
         except (rospy.ServiceException, rospy.ROSException):
             rospy.logerr('The service %s does not appear to exist.', plan_dispatch_srv)
 
