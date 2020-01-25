@@ -1,6 +1,6 @@
 (define (domain store-groceries)
 
-    (:requirements :strips :typing :fluents :equality :conditional-effects)
+    (:requirements :strips :typing :equality :conditional-effects)
 
     (:types
         waypoint
