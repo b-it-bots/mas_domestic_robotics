@@ -1,6 +1,6 @@
 (define (domain store-groceries)
 
-    (:requirements :strips :typing :equality :conditional-effects)
+    (:requirements :strips :typing :equality)
 
     (:types
         waypoint
@@ -27,7 +27,6 @@
         (on ?obj - object ?plane - plane)
         (holding ?bot - robot ?obj - object)
         (empty_gripper ?bot - robot)
-        (groceries_stored)
     )
 
     (:action move_base
@@ -97,16 +96,6 @@
             (not (holding ?bot ?obj))
             (empty_gripper ?bot)
             (on ?obj ?plane)
-            (forall (?o - object ?c - object_class ?p - plane)
-                (when
-                    (and
-                        (object_category ?o ?c)
-                        (stored_on ?c ?p)
-                        (on ?o ?p)
-                    )
-                    (groceries_stored)
-                )
-            )
         )
     )
 )
