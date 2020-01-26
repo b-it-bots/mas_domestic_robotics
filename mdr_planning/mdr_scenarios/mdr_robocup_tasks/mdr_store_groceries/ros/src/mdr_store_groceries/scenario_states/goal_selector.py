@@ -29,6 +29,10 @@ class StoreGroceriesGoalSelector(ScenarioStateBase):
             scanning_goals = self.get_scanning_goals()
             self.planner_interface.remove_plan_goals(scanning_goals)
 
+            # we ensure that the storing locations of the
+            # objects are correctly set before creating a plan
+            self.set_storing_locations()
+
             storing_goals = self.get_storing_groceries_goals()
             self.planner_interface.add_plan_goals(storing_goals)
 
@@ -65,6 +69,24 @@ class StoreGroceriesGoalSelector(ScenarioStateBase):
         for i in range(self.number_of_shelves):
             goals.append(('explored', [('plane', 'shelf{0}'.format(i+1))]))
         return goals
+
+    def set_storing_locations(self):
+        '''Adds a list of "stored_on" predicates to the knowledge base, which
+        specify which category of objects is stored on which shelf. This information
+        is obtained by retriving the categories of the objects seen on
+        the individual shelves.
+        '''
+        obj_category_map = self.planner_interface.kb_interface.get_obj_category_map()
+        storage_fact_list = []
+        for i in range(self.number_of_shelves):
+            shelf_name = 'shelf{0}'.format(i+1)
+            shelf_object_names = self.planner_interface.kb_interface.get_surface_object_names(shelf_name)
+            for obj in shelf_object_names:
+                # TODO: what to do if the recognition fails and some category
+                # of objects seems to be stored on multiple shelves?
+                storage_fact_list.append(('stored_on', [('class', obj_category_map[obj]),
+                                                        ('plane', shelf_name)]))
+        self.planner_interface.kb_interface.insert_facts(storage_fact_list)
 
     def get_storing_groceries_goals(self):
         '''Returns a list containing a single planning goal -
