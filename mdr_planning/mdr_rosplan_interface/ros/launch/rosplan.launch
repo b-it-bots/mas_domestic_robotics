@@ -6,7 +6,7 @@
     <arg name="domain_path" default="$(find mdr_rosplan_interface)/config/default_domain.pddl" />
     <arg name="problem_path" default="$(find mdr_rosplan_interface)/config/problem.pddl" />
     <arg name="strl_file_path" default="$(find mdr_rosplan_interface)/config/plan.pddl" />
-    <arg name="planner_command" default="timeout 10 $(find rosplan_planning_system)/common/bin/Metric-FF -o DOMAIN -f PROBLEM -s 0" />
+    <arg name="planner_command" default="$(find rosplan_planning_system)/common/bin/fast-downward/fast-downward.py --search-time-limit 10 --alias seq-sat-lama-2011 --plan-file plan.txt DOMAIN PROBLEM" />
     <arg name="action_dispatch_topic" default="/kcl_rosplan/action_dispatch" />
     <arg name="action_feedback_topic" default="/kcl_rosplan/action_feedback" />
 
@@ -50,7 +50,7 @@
     </node>
 
     <!-- planning system -->
-    <node name="rosplan_planner_interface" pkg="rosplan_planning_system" type="ff_planner_interface" respawn="true" output="screen">
+    <node name="rosplan_planner_interface" pkg="rosplan_planning_system" type="lama_planner_interface" respawn="true" output="screen">
         <param name="use_problem_topic" value="true" />
         <param name="problem_topic" value="/rosplan_problem_interface/problem_instance" />
         <param name="planner_topic" value="planner_output" />
