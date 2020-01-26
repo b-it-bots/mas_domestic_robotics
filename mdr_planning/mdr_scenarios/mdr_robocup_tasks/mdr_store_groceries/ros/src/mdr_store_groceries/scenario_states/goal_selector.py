@@ -15,23 +15,22 @@ class StoreGroceriesGoalSelector(ScenarioStateBase):
         # we check if the table and all shelves have been explored.
         # if they have been, we call the planner with the goal of storing
         # the groceries; otherwise, the goal is to scan them
+        if not self.exploration_done():
+            self.say('I need to check out the table and shelves')
 
-        if self.exploration_done():
             storing_goals = self.get_storing_groceries_goals()
             self.planner_interface.remove_plan_goals(storing_goals)
 
             scanning_goals = self.get_scanning_goals()
             self.planner_interface.add_plan_goals(scanning_goals)
-
-            self.say('I need to check out the table and shelves')
         else:
+            self.say('I will now store the groceries')
+
             scanning_goals = self.get_scanning_goals()
             self.planner_interface.remove_plan_goals(scanning_goals)
 
             storing_goals = self.get_storing_groceries_goals()
             self.planner_interface.add_plan_goals(storing_goals)
-
-            self.say('I will now store the groceries')
 
         plan_generated = self.planner_interface.plan()
         if plan_generated:
