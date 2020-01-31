@@ -36,9 +36,7 @@ class PerceivePlaneSM(ActionSMBase):
 
     def recovering(self):
         self._recovery_counter += 1
-        head_actions = [method_name for method_name in dir(self._head)
-                        if callable(getattr(self._head, method_name)) and not method_name.startswith('_')]
-        action = random.choice(head_actions)
+        action = random.choice(self._head.actions)
         getattr(self._head, action)()
         return FTSMTransitions.DONE_RECOVERING
 
