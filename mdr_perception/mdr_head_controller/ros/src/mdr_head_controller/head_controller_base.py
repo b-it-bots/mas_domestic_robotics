@@ -1,4 +1,7 @@
 class HeadControllerBase(object):
+    def __init__(self):
+        self.actions = ['look_up', 'look_down', 'turn_left', 'turn_right']
+
     def look_up(self):
         raise NotImplementedError('look_up not implemented')
 
