@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+    <node pkg="mdr_push_pull_object_action" type="push_pull_object_action" name="push_pull_object_server" output="screen">
+        <param name="gripper_controller_pkg_name" value="mdr_gripper_controller" />
+        <param name="pregrasp_config_name" value="pregrasp" />
+        <param name="pregrasp_low_config_name" value="pregrasp_low" />
+        <param name="pregrasp_height_threshold" value="0.5" />
+        <param name="move_arm_server" value="move_arm_server" />
+        <param name="move_base_server" value="move_base_server" />
+        <param name="cmd_vel_topic" value="/cmd_vel" />
+        <param name="movement_speed_ms" value="0.1" />
+        <param name="safe_arm_joint_config" value="folded" />
+        <param name="base_elbow_offset" value="-1." />
+        <rosparam param="grasping_orientation">[0, 0, 0, 1]</rosparam>
+        <param name="grasping_dmp" value="$(find mdr_push_pull_object_action)/config/trajectory_weights/weights_table_grasp.yaml" />
+        <param name="dmp_tau" value="30" />
+        <param name="number_of_retries" value="0" />
+    </node>
+</launch>

@@ -131,7 +131,7 @@ class PlaceClient(ActionClientBase):
         obj_config.surface = ConverterFactory.convert_ros_msg(surface_plane)
 
         # TODO: find the right action context for executing the action
-        action_model = Action(action_name='release')
+        action_model = Action(action_name='Release')
         number_of_samples = 10
 
         robot_pose = PoseStamped(Header(1, rospy.Time.now(), self.frame_id),
