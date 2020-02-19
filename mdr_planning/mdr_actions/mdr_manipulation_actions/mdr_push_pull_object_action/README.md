@@ -9,6 +9,11 @@ An action for pushing or pulling an object to a predefined goal region.
 * ``geometry_msgs/PoseStamped object_pose``: Pose of the object to be pushed
 * ``geometry_msgs/PoseStamped goal_pose``: Pose to which the object should be pushed
 * ``float32 goal_distance_tolerance_m``: Goal tolerance in meters; this defines a goal region (currently unused)
+* ``string context``: Purpose for which the action is performed
+
+The following constants are also defined in the action goal:
+* ``string CONTEXT_MOVING=push_pull_to_move``
+* ``string CONTEXT_TABLETOP_MANIPULATION=push_pull_for_tabletop_manipulation``
 
 ### Result:
 

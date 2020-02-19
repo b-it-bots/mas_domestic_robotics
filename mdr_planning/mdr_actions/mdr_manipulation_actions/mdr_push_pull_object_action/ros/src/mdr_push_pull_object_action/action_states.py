@@ -9,25 +9,16 @@ from geometry_msgs.msg import PoseStamped, Vector3, Twist
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
-from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from mdr_push_pull_object_action.msg import PushPullObjectResult
+from mdr_push_pull_object_action.msg import PushPullObjectGoal, PushPullObjectResult
 
 class PushPullSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mdr_gripper_controller',
-                 pregrasp_config_name='pregrasp',
-                 pregrasp_low_config_name='pregrasp_low',
-                 pregrasp_height_threshold=0.5,
                  safe_arm_joint_config='folded',
                  move_arm_server='move_arm_server',
-                 move_base_server='move_base_server',
                  cmd_vel_topic='/cmd_vel',
                  movement_speed_ms=0.1,
-                 base_elbow_offset=-1.,
-                 grasping_orientation=None,
-                 grasping_dmp='',
-                 dmp_tau=1.,
                  number_of_retries=0,
                  max_recovery_attempts=1):
         super(PushPullSM, self).__init__('PushPull', [], max_recovery_attempts)
@@ -38,25 +29,16 @@ class PushPullSM(ActionSMBase):
                                          'GripperController')
         self.gripper = GripperControllerClass()
 
-        self.pregrasp_config_name = pregrasp_config_name
-        self.pregrasp_low_config_name = pregrasp_low_config_name
-        self.pregrasp_height_threshold = pregrasp_height_threshold
         self.safe_arm_joint_config = safe_arm_joint_config
         self.move_arm_server = move_arm_server
-        self.move_base_server = move_base_server
         self.cmd_vel_topic = cmd_vel_topic
         self.movement_speed_ms = movement_speed_ms
-        self.base_elbow_offset = base_elbow_offset
-        self.grasping_orientation = grasping_orientation
-        self.grasping_dmp = grasping_dmp
-        self.dmp_tau = dmp_tau
         self.number_of_retries = number_of_retries
         self.max_recovery_attempts = max_recovery_attempts
 
         self.tf_listener = tf.TransformListener()
 
         self.move_arm_client = None
-        self.move_base_client = None
         self.cmd_vel_pub = None
 
     def init(self):
@@ -66,13 +48,6 @@ class PushPullSM(ActionSMBase):
             self.move_arm_client.wait_for_server()
         except:
             rospy.logerr('[push_pull] %s server does not seem to respond', self.move_arm_server)
-
-        try:
-            self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
-            rospy.loginfo('[push_pull] Waiting for %s server', self.move_base_server)
-            self.move_base_client.wait_for_server()
-        except:
-            rospy.logerr('[push_pull] %s server does not seem to respond', self.move_base_server)
 
         rospy.loginfo('[push_pull] Creating a %s publisher', self.cmd_vel_topic)
         self.cmd_vel_pub = rospy.Publisher(self.cmd_vel_topic, Twist, queue_size=1)
@@ -95,42 +70,14 @@ class PushPullSM(ActionSMBase):
             goal_pose.header.stamp = rospy.Time(0)
             goal_pose_base_link = self.tf_listener.transformPose('base_link', goal_pose)
 
-            if self.base_elbow_offset > 0:
-                self.__align_base_with_pose(object_pose_base_link)
-
-                # the base is now correctly aligned with the pose, so we set the
-                # y position of the goal pose to the elbow offset
-                object_pose_base_link.pose.position.y = self.base_elbow_offset
-
-            if self.grasping_orientation:
-                object_pose_base_link.pose.orientation.x = self.grasping_orientation[0]
-                object_pose_base_link.pose.orientation.y = self.grasping_orientation[1]
-                object_pose_base_link.pose.orientation.z = self.grasping_orientation[2]
-                object_pose_base_link.pose.orientation.w = self.grasping_orientation[3]
-
-            rospy.loginfo('[push_pull] Opening gripper')
-            self.gripper.open()
-
-            rospy.loginfo('[push_pull] Preparing sideways graps')
-            object_pose_base_link = self.__prepare_sideways_grasp(object_pose_base_link)
-
-            rospy.loginfo('[push_pull] Reaching the object...')
-            arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE,
-                                                 object_pose_base_link)
-            if not arm_motion_success:
-                rospy.logerr('[push_pull] Arm motion unsuccessful')
-                retry_count += 1
-                continue
-
-            rospy.loginfo('[push_pull] Grasping the object')
-            self.gripper.close()
-
             pose_diff_vector = Vector3()
             pose_diff_vector.x = goal_pose_base_link.pose.position.x - object_pose_base_link.pose.position.x
             pose_diff_vector.y = goal_pose_base_link.pose.position.y - object_pose_base_link.pose.position.y
 
             rospy.loginfo('[push_pull] Pushing the object')
-            self.__push_object(pose_diff_vector, self.goal.goal_distance_tolerance_m)
+            self.__push_pull_object(pose_diff_vector,
+                                    self.goal.goal_distance_tolerance_m,
+                                    self.goal.context)
 
             # TODO: reintegrate fault detection!
             succeeded = True
@@ -141,40 +88,6 @@ class PushPullSM(ActionSMBase):
 
         self.result = self.set_result(False)
         return FTSMTransitions.DONE
-
-    def __align_base_with_pose(self, pose_base_link):
-        '''Moves the base so that the elbow is aligned with the goal pose.
-
-        Keyword arguments:
-        pose_base_link -- a 'geometry_msgs/PoseStamped' message representing
-                          the goal pose in the base link frame
-
-        '''
-        aligned_base_pose = PoseStamped()
-        aligned_base_pose.header.frame_id = 'base_link'
-        aligned_base_pose.header.stamp = rospy.Time.now()
-        aligned_base_pose.pose.position.x = 0.
-        aligned_base_pose.pose.position.y = pose_base_link.pose.position.y - self.base_elbow_offset
-        aligned_base_pose.pose.position.z = 0.
-        aligned_base_pose.pose.orientation.x = 0.
-        aligned_base_pose.pose.orientation.y = 0.
-        aligned_base_pose.pose.orientation.z = 0.
-        aligned_base_pose.pose.orientation.w = 1.
-
-        move_base_goal = MoveBaseGoal()
-        move_base_goal.goal_type = MoveBaseGoal.POSE
-        move_base_goal.pose = aligned_base_pose
-        self.move_base_client.send_goal(move_base_goal)
-        self.move_base_client.wait_for_result()
-        self.move_base_client.get_result()
-
-    def __prepare_sideways_grasp(self, pose_base_link):
-        rospy.loginfo('[push_pull] Moving to a pregrasp configuration...')
-        if pose_base_link.pose.position.z > self.pregrasp_height_threshold:
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
-        else:
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_low_config_name)
-        return pose_base_link
 
     def __move_arm(self, goal_type, goal):
         move_arm_goal = MoveArmGoal()
@@ -190,7 +103,7 @@ class PushPullSM(ActionSMBase):
         result = self.move_arm_client.get_result()
         return result
 
-    def __push_object(self, distance_to_move, goal_tolerance):
+    def __push_pull_object(self, distance_to_move, goal_tolerance, context):
         motion_duration_x = abs(distance_to_move.x) / self.movement_speed_ms
         motion_duration_y = abs(distance_to_move.y) / self.movement_speed_ms
 
@@ -201,16 +114,17 @@ class PushPullSM(ActionSMBase):
                              motion_duration_x,
                              motion_duration_y)
 
-        rospy.loginfo('[push_pull] Releasing the object')
-        self.gripper.open()
-        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
+        if context != PushPullObjectGoal.CONTEXT_TABLETOP_MANIPULATION:
+            rospy.loginfo('[push_pull] Releasing the object')
+            self.gripper.open()
+            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
 
-        # we return the base back to its original position
-        rospy.loginfo('[push_pull] Moving back...')
-        self.__send_base_vel(-np.sign(distance_to_move.x) * self.movement_speed_ms,
-                             -np.sign(distance_to_move.y) * self.movement_speed_ms,
-                             motion_duration_x,
-                             motion_duration_y)
+            # we return the base back to its original position
+            rospy.loginfo('[push_pull] Moving back...')
+            self.__send_base_vel(-np.sign(distance_to_move.x) * self.movement_speed_ms,
+                                 -np.sign(distance_to_move.y) * self.movement_speed_ms,
+                                 motion_duration_x,
+                                 motion_duration_y)
 
     def __send_base_vel(self, vel_x, vel_y, motion_duration_x, motion_duration_y):
         duration_x = rospy.Duration.from_sec(motion_duration_x)
