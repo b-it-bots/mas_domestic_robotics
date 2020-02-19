@@ -2,8 +2,13 @@
 uint32 SIDEWAYS_GRASP=0
 uint32 TOP_GRASP=1
 
+string CONTEXT_MOVING=pick_to_move
+string CONTEXT_STORING=pick_to_store
+string CONTEXT_TABLETOP_MANIPULATION=pick_for_tabletop_manipulation
+
 geometry_msgs/PoseStamped pose
 uint32 strategy
+string context
 ---
 # result
 bool success
