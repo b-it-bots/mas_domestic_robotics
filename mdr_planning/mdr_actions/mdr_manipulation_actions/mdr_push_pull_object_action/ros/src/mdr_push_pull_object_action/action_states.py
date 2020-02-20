@@ -5,7 +5,7 @@ import numpy as np
 import rospy
 import tf
 import actionlib
-from geometry_msgs.msg import PoseStamped, Vector3, Twist
+from geometry_msgs.msg import Vector3, Twist
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
