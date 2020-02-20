@@ -84,7 +84,7 @@ class ThrowClient(ActionClientBase):
         obj_to_throw.pose.header.frame_id = self.frame_id
         manipulated_obj = ConverterFactory.convert_ros_msg(obj_to_throw)
 
-        action_model = Action(action_name='throw')
+        action_model = Action(action_name='Throw')
         number_of_samples = 10
 
         robot_pose = PoseStamped(Header(1, rospy.Time.now(), self.frame_id),

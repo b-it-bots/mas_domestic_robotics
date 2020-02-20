@@ -11,7 +11,7 @@ class DispatchPlan(ScenarioStateBase):
         self.planner_interface = PlannerInterface()
 
     def execute(self, userdata):
-        dispatching = self.start_plan_dispatch.plan()
+        dispatching = self.planner_interface.start_plan_dispatch()
         if not dispatching:
             return 'failed'
 

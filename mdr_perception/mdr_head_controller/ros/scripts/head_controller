@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+import rospy
+
+from mdr_head_controller.head_controller_base import HeadControllerBase
+
+if __name__ == '__main__':
+    rospy.init_node('mdr_head_controller')
+    try:
+        HeadControllerBase()
+    except rospy.ROSInterruptException:
+        pass

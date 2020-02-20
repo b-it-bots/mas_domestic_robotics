@@ -61,6 +61,9 @@ The following arguments may be passed when launching the action server:
   package.
 * ``preprocess_input_module``: the name of the module containing the image preprocessing function to be executed on
   images before inference.
+* ``head_controller_pkg_name``: name of a package that implements functionalities
+  for controlling a robot's head (default: 'mdr_head_controller')
+
 
 ### Action client
 

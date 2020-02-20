@@ -7,6 +7,7 @@
     <arg name="recognition_model_name" default="athome_xception"/>
     <arg name="preprocess_input_module" default="keras.applications.xception"/>
     <arg name="classify_object" default="false"/>
+    <arg name="head_controller_pkg_name" default="mdr_head_controller"/>
 
     <node pkg="mdr_perceive_plane_action" type="perceive_plane_action" name="perceive_plane_server" output="screen"
           ns="mdr_actions">
@@ -16,6 +17,7 @@
         <param name="recognition_model_name" type="string" value="$(arg recognition_model_name)" />
         <param name="preprocess_input_module" type="string" value="$(arg preprocess_input_module)" />
         <param name="classify_object" type="bool" value="$(arg classify_object)" />
+        <param name="head_controller_pkg_name" type="string" value="$(arg head_controller_pkg_name)" />
     </node>
 
     <include file="$(find mdr_object_recognition)/ros/launch/object_recognition.launch">

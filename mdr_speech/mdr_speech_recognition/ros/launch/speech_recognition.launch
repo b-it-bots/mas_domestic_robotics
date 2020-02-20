@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="mdr_speech_recognition" type="speech_recognition_node" name="speech_recognition_node" output="screen">
-        <param name="model_directory" type="str" value="$(find mdr_speech_recognition)/config/models/tdnn_en" />
+        <param name="model_directory" type="str" value="$(find kaldi_speech_models)/common/config/en-US" />
         <param name="use_kaldi"       value="true"/>
     </node>
 

@@ -12,7 +12,7 @@ from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from mdr_pickup_action.msg import PickupFeedback, PickupResult
+from mdr_pickup_action.msg import PickupGoal, PickupResult
 
 class PickupSM(ActionSMBase):
     def __init__(self, timeout=120.0,
@@ -151,13 +151,14 @@ class PickupSM(ActionSMBase):
             rospy.loginfo('[pickup] Closing the gripper')
             self.gripper.close()
 
-            rospy.loginfo('[pickup] Moving the arm back')
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
+            if self.goal.context != PickupGoal.CONTEXT_TABLETOP_MANIPULATION:
+                rospy.loginfo('[pickup] Moving the arm back')
+                self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
 
-            if self.goal.strategy == PickupGoal.TOP_GRASP:
-                rospy.loginfo('[pickup] Moving the base back to the original position')
-                if abs(x_align_distance) > 0:
-                    self.__move_base_along_x(-x_align_distance)
+                if self.goal.strategy == PickupGoal.TOP_GRASP:
+                    rospy.loginfo('[pickup] Moving the base back to the original position')
+                    if abs(x_align_distance) > 0:
+                        self.__move_base_along_x(-x_align_distance)
 
             rospy.loginfo('[pickup] Verifying the grasp...')
             grasp_successful = self.gripper.verify_grasp()

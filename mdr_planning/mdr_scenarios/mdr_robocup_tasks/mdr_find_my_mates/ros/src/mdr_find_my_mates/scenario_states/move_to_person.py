@@ -1,5 +1,9 @@
+import math
+
 import rospy
 import actionlib
+
+from geometry_msgs.msg import Pose, PoseStamped, Point
 from mas_perception_msgs.msg import Person
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
@@ -39,7 +43,7 @@ class MoveToPerson(ScenarioStateBase):
 
         person_to_interview = people_identifiers[0]
         person_info = self.kb_interface.get_obj_instance(person_to_interview, Person._type)
-        person_pose = person_info.safe_pose
+        person_pose = MoveToPerson.subtract_distance_from_pose(person_info.pose, 1)
 
         move_base_goal = MoveBaseGoal()
         move_base_goal.goal_type = MoveBaseGoal.POSE
@@ -61,3 +65,14 @@ class MoveToPerson(ScenarioStateBase):
         rospy.logerr('[move_to_person] Could not go to %s; retrying', person_to_interview)
         self.retry_count += 1
         return 'failed'
+
+    @staticmethod
+    def subtract_distance_from_pose(pose, distance):
+	point = pose.pose.position
+	plen = math.sqrt(point.x ** 2 + point.y ** 2 + point.z ** 2)
+	new_len = max(0, plen - distance)
+        factor = new_len / plen
+
+        new_point = Point(x=factor*point.x, y=factor*point.y, z=factor*point.z)
+        result_pose = PoseStamped(header=pose.header, pose=Pose(position=new_point, orientation=pose.pose.orientation))
+        return result_pose

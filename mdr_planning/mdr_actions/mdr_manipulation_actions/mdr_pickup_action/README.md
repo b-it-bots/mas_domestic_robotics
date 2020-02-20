@@ -10,10 +10,16 @@ The action includes an action server as well as an action client that interacts 
 
 * ``geometry_msgs/PoseStamped pose``: An end-effector goal pose
 * ``uint32 strategy``: Grasping strategy
+* ``string context``: Grasping context
 
 The following constants are also defined in the action goal:
-* ``uint32 SIDEWAYS_GRASP=0``
-* ``uint32 TOP_GRASP=1``
+* grasping strategies:
+    * ``uint32 SIDEWAYS_GRASP=0``
+    * ``uint32 TOP_GRASP=1``
+* grasping contexts:
+    * ``string CONTEXT_MOVING=pick_to_move``
+    * ``string CONTEXT_STORING=pick_to_store``
+    * ``string CONTEXT_TABLETOP_MANIPULATION=pick_for_tabletop_manipulation``
 
 ### Result:
 

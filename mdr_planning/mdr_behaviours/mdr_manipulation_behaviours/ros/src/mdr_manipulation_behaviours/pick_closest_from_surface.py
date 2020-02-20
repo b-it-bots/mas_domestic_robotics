@@ -21,6 +21,7 @@ class PickClosestFromSurface(ScenarioStateBase):
         self.state_name = kwargs.get('state_name', 'pick')
         self.timeout = kwargs.get('timeout', 120.)
         self.picking_surface_prefix = kwargs.get('picking_surface_prefix', 120.)
+        self.grasping_context = kwargs.get('grasping_context', '')
         self.tf_listener = TransformListener()
 
         self.number_of_retries = kwargs.get('number_of_retries', 0)
@@ -112,6 +113,11 @@ class PickClosestFromSurface(ScenarioStateBase):
         arg_msg = diag_msgs.KeyValue()
         arg_msg.key = 'plane'
         arg_msg.value = surface_name
+        dispatch_msg.parameters.append(arg_msg)
+
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'context'
+        arg_msg.value = self.grasping_context
         dispatch_msg.parameters.append(arg_msg)
 
         return dispatch_msg

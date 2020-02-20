@@ -1,28 +1,44 @@
 #!/usr/bin/python
+from importlib import import_module
+
 import rospy
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mas_perception_msgs.msg import PlaneList
-from mas_perception_libs import ObjectDetector, RecognizeImageServiceProxy
+from mas_perception_libs import PlaneDetector, RecognizeImageServiceProxy
 from mdr_perceive_plane_action.msg import PerceivePlaneResult
+import random
 
 class PerceivePlaneSM(ActionSMBase):
     def __init__(self, detection_service_proxy,
                  recog_service_name,
                  recog_model_name,
                  preprocess_input_module,
+                 head_controller_pkg_name='mdr_head_controller',
                  classify_object=True,
                  target_frame=None,
                  timeout_duration=1,
                  max_recovery_attempts=1):
         super(PerceivePlaneSM, self).__init__('PerceivePlane', [], max_recovery_attempts)
-        self._detector = ObjectDetector(detection_service_proxy)
+        self._detector = PlaneDetector(detection_service_proxy)
         self._recog_service_proxy = RecognizeImageServiceProxy(recog_service_name, recog_model_name,
                                                                preprocess_input_module)
         self._classify_object = classify_object
         self._timeout_duration = timeout_duration
         self._target_frame = target_frame
         self._detecting_done = False
+        self._max_recovery_attempts = max_recovery_attempts
+        self._recovery_counter = 0
+        head_controller_module_name = '{0}.head_controller'.format(head_controller_pkg_name)
+        HeadControllerClass = getattr(import_module(head_controller_module_name),
+                                      'HeadController')
+        self._head = HeadControllerClass()
+
+    def recovering(self):
+        self._recovery_counter += 1
+        action = random.choice(self._head.actions)
+        getattr(self._head, action)()
+        return FTSMTransitions.DONE_RECOVERING
 
     def running(self):
         detected_planes = None
@@ -39,14 +55,22 @@ class PerceivePlaneSM(ActionSMBase):
                 if self._detector.plane_list is None:
                     rospy.logerr('[perceive_plane] No planes found')
                     self.result = self.set_result(False, detected_planes)
-                    return FTSMTransitions.DONE
+                    if self._recovery_counter < self._max_recovery_attempts:
+                        return FTSMTransitions.RECOVER
+                    else:
+                        self._recovery_counter = 0
+                        return FTSMTransitions.DONE
                 detected_planes = self._detector.plane_list
             rate.sleep()
 
         if not self._detecting_done:
             rospy.logerr('[perceive_plane] A plane could not be found within the alloted time')
             self.result = self.set_result(False, detected_planes)
-            return FTSMTransitions.DONE
+            if self._recovery_counter < self._max_recovery_attempts:
+                return FTSMTransitions.RECOVER
+            else:
+                self._recovery_counter = 0
+                return FTSMTransitions.DONE
 
         rospy.loginfo('[perceive_plane] Found %d plane(s)', len(detected_planes.planes))
         for plane in detected_planes.planes:

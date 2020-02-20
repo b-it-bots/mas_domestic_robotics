@@ -1,4 +1,6 @@
 [![Build Status](https://travis-ci.org/b-it-bots/mas_domestic_robotics.svg?branch=kinetic)](https://travis-ci.org/b-it-bots/mas_domestic_robotics)
+![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/b-it-bots/mas_domestic_robotics.svg?label=version)
+![GitHub](https://img.shields.io/github/license/b-it-bots/mas_domestic_robotics.svg)
 
 # mas_domestic_robotics
 

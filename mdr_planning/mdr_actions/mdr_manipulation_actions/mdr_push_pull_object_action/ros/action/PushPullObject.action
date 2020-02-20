@@ -1,0 +1,15 @@
+# goal
+string CONTEXT_MOVING=push_pull_to_move
+string CONTEXT_TABLETOP_MANIPULATION=push_pull_for_tabletop_manipulation
+
+geometry_msgs/PoseStamped object_pose
+geometry_msgs/PoseStamped goal_pose
+float32 goal_distance_tolerance_m
+string context
+---
+# result
+bool success
+---
+# feedback
+string current_state
+string message
