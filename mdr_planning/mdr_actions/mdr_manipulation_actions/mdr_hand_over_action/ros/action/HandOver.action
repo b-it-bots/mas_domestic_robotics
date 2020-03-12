@@ -1,6 +1,7 @@
 # goal
 string posture_type
 bool obstacle
+bool release_detection
 bool context_aware
 ---
 # result

@@ -5,7 +5,7 @@
         <param name="gripper_controller_pkg_name" value="mas_hsr_gripper_controller" />
         <param name="init_config_name" value="neutral" />
         <param name="hand_over_dmp" value="grasp.yaml" />
-        <param name="hand_over_position_policy_parameters_file" value="800.pkl" />
+        <param name="hand_over_position_policy_parameters_file" value="learned_position_policy_parameters.pkl" />
         <param name="hand_over_policy_config_dir" value="$(find mdr_hand_over_action)/config/learned_policy_parameters/" />
         <param name="hand_over_dmp_weights_dir" value="$(find mdr_hand_over_action)/config/trajectory_weights/" />
         <param name="dmp_tau" value="30" />
