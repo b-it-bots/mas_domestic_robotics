@@ -14,8 +14,8 @@ class IdentifyPosture(ScenarioStateBase):
     def execute(self, userdata):
         self.say('I will hand over the object to the first detected person')
 
-        first_person_image_bb_width = float(userdata.person_list.persons[0].rgb_image.width)
-        first_person_image_bb_height = float(userdata.person_list.persons[0].rgb_image.height)
+        first_person_image_bb_width = float(userdata.person_list.persons[0].body_image.width)
+        first_person_image_bb_height = float(userdata.person_list.persons[0].body_image.height)
         bb_height_width_ratio = first_person_image_bb_height / first_person_image_bb_width
         rospy.loginfo('[identify_posture] Height width bb ratio: {0}'.format(bb_height_width_ratio))
 
