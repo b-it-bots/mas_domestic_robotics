@@ -132,7 +132,7 @@ class HandOverSM(ActionSMBase):
         rospy.loginfo('[hand_over] Handing object over...')
         self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
 
-        if not release_detection:
+        if not self.goal.release_detection:
             # Naive object release strategy:
             rospy.loginfo('[hand_over] Waiting before releasing object...')
             rospy.sleep(5.)
