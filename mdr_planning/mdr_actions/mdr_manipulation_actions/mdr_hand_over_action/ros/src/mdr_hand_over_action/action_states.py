@@ -141,6 +141,8 @@ class HandOverSM(ActionSMBase):
             rospy.loginfo('[hand_over] Opening the gripper...')
             self.gripper.open()
 
+            # Since no detection is used here, the object is released and we always set the reception to True.
+            self.object_reception_detected = True
         else:
             # Force sensing object release strategy:
             rospy.sleep(1.)
