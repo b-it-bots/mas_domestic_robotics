@@ -1,3 +1,5 @@
+import numpy as np
+
 import rospy
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
@@ -12,10 +14,11 @@ class IdentifyPosture(ScenarioStateBase):
         self.posture_height_width_ratio_ranges = kwargs.get('posture_height_width_ratio_ranges', {})
 
     def execute(self, userdata):
-        self.say('I will hand over the object to the first detected person')
+        self.say('I will hand over the object to the closest person')
 
-        first_person_image_bb_width = float(userdata.person_list.persons[0].rgb_image.width)
-        first_person_image_bb_height = float(userdata.person_list.persons[0].rgb_image.height)
+        closest_person_idx = find_closest_person(userdata.person_list.persons)
+        first_person_image_bb_width = float(userdata.person_list.persons[closest_person_idx].body_image.width)
+        first_person_image_bb_height = float(userdata.person_list.persons[closest_person_idx].body_image.height)
         bb_height_width_ratio = first_person_image_bb_height / first_person_image_bb_width
         rospy.loginfo('[identify_posture] Height width bb ratio: {0}'.format(bb_height_width_ratio))
 
@@ -27,3 +30,18 @@ class IdentifyPosture(ScenarioStateBase):
         rospy.loginfo('[identify_posture] Found a {0} person'.format(person_posture))
         userdata.posture = person_posture
         return 'succeeded'
+
+
+def find_closest_person(people):
+    '''Returns the index of the person closest to the robot.
+
+    Keyword arguments:
+    people: Sequence[mas_perception_msgs.msg.Person] -- list of people in the current scene
+
+    '''
+    distances = np.zeros(len(people))
+    for i, person in enumerate(people):
+        distances[i] = np.linalg.norm([person.pose.pose.position.x,
+                                       person.pose.pose.position.y,
+                                       person.pose.pose.position.z])
+    return np.argmin(distances)
