@@ -1,118 +1,184 @@
 (define (domain default-domestic-domain)
 
-    (:requirements :strips :typing :fluents :disjunctive-preconditions :durative-actions)
+    (:requirements :strips :typing :equality)
 
     (:types
-        waypoint
-        object
-        category
-        robot
-        door
-        plane
-        person
+        Thing
+        Waypoint
+        Object - Thing
+        Furniture - Object
+        Category
+        Robot
+        Door
+        Plane
+        Person
+        NamedPose
+        GraspingStrategy
+        Context
     )
+
+    (:constants pick_from_plane pick_from_container place_on_plane place_in_container - Context)
 
     (:predicates
-        (robot_name ?bot - robot)
-        (object_category ?obj - object ?cat - category)
-        (robot_at ?bot - robot ?wp - waypoint)
-        (door_at ?door - door ?wp - waypoint)
-        (object_at ?obj - object ?wp - waypoint)
-        (plane_at ?plane - plane ?wp - waypoint)
-        (door_open ?door - door)
-        (belongs_to ?plane - plane ?obj - object)
-        (unexplored ?plane - plane)
-        (explored ?plane - plane)
-        (on ?obj - object ?plane - plane)
-        (in ?obj - object ?source - object)
-        (holding ?bot - robot ?obj - object)
-        (empty_gripper ?bot - robot)
-        (known ?person - person)
-        (unknown ?person - person)
+        (robotName ?Robot - Robot)
+        (objectCategory ?Object0 - Object ?Object1 - Object)
+        (robotAt ?Robot - Robot ?Waypoint - Waypoint)
+        (doorAt ?Door - Door ?Waypoint - Waypoint)
+        (objectAt ?Object - Object ?Waypoint - Waypoint)
+        (furnitureAt ?Furniture - Furniture ?Waypoint - Waypoint)
+        (planeAt ?Plane - Plane ?Waypoint - Waypoint)
+        (personAt ?Person - Person ?Waypoint - Waypoint)
+        (doorOpen ?Door - Door)
+        (belongsTo ?Plane - Plane ?Object - Object)
+        (unexplored ?Plane - Plane)
+        (explored ?Plane - Plane)
+        (on ?Object - Object ?Plane - Plane)
+        (in ?Object0 - Object ?Object1 - Object)
+        (in ?Object - Object ?Furniture - Furniture)
+        (holding ?Robot - Robot ?Object - Object)
+        (holding ?Person - Person ?Object - Object)
+        (emptyGripper ?Robot - Robot)
+        (known ?Person - Person)
+        (unknown ?Person - Person)
+
+        (canPlaceOn ?Object - Object ?Plane - Plane)
+        (defaultStoringLocation ?Object - Object ?Furniture - Furniture)
+        (likelyLocation ?Object - Object ?Furniture - Furniture)
+        (locatedAt ?Object - Object ?Location - Location)
+        (hasDoor ?Furniture - Furniture)
+        (above ?Object0 - Object ?Object1 - Object)
+        (below ?Object0 - Object ?Object1 - Object)
+        (onTopOf ?Object0 - Object ?Object1 - Object)
+        (inside ?Object0 - Object ?Object1 - Object)
+        (toTheLeftOf ?Object0 - Object ?Object1 - Object)
+        (toTheRightOf ?Object0 - Object ?Object1 - Object)
+        (isAtNamedPose ?Thing - Thing ?NamedPose - NamedPose)
+        (isAtLocation ?NamedPose - NamedPose ?Location - Location)
+        (preferredGraspingStrategy ?Object - Object ?GraspingStrategy - GraspingStrategy)
     )
 
-    (:durative-action move_base
-        :parameters (?bot - robot ?from ?to - waypoint)
-        :duration ( = ?duration 10)
-        :condition (and
-            (at start (robot_at ?bot ?from))
+    (:action MoveBase
+        :parameters (?Robot - Robot ?Waypoint0 ?Waypoint1 - Waypoint)
+        :precondition (and
+            (robotAt ?Robot ?Waypoint0)
         )
         :effect (and
-            (at start (not (robot_at ?bot ?from)))
-            (at end (robot_at ?bot ?to))
-        )
-    )
-
-    (:durative-action open_cupboard
-        :parameters (?cupboard - door ?bot - robot ?c - waypoint)
-        :duration ( = ?duration 10)
-        :condition (and
-            (at start (door_at ?cupboard ?c))
-            (at start (robot_at ?bot ?c))
-        )
-        :effect (and
-            (at end (door_open ?cupboard))
-        )
-    )
-
-    (:durative-action perceive_plane
-        :parameters (?plane - plane ?bot - robot ?wp - waypoint)
-        :duration ( = ?duration 10)
-        :condition (and
-            (at start (robot_at ?bot ?wp))
-            (at start (plane_at ?plane ?wp))
-            (at start (unexplored ?plane))
-        )
-        :effect (and
-            (at start (not (unexplored ?plane)))
-            (at end (explored ?plane))
+            (not (robotAt ?Robot ?Waypoint0))
+            (robotAt ?Robot ?Waypoint1)
         )
     )
 
-    (:durative-action pickup
-        :parameters (?obj - object ?plane - plane ?bot - robot ?wp - waypoint)
-        :duration ( = ?duration 10)
-        :condition (and
-            (at start (robot_at ?bot ?wp))
-            (at start (plane_at ?plane ?wp))
-            (at start (explored ?plane))
-            (at start (on ?obj ?plane))
-            (at start (empty_gripper ?bot))
+    (:action Open
+        :parameters (?Door - Door ?Robot - Robot ?Waypoint - Waypoint)
+        :precondition (and
+            (doorAt ?Door ?Waypoint)
+            (robotAt ?Robot ?Waypoint)
         )
         :effect (and
-            (at start (not (on ?obj ?plane)))
-            (at start (not (empty_gripper ?bot)))
-            (at end (holding ?bot ?obj))
+            (doorOpen ?Door)
         )
     )
 
-    (:durative-action place
-        :parameters (?obj - object ?plane - plane ?bot - robot ?wp - waypoint)
-        :duration ( = ?duration 10)
-        :condition (and
-            (at start (robot_at ?bot ?wp))
-            (at start (plane_at ?plane ?wp))
-            (at start (holding ?bot ?obj))
+    (:action PerceivePlane
+        :parameters (?Plane - Plane ?Robot - Robot ?Waypoint - Waypoint)
+        :precondition (and
+            (robotAt ?Robot ?Waypoint)
+            (planeAt ?Plane ?Waypoint)
+            (unexplored ?Plane)
         )
         :effect (and
-            (at start (not (holding ?bot ?obj)))
-            (at start (empty_gripper ?bot))
-            (at end (on ?obj ?plane))
+            (not (unexplored ?Plane))
+            (explored ?Plane)
         )
     )
 
-    (:durative-action throw
-        :parameters (?obj - object ?dest_obj - object ?bot - robot ?wp - waypoint)
-        :duration ( = ?duration 10)
-        :condition (and
-            (at start (robot_at ?bot ?wp))
-            (at start (object_at ?dest_obj ?wp))
-            (at start (holding ?bot ?obj))
+    (:action Pick
+        :parameters (?Object - Object ?Plane - Plane ?Robot - Robot ?Waypoint - Waypoint ?Context - Context)
+        :precondition (and
+            (= ?Context pick_from_plane)
+            (robotAt ?Robot ?Waypoint)
+            (planeAt ?Plane ?Waypoint)
+            (explored ?Plane)
+            (on ?Object ?Plane)
+            (emptyGripper ?Robot)
         )
         :effect (and
-            (at start (not (holding ?bot ?obj)))
-            (at start (empty_gripper ?bot))
-            (at end (in ?obj ?dest_obj))
+            (not (on ?Object ?Plane))
+            (not (emptyGripper ?Robot))
+            (holding ?Robot ?Object)
+        )
+    )
+
+    (:action Pick
+        :parameters (?Object - Object ?Furniture - Furniture ?Robot - Robot ?Waypoint - Waypoint ?Context - Context)
+        :precondition (and
+            (= ?Context pick_from_container)
+            (robotAt ?Robot ?Waypoint)
+            (furnitureAt ?Furniture ?Waypoint)
+            (in ?Object ?Furniture)
+            (emptyGripper ?Robot)
+        )
+        :effect (and
+            (not (in ?Object ?Furniture))
+            (not (emptyGripper ?Robot))
+            (holding ?Robot ?Object)
+        )
+    )
+
+    (:action Place
+        :parameters (?Object - Object ?Plane - Plane ?Robot - Robot ?Waypoint - Waypoint ?Context - Context)
+        :precondition (and
+            (= ?Context place_on_plane)
+            (robotAt ?Robot ?Waypoint)
+            (planeAt ?Plane ?Waypoint)
+            (holding ?Robot ?Object)
+        )
+        :effect (and
+            (not (holding ?Robot ?Object))
+            (emptyGripper ?Robot)
+            (on ?Object ?Plane)
+        )
+    )
+
+    (:action Place
+        :parameters (?Object - Object ?Furniture - Furniture ?Robot - Robot ?Waypoint - Waypoint ?Context - Context)
+        :precondition (and
+            (= ?Context place_in_container)
+            (robotAt ?Robot ?Waypoint)
+            (furnitureAt ?Furniture ?Waypoint)
+            (holding ?Robot ?Object)
+        )
+        :effect (and
+            (not (holding ?Robot ?Object))
+            (emptyGripper ?Robot)
+            (in ?Object ?Furniture)
+        )
+    )
+
+    (:action Throw
+        :parameters (?Object0 ?Object1 - Object ?Robot - Robot ?Waypoint - Waypoint)
+        :precondition (and
+            (robotAt ?Robot ?Waypoint)
+            (objectAt ?Object1 ?Waypoint)
+            (holding ?Robot ?Object0)
+        )
+        :effect (and
+            (not (holding ?Robot ?Object0))
+            (emptyGripper ?Robot)
+            (in ?Object0 ?Object1)
+        )
+    )
+
+    (:action HandOver
+        :parameters (?Object - Object ?Robot - Robot ?Person - Person ?Waypoint - Waypoint)
+        :precondition (and
+            (robotAt ?Robot ?Waypoint)
+            (personAt ?Person ?Waypoint)
+            (holding ?Robot ?Object)
+        )
+        :effect (and
+            (not (holding ?Robot ?Object))
+            (holding ?Person ?Object)
         )
     )
 )
