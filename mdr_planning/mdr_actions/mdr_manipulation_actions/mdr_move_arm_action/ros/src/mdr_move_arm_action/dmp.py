@@ -6,6 +6,9 @@ from nav_msgs.msg import Path
 import tf
 from ros_dmp.roll_dmp import RollDmp
 
+# +++
+import yaml
+
 
 class DMPExecutor(object):
     def __init__(self, dmp_name, tau):
@@ -69,11 +72,7 @@ class DMPExecutor(object):
         except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
             initial_pos = np.zeros(3)
 
-        path = self.generate_trajectory(initial_pos, goal)
-        path_odom = np.array([self.transform_pose(position, self.base_link_frame_name, self.odom_frame_name)
-                             for position in path])
-        self.publish_path(path_odom)
-        self.follow_path(path_odom)
+        self.follow_path(initial_pos, goal)
 
     def generate_trajectory(self, initial_pos, goal):
         '''Returns a 2D numpy array representing a path of [x, y, z] points
@@ -102,7 +101,7 @@ class DMPExecutor(object):
                          for state in cartesian_trajectory.cartesian_state])
         return path
 
-    def follow_path(self, path):
+    def follow_path(self, goal):
         '''Moves a manipulator so that it follows the given path. If whole body
         motion is enabled and some points on the path lie outside the reachable
         workspace, the base is moved accordingly as well. The path is followed
@@ -136,15 +135,18 @@ class DMPExecutor(object):
         path: np.array -- a 2D array of points (each row represents a point)
 
         '''
-        # sanity check - we only consider the path if it contains any points
-        if path is None or path.shape[0] == 0:
-            rospy.logerr('[move_arm/dmp/follow_path] No points in path; aborting execution')
-            return
-
         rospy.loginfo('[move_arm/dmp/follow_path] Executing motion')
         trans, _ = self.get_transform(self.odom_frame_name, self.palm_link_name, rospy.Time(0))
         current_pos = np.array([trans[0], trans[1], trans[2]])
-        distance_to_goal = np.linalg.norm((path[-1] - current_pos))
+        distance_to_goal = np.linalg.norm((goal - current_pos))
+
+        # +++
+        initial_pose = np.array([initial_pos[0], initial_pos[1], initial_pos[2], 0., 0., 0.])
+        goal_pose = np.array([goal[0], goal[1], goal[2], 0., 0., 0.])
+
+        current_path = initial_pose[0:3]
+
+        self.dmp = self.instantiate_dmp(initial_pose, goal_pose)
 
         self.motion_completed = False
         self.motion_cancelled = False
@@ -158,21 +160,16 @@ class DMPExecutor(object):
 
             # if the end effector has reached the goal (within the allowed
             # tolerance threshold), we stop the motion
-            distance_to_goal = np.linalg.norm((path[-1] - current_pos))
+            distance_to_goal = np.linalg.norm((goal - current_pos))
             if distance_to_goal <= self.goal_tolerance:
                 self.motion_completed = True
                 break
 
-            path_point_distances = [np.linalg.norm(p - current_pos) for p in path]
-            min_dist_idx = np.argmin(path_point_distances)
+            # +++
+            next_pos, _, _ = self.dmp.step(tau=self.tau)
+            current_path = np.vstack((current_path, next_pos))
 
-            next_goal_idx = -1
-            if min_dist_idx == path.shape[0] - 1:
-                next_goal_idx = min_dist_idx
-            else:
-                next_goal_idx = min_dist_idx + 1
-
-            vel = self.feedforward_gain * (path[next_goal_idx] - path[min_dist_idx]) + self.feedback_gain * (path[next_goal_idx] - current_pos)
+            vel = self.feedback_gain * (next_pos - current_pos)
 
             # we limit the speed if it is above the allowed limit
             velocity_norm = np.linalg.norm(vel)
@@ -218,6 +215,9 @@ class DMPExecutor(object):
             twist_arm.twist.linear.z = vel_arm[2]
             self.vel_publisher_arm.publish(twist_arm)
             cmd_count += 1
+
+            # +++
+            self.publish_path(current_path)
 
         # stop arm and base motion after converging
         twist_arm = TwistStamped()
@@ -301,3 +301,29 @@ class DMPExecutor(object):
 
         '''
         self.min_sigma_value = min(msg.data)
+
+    def instantiate_dmp(self, initial_pose, goal_pose):
+        ''' ...
+        ...
+        ...
+        '''
+        with open(self.dmp_name) as f:
+            dmp_weights_dict = yaml.load(f)
+
+        n_dmps, n_bfs = dmp_weights_dict.shape[0], dmp_weights_dict.shape[1]
+
+        dmp_weights = np.zeros((n_dmps, n_bfs))
+        dmp_weights[0, :] = dmp_weights_dict['x']
+        dmp_weights[1, :] = dmp_weights_dict['y']
+        dmp_weights[2, :] = dmp_weights_dict['z']
+        dmp_weights[3, :] = dmp_weights_dict['roll']
+        dmp_weights[4, :] = dmp_weights_dict['pitch']
+        dmp_weights[5, :] = dmp_weights_dict['yaw']
+
+        return pydmps.dmp_discrete.DMPs_discrete(n_dmps=n_dmps, 
+                                                 n_bfs=n_bfs,
+                                                 dt=self.time_step,
+                                                 y0=initial_pose,
+                                                 goal=goal_pose,
+                                                 ay=None, 
+                                                 w=dmp_weights)
