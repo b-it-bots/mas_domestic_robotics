@@ -11,7 +11,7 @@ class HandOverServer(object):
     The server expects the following parameters to be made available on the ROS parameter server:
     '''
     def __init__(self):
-        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name', 'mas_hsr_gripper_controller')
+        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name', 'mdr_gripper_controller')
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
         init_config_name = rospy.get_param('~init_config_name', 'init_config_name')
         hand_over_dmp = rospy.get_param('~hand_over_dmp', '')

@@ -2,7 +2,7 @@
 <launch>
     <node pkg="mdr_hand_over_action" type="hand_over_action" name="hand_over_server" output="screen">
         <param name="move_arm_server" value="move_arm_server" />
-        <param name="gripper_controller_pkg_name" value="mas_hsr_gripper_controller" />
+        <param name="gripper_controller_pkg_name" value="mdr_gripper_controller" />
         <param name="init_config_name" value="neutral" />
         <param name="hand_over_dmp" value="grasp.yaml" />
         <param name="hand_over_position_policy_parameters_file" value="learned_position_policy_parameters.pkl" />

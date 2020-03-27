@@ -48,7 +48,7 @@ class FindPeopleState(smach.State):
                              output_keys=['find_people_result', 'error_message'])
 
         self._listener = tf.TransformListener()
-        self.pointcloud_topic = rospy.get_param("~pointcloud_topic", '/hsrb/head_rgbd_sensor/depth_registered/rectified_points')
+        self.pointcloud_topic = rospy.get_param("~pointcloud_topic", '/rectified_points')
 
 
     def execute(self, userdata):

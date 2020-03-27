@@ -21,8 +21,8 @@ from importlib import import_module
 
 class HandOverSM(ActionSMBase):
     def __init__(self, timeout=120.0,
-                 gripper_controller_pkg_name='mas_hsr_gripper_controller',
-                 force_sensor_topic='/hsrb/wrist_wrench/raw',
+                 gripper_controller_pkg_name='mdr_gripper_controller',
+                 force_sensor_topic='/wrench/raw',
                  move_arm_server='move_arm_server',
                  init_config_name = 'neutral',
                  hand_over_policy_config_dir='',

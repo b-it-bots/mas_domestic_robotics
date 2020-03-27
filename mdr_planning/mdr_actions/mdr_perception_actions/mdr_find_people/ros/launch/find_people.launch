@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="pointcloud_topic" default="/hsrb/head_rgbd_sensor/depth_registered/rectified_points"/>
+    <arg name="pointcloud_topic" default="/rectified_points"/>
 
     <node pkg="mdr_find_people" type="find_people_server" name="find_people_server" output="screen" >
         <param name="pointcloud_topic" type="string" value="$(arg pointcloud_topic)" />
