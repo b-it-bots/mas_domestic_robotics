@@ -56,7 +56,7 @@ class DMPExecutor(object):
         as encoded by self.dmp_name.
 
         Keyword arguments:
-        goal: np.array -- end effector goal position in the base link frame
+        goal: numpy.ndarray -- end effector goal position in the base link frame
 
         '''
         initial_pos = None
@@ -81,8 +81,8 @@ class DMPExecutor(object):
         on the path.
 
         Keyword arguments:
-        initial_pos: np.array -- initial position for the motion
-        goal: np.array -- goal position
+        initial_pos: numpy.ndarray -- initial position for the motion
+        goal: numpy.ndarray -- goal position
 
         '''
         initial_pose = np.array([initial_pos[0], initial_pos[1], initial_pos[2], 0., 0., 0.])
@@ -132,7 +132,7 @@ class DMPExecutor(object):
           minimum sigma value (determined experimentally)
 
         Keyword arguments:
-        path: np.array -- a 2D array of points (each row represents a point)
+        path: numpy.ndarray -- a 2D array of points (each row represents a point)
 
         '''
         rospy.loginfo('[move_arm/dmp/follow_path] Executing motion')
@@ -276,7 +276,7 @@ class DMPExecutor(object):
         '''Publishes the given path to the topic specified by self.dmp_executor_path_topic.
 
         Keyword arguments:
-        path: np.array -- a 2D array of points in which each row represents a position
+        path: numpy.ndarray -- a 2D array of points in which each row represents a position
 
         '''
         path_msg = Path()
