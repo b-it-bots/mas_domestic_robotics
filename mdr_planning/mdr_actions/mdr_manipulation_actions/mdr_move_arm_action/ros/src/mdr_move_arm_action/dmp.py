@@ -5,8 +5,8 @@ from geometry_msgs.msg import PoseStamped, TwistStamped, Vector3Stamped, Twist
 from nav_msgs.msg import Path
 import tf
 from ros_dmp.roll_dmp import RollDmp
+import pydmps
 
-# +++
 import yaml
 
 
@@ -101,7 +101,7 @@ class DMPExecutor(object):
                          for state in cartesian_trajectory.cartesian_state])
         return path
 
-    def follow_path(self, goal):
+    def follow_path(self, initial_pos,  goal):
         '''Moves a manipulator so that it follows the given path. If whole body
         motion is enabled and some points on the path lie outside the reachable
         workspace, the base is moved accordingly as well. The path is followed
@@ -140,11 +140,10 @@ class DMPExecutor(object):
         current_pos = np.array([trans[0], trans[1], trans[2]])
         distance_to_goal = np.linalg.norm((goal - current_pos))
 
-        # +++
         initial_pose = np.array([initial_pos[0], initial_pos[1], initial_pos[2], 0., 0., 0.])
         goal_pose = np.array([goal[0], goal[1], goal[2], 0., 0., 0.])
 
-        current_path = initial_pose[0:3]
+        current_path = initial_pose[:3]
 
         self.dmp = self.instantiate_dmp(initial_pose, goal_pose)
 
@@ -165,8 +164,8 @@ class DMPExecutor(object):
                 self.motion_completed = True
                 break
 
-            # +++
-            next_pos, _, _ = self.dmp.step(tau=self.tau)
+            next_pose, _, _ = self.dmp.step(tau=self.tau)
+            next_pos = next_pose[:3]
             current_path = np.vstack((current_path, next_pos))
 
             vel = self.feedback_gain * (next_pos - current_pos)
@@ -216,7 +215,6 @@ class DMPExecutor(object):
             self.vel_publisher_arm.publish(twist_arm)
             cmd_count += 1
 
-            # +++
             self.publish_path(current_path)
 
         # stop arm and base motion after converging
@@ -310,7 +308,7 @@ class DMPExecutor(object):
         with open(self.dmp_name) as f:
             dmp_weights_dict = yaml.load(f)
 
-        n_dmps, n_bfs = dmp_weights_dict.shape[0], dmp_weights_dict.shape[1]
+        n_dmps, n_bfs = len(dmp_weights_dict), len(dmp_weights_dict['x'])
 
         dmp_weights = np.zeros((n_dmps, n_bfs))
         dmp_weights[0, :] = dmp_weights_dict['x']
