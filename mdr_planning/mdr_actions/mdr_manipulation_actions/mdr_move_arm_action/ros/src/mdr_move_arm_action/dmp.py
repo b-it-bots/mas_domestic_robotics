@@ -301,9 +301,12 @@ class DMPExecutor(object):
         self.min_sigma_value = min(msg.data)
 
     def instantiate_dmp(self, initial_pose, goal_pose):
-        ''' ...
-        ...
-        ...
+        '''Instantiates a DMP object from learned weights, given 
+        the initial and final poses.
+
+        Keyword arguments:
+        initial_pose: numpy.ndarray -- initial pose coordinates of end-effector
+        goal_pose: numpy.ndarray -- target pose coordinates of end-effector
         '''
         with open(self.dmp_name) as f:
             dmp_weights_dict = yaml.load(f)
