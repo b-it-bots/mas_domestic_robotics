@@ -3,11 +3,13 @@ import rospy
 from std_msgs.msg import Float32MultiArray
 from geometry_msgs.msg import PoseStamped, TwistStamped, Vector3Stamped, Twist
 from nav_msgs.msg import Path
+from mas_perception_msgs.msg import Object
 import tf
 from ros_dmp.roll_dmp import RollDmp
 import pydmps
 
 import yaml
+from mas_knowledge_base.domestic_kb_interface import DomesticKBInterface
 
 
 class DMPExecutor(object):
@@ -44,6 +46,10 @@ class DMPExecutor(object):
         self.dmp_name = dmp_name
         self.tau = tau
         self.roll_dmp = RollDmp(self.dmp_name, self.time_step, self.base_link_frame_name)
+        self.obs_avoidance_beta = 20. / np.pi
+        self.obs_avoidance_gamma = 100.
+
+        self.kb_interface = DomesticKBInterface()
 
         self.min_sigma_value = None
         self.goal = None
@@ -135,6 +141,9 @@ class DMPExecutor(object):
         path: numpy.ndarray -- a 2D array of points (each row represents a point)
 
         '''
+        
+        obstacle_positions = self.get_nearby_obstacle_positions()
+
         rospy.loginfo('[move_arm/dmp/follow_path] Executing motion')
         trans, _ = self.get_transform(self.odom_frame_name, self.palm_link_name, rospy.Time(0))
         current_pos = np.array([trans[0], trans[1], trans[2]])
@@ -164,7 +173,7 @@ class DMPExecutor(object):
                 self.motion_completed = True
                 break
 
-            next_pose, _, _ = self.dmp.step(tau=self.tau)
+            next_pose, _, _ = self.dmp.step(tau=self.tau, external_force=get_force_term(obstacle_positions))
             next_pos = next_pose[:3]
             current_path = np.vstack((current_path, next_pos))
 
@@ -300,6 +309,18 @@ class DMPExecutor(object):
         '''
         self.min_sigma_value = min(msg.data)
 
+    def get_nearby_obstacle_positions(self):
+        '''Queries the KB interface for the list of objects within 1 meter,
+        and returns a list of their positions.
+        '''
+        object_positions = []
+        perceived_objects = self.kb_interface.get_objects_within_distance(self.base_link_frame_name, Object._type, 1.0)
+
+        for obj in perceived_objects:
+            object_positions.append(obj.pose.position)
+
+        return object_positions
+
     def instantiate_dmp(self, initial_pose, goal_pose):
         '''Instantiates a DMP object from learned weights, given 
         the initial and final poses.
@@ -328,3 +349,35 @@ class DMPExecutor(object):
                                                  goal=goal_pose,
                                                  ay=None, 
                                                  w=dmp_weights)
+
+    def get_force_term(self, obstacle_positions):
+        '''Given the 3D postions of obstacles, generates the force term required
+        to avoid the obstacles.
+        Based on:
+        Hoffmann, Heiko, et al. "Biologically-inspired dynamical systems for movement generation: 
+        automatic real-time goal adaptation and obstacle avoidance." 
+        2009 IEEE International Conference on Robotics and Automation. IEEE, 2009.
+
+        Keyword arguments:
+        obstacle_positions: list -- positions of obstacles; numpy.ndarrays of size (3,)
+        '''
+        current_pos = self.dmp.current_pos[:3]
+        current_vel = self.dmp.current_vel[:3]
+        force_term = np.zeros(3)
+
+        for obstacle in obstacle_positions:
+            if np.linalg.norm(current_vel) > 1e-5:
+                obj_vec = obstacle - current_pos
+                    
+                phi = obj_vec.dot(current_vel) / (np.linalg.norm(obj_vec) * np.linalg.norm(current_vel))
+                dphi = obs_avoidance_gamma * phi * np.exp(-obs_avoidance_beta * abs(phi))
+                R = rotation_matrix(np.pi/2., np.cross(obstacle - current_pos, current_vel))[0:-1, 0:-1]
+
+                force_value = np.nan_to_num(np.dot(R, current_vel) * dphi)
+
+                # If object is farther away than the goal, ignore it:
+                if np.linalg.norm(obj_vec) > np.linalg.norm(self.dmp.goal - current_pos):
+                    force_value = 0
+
+                force_term += force_value
+        return force_term
