@@ -48,6 +48,7 @@ class DMPExecutor(object):
         self.roll_dmp = RollDmp(self.dmp_name, self.time_step, self.base_link_frame_name)
         self.obs_avoidance_beta = 20. / np.pi
         self.obs_avoidance_gamma = 100.
+        self.object_distance_threshold = 1.0
 
         self.kb_interface = DomesticKBInterface()
 
@@ -313,13 +314,11 @@ class DMPExecutor(object):
         '''Queries the KB interface for the list of objects within 1 meter,
         and returns a list of their positions.
         '''
-        object_positions = []
-        perceived_objects = self.kb_interface.get_objects_within_distance(self.base_link_frame_name, Object._type, 1.0)
+        perceived_objects = self.kb_interface.get_objects_within_distance(self.base_link_frame_name, 
+                                                                          Object._type, 
+                                                                          self.object_distance_threshold)
 
-        for obj in perceived_objects:
-            object_positions.append(obj.pose.position)
-
-        return object_positions
+        return [obj.pose.position for obj in perceived_objects]
 
     def instantiate_dmp(self, initial_pose, goal_pose):
         '''Instantiates a DMP object from learned weights, given 
