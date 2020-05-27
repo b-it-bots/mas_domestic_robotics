@@ -100,5 +100,5 @@ It is assumed that the robot starts with the object to be handed over already in
 ## Example usage
 
 1. Run the ``move_arm`` action server: ``roslaunch mdr_move_arm_action move_arm.launch``
-2. Run the action server: ``roslaunch mdr_hand_over hand_over.launch``
+2. Run the action server: ``roslaunch mdr_hand_over_action hand_over.launch``
 3. Run the client example: ``rosrun mdr_hand_over_action hand_over_action_client_test ['standing', 0, 1]``, providing a list of the action's parameters (context, obstacle, release_detection) as arguments

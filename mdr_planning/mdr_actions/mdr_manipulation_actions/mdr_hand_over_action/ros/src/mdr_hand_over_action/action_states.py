@@ -67,6 +67,10 @@ class HandOverSM(ActionSMBase):
             rospy.logerr('[hand_over] %s', str(exc))
             return FTSMTransitions.INIT_FAILED
 
+        # Start with arm in neutral position:
+        rospy.loginfo('[hand_over] Moving arm to neutral position...')
+        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.init_config_name)
+
         return FTSMTransitions.INITIALISED
 
     def running(self):
