@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_demo_lab_manager</name>
+  <version>1.0.0</version>
+  <description>
+    A package for a scenario in which a robot monitors people who enter a lab
+    and guides them to a free sitting spot.
+  </description>
+  <license>GPLv3</license>
+
+  <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
+  <author email="dharmingeo@gmail.com">Dharmin Bakaraniya</author>
+  <author email="ahmed.abdelrahman@inf.h-brs.de">Ahmed Faisal Abdelrahman</author>
+  <author email="samuel.parra@inf.h-brs.de">Samuel Parra</author>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>mdr_move_arm_action</build_depend>
+  <build_depend>mdr_move_base_action</build_depend>
+  <build_depend>mdr_detect_person</build_depend>
+  <build_depend>mas_execution_manager</build_depend>
+  <build_depend>mdr_navigation_behaviours</build_depend>
+  <build_depend>mdr_perception_behaviours</build_depend>
+  <build_depend>mdr_manipulation_behaviours</build_depend>
+  <build_depend>mas_knowledge_base</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>mdr_move_arm_action</run_depend>
+  <run_depend>mdr_move_base_action</run_depend>
+  <run_depend>mdr_detect_person</run_depend>
+  <run_depend>mas_execution_manager</run_depend>
+  <run_depend>mdr_navigation_behaviours</run_depend>
+  <run_depend>mdr_perception_behaviours</run_depend>
+  <run_depend>mdr_manipulation_behaviours</run_depend>
+  <run_depend>mas_knowledge_base</run_depend>
+</package>
