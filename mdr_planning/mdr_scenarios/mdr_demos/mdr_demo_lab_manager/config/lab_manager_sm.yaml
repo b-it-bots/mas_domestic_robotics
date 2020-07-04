@@ -1,0 +1,7 @@
+# Description: Defines a state machine for a scenario in which a robot monitors people who enter a lab and guides them to a free sitting spot.
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_demo_lab_manager
+states: []
+outcomes: [DONE, FAILED]
+state_descriptions: []

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+
+    <!-- Actions -->
+    <include file="$(find mdr_move_arm_action)/ros/launch/move_arm.launch" />
+
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" />
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
+
+    <!-- State machine -->
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="lab_manager" output="screen">
+        <param name="sm_config_file" type="str"
+               value="$(find mdr_demo_lab_manager)/config/lab_manager_sm.yaml" />
+    </node>
+</launch>
