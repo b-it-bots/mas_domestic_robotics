@@ -3,10 +3,9 @@
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
 
     <!-- Actions -->
-    <include file="$(find mdr_move_arm_action)/ros/launch/move_arm.launch" />
-
-    <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" />
     <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
+
+    <include file="$(find mdr_find_people)/ros/launch/find_people_client.launch" />
 
     <!-- State machine -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="lab_manager" output="screen">
