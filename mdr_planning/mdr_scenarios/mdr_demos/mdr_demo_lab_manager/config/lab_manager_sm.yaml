@@ -2,6 +2,87 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_demo_lab_manager
-states: []
+states: [GO_TO_MONITORING_POSE, MONITOR_DOOR, ASK_NAME, TURN_PERSON_AWAY, GUIDE_TO_EMPTY_SPOT]
 outcomes: [DONE, FAILED]
 state_descriptions: []
+    - state:
+        name: GO_TO_MONITORING_POSE
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: MONITOR_DOOR
+            - transition:
+                name: failed
+                state: GO_TO_MONITORING_POSE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [monitoring_pose]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: MONITOR_DOOR
+        state_module_name: mdr_perception_behaviours.monitor_door
+        state_class_name: MonitorDoor
+        transitions:
+            - transition:
+                name: no_empty_spot
+                state: TURN_PERSON_AWAY
+            - transition:
+                name: new_person
+                state: ASK_NAME
+            - transition:
+                name: already_logged_person
+                state: MONITOR_DOOR
+            - transition:
+                name: known_person
+                state: MONITOR_DOOR
+        arguments: []
+    - state:
+        name: TURN_PERSON_AWAY
+        state_module_name: mdr_perception_behaviours.turn_person_away
+        state_class_name: TurnPersonAway
+        transitions:
+            - transition:
+                name: already_logged_person
+                state: MONITOR_DOOR
+        arguments: []
+    - state:
+        name: ASK_NAME
+        state_module_name: mdr_perception_behaviours.ask_name
+        state_class_name: AskName
+        transitions:
+            - transition:
+                name: succeeded
+                state: GUIDE_TO_EMPTY_SPOT
+            - transition:
+                name: failed
+                state: ASK_NAME
+        arguments: []
+    - state:
+        name: GUIDE_TO_EMPTY_SPOT
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_MONITORING_POSE
+            - transition:
+                name: failed
+                state: GO_TO_MONITORING_POSE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [spot_1, spot_2, spot_3, spot_4, spot_5, spot_6, spot_7, spot_8]
+            - argument:
+                name: number_of_retries
+                value: 3
