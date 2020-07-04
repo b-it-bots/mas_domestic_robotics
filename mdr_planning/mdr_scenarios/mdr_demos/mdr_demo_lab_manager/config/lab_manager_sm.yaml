@@ -2,7 +2,7 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_demo_lab_manager
-states: [GO_TO_MONITORING_POSE, MONITOR_DOOR, ASK_NAME, TURN_PERSON_AWAY, GUIDE_TO_EMPTY_SPOT]
+states: [GO_TO_MONITORING_POSE, MONITOR_DOOR, VERIFY_PERSON, ASK_NAME, TURN_PERSON_AWAY, GUIDE_TO_EMPTY_SPOT]
 outcomes: [DONE, FAILED]
 state_descriptions: []
     - state:
@@ -28,8 +28,26 @@ state_descriptions: []
                 value: 3
     - state:
         name: MONITOR_DOOR
-        state_module_name: mdr_perception_behaviours.monitor_door
-        state_class_name: MonitorDoor
+        state_module_name: mdr_perception_behaviours.find_people
+        state_class_name: FindPeople
+        transitions:
+            - transition:
+                name: succeeded
+                state: VERIFY_PERSON
+            - transition:
+                name: failed
+                state: MONITOR_DOOR
+            - transition:
+                name: failed_after_retrying
+                state: MONITOR_DOOR
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 0
+    - state:
+        name: VERIFY_PERSON
+        state_module_name: mdr_perception_behaviours.verify_person
+        state_class_name: VerifyPerson
         transitions:
             - transition:
                 name: no_empty_spot
@@ -46,13 +64,16 @@ state_descriptions: []
         arguments: []
     - state:
         name: TURN_PERSON_AWAY
-        state_module_name: mdr_perception_behaviours.turn_person_away
-        state_class_name: TurnPersonAway
+        state_module_name: mdr_hri_behaviours.say_something
+        state_class_name: SaySomething
         transitions:
             - transition:
-                name: already_logged_person
+                name: succeeded
                 state: MONITOR_DOOR
-        arguments: []
+        arguments:
+            - argument:
+                name: sentences
+                value: ['The lab is full. Please come back later.']
     - state:
         name: ASK_NAME
         state_module_name: mdr_perception_behaviours.ask_name
