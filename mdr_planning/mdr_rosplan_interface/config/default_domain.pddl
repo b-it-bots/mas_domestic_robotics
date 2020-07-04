@@ -4,8 +4,9 @@
 
     (:types
         Thing
-        Waypoint
         Object - Thing
+        Location - Thing
+        Waypoint - Location
         Furniture - Object
         Category
         Robot
@@ -58,13 +59,13 @@
     )
 
     (:action MoveBase
-        :parameters (?Robot - Robot ?Waypoint0 ?Waypoint1 - Waypoint)
+        :parameters (?Robot - Robot ?Location0 ?Location1 - Location)
         :precondition (and
-            (robotAt ?Robot ?Waypoint0)
+            (robotAt ?Robot ?Location0)
         )
         :effect (and
-            (not (robotAt ?Robot ?Waypoint0))
-            (robotAt ?Robot ?Waypoint1)
+            (not (robotAt ?Robot ?Location0))
+            (robotAt ?Robot ?Location1)
         )
     )
 
