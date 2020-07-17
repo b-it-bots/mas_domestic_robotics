@@ -4,7 +4,7 @@
 sm_id: mdr_demo_lab_manager
 states: [GO_TO_MONITORING_POSE, MONITOR_DOOR, VERIFY_PERSON, ASK_NAME, TURN_PERSON_AWAY, GUIDE_TO_EMPTY_SPOT]
 outcomes: [DONE, FAILED]
-state_descriptions: []
+state_descriptions:
     - state:
         name: GO_TO_MONITORING_POSE
         state_module_name: mdr_navigation_behaviours.move_base
@@ -61,7 +61,10 @@ state_descriptions: []
             - transition:
                 name: known_person
                 state: MONITOR_DOOR
-        arguments: []
+        arguments:
+            - argument:
+                name: total_locations
+                value: 7
     - state:
         name: TURN_PERSON_AWAY
         state_module_name: mdr_hri_behaviours.say_sentence
@@ -76,7 +79,7 @@ state_descriptions: []
                 value: ['The lab is full. Please come back later.']
     - state:
         name: ASK_NAME
-        state_module_name: mdr_perception_behaviours.ask_name
+        state_module_name: mdr_hri_behaviours.ask_name
         state_class_name: AskName
         transitions:
             - transition:
@@ -101,9 +104,6 @@ state_descriptions: []
                 name: failed_after_retrying
                 state: FAILED
         arguments:
-            - argument:
-                name: destination_locations
-                value: [spot_1, spot_2, spot_3, spot_4, spot_5, spot_6, spot_7, spot_8]
             - argument:
                 name: number_of_retries
                 value: 3
