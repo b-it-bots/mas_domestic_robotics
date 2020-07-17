@@ -46,7 +46,7 @@ state_descriptions: []
                 value: 0
     - state:
         name: VERIFY_PERSON
-        state_module_name: mdr_perception_behaviours.verify_person
+        state_module_name: mdr_demo_lab_manager.scenario_states.verify_person
         state_class_name: VerifyPerson
         transitions:
             - transition:
