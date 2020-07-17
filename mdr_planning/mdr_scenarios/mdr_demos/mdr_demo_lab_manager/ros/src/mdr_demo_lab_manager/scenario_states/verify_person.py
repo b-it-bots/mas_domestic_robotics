@@ -1,3 +1,5 @@
+import random
+
 import rospy
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
@@ -21,4 +23,7 @@ class VerifyPerson(ScenarioStateBase):
         occupied_spots = self.kb_interface.get_all_attributes('occupied_location')
         if len(occupied_spots) == self.total_locations:
             return 'no_empty_spot'
+
+        spot = random.randint(1, self.total_locations)
+        userdata.destination_locations = ['spot_{0}'.format(spot)]
         return 'new_person'
