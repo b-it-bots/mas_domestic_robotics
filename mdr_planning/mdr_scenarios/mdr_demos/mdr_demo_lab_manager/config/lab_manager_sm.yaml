@@ -64,8 +64,8 @@ state_descriptions: []
         arguments: []
     - state:
         name: TURN_PERSON_AWAY
-        state_module_name: mdr_hri_behaviours.say_something
-        state_class_name: SaySomething
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
         transitions:
             - transition:
                 name: succeeded
