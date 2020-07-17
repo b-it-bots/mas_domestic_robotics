@@ -10,7 +10,7 @@ class SaySentence(ScenarioStateBase):
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded'])
         self.sm_id = kwargs.get('sm_id', '')
-        self.state_name = kwargs.get('state_name', 'say_something')
+        self.state_name = kwargs.get('state_name', 'say_sentence')
         self.sentences = list(kwargs.get('sentences', list()))
 
     def execute(self, userdata):
