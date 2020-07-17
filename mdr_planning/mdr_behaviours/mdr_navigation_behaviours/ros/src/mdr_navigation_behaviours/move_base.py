@@ -12,7 +12,8 @@ class MoveBase(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'move_base',
                                    save_sm_state=save_sm_state,
-                                   outcomes=['succeeded', 'failed', 'failed_after_retrying'])
+                                   outcomes=['succeeded', 'failed', 'failed_after_retrying'],
+                                   input_keys=['destination_locations'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'move_base')
         self.move_base_server = kwargs.get('move_base_server', 'move_base_server')
@@ -28,6 +29,10 @@ class MoveBase(ScenarioStateBase):
 
     def execute(self, userdata):
         original_location = self.kb_interface.get_robot_location(self.robot_name)
+        if len(self.destination_locations) == 0:
+            self.destination_locations = userdata.destination_locations
+            rospy.loginfo("Using userdata's destination_locations {0}".format(self.destination_locations))
+
         for destination_location in self.destination_locations:
             dispatch_msg = self.get_dispatch_msg(original_location,
                                                  destination_location)
