@@ -9,7 +9,8 @@ class AskName(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'ask_name',
                                    save_sm_state=save_sm_state,
-                                   outcomes=['succeeded', 'failed'])
+                                   outcomes=['succeeded', 'failed'],
+                                   output_keys=['person_name'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'ask_name')
         self.timeout = 10.
