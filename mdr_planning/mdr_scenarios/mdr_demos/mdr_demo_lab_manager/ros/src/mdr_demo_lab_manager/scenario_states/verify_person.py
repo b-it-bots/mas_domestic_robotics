@@ -9,7 +9,8 @@ class VerifyPerson(ScenarioStateBase):
                                    save_sm_state=save_sm_state,
                                    outcomes=['no_empty_spot', 'new_person',
                                              'already_logged_person',
-                                             'known_person'])
+                                             'known_person'],
+                                   output_keys=['destination_locations'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'verify_person')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
