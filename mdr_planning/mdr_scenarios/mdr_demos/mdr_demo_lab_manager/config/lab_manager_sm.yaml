@@ -79,8 +79,8 @@ state_descriptions:
                 value: ['The lab is full. Please come back later.']
     - state:
         name: ASK_NAME
-        state_module_name: mdr_hri_behaviours.ask_name
-        state_class_name: AskName
+        state_module_name: mdr_demo_lab_manager.scenario_states.get_user_data
+        state_class_name: GetUserData
         transitions:
             - transition:
                 name: succeeded
@@ -88,7 +88,22 @@ state_descriptions:
             - transition:
                 name: failed
                 state: ASK_NAME
-        arguments: []
+            - transition:
+                name: failed_after_retrying
+                state: GUIDE_TO_EMPTY_SPOT
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: sheet_id
+                value: 1P2awsaugrcFmm2MXKEqznnMDVIS3LUSq6NeT8rJhxKU
+            - argument:
+                name: worksheet_name
+                value: responses
+            - argument:
+                name: loop_rate_s
+                value: 2.0
     - state:
         name: GUIDE_TO_EMPTY_SPOT
         state_module_name: mdr_navigation_behaviours.move_base
