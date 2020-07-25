@@ -4,6 +4,7 @@ import numpy as np
 import time
 
 import rospy
+from mas_perception_msgs.msg import Person
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class GetUserData(ScenarioStateBase):
@@ -46,6 +47,9 @@ class GetUserData(ScenarioStateBase):
                 new_entry = data[-1, 1:3]
                 rospy.loginfo("[get_user_data] Found a new entry!\n\tName: {0}\n\tEmail: {1}".format(new_entry[0], new_entry[1]))
                 # TODO Write the user data to knowledge base
+                person_0 = self.kb_interface.get_obj_instance('person_0', Person._type)
+                self.kb_interface.insert_obj_instance(new_entry[0], person_0)
+                self.kn_interface.remove_obj_instance('person_0', Person._type)
                 return "succeeded"
             else:
                 time.sleep(self._loop_rate_s)
