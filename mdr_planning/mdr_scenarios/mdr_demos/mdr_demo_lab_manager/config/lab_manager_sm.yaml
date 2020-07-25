@@ -65,6 +65,9 @@ state_descriptions:
             - argument:
                 name: total_locations
                 value: 7
+            - argument:
+                name: threshold
+                value: 1
     - state:
         name: TURN_PERSON_AWAY
         state_module_name: mdr_hri_behaviours.say_sentence
