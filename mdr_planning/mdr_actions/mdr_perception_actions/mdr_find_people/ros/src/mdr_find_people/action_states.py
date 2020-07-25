@@ -2,9 +2,11 @@ import math
 import rospy
 import smach
 import sympy
+import numpy as np
 
 import tf
-from sensor_msgs.msg import PointCloud2
+import face_recognition
+from sensor_msgs.msg import PointCloud2, Image
 from geometry_msgs.msg import Point, Pose, PoseStamped
 from mdr_find_people.msg import FindPeopleResult
 from mas_perception_msgs.msg import Person, PersonList
@@ -39,10 +41,21 @@ class FindPeopleState(smach.State):
         cv_image = cloud_msg_to_cv_image(cloud_msg)
         bridge = CvBridge()
         images = []
+        face_images = []
         for i, bb2d in enumerate(bb2ds):
             cropped_cv = crop_image(cv_image, bb2d)
             cropped_img_msg = bridge.cv2_to_imgmsg(cropped_cv, encoding="passthrough")
+            
+            rospy.loginfo('[find_people] Attempting to extract face of person {}'.format(i+1))
+            cropped_face_img = self._extract_face_image(cropped_cv)
+            if cropped_face_img is not None:
+                cropped_face_img_msg = bridge.cv2_to_imgmsg(cropped_face_img,
+                                                            encoding='passthrough')
+            else:
+                cropped_face_img_msg = Image()
+            
             images.append(cropped_img_msg)
+            face_images.append(cropped_face_img_msg)
 
         # Create the action result message
         pl = []
@@ -54,6 +67,7 @@ class FindPeopleState(smach.State):
             map_pose = self._listener.transformPose('/map', poses[i])
             p.pose = map_pose
             p.body_image = images[i]
+            p.face.image = face_images[i]
 
             pl.append(p)
 
@@ -65,3 +79,12 @@ class FindPeopleState(smach.State):
 
         userdata['find_people_result'] = result
         return 'succeeded'
+
+    def _extract_face_image(self, image_array):
+        try:
+            top, right, bottom, left = face_recognition.face_locations(image_array)[0]
+            rospy.loginfo('[find_people] Successfully extracted face from person image.')
+            return image_array[top:bottom, left:right]
+        except IndexError:
+            rospy.logwarn('[find_people] Failed to extract face from person image!')
+            return None
