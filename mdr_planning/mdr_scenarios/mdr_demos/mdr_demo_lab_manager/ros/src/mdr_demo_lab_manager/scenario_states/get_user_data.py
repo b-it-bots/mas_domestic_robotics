@@ -37,6 +37,9 @@ class GetUserData(ScenarioStateBase):
             rospy.logerr("User data was not initialized. Cannot process user input!")
             return "succeeded"
 
+        self.say("Hi, seems like you are visiting the lab for the first time. "
+                "Please enter your details by scanning the QR code displayed on the wall to your right.")
+
         rospy.loginfo("[get_user_data] waiting for user data")
         start_time = time.time()
         while True and time.time() - start_time < self.timeout:
