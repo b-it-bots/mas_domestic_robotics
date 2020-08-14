@@ -2,6 +2,8 @@ import rospy
 import smach
 import torch
 
+from PIL import Image as PILImage
+import cv2
 import tf
 import face_recognition
 from sensor_msgs.msg import PointCloud2, Image
@@ -14,7 +16,7 @@ from cv_bridge import CvBridge
 from mdr_find_people.find_people import FindPeople
 
 from dataset_interface.siamese_net.model import SiameseNetwork
-from dataset_interface.siamese_net.utils import get_grayscale_image_tensor
+from dataset_interface.siamese_net.utils import get_transforms
 
 class FindPeopleState(smach.State):
     def __init__(self):
@@ -83,13 +85,18 @@ class FindPeopleState(smach.State):
             face_view.image = face_images[i]
 
             if self.face_embedding_model is not None:
+                if not face_view.image.data:
+                    continue
+
                 face_cv2 = bridge.imgmsg_to_cv2(face_view.image)
-                grayscale_img = get_grayscale_image_tensor(face_cv2)
-                embedding = self.face_embedding_model.forward_once(grayscale_img)
-                face_view.embedding.embedding = embedding.tolist()
+                grayscale_img = cv2.cvtColor(face_cv2, cv2.COLOR_BGR2GRAY)
+                img_tensor = get_transforms()(PILImage.fromarray(grayscale_img))
+                img_tensor.unsqueeze_(0)
+
+                embedding = self.face_embedding_model.forward_once(img_tensor)
+                face_view.embedding.embedding = embedding.detach().numpy().squeeze().tolist()
 
             p.face.views.append(face_view)
-
             pl.append(p)
 
         # Package that actual PersonList message
