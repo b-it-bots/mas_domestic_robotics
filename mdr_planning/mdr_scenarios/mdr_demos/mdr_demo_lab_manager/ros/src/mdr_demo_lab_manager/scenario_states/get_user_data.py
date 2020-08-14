@@ -12,7 +12,8 @@ class GetUserData(ScenarioStateBase):
         ScenarioStateBase.__init__(self, 'get_user_data',
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed', 
-                                             'failed_after_retrying'])
+                                             'failed_after_retrying'],
+                                   input_key=['destination_locations'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'get_user_data')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
@@ -52,7 +53,11 @@ class GetUserData(ScenarioStateBase):
                 # TODO Write the user data to knowledge base
                 person_0 = self.kb_interface.get_obj_instance('person_0', Person._type)
                 self.kb_interface.insert_obj_instance(new_entry[0], person_0)
-                self.kn_interface.remove_obj_instance('person_0', Person._type)
+                self.kb_interface.remove_obj_instance('person_0', Person._type)
+                # update the occupied spots
+                spot = userdata.destination_locations
+                occupied_locations.typed_parameters.append(KeyValue(key=str(spot), value=new_entry[0]))
+                self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
                 return "succeeded"
             else:
                 time.sleep(self._loop_rate_s)
