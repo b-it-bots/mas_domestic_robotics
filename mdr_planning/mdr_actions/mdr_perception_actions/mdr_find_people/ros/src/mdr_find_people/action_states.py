@@ -9,7 +9,7 @@ import face_recognition
 from sensor_msgs.msg import PointCloud2, Image
 from geometry_msgs.msg import Point, Pose, PoseStamped
 from mdr_find_people.msg import FindPeopleResult
-from mas_perception_msgs.msg import Person, PersonList
+from mas_perception_msgs.msg import Person, PersonList, ObjectView
 from mas_perception_libs import ImageDetectionKey
 from mas_perception_libs.visualization import crop_image
 from mas_perception_libs.utils import cloud_msg_to_cv_image
@@ -45,7 +45,7 @@ class FindPeopleState(smach.State):
         for i, bb2d in enumerate(bb2ds):
             cropped_cv = crop_image(cv_image, bb2d)
             cropped_img_msg = bridge.cv2_to_imgmsg(cropped_cv, encoding="passthrough")
-            
+
             rospy.loginfo('[find_people] Attempting to extract face of person {}'.format(i+1))
             cropped_face_img = self._extract_face_image(cropped_cv)
             if cropped_face_img is not None:
@@ -53,7 +53,7 @@ class FindPeopleState(smach.State):
                                                             encoding='passthrough')
             else:
                 cropped_face_img_msg = Image()
-            
+
             images.append(cropped_img_msg)
             face_images.append(cropped_face_img_msg)
 
@@ -66,8 +66,14 @@ class FindPeopleState(smach.State):
 
             map_pose = self._listener.transformPose('/map', poses[i])
             p.pose = map_pose
-            p.body_image = images[i]
-            p.face.image = face_images[i]
+
+            person_view = ObjectView()
+            person_view.image = images[i]
+            p.views.append(person_view)
+
+            face_view = ObjectView()
+            face_view.image = face_images[i]
+            p.face.views.append(face_view)
 
             pl.append(p)
 
