@@ -11,7 +11,7 @@ from mas_perception_libs import ImageDetectionKey
 from mas_perception_libs.visualization import crop_image
 from mas_perception_libs.utils import cloud_msg_to_cv_image
 from cv_bridge import CvBridge
-from mdf_find_people.find_people import FindPeople
+from mdr_find_people.find_people import FindPeople
 
 from dataset_interface.siamese_net.model import SiameseNetwork
 from dataset_interface.siamese_net.utils import get_grayscale_image_tensor
