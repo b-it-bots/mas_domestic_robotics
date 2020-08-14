@@ -39,9 +39,10 @@ class VerifyPerson(ScenarioStateBase):
         known_people = self.kb_interface.get_obj_of_type(Person._type)
         unknown_person = self.kb_interface.get_obj_instance('person_0', Person._type)
 
+        unknown_person_embedding = np.array(unknown_person.face.views[0].embedding.embedding)
         for known_person in known_people:
-            distance = np.linalg.norm(known_person.face.views[0].embedding.embedding - \
-                                      unknown_person.face.views[0].embedding.embedding)
+            distance = np.linalg.norm(np.array(known_person.face.views[0].embedding.embedding) - \
+                                      unknown_person_embedding)
             if np.linalg.norm(distance) < self.threshold:
                 self.say("Welcome back {0}".format(known_person.name))
                 return 'known_person'
