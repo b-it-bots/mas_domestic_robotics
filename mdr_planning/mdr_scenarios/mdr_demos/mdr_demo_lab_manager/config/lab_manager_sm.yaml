@@ -68,6 +68,9 @@ state_descriptions:
             - argument:
                 name: threshold
                 value: 1
+            - argument:
+                name: timeout
+                value: 10.
     - state:
         name: TURN_PERSON_AWAY
         state_module_name: mdr_hri_behaviours.say_sentence

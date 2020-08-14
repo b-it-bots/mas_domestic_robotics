@@ -21,10 +21,17 @@ class VerifyPerson(ScenarioStateBase):
         self.total_locations = kwargs.get('total_locations', 0)
         self.threshold = kwargs.get('threshold', 0)
         self.retry_count = 0
-        self.timeout = 120.
+        self.timeout = kwargs.get('timeout', 10.)
         occupied_locations = self.kb_interface.get_obj_instance('occupied_locations', DomainFormula._type)
         if occupied_locations is None:
             self.kb_interface.insert_obj_instance('occupied_locations', DomainFormula())
+
+        # wait for listen action server
+        self.listen_client = actionlib.SimpleActionClient('listen_server', ListenAction)
+        listen_wait_result = self.listen_client.wait_for_server(timeout=rospy.Duration(self.timeout))
+        
+        if not listen_wait_result:
+            raise RuntimeError('Failed to wait for "listen_server" action')
 
     def execute(self, userdata):
         rospy.loginfo('[verify_person] Verifying person')
@@ -43,8 +50,30 @@ class VerifyPerson(ScenarioStateBase):
         for known_person in known_people:
             distance = np.linalg.norm(np.array(known_person.face.views[0].embedding.embedding) - \
                                       unknown_person_embedding)
+
             if np.linalg.norm(distance) < self.threshold:
-                self.say("Welcome back {0}".format(known_person.name))
+                self.say("Hello {0}".format(known_person.name))
+                self.say("If you would like to free up your spot, please say goodbye.")
+                # wait for goodbye
+                goal = ListenGoal()
+
+                self.listen_client.send_goal(goal)
+                self.listen_client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
+                listen_state = self.listen_client.get_state()
+                listen_result = self.listen_client.get_result()
+
+                if listen_state == GoalStatus.SUCCEEDED and "bye" in listen_result.message:
+                    self.say("Goodbye! {0}. stay safe!".format(known_person.name))
+                    spot = known_person
+                    
+                    for occ_spot in occupied_locations.typed_parameters:
+                        if occ_spot.value == known_person.name:
+                            occupied_locations.typed_parameters.remove(occ_spot)
+
+                    self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
+                    self.kb_interface.remove_obj_instance(known_person.name, Person._type)
+                  
+                # otherwise return to monitor door
                 return 'known_person'
 
         # No matching face, treat as new person
@@ -53,6 +82,6 @@ class VerifyPerson(ScenarioStateBase):
             spots.remove(occ_spot)
         spot = random.choice(spots)
         userdata.destination_locations = ['spot_{0}'.format(spot)]
-        occupied_locations.typed_parameters.append(KeyValue(key=str(spot), value='true'))
-        self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
+        # occupied_locations.typed_parameters.append(KeyValue(key=str(spot), value='true'))
+        # self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
         return 'new_person'
