@@ -36,13 +36,14 @@ class VerifyPerson(ScenarioStateBase):
             return 'no_empty_spot'
 
         # Try to match face to current people in the lab
-        known_faces = self.kb_interface.get_obj_of_type(Person._type)
-        unknown_face = self.kb_interface.get_obj_instance('person_0', Person._type)
+        known_people = self.kb_interface.get_obj_of_type(Person._type)
+        unknown_person = self.kb_interface.get_obj_instance('person_0', Person._type)
 
-        for known_face in known_faces:
-            distance = known_face.face - unknown_face.face
-            if np.linalg.norm(distance) < self.threshold: 
-                self.say("Welcome back {0}".format(known_face.name))
+        for known_person in known_people:
+            distance = np.linalg.norm(known_person.face.views[0].embedding.embedding - \
+                                      unknown_person.face.views[0].embedding.embedding)
+            if np.linalg.norm(distance) < self.threshold:
+                self.say("Welcome back {0}".format(known_person.name))
                 return 'known_person'
 
         # No matching face, treat as new person
