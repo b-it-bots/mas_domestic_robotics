@@ -1,6 +1,6 @@
 import rospy
 import smach
-import sympy
+import torch
 
 import tf
 import face_recognition
@@ -11,8 +11,10 @@ from mas_perception_libs import ImageDetectionKey
 from mas_perception_libs.visualization import crop_image
 from mas_perception_libs.utils import cloud_msg_to_cv_image
 from cv_bridge import CvBridge
-from mdf_find_people.find_people import FindPeople
+from mdr_find_people.find_people import FindPeople
 
+from dataset_interface.siamese_net.model import SiameseNetwork
+from dataset_interface.siamese_net.utils import get_grayscale_image_tensor
 
 class FindPeopleState(smach.State):
     def __init__(self):
@@ -23,7 +25,16 @@ class FindPeopleState(smach.State):
 
         self._listener = tf.TransformListener()
         self.pointcloud_topic = rospy.get_param("~pointcloud_topic", '/rectified_points')
+        self.face_embedding_model_path = rospy.get_param("~face_embedding_model_path", '')
 
+        self.face_embedding_model = None
+        if self.face_embedding_model_path:
+            self.face_embedding_model = SiameseNetwork()
+            self.face_embedding_model.load_state_dict(torch.load(self.face_embedding_model_path))
+            self.face_embedding_model.eval()
+
+            device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+            self.face_embedding_model.to(device)
 
     def execute(self, userdata):
         rospy.loginfo('Executing state FIND_PEOPLE')
@@ -70,6 +81,13 @@ class FindPeopleState(smach.State):
 
             face_view = ObjectView()
             face_view.image = face_images[i]
+
+            if self.face_embedding_model is not None:
+                face_cv2 = bridge.imgmsg_to_cv2(face_view.image)
+                grayscale_img = get_grayscale_image_tensor(face_cv2)
+                embedding = self.face_embedding_model.forward_once(grayscale_img)
+                face_view.embedding.embedding = embedding.tolist()
+
             p.face.views.append(face_view)
 
             pl.append(p)
