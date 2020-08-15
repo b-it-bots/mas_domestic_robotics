@@ -1,11 +1,16 @@
 import random
+import numpy as np
 
 import rospy
-import numpy as np
-from mas_execution_manager.scenario_state_base import ScenarioStateBase
+import actionlib
+from actionlib_msgs.msg import GoalStatus
+
 from rosplan_knowledge_msgs.msg import DomainFormula
+from mdr_listen_action.msg import ListenAction, ListenGoal
 from mas_perception_msgs.msg import Person
 from diagnostic_msgs.msg import KeyValue
+
+from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class VerifyPerson(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
@@ -29,7 +34,7 @@ class VerifyPerson(ScenarioStateBase):
         # wait for listen action server
         self.listen_client = actionlib.SimpleActionClient('listen_server', ListenAction)
         listen_wait_result = self.listen_client.wait_for_server(timeout=rospy.Duration(self.timeout))
-        
+
         if not listen_wait_result:
             raise RuntimeError('Failed to wait for "listen_server" action')
 
@@ -65,14 +70,14 @@ class VerifyPerson(ScenarioStateBase):
                 if listen_state == GoalStatus.SUCCEEDED and "bye" in listen_result.message:
                     self.say("Goodbye! {0}. stay safe!".format(known_person.name))
                     spot = known_person
-                    
+
                     for occ_spot in occupied_locations.typed_parameters:
                         if occ_spot.value == known_person.name:
                             occupied_locations.typed_parameters.remove(occ_spot)
 
                     self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
                     self.kb_interface.remove_obj_instance(known_person.name, Person._type)
-                  
+
                 # otherwise return to monitor door
                 return 'known_person'
 
