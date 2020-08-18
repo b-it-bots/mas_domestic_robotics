@@ -17,7 +17,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: sentences
-                value: ['I would like to take a few pictures of you so that I can learn your face.', 'Please stand in front of my camera and follow my instructions.']
+                value: ['I would like to take a few pictures of you so that I can learn your face. Please stand in front of my camera and follow my instructions.']
     - state:
         name: GIVE_FRONT_INSTRUCTIONS
         state_module_name: mdr_hri_behaviours.say_sentence
