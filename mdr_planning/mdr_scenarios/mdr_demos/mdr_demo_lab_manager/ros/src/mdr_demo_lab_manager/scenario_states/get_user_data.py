@@ -11,9 +11,9 @@ class GetUserData(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'get_user_data',
                                    save_sm_state=save_sm_state,
-                                   outcomes=['succeeded', 'failed', 
+                                   outcomes=['succeeded', 'failed',
                                              'failed_after_retrying'],
-                                   input_key=['destination_locations'])
+                                   input_keys=['destination_locations'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'get_user_data')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
@@ -22,7 +22,7 @@ class GetUserData(ScenarioStateBase):
 
         self._sheet_id = kwargs.get('sheet_id', '')
         self._worksheet_name = kwargs.get('worksheet_name', 'responses')
-        
+
         self._num_known_entries = None
         self._loop_rate_s = kwargs.get('loop_rate_s', 2.)
 
