@@ -17,11 +17,13 @@
   <build_depend>mdr_detect_person</build_depend>
   <build_depend>mas_execution_manager</build_depend>
   <build_depend>mdr_perception_behaviours</build_depend>
+  <build_depend>mdr_hri_behaviours</build_depend>
   <build_depend>mas_knowledge_base</build_depend>
 
   <run_depend>rospy</run_depend>
   <run_depend>mdr_detect_person</run_depend>
   <run_depend>mas_execution_manager</run_depend>
   <run_depend>mdr_perception_behaviours</run_depend>
+  <run_depend>mdr_hri_behaviours</run_depend>
   <run_depend>mas_knowledge_base</run_depend>
 </package>
