@@ -16,11 +16,13 @@ class StorePerson(ScenarioStateBase):
                                                     Person._type)
         if person is None:
             self.say('Sorry, I got confused for some reason, we will have to stop the procedure.')
+            self.kb_interface.remove_obj_instance(self.person_msg_id, Person._type)
             return 'failed'
 
         if not person.face.views[0].embedding.embedding:
             self.say('I unfortunately could not see your face.')
             self.say('Let us try taking the picture again.')
+            self.kb_interface.remove_obj_instance(self.person_msg_id, Person._type)
             return 'retake_picture'
 
         person_permanent_storage = self.kb_interface.get_obj_instance(self.person_msg_id,
