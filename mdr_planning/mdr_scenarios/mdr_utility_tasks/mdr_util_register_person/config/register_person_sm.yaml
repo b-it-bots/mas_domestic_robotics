@@ -77,7 +77,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: sentences
-                value: ['Please turn your face so that it's facing a bit to the left.']
+                value: ['Please turn your face so that it is facing a bit to the left.']
     - state:
         name: TAKE_LEFT_PICTURE
         state_module_name: mdr_perception_behaviours.find_people
@@ -125,7 +125,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: sentences
-                value: ['Please turn your face so that it's facing a bit to the right.']
+                value: ['Please turn your face so that it is facing a bit to the right.']
     - state:
         name: TAKE_RIGHT_PICTURE
         state_module_name: mdr_perception_behaviours.find_people
