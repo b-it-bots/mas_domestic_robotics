@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <launch>
+    <include file="$(find mdr_rosplan_interface)/ros/launch/rosplan.launch" />
+
     <!-- Actions -->
+    <include file="$(find mdr_find_people)/ros/launch/find_people.launch" />
     <include file="$(find mdr_find_people)/ros/launch/find_people_client.launch" />
 
     <!-- State machine -->
