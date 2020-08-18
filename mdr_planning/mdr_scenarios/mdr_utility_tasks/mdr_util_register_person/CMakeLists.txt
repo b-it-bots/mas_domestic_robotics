@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   mdr_detect_person
   mas_execution_manager
   mdr_perception_behaviours
+  mdr_hri_behaviours
   mas_knowledge_base
 )
 
@@ -17,6 +18,7 @@ catkin_package(
     mdr_detect_person
     mas_execution_manager
     mdr_perception_behaviours
+    mdr_hri_behaviours
     mas_knowledge_base
 )
 
