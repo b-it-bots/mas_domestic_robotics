@@ -63,12 +63,14 @@ class VerifyPerson(ScenarioStateBase):
             listen_state = self.listen_client.get_state()
             listen_result = self.listen_client.get_result()
 
-            if listen_state == GoalStatus.SUCCEEDED and "bye" in listen_result.message:
-                self.say("Goodbye! {0}. stay safe!".format(recognised_person.name))
-                for occ_spot in occupied_locations.typed_parameters:
-                    if occ_spot.value == recognised_person.name:
-                        occupied_locations.typed_parameters.remove(occ_spot)
-                self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
+            if listen_state == GoalStatus.SUCCEEDED:
+                rospy.loginfo("[MESSAGE] {}".format(listen_result.message))
+                if "bye" in listen_result.message:
+                    self.say("Goodbye! {0}. stay safe!".format(recognised_person.name))
+                    for occ_spot in occupied_locations.typed_parameters:
+                        if occ_spot.value == recognised_person.name:
+                            occupied_locations.typed_parameters.remove(occ_spot)
+                    self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
 
             # otherwise return to monitor door
             return 'known_person'
