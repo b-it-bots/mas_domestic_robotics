@@ -56,8 +56,8 @@ class VerifyPerson(ScenarioStateBase):
         # Check if the person is logged
         person_logged = False
         for occ_spot in occupied_locations.typed_parameters:
-                if occ_spot.value == recognised_person.name:
-                    person_logged = True
+            if occ_spot.value == recognised_person.name:
+                person_logged = True
 
         if recognised_person is not None:
             if person_logged:
