@@ -60,8 +60,8 @@ class VerifyPerson(ScenarioStateBase):
                 person_logged = True
 
         if recognised_person is not None:
+            self.say("Hello {0}".format(recognised_person.name))
             if person_logged:
-                self.say("Hello {0}".format(recognised_person.name))
                 self.say("If you would like to free up your spot, please say goodbye.")
                 rospy.sleep(5)
                 # wait for goodbye
