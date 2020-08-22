@@ -86,8 +86,7 @@ class FindPeopleState(smach.State):
 
             if self.face_embedding_model is not None and face_view.image.data:
                 face_cv2 = bridge.imgmsg_to_cv2(face_view.image)
-                grayscale_img = cv2.cvtColor(face_cv2, cv2.COLOR_BGR2GRAY)
-                img_tensor = get_transforms()(PILImage.fromarray(grayscale_img))
+                img_tensor = get_transforms()(PILImage.fromarray(face_cv2))
                 img_tensor.unsqueeze_(0)
 
                 embedding = self.face_embedding_model.forward_once(img_tensor)
