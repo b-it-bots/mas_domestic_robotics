@@ -18,7 +18,7 @@ class VerifyPerson(ScenarioStateBase):
                                    save_sm_state=save_sm_state,
                                    outcomes=['no_empty_spot', 'new_person',
                                              'already_logged_person',
-                                             'known_person'],
+                                             'known_person', 'face_not_seen'],
                                    output_keys=['destination_locations'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'verify_person')
@@ -48,6 +48,11 @@ class VerifyPerson(ScenarioStateBase):
         occ_spots = [kv.key for kv in occupied_locations.typed_parameters]
         if len(occupied_locations.typed_parameters) == self.total_locations:
             return 'no_empty_spot'
+
+        person = self.kb_interface.get_obj_instance('person_0', Person._type)
+        if not person.face.views or not person.face.views[0].image.data:
+            self.say('I could not see your face. Could you please look at me briefly?')
+            return 'face_not_seen'
 
         # Try to match face to current people in the lab
         recognised_person = self.kb_interface.recognise_person('person_0',
