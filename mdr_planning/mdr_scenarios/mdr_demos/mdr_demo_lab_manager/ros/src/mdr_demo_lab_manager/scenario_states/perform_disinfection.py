@@ -22,4 +22,6 @@ class PerformDisinfection(ScenarioStateBase):
 
     def execute(self, userdata):
         self.disinfection_cmd_pub.publish(Empty())
+        self.say('Please hold out your hand to my friend Kinova and get some hand sanitiser')
         rospy.sleep(self.disinfection_duration)
+        return 'succeeded'
