@@ -2,7 +2,7 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_demo_lab_manager
-states: [GO_TO_MONITORING_POSE, MONITOR_DOOR, VERIFY_PERSON, ASK_NAME, TURN_PERSON_AWAY, GUIDE_TO_EMPTY_SPOT]
+states: [GO_TO_MONITORING_POSE, MONITOR_DOOR, VERIFY_PERSON, ASK_NAME, TURN_PERSON_AWAY, GO_TO_DISINFECTION_SPOT, PERFORM_DISINFECTION, GUIDE_TO_EMPTY_SPOT]
 outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
@@ -60,7 +60,7 @@ state_descriptions:
                 state: MONITOR_DOOR
             - transition:
                 name: known_person
-                state: GUIDE_TO_EMPTY_SPOT
+                state: GO_TO_DISINFECTION_SPOT
         arguments:
             - argument:
                 name: total_locations
@@ -90,13 +90,13 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: GUIDE_TO_EMPTY_SPOT
+                state: GO_TO_DISINFECTION_SPOT
             - transition:
                 name: failed
                 state: ASK_NAME
             - transition:
                 name: failed_after_retrying
-                state: GUIDE_TO_EMPTY_SPOT
+                state: GO_TO_DISINFECTION_SPOT
         arguments:
             - argument:
                 name: number_of_retries
@@ -110,6 +110,42 @@ state_descriptions:
             - argument:
                 name: loop_rate_s
                 value: 2.0
+    - state:
+        name: GO_TO_DISINFECTION_SPOT
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERFORM_DISINFECTION
+            - transition:
+                name: failed
+                state: GO_TO_DISINFECTION_SPOT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [disinfection_table]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PERFORM_DISINFECTION
+        state_module_name: mdr_demo_lab_manager.scenario_states.perform_disinfection
+        state_class_name: PerformDisinfection
+        transitions:
+            - transition:
+                name: succeeded
+                state: GUIDE_TO_EMPTY_SPOT
+        arguments:
+            - argument:
+                name: disinfection_cmd_topic
+                value: /control_robot/event_in
+            - argument:
+                name: disinfection_duration
+                value: 20.0
     - state:
         name: GUIDE_TO_EMPTY_SPOT
         state_module_name: mdr_navigation_behaviours.move_base
