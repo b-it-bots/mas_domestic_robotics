@@ -2,7 +2,7 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_demo_lab_manager
-states: [GO_TO_MONITORING_POSE, MONITOR_DOOR, VERIFY_PERSON, ASK_NAME, TURN_PERSON_AWAY, GO_TO_DISINFECTION_SPOT, PERFORM_DISINFECTION, GUIDE_TO_EMPTY_SPOT]
+states: [GO_TO_MONITORING_POSE, MONITOR_DOOR, VERIFY_PERSON, ASK_NAME, GIVE_DISINFECTION_FOLLOWING_INSTRUCTIONS, TURN_PERSON_AWAY, GO_TO_DISINFECTION_SPOT, PERFORM_DISINFECTION, GIVE_ASSIGNED_SPOT_FOLLOWING_INSTRUCTIONS, GUIDE_TO_EMPTY_SPOT, GIVE_LAB_LEAVE_INSTRUCTIONS]
 outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
@@ -60,7 +60,7 @@ state_descriptions:
                 state: MONITOR_DOOR
             - transition:
                 name: known_person
-                state: GO_TO_DISINFECTION_SPOT
+                state: GIVE_DISINFECTION_FOLLOWING_INSTRUCTIONS
             - transition:
                 name: face_not_seen
                 state: MONITOR_DOOR
@@ -99,7 +99,7 @@ state_descriptions:
                 state: ASK_NAME
             - transition:
                 name: failed_after_retrying
-                state: GO_TO_DISINFECTION_SPOT
+                state: GIVE_DISINFECTION_FOLLOWING_INSTRUCTIONS
         arguments:
             - argument:
                 name: number_of_retries
@@ -113,6 +113,18 @@ state_descriptions:
             - argument:
                 name: loop_rate_s
                 value: 2.0
+    - state:
+        name: GIVE_DISINFECTION_FOLLOWING_INSTRUCTIONS
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_DISINFECTION_SPOT
+        arguments:
+            - argument:
+                name: sentences
+                value: ['Please follow me to the hand sanitiser station.']
     - state:
         name: GO_TO_DISINFECTION_SPOT
         state_module_name: mdr_navigation_behaviours.move_base
@@ -141,7 +153,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: GUIDE_TO_EMPTY_SPOT
+                state: GIVE_ASSIGNED_SPOT_FOLLOWING_INSTRUCTIONS
         arguments:
             - argument:
                 name: disinfection_cmd_topic
@@ -150,13 +162,25 @@ state_descriptions:
                 name: disinfection_duration
                 value: 30.0
     - state:
+        name: GIVE_ASSIGNED_SPOT_FOLLOWING_INSTRUCTIONS
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: GUIDE_TO_EMPTY_SPOT
+        arguments:
+            - argument:
+                name: sentences
+                value: ['Please follow me to your assigned spot.']
+    - state:
         name: GUIDE_TO_EMPTY_SPOT
         state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
                 name: succeeded
-                state: GO_TO_MONITORING_POSE
+                state: GIVE_LAB_LEAVE_INSTRUCTIONS
             - transition:
                 name: failed
                 state: GO_TO_MONITORING_POSE
@@ -167,3 +191,15 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 3
+    - state:
+        name: GIVE_LAB_LEAVE_INSTRUCTIONS
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_MONITORING_POSE
+        arguments:
+            - argument:
+                name: sentences
+                value: ['If you are leaving the lab, please come to me so that I know that your spot is free.']
