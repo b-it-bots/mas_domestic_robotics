@@ -12,6 +12,7 @@ class SaySentence(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'say_sentence')
         self.sentences = list(kwargs.get('sentences', list()))
+        self.sleep_time = kwargs.get('sleep_time', -1.)
 
     def execute(self, userdata):
         sentence = random.choice(self.sentences)
@@ -19,4 +20,6 @@ class SaySentence(ScenarioStateBase):
         rospy.loginfo('Saying: %s' % sentence)
         self.say(sentence)
 
+        if self.sleep_time > 0:
+            rospy.sleep(self.sleep_time)
         return 'succeeded'
