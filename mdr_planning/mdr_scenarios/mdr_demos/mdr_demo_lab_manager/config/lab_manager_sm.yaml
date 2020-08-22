@@ -60,7 +60,7 @@ state_descriptions:
                 state: MONITOR_DOOR
             - transition:
                 name: known_person
-                state: MONITOR_DOOR
+                state: GUIDE_TO_EMPTY_SPOT
         arguments:
             - argument:
                 name: total_locations

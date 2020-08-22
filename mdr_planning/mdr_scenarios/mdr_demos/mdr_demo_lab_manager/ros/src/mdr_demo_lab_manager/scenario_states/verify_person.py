@@ -53,28 +53,37 @@ class VerifyPerson(ScenarioStateBase):
         recognised_person = self.kb_interface.recognise_person('person_0',
                                                                Person._type,
                                                                self.person_recognition_threshold)
+        # Check if the person is logged
+        person_logged = False
+        for occ_spot in occupied_locations.typed_parameters:
+                if occ_spot.value == recognised_person.name:
+                    person_logged = True
+
         if recognised_person is not None:
-            self.say("Hello {0}".format(recognised_person.name))
-            self.say("If you would like to free up your spot, please say goodbye.")
-            rospy.sleep(5)
-            # wait for goodbye
-            goal = ListenGoal()
-            self.listen_client.send_goal(goal)
-            self.listen_client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
-            listen_state = self.listen_client.get_state()
-            listen_result = self.listen_client.get_result()
+            if person_logged:
+                self.say("Hello {0}".format(recognised_person.name))
+                self.say("If you would like to free up your spot, please say goodbye.")
+                rospy.sleep(5)
+                # wait for goodbye
+                goal = ListenGoal()
+                self.listen_client.send_goal(goal)
+                self.listen_client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
+                listen_state = self.listen_client.get_state()
+                listen_result = self.listen_client.get_result()
 
-            if listen_state == GoalStatus.SUCCEEDED:
-                rospy.loginfo("[MESSAGE] {}".format(listen_result.message))
-                if any(word in listen_result.message for word in self.bye):
-                    self.say("Goodbye! {0}. stay safe!".format(recognised_person.name))
-                    for occ_spot in occupied_locations.typed_parameters:
-                        if occ_spot.value == recognised_person.name:
-                            occupied_locations.typed_parameters.remove(occ_spot)
-                    self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
-
-            # otherwise return to monitor door
-            return 'known_person'
+                if listen_state == GoalStatus.SUCCEEDED:
+                    rospy.loginfo("[MESSAGE] {}".format(listen_result.message))
+                    if any(word in listen_result.message for word in self.bye):
+                        self.say("Goodbye! {0}. stay safe!".format(recognised_person.name))
+                        for occ_spot in occupied_locations.typed_parameters:
+                            if occ_spot.value == recognised_person.name:
+                                occupied_locations.typed_parameters.remove(occ_spot)
+                        self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
+                    # return to monitor door
+                    return "already_logged_person"
+            else:
+                # guide to empty spot
+                return 'known_person'
 
         # No matching face, treat as new person
         spots = [str(i+1) for i in range(self.total_locations)]
