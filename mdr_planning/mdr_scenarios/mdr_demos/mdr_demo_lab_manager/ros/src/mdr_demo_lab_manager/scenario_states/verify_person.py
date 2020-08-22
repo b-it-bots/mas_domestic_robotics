@@ -83,14 +83,20 @@ class VerifyPerson(ScenarioStateBase):
                     return "already_logged_person"
             else:
                 # guide to empty spot
+                spot = self.choose_sitting_spot(occ_spots)
+                userdata.destination_locations = ['spot_{0}'.format(spot)]
                 return 'known_person'
 
         # No matching face, treat as new person
-        spots = [str(i+1) for i in range(self.total_locations)]
-        for occ_spot in occ_spots:
-            spots.remove(occ_spot)
-        spot = random.choice(spots)
+        spot = self.choose_sitting_spot(occ_spots)
         userdata.destination_locations = ['spot_{0}'.format(spot)]
         # occupied_locations.typed_parameters.append(KeyValue(key=str(spot), value='true'))
         # self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
         return 'new_person'
+
+    def choose_sitting_spot(self, occ_spots):
+        spots = [str(i+1) for i in range(self.total_locations)]
+        for occ_spot in occ_spots:
+            spots.remove(occ_spot)
+        spot = random.choice(spots)
+        return spot
