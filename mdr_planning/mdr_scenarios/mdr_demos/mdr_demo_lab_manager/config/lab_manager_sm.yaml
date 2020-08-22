@@ -61,6 +61,9 @@ state_descriptions:
             - transition:
                 name: known_person
                 state: GO_TO_DISINFECTION_SPOT
+            - transition:
+                name: face_not_seen
+                state: MONITOR_DOOR
         arguments:
             - argument:
                 name: total_locations
