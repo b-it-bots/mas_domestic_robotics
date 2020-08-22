@@ -27,6 +27,7 @@ class VerifyPerson(ScenarioStateBase):
         self.person_recognition_threshold = kwargs.get('person_recognition_threshold', 0)
         self.retry_count = 0
         self.timeout = kwargs.get('timeout', 10.)
+        self.bye = ['bye', 'by', 'buy', 'bi']
         occupied_locations = self.kb_interface.get_obj_instance('occupied_locations', DomainFormula._type)
         if occupied_locations is None:
             self.kb_interface.insert_obj_instance('occupied_locations', DomainFormula())
@@ -55,7 +56,7 @@ class VerifyPerson(ScenarioStateBase):
         if recognised_person is not None:
             self.say("Hello {0}".format(recognised_person.name))
             self.say("If you would like to free up your spot, please say goodbye.")
-            rospy.sleep(3)
+            rospy.sleep(4)
             # wait for goodbye
             goal = ListenGoal()
             self.listen_client.send_goal(goal)
@@ -65,7 +66,7 @@ class VerifyPerson(ScenarioStateBase):
 
             if listen_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("[MESSAGE] {}".format(listen_result.message))
-                if "bye" in listen_result.message:
+                if any(word in listen_result.message for word in self.bye):
                     self.say("Goodbye! {0}. stay safe!".format(recognised_person.name))
                     for occ_spot in occupied_locations.typed_parameters:
                         if occ_spot.value == recognised_person.name:
