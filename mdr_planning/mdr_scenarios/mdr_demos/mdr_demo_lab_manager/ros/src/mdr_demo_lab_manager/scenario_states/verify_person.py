@@ -55,7 +55,7 @@ class VerifyPerson(ScenarioStateBase):
         if recognised_person is not None:
             self.say("Hello {0}".format(recognised_person.name))
             self.say("If you would like to free up your spot, please say goodbye.")
-
+            rospy.sleep(3)
             # wait for goodbye
             goal = ListenGoal()
             self.listen_client.send_goal(goal)
