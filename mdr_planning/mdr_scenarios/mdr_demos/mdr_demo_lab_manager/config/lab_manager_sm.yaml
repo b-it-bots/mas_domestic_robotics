@@ -203,3 +203,6 @@ state_descriptions:
             - argument:
                 name: sentences
                 value: ['If you are leaving the lab, please come to me so that I know that your spot is free.']
+            - argument:
+                name: sleep_time
+                value: 5.0
