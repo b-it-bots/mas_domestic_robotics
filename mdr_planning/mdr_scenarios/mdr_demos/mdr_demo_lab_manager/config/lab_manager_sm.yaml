@@ -148,7 +148,7 @@ state_descriptions:
                 value: /control_robot/event_in
             - argument:
                 name: disinfection_duration
-                value: 20.0
+                value: 30.0
     - state:
         name: GUIDE_TO_EMPTY_SPOT
         state_module_name: mdr_navigation_behaviours.move_base
