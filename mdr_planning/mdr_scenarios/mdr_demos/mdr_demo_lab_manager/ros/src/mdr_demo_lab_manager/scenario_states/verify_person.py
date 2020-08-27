@@ -58,13 +58,14 @@ class VerifyPerson(ScenarioStateBase):
         recognised_person = self.kb_interface.recognise_person('person_0',
                                                                Person._type,
                                                                self.person_recognition_threshold)
-        # Check if the person is logged
-        person_logged = False
-        for occ_spot in occupied_locations.typed_parameters:
-            if occ_spot.value == recognised_person.name:
-                person_logged = True
 
         if recognised_person is not None:
+            # Check if the person is logged
+            person_logged = False
+            for occ_spot in occupied_locations.typed_parameters:
+                if occ_spot.value == recognised_person.name:
+                    person_logged = True
+
             self.say("Hello {0}".format(recognised_person.name))
             if person_logged:
                 self.say("If you would like to free up your spot, please say goodbye.")
