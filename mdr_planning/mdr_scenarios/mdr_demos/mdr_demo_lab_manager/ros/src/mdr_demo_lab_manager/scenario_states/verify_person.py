@@ -90,13 +90,17 @@ class VerifyPerson(ScenarioStateBase):
                 # guide to empty spot
                 spot = self.choose_sitting_spot(occ_spots)
                 userdata.destination_locations = ['spot_{0}'.format(spot)]
+                occupied_locations.typed_parameters.append(KeyValue(key=str(spot),
+                                                                    value=recognised_person.name))
+                self.kb_interface.update_obj_instance('occupied_locations',
+                                                      occupied_locations)
                 return 'known_person'
 
         # No matching face, treat as new person
         spot = self.choose_sitting_spot(occ_spots)
         userdata.destination_locations = ['spot_{0}'.format(spot)]
-        # occupied_locations.typed_parameters.append(KeyValue(key=str(spot), value='true'))
-        # self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
+        occupied_locations.typed_parameters.append(KeyValue(key=str(spot), value='unknown'))
+        self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
         return 'new_person'
 
     def choose_sitting_spot(self, occ_spots):
