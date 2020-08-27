@@ -19,6 +19,7 @@ class MoveBase(ScenarioStateBase):
         self.move_base_server = kwargs.get('move_base_server', 'move_base_server')
         self.destination_locations = list(kwargs.get('destination_locations', list()))
         self.timeout = kwargs.get('timeout', 120.)
+        self.debug = kwargs.get('debug', False)
 
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
@@ -38,7 +39,7 @@ class MoveBase(ScenarioStateBase):
                                                  destination_location)
 
             rospy.loginfo('Sending the base to %s' % destination_location)
-            self.say('Going to ' + destination_location)
+            if self.debug: self.say('Going to ' + destination_location)
             self.action_dispatch_pub.publish(dispatch_msg)
 
             self.executing = True
@@ -54,9 +55,9 @@ class MoveBase(ScenarioStateBase):
                 original_location = destination_location
             else:
                 rospy.logerr('Could not reach %s' % destination_location)
-                self.say('Could not reach ' + destination_location)
+                if self.debug: self.say('Could not reach ' + destination_location)
                 if self.retry_count == self.number_of_retries:
-                    self.say('Aborting operation')
+                    if self.debug: self.say('Aborting operation')
                     return 'failed_after_retrying'
                 self.retry_count += 1
                 return 'failed'
