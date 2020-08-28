@@ -1,9 +1,9 @@
-import requests
-import pandas as pd
-import numpy as np
 import time
+import pandas as pd
 
 import rospy
+from diagnostic_msgs.msg import KeyValue
+from rosplan_knowledge_msgs.msg import DomainFormula
 from mas_perception_msgs.msg import Person
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
@@ -31,7 +31,7 @@ class GetUserData(ScenarioStateBase):
             self._num_known_entries = data.shape[0]
             rospy.loginfo("[get_user_data] Initialized the user data query with {0} prior known users".format(self._num_known_entries))
         else:
-            rospy.logerr("[get_user_data] Could not initialize!")
+            rospy.logerr("[get_user_data] Could not initialize user data sheet!")
 
     def execute(self, userdata):
         if self._num_known_entries is None:
@@ -39,7 +39,7 @@ class GetUserData(ScenarioStateBase):
             return "succeeded"
 
         self.say("Hi, seems like you are visiting the lab for the first time. "
-                "Please enter your details by scanning the QR code displayed on the wall to your right.")
+                 "Please enter your details by scanning the QR code displayed on the wall to your right.")
 
         rospy.loginfo("[get_user_data] waiting for user data")
         start_time = time.time()
@@ -49,15 +49,23 @@ class GetUserData(ScenarioStateBase):
             if num_of_new_entries > 0:
                 self._num_known_entries = data.shape[0]
                 new_entry = data[-1, 1:3]
-                rospy.loginfo("[get_user_data] Found a new entry!\n\tName: {0}\n\tEmail: {1}".format(new_entry[0], new_entry[1]))
-                # TODO Write the user data to knowledge base
-                person_0 = self.kb_interface.get_obj_instance('person_0', Person._type)
-                self.kb_interface.insert_obj_instance(new_entry[0], person_0)
+                name, email = new_entry[0], new_entry[1]
+                rospy.loginfo("[get_user_data] Found a new entry!\n\tName: {0}\n\tEmail: {1}".format(name, email))
+
+                # we add the new person to permanent storage (one-shot learning of people)
+                # and remove it from temporary storage
+                person_msg = self.kb_interface.get_obj_instance('person_0', Person._type)
+                person_msg.name = name
+                self.kb_interface.insert_obj_instance(name, person_msg, permanent_storage=True)
                 self.kb_interface.remove_obj_instance('person_0', Person._type)
-                # update the occupied spots
+
+                # the occupied spots are updated as well
                 spot = userdata.destination_locations
-                occupied_locations.typed_parameters.append(KeyValue(key=str(spot), value=new_entry[0]))
+                occupied_locations = self.kb_interface.get_obj_instance('occupied_locations',
+                                                                        DomainFormula._type)
+                occupied_locations.typed_parameters.append(KeyValue(key=str(spot), value=name))
                 self.kb_interface.update_obj_instance('occupied_locations', occupied_locations)
+
                 return "succeeded"
             else:
                 time.sleep(self._loop_rate_s)
@@ -73,10 +81,11 @@ class GetUserData(ScenarioStateBase):
         return "failed"
 
     def _load_spreadsheet(self):
-        # Construct the URL
-        URL = 'https://docs.google.com/spreadsheets/d/{0}/gviz/tq?tqx=out:csv&sheet={1}'.format(
-                self._sheet_id, self._worksheet_name)
-
-        # Fetch and process the csv data
-        data = pd.read_csv(URL, sep=",").to_numpy()
-        return data
+        URL = 'https://docs.google.com/spreadsheets/d/{0}/gviz/tq?tqx=out:csv&sheet={1}'.format(self._sheet_id,
+                                                                                                self._worksheet_name)
+        try:
+            data = pd.read_csv(URL, sep=",").to_numpy()
+            return data
+        except Exception as exc:
+            rospy.logerr(str(exc))
+            return None
