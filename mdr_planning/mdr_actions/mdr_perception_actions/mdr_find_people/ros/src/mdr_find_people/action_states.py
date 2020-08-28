@@ -3,9 +3,7 @@ import smach
 import torch
 
 from PIL import Image as PILImage
-import cv2
 import tf
-import face_recognition
 from sensor_msgs.msg import PointCloud2, Image
 from mdr_find_people.msg import FindPeopleResult
 from mas_perception_msgs.msg import Person, PersonList, ObjectView
@@ -56,8 +54,8 @@ class FindPeopleState(smach.State):
             cropped_cv = crop_image(cv_image, bb2d)
             cropped_img_msg = bridge.cv2_to_imgmsg(cropped_cv, encoding="passthrough")
 
-            rospy.loginfo('[find_people] Attempting to extract face of person {}'.format(i+1))
-            cropped_face_img = self._extract_face_image(cropped_cv)
+            rospy.loginfo('[find_people] Attempting to extract face of person {0}'.format(i+1))
+            cropped_face_img = FindPeople.extract_face_image(cropped_cv)
             if cropped_face_img is not None:
                 cropped_face_img_msg = bridge.cv2_to_imgmsg(cropped_face_img,
                                                             encoding='passthrough')
@@ -103,12 +101,3 @@ class FindPeopleState(smach.State):
 
         userdata['find_people_result'] = result
         return 'succeeded'
-
-    def _extract_face_image(self, image_array):
-        try:
-            top, right, bottom, left = face_recognition.face_locations(image_array)[0]
-            rospy.loginfo('[find_people] Successfully extracted face from person image.')
-            return image_array[top:bottom, left:right]
-        except IndexError:
-            rospy.logwarn('[find_people] Failed to extract face from person image!')
-            return None

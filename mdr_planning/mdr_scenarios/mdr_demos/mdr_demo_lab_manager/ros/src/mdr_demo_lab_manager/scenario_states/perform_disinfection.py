@@ -17,8 +17,9 @@ class PerformDisinfection(ScenarioStateBase):
         try:
             self.disinfection_cmd_pub = rospy.Publisher(self.disinfection_cmd_topic,
                                                         Empty, queue_size=1)
-        except:
+        except Exception as exc:
             rospy.logerr('[send_disinfection_command] Could not create a disinfection command publisher')
+            rospy.logerr(str(exc))
 
     def execute(self, userdata):
         self.disinfection_cmd_pub.publish(Empty())
