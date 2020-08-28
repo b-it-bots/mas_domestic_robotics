@@ -3,7 +3,9 @@
 import os
 import numpy as np
 
+import rospy
 from rospkg import RosPack
+import face_recognition
 
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
@@ -15,11 +17,6 @@ from ssd_keras_ros import SSDKerasObjectDetector
 
 
 class FindPeople(object):
-
-    def __init__(self):
-        pass
-
-
     @staticmethod
     def detect(cloud_msg):
         # Transform point cloud to base link
@@ -85,3 +82,13 @@ class FindPeople(object):
         cv_image = cloud_msg_to_cv_image(cloud_msg)
         image = draw_labeled_boxes(cv_image, bounding_boxes)
         return image
+
+    @staticmethod
+    def extract_face_image(image_array):
+        try:
+            top, right, bottom, left = face_recognition.face_locations(image_array)[0]
+            rospy.loginfo('[find_people] Successfully extracted face from person image.')
+            return image_array[top:bottom, left:right]
+        except IndexError:
+            rospy.logwarn('[find_people] Failed to extract face from person image!')
+            return None
