@@ -4,6 +4,7 @@
     <include file="$(find mdr_rosplan_interface)/ros/launch/rosplan.launch" />
 
     <!-- Actions -->
+    <include file="$(find mdr_listen_action)/ros/launch/listen.launch" />
     <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
     <include file="$(find mdr_find_people)/ros/launch/find_people_client.launch" />
 
