@@ -72,11 +72,14 @@ For external users, the following instructions should get you a working system:
     wstool update -t src
     rosdep install --from-paths src --ignore-src --rosdistro=kinetic -y
   ```
+  **Note:** If setting up on the robot, skip the `rosdep install` command.
+
 3. Build the code
 
   ```
   catkin build
   ```
+  Make sure that you have sourced `/opt/ros/kinetic/setup.bash` before building the packages.
 
 If you encounter any problems, please check the list of [issues](https://github.com/b-it-bots/mas_domestic_robotics/issues) and open a new one if you don't see a discussion of the problem there.
 
