@@ -9,6 +9,7 @@
         <param name="base_elbow_offset" value="-1." />
         <param name="placing_dmp" value="$(find mdr_place_action)/config/trajectory_weights/weights_table_place.yaml" />
         <param name="dmp_tau" value="30" />
+        <param name="downward_placing_vel" value="-0.02" />
         <rosparam param="placing_orientation">[0, 0, 0, 1]</rosparam>
     </node>
 </launch>
