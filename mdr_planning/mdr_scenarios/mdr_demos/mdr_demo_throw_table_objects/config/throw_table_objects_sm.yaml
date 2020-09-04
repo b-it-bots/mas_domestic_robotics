@@ -3,7 +3,7 @@
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_demo_throw_table_objects
 states: [GO_TO_OBSERVATION_POSE, PERCEIVE_TABLE, GO_TO_TABLE, PERCEIVE_TABLE_BEFORE_PICKING, PICK_OBJECT, GO_TO_TRASH_CAN, THROW_OBJECT]
-outcomes: [DONE, TIMEOUT, FAILED]
+outcomes: [FAILED]
 state_descriptions:
     - state:
         name: GO_TO_OBSERVATION_POSE
