@@ -51,6 +51,9 @@ class VerifyPerson(ScenarioStateBase):
         person = self.kb_interface.get_obj_instance('person_0', Person._type)
         if not person.face.views or not person.face.views[0].image.data:
             self.say('I could not see your face. Could you please look at me briefly?')
+
+            # we remove the person message from the knowledge base before transitioning
+            self.kb_interface.remove_obj_instance('person_0', Person._type)
             return 'face_not_seen'
 
         # Try to match face to current people in the lab
@@ -59,6 +62,9 @@ class VerifyPerson(ScenarioStateBase):
                                                                self.person_recognition_threshold)
 
         if recognised_person is not None:
+            # we remove the anonymous person message from the knowledge base
+            self.kb_interface.remove_obj_instance('person_0', Person._type)
+
             # Check if the person is logged
             person_logged = False
             for occ_spot in occupied_locations.typed_parameters:
@@ -97,6 +103,7 @@ class VerifyPerson(ScenarioStateBase):
                 return 'known_person'
 
         # No matching face, treat as new person
+        self.kb_interface.remove_obj_instance('person_0', Person._type)
         spot = self.choose_sitting_spot(occ_spots)
         userdata.destination_locations = ['spot_{0}'.format(spot)]
         occupied_locations.typed_parameters.append(KeyValue(key=str(spot), value='unknown'))
