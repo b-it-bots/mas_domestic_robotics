@@ -66,6 +66,8 @@ For external users, the following instructions should get you a working system:
   wstool init src
   wstool merge -t src https://raw.githubusercontent.com/b-it-bots/mas_domestic_robotics/devel/mas-domestic.rosinstall
   ```
+  **Note:** If you want to set up a development environment, replace `mas-domestic.rosinstall` with `mas-domestic-devel.rosinstall` in the above command.
+
 2. Get the code and dependencies
 
   ```
