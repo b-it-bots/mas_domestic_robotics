@@ -59,7 +59,7 @@
 
 - git:
     local-name: ROSPlan
-    uri: https://github.com/KCL-Planning/ROSPlan.git
+    uri: https://github.com/b-it-bots/ROSPlan.git
     version: master
 
 - git:

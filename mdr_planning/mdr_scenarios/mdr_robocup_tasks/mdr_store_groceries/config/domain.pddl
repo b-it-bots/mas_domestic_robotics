@@ -1,99 +1,101 @@
 (define (domain store-groceries)
 
-    (:requirements :strips :typing :fluents :disjunctive-preconditions :durative-actions)
+    (:requirements :strips :typing :equality)
 
     (:types
         waypoint
         object
-        category
+        object_class
         robot
         door
         plane
+        context
     )
+
+    (:constants place place_to_store pick pick_to_store - context)
 
     (:predicates
         (robot_name ?bot - robot)
-        (object_category ?obj - object ?cat - category)
         (robot_at ?bot - robot ?wp - waypoint)
         (door_at ?door - door ?wp - waypoint)
         (object_at ?obj - object ?wp - waypoint)
         (plane_at ?plane - plane ?wp - waypoint)
         (door_open ?door - door)
-        (belongs_to ?plane - plane ?obj - object)
-        (unexplored ?plane - plane)
+        (object_category ?obj - object ?class - object_class)
+        (stored_on ?class - object_class ?plane - plane)
         (explored ?plane - plane)
         (on ?obj - object ?plane - plane)
         (holding ?bot - robot ?obj - object)
         (empty_gripper ?bot - robot)
     )
 
-    (:durative-action move_base
+    (:action move_base
         :parameters (?bot - robot ?from ?to - waypoint)
-        :duration ( = ?duration 10)
-        :condition (and
-            (at start (robot_at ?bot ?from))
+        :precondition (and
+            (robot_at ?bot ?from)
         )
         :effect (and
-            (at start (not (robot_at ?bot ?from)))
-            (at end (robot_at ?bot ?to))
+            (not (robot_at ?bot ?from))
+            (robot_at ?bot ?to)
         )
     )
 
-    (:durative-action open_cupboard
+    (:action open_cupboard
         :parameters (?cupboard - door ?bot - robot ?c - waypoint)
-        :duration ( = ?duration 10)
-        :condition (and
-            (at start (door_at ?cupboard ?c))
-            (at start (robot_at ?bot ?c))
+        :precondition (and
+            (door_at ?cupboard ?c)
+            (robot_at ?bot ?c)
         )
         :effect (and
-            (at end (door_open ?cupboard))
+            (door_open ?cupboard)
         )
     )
 
-    (:durative-action perceive_plane
+    (:action perceive_plane
         :parameters (?plane - plane ?bot - robot ?wp - waypoint)
-        :duration ( = ?duration 10)
-        :condition (and
-            (at start (robot_at ?bot ?wp))
-            (at start (plane_at ?plane ?wp))
-            (at start (unexplored ?plane))
+        :precondition (and
+            (robot_at ?bot ?wp)
+            (plane_at ?plane ?wp)
         )
         :effect (and
-            (at start (not (unexplored ?plane)))
-            (at end (explored ?plane))
+            (explored ?plane)
         )
     )
 
-    (:durative-action pickup
-        :parameters (?obj - object ?plane - plane ?bot - robot ?wp - waypoint)
-        :duration ( = ?duration 10)
-        :condition (and
-            (at start (robot_at ?bot ?wp))
-            (at start (plane_at ?plane ?wp))
-            (at start (explored ?plane))
-            (at start (on ?obj ?plane))
-            (at start (empty_gripper ?bot))
+    (:action pickup
+        :parameters (?obj - object ?class - object_class ?x ?y - plane ?bot - robot ?wp - waypoint ?context - context)
+        :precondition (and
+            (= ?context pick_to_store)
+            (empty_gripper ?bot)
+            (robot_at ?bot ?wp)
+            (plane_at ?x ?wp)
+            (explored ?x)
+            (on ?obj ?x)
+            (object_category ?obj ?class)
+            (stored_on ?class ?y)
+            (not (= ?x ?y))
         )
         :effect (and
-            (at start (not (on ?obj ?plane)))
-            (at start (not (empty_gripper ?bot)))
-            (at end (holding ?bot ?obj))
+            (not (on ?obj ?x))
+            (not (empty_gripper ?bot))
+            (holding ?bot ?obj)
         )
     )
 
-    (:durative-action place
-        :parameters (?obj - object ?plane - plane ?bot - robot ?wp - waypoint)
-        :duration ( = ?duration 10)
-        :condition (and
-            (at start (robot_at ?bot ?wp))
-            (at start (plane_at ?plane ?wp))
-            (at start (holding ?bot ?obj))
+    (:action place
+        :parameters (?obj - object ?class - object_class ?plane - plane ?bot - robot ?wp - waypoint ?context - context)
+        :precondition (and
+            (= ?context place_to_store)
+            (robot_at ?bot ?wp)
+            (plane_at ?plane ?wp)
+            (holding ?bot ?obj)
+            (object_category ?obj ?class)
+            (stored_on ?class ?plane)
         )
         :effect (and
-            (at start (not (holding ?bot ?obj)))
-            (at start (empty_gripper ?bot))
-            (at end (on ?obj ?plane))
+            (not (holding ?bot ?obj))
+            (empty_gripper ?bot)
+            (on ?obj ?plane)
         )
     )
 )

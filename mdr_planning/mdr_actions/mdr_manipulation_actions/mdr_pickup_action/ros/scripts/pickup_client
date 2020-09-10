@@ -18,8 +18,9 @@ class PickupClient(ActionClientBase):
     def __init__(self):
         super(PickupClient, self).__init__()
 
-        self.obj_plane = None
         self.obj = None
+        self.obj_plane = None
+        self.context = None
         self.frame_id = rospy.get_param('~grasping_pose_frame', 'base_link')
         self.tf_listener = tf.TransformListener()
 
@@ -33,6 +34,7 @@ class PickupClient(ActionClientBase):
 
         rospy.loginfo('[PICKUP] Action request received')
         self.action_id = msg.action_id
+        self.__reset_action_parameters()
 
         client = actionlib.SimpleActionClient(self.action_server_name, PickupAction)
         client.wait_for_server()
@@ -64,6 +66,8 @@ class PickupClient(ActionClientBase):
                 self.obj_plane = param.value
             elif param.key == 'bot':
                 self.robot_name = param.value
+            elif param.key == 'context':
+                self.context = param.value
 
         try:
             obj = self.kb_interface.get_obj_instance(self.obj, Object._type)
@@ -75,6 +79,7 @@ class PickupClient(ActionClientBase):
             object_pose_in_grasp_frame = self.tf_listener.transformPose(self.frame_id,
                                                                         object_pose)
             goal.pose = object_pose_in_grasp_frame
+            goal.context = self.context
             return goal
         except KBException as exc:
             rospy.logerr('[pickup] %s', str(exc))
@@ -84,12 +89,20 @@ class PickupClient(ActionClientBase):
         '''Updates the knowledge base with the following facts:
         * the robot is holding the grasped object
         * the object is not on the plane anymore
-        * the robot's gripper is not empty anymore
+        * the robot's gripper is not empty anymore (if the grasping context
+          is not tabletop manipulation; if it is, the robot is still holding
+          the object)
         '''
         facts_to_add = [('holding', [('bot', self.robot_name), ('obj', self.obj)])]
-        facts_to_remove = [('on', [('obj', self.obj), ('plane', self.obj_plane)]),
-                           ('empty_gripper', [('bot', self.robot_name)])]
+        facts_to_remove = [('on', [('obj', self.obj), ('plane', self.obj_plane)])]
+        if self.context != PickupGoal.CONTEXT_TABLETOP_MANIPULATION:
+            facts_to_remove.append(('empty_gripper', [('bot', self.robot_name)]))
         self.kb_interface.update_kb(facts_to_add, facts_to_remove)
+
+    def __reset_action_parameters(self):
+        self.obj = None
+        self.obj_plane = None
+        self.context = None
 
 if __name__ == '__main__':
     rospy.init_node('pickup_client')

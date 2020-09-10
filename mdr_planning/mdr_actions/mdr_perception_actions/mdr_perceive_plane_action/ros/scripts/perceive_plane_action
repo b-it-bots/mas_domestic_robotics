@@ -16,6 +16,8 @@ class PerceivePlaneServer(object):
                                to be executed on images before inference
     * target_frame: Name of the reference frame the object and plane poses will be
                     transformed to (default: '/base_link')
+    * head_controller_pkg_name: Name of a package that implements functionalities for
+                                controlling a robot's head (default: 'mdr_head_controller')
 
     @author Minh Nguyen, Alex Mitrevski
     @contact minh.nguyen@smail.inf.h-brs.de, aleksandar.mitrevski@h-brs.de
@@ -25,11 +27,14 @@ class PerceivePlaneServer(object):
         detection_action_name = rospy.get_param('~detection_action_name', '/base_link')
         if not detection_action_name:
             raise RuntimeError('[perceive_plane] no detection action server specified')
-        recognition_service_name = rospy.get_param('~recognition_service_name', '/mdr_perception/recognize_image')
+        recognition_service_name = rospy.get_param('~recognition_service_name',
+                                                   '/mdr_perception/recognize_image')
         recognition_model_name = rospy.get_param('~recognition_model_name', 'athome_xception_v1')
         preprocess_input_module = rospy.get_param('~preprocess_input_module', None)
         classify_object = rospy.get_param('~classify_object', True)
         target_frame = rospy.get_param('~target_frame', '')
+        head_controller_pkg_name = rospy.get_param('~head_controller_pkg_name',
+                                                   'mdr_head_controller')
 
         rospy.loginfo('[perceive_plane] Initialising state machine')
         self.action_sm = PerceivePlaneSM(detection_service_proxy=detection_action_name,
@@ -37,7 +42,8 @@ class PerceivePlaneServer(object):
                                          recog_model_name=recognition_model_name,
                                          preprocess_input_module=preprocess_input_module,
                                          target_frame=target_frame,
-                                         classify_object=classify_object)
+                                         classify_object=classify_object,
+                                         head_controller_pkg_name=head_controller_pkg_name)
         rospy.loginfo('[perceive_plane] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('perceive_plane_server',

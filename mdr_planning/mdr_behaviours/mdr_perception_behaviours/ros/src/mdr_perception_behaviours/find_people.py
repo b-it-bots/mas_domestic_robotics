@@ -12,6 +12,7 @@ class FindPeople(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'find_people')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
+        self.debug = kwargs.get('debug', False)
         self.retry_count = 0
         self.timeout = 120.
 
@@ -30,14 +31,14 @@ class FindPeople(ScenarioStateBase):
 
         if self.succeeded:
             rospy.loginfo('[find_people] Successfully found people')
-            self.say('Successfully found people')
+            if self.debug: self.say('Successfully found people')
             return 'succeeded'
 
         rospy.loginfo('Could not find people')
-        self.say('Could not find people')
+        if self.debug: self.say('Could not find people')
         if self.retry_count == self.number_of_retries:
             rospy.loginfo('[find_people] Failed to find people')
-            self.say('Aborting operation')
+            if self.debug: self.say('Aborting operation')
             return 'failed_after_retrying'
         rospy.loginfo('[find_people] Retrying to find people')
         self.retry_count += 1

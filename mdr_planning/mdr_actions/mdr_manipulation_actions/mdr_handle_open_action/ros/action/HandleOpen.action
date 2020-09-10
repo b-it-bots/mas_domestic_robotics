@@ -1,0 +1,15 @@
+string PULL=pull_knob
+string LEVER=lever_knob
+string ROUND=round_knob
+string UNKNOWN=unknown
+
+# optional handle type for cross-checking
+# the results of the online handle detection
+string handle_type
+---
+# result
+bool success
+---
+# feedback
+string current_state
+string message

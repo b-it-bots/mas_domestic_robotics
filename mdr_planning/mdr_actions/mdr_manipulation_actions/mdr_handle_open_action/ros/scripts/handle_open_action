@@ -1,0 +1,78 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_handle_open_action.msg import HandleOpenAction
+from mdr_handle_open_action.action_states import HandleOpenSM
+
+class HandleOpenServer(object):
+    '''A server exposing an action for opening doors and furniture with handles.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * gripper_controller_pkg_name: The name of a package that implements functionalities
+                                   for controlling a robot's gripper
+                                   (default: 'mdr_gripper_controller')
+    * move_arm_server: Name of the move_arm action server (default: 'move_arm_server')
+    * move_base_server: Name of the move_base action server (default: 'move_base_server')
+    * move_forward_server: Name of the move_forward action server (default: 'move_forward_server')
+    * detect_handle_server: Name of a detect_handle action server (default: 'detect_handle_server')
+    * force_sensor_topic: Name of topic for wrist force sensor measurements
+                          (default: 'force_sensor_topic')
+    * pregrasp_config_name: Name of the pregrasp configuration (default: 'pregrasp_config_name')
+    * final_config_name: Name of the final configuration (default: 'final_config_name')
+    * handle_open_dmp: Path to a YAML file containing the weights of a dynamic
+                       motion primitive used for opening handles (default: '')
+    * dmp_tau: The value of the temporal dynamic motion primitive parameter (default: 30)
+
+    '''
+    def __init__(self):
+        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name',
+                                                      'mdr_gripper_controller')
+        move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
+        move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
+        move_forward_server = rospy.get_param('~move_forward_server', 'move_forward_server')
+        detect_handle_server = rospy.get_param('~detect_handle_server', 'detect_handle_server')
+        force_sensor_topic = rospy.get_param('~force_sensor_topic', 'force_sensor_topic')
+        pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp_config_name')
+        final_config_name = rospy.get_param('~final_config_name', 'final_config_name')
+        handle_open_dmp = rospy.get_param('~handle_open_dmp', '')
+        dmp_tau = rospy.get_param('~dmp_tau', 'dmp_tau')
+
+        rospy.loginfo('[handle_open] Initialising state machine')
+        self.action_sm = HandleOpenSM(gripper_controller_pkg_name=gripper_controller_pkg_name,
+                                      move_arm_server=move_arm_server,
+                                      move_base_server=move_base_server,
+                                      force_sensor_topic=force_sensor_topic,
+                                      move_forward_server=move_forward_server,
+                                      detect_handle_server=detect_handle_server,
+                                      pregrasp_config_name=pregrasp_config_name,
+                                      final_config_name=final_config_name,
+                                      handle_open_dmp=handle_open_dmp,
+                                      dmp_tau=dmp_tau)
+        rospy.loginfo('[handle_open] State machine initialised')
+
+        self.action_server = actionlib.SimpleActionServer('handle_open_server',
+                                                          HandleOpenAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('handle_open action server ready')
+
+    def execute(self, goal):
+        rospy.loginfo('[handle_open] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.result = None
+        self.action_sm.execution_requested = True
+        while not self.action_sm.result:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
+
+if __name__ == '__main__':
+    rospy.init_node('handle_open_server')
+    handle_open_server = HandleOpenServer()
+    try:
+        handle_open_server.action_sm.run()
+        while handle_open_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(handle_open_server.action_sm.name))
+        handle_open_server.action_sm.stop()

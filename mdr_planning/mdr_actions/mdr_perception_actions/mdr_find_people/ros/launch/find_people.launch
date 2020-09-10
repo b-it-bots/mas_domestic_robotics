@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
 <launch>
-    <arg name="pointcloud_topic" default="/rectified_points"/>
+    <arg name="pointcloud_topic" default="/mdr_perception/rectified_points"/>
+    <arg name="face_embedding_model_path" default="/home/robot/models/face_embedding_model.pt"/>
 
     <node pkg="mdr_find_people" type="find_people_server" name="find_people_server" output="screen" >
         <param name="pointcloud_topic" type="string" value="$(arg pointcloud_topic)" />
+        <param name="face_embedding_model_path" type="string" value="$(arg face_embedding_model_path)" />
     </node>
 </launch>

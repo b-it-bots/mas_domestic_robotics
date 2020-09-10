@@ -29,7 +29,7 @@ class FindPeopleClient(ActionClientBase):
         client.wait_for_result(rospy.Duration.from_sec(int(self.action_timeout)))
         result = client.get_result()
 
-        if result and result.person_list:
+        if result and result.person_list and result.person_list.persons:
             rospy.loginfo('[FIND_PEOPLE] Updating the knowledge base')
             self.update_knowledge_base(result.person_list)
             self.send_action_feedback(True)
