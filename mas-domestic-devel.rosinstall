@@ -6,37 +6,37 @@
 - git:
     local-name: mas_domestic_robotics
     uri: https://github.com/b-it-bots/mas_domestic_robotics.git
-    version: kinetic
+    version: devel
 
 - git:
     local-name: mas_navigation_tools
     uri: https://github.com/b-it-bots/mas_navigation_tools.git
-    version: kinetic
+    version: devel
 
 - git:
     local-name: mas_perception_libs
     uri: https://github.com/b-it-bots/mas_perception_libs.git
-    version: kinetic
+    version: devel
 
 - git:
     local-name: mas_perception_msgs
     uri: https://github.com/b-it-bots/mas_perception_msgs.git
-    version: kinetic
+    version: devel
 
 - git:
     local-name: mas_execution_manager
     uri: https://github.com/b-it-bots/mas_execution_manager.git
-    version: master
+    version: devel
 
 - git:
     local-name: mas_knowledge_base
     uri: https://github.com/b-it-bots/mas_knowledge_base.git
-    version: master
+    version: devel
 
 - git:
     local-name: action-execution
     uri: https://github.com/b-it-bots/action-execution.git
-    version: master
+    version: devel
 
 - git:
     local-name: ftsm
