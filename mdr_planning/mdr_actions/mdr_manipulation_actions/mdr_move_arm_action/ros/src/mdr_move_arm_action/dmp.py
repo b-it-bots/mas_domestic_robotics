@@ -50,31 +50,21 @@ class DMPExecutor(object):
         self.motion_completed = False
         self.motion_cancelled = False
 
-    def move_to(self, goal):
+    def move_to(self, goal_pose):
         '''Moves the end effector to the given goal position (which is expected
         to be given with respect to the base link frame) by following a trajectory
         as encoded by self.dmp_name.
 
         Keyword arguments:
-        goal: numpy.ndarray -- end effector goal position in the base link frame
+        goal_pose: geometry_msgs.msg.PoseStamped -- end effector goal pose
 
         '''
-        initial_pos = None
-        try:
-            self.tf_listener.waitForTransform(self.base_link_frame_name,
-                                              self.palm_link_name,
-                                              rospy.Time.now(),
-                                              rospy.Duration(30))
-            (trans, _) = self.tf_listener.lookupTransform(self.base_link_frame_name,
-                                                          self.palm_link_name,
-                                                          rospy.Time(0))
-            initial_pos = np.array(trans)
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-            initial_pos = np.zeros(3)
+        (trans, _) = self.get_transform(self.odom_frame_name, self.palm_link_name, rospy.Time.now())
+        initial_pos_odom = np.array(trans)
+        goal_odom = self.transform_pose(goal_pose, self.odom_frame_name)
+        self.follow_path(initial_pos_odom, goal_odom)
 
-        self.follow_path(initial_pos, goal)
-
-    def follow_path(self, initial_pos,  goal):
+    def follow_path(self, initial_pos_odom,  goal_pose_odom):
         '''Moves a manipulator so that it follows the given path. If whole body
         motion is enabled and some points on the path lie outside the reachable
         workspace, the base is moved accordingly as well. The path is followed
@@ -105,15 +95,25 @@ class DMPExecutor(object):
           minimum sigma value (determined experimentally)
 
         Keyword arguments:
-        path: numpy.ndarray -- a 2D array of points (each row represents a point)
+        initial_pos_odom: numpy.ndarray -- the initial position of the end effector
+                                           in the odometry frame
+        goal_pose_odom: geometry_msgs.msg.PoseStamped -- end effector goal pose
+                                                         in the odometry frame
 
         '''
         rospy.loginfo('[move_arm/dmp/follow_path] Executing motion')
         trans, _ = self.get_transform(self.odom_frame_name, self.palm_link_name, rospy.Time(0))
         current_pos = np.array([trans[0], trans[1], trans[2]])
+        goal = np.array([goal_pose_odom.pose.position.x,
+                         goal_pose_odom.pose.position.y,
+                         goal_pose_odom.pose.position.z])
+
         distance_to_goal = np.linalg.norm((goal - current_pos))
 
-        initial_pose = np.array([initial_pos[0], initial_pos[1], initial_pos[2], 0., 0., 0.])
+        initial_pose = np.array([initial_pos_odom[0],
+                                 initial_pos_odom[1],
+                                 initial_pos_odom[2],
+                                 0., 0., 0.])
         goal_pose = np.array([goal[0], goal[1], goal[2], 0., 0., 0.])
 
         current_path = initial_pose[:3]
@@ -220,30 +220,22 @@ class DMPExecutor(object):
                 continue
         return (trans, rot)
 
-    def transform_pose(self, position, source_frame, target_frame):
-        '''Transforms a given (x, y, z) position (assuming a (0, 0, 0) rotation)
-        from the source frame to the target frame. Returns a numpy array with the
-        (x, y, z) position represented in the target frame.
+    def transform_pose(self, pose_msg, target_frame):
+        '''Transforms the given pose to the target frame.
 
         Keyword arguments:
-        position: np.array -- (x, y, z) position to be transformed
-        source_frame: str -- name of the transformation source frame
+        pose_msg: geometry_msgs.msg.PoseStamped -- pose to be transformed
         target_frame: str -- name of the transformation target frame
 
         '''
-        pose_msg = PoseStamped()
-        pose_msg.header.frame_id = source_frame
-        pose_msg.pose.position.x = position[0]
-        pose_msg.pose.position.y = position[1]
-        pose_msg.pose.position.z = position[2]
-
+        transformed_pose = pose_msg
         while not rospy.is_shutdown():
             try:
-                pose_ = self.tf_listener.transformPose(target_frame, pose_msg)
+                transformed_pose = self.tf_listener.transformPose(target_frame, pose_msg)
                 break
             except:
                 continue
-        return np.array([pose_.pose.position.x, pose_.pose.position.y, pose_.pose.position.z])
+        return transformed_pose
 
     def publish_path(self, path):
         '''Publishes the given path to the topic specified by self.dmp_executor_path_topic.
