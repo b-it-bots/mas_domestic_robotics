@@ -74,33 +74,6 @@ class DMPExecutor(object):
 
         self.follow_path(initial_pos, goal)
 
-    def generate_trajectory(self, initial_pos, goal):
-        '''Returns a 2D numpy array representing a path of [x, y, z] points
-        from "initial_pos" to "goal" that follows the trajectory encoded
-        by self.dmp_name. Each row in the resulting array is a single point
-        on the path.
-
-        Keyword arguments:
-        initial_pos: numpy.ndarray -- initial position for the motion
-        goal: numpy.ndarray -- goal position
-
-        '''
-        initial_pose = np.array([initial_pos[0], initial_pos[1], initial_pos[2], 0., 0., 0.])
-        goal_pose = np.array([goal[0], goal[1], goal[2], 0., 0., 0.])
-
-        print('[move_arm/dmp] Querying trajectory')
-        print('[move_arm/dmp] Initial pose: ', initial_pose)
-        print('[move_arm/dmp] Goal pose: ', goal_pose)
-        cartesian_trajectory, _ = self.roll_dmp.get_trajectory_and_path(goal_pose,
-                                                                        initial_pose,
-                                                                        self.tau)
-
-        path = np.array([[state.pose.position.x,
-                          state.pose.position.y,
-                          state.pose.position.z]
-                         for state in cartesian_trajectory.cartesian_state])
-        return path
-
     def follow_path(self, initial_pos,  goal):
         '''Moves a manipulator so that it follows the given path. If whole body
         motion is enabled and some points on the path lie outside the reachable
@@ -301,7 +274,7 @@ class DMPExecutor(object):
         self.min_sigma_value = min(msg.data)
 
     def instantiate_dmp(self, initial_pose, goal_pose):
-        '''Instantiates a DMP object from learned weights, given 
+        '''Instantiates a DMP object from learned weights, given
         the initial and final poses.
 
         Keyword arguments:
@@ -321,10 +294,10 @@ class DMPExecutor(object):
         dmp_weights[4, :] = dmp_weights_dict['pitch']
         dmp_weights[5, :] = dmp_weights_dict['yaw']
 
-        return pydmps.dmp_discrete.DMPs_discrete(n_dmps=n_dmps, 
+        return pydmps.dmp_discrete.DMPs_discrete(n_dmps=n_dmps,
                                                  n_bfs=n_bfs,
                                                  dt=self.time_step,
                                                  y0=initial_pose,
                                                  goal=goal_pose,
-                                                 ay=None, 
+                                                 ay=None,
                                                  w=dmp_weights)
