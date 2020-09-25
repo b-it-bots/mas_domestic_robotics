@@ -13,6 +13,7 @@ from geometry_msgs.msg import WrenchStamped
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
+from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_hand_over_action.msg import HandOverGoal, HandOverResult
 
 from mdr_move_arm_action.dmp import DMPExecutor
@@ -24,12 +25,14 @@ class HandOverSM(ActionSMBase):
                  gripper_controller_pkg_name='mdr_gripper_controller',
                  force_sensor_topic='/wrench/raw',
                  move_arm_server='move_arm_server',
+                 move_base_server='move_base_server',
                  init_config_name = 'neutral',
                  hand_over_policy_config_dir='',
                  hand_over_position_policy_parameters_file = 'learned_position_policy_parameters.pkl',
                  hand_over_dmp_weights_dir='',
                  hand_over_dmp = 'grasp.yaml',
                  dmp_tau = 30.,
+                 person_dist_threshold = 0.5,
                  max_recovery_attempts=1):
         super(HandOverSM, self).__init__(
             'HandOver', [], max_recovery_attempts)
@@ -40,6 +43,7 @@ class HandOverSM(ActionSMBase):
         self.gripper = GripperControllerClass()
 
         self.move_arm_server = move_arm_server
+        self.move_base_server = move_base_server
 
         self.init_config_name = init_config_name
         self.hand_over_policy_config_dir = hand_over_policy_config_dir
@@ -49,6 +53,7 @@ class HandOverSM(ActionSMBase):
         self.dmp_tau = dmp_tau
         self.hand_over_position_policy_parameters_file = join(self.hand_over_policy_config_dir, hand_over_position_policy_parameters_file)
         self.hand_over_position_policy_parameters = self.load_policy_params_from_file(self.hand_over_position_policy_parameters_file)
+        self.person_dist_threshold = person_dist_threshold
 
         self.tf_listener = tf.TransformListener()
         self.force_sensor_topic = force_sensor_topic
@@ -63,6 +68,14 @@ class HandOverSM(ActionSMBase):
             self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
             rospy.loginfo('[hand_over] Waiting for %s server', self.move_arm_server)
             self.move_arm_client.wait_for_server()
+        except Exception as exc:
+            rospy.logerr('[hand_over] %s', str(exc))
+            return FTSMTransitions.INIT_FAILED
+
+        try:
+            self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
+            rospy.loginfo('[hand_over] Waiting for %s server', self.move_base_server)
+            self.move_base_client.wait_for_server()
         except Exception as exc:
             rospy.logerr('[hand_over] %s', str(exc))
             return FTSMTransitions.INIT_FAILED
@@ -130,7 +143,28 @@ class HandOverSM(ActionSMBase):
         self.hand_over_dmp = join(self.hand_over_dmp_weights_dir, trajectory_weights_filename)
 
         ## TODO: determine whether aligning base is necessary for hand_over action here:
-        ## ...
+        self.goal.release_detection = False
+        self.goal.person_pose = self.tf_listener.transformPose("base_link", self.goal.person_pose)
+        print("\n\n Person pose, x: {} \n\n", self.goal.person_pose.pose.position.x)
+        print("\n\n Person pose, y: {} \n\n", self.goal.person_pose.pose.position.y)
+
+        distance_to_person = np.sqrt(self.goal.person_pose.pose.position.x**2 + self.goal.person_pose.pose.position.y**2)
+        if distance_to_person > self.person_dist_threshold:
+            move_to_person_goal = MoveBaseGoal()
+            move_to_person_goal.goal_type = MoveBaseGoal.POSE
+            move_to_person_goal.pose.header.frame_id = self.goal.person_pose.header.frame_id
+            move_to_person_goal.pose.pose.position.x = self.goal.person_pose.pose.position.x - 0.2
+            move_to_person_goal.pose.pose.position.y = self.goal.person_pose.pose.position.y - 0.2
+            rospy.loginfo('[hand_over] Moving to person...')
+
+            self.move_base_client.send_goal(move_to_person_goal)
+            # TODO: check for action getting stuck (due to very close obst, etc.):
+            self.move_base_client.wait_for_result(rospy.Duration(10.))
+            result = self.move_base_client.get_result()
+
+        # Start with arm in neutral position:
+        rospy.loginfo('[hand_over] Moving arm to neutral position...')
+        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.init_config_name)
 
         # Move to chosen hand_over position, along appropriate trajectory:
         rospy.loginfo('[hand_over] Handing object over...')
@@ -222,7 +256,6 @@ class HandOverSM(ActionSMBase):
 
         self.cumsum_x += max(0, np.log(pdf_1.pdf(self.latest_force_measurement_x) / pdf_0.pdf(self.latest_force_measurement_x)))
 
-        print(self.cumsum_x)
         if self.cumsum_x > self.force_detection_threshold:
             rospy.loginfo('[hand_over] Object reception detected!')
             self.object_reception_detected = True

@@ -9,7 +9,7 @@ class HandOver(ScenarioStateBase):
         ScenarioStateBase.__init__(self, 'hand_over',
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'],
-                                   input_keys=['posture'])
+                                   input_keys=['posture', 'person_pose'])
         self.sm_id = kwargs.get('sm_id', 'mdr_demo_context_aware_hand_over')
         self.action_server = kwargs.get('action_server', 'hand_over_server')
         self.obstacle_present = kwargs.get('obstacle_present', False)
@@ -28,6 +28,7 @@ class HandOver(ScenarioStateBase):
         goal.obstacle = self.obstacle_present
         goal.context_aware = self.context_aware
         goal.release_detection = self.release_detection
+        goal.person_pose = userdata.person_pose
 
         # calling the actionlib server and waiting for the execution to end
         rospy.loginfo('[hand_over] Sending action lib goal to {0}'.format(self.action_server))

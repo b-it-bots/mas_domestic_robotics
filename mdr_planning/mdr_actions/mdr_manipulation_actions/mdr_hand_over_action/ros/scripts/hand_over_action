@@ -13,22 +13,26 @@ class HandOverServer(object):
     def __init__(self):
         gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name', 'mdr_gripper_controller')
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
+        move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
         init_config_name = rospy.get_param('~init_config_name', 'init_config_name')
         hand_over_dmp = rospy.get_param('~hand_over_dmp', '')
         pos_policy_params_file = rospy.get_param('~hand_over_position_policy_parameters_file', '')
         dmp_weights_dir = rospy.get_param('~hand_over_dmp_weights_dir', '')
         policy_config_dir = rospy.get_param('~hand_over_policy_config_dir', '')
         dmp_tau = rospy.get_param('~dmp_tau', 'dmp_tau')
+        person_dist_threshold = rospy.get_param('~person_dist_threshold', 'person_dist_threshold')
 
         rospy.loginfo('[hand_over] Initialising state machine')
         self.action_sm = HandOverSM(gripper_controller_pkg_name=gripper_controller_pkg_name,
                                       move_arm_server=move_arm_server,
+                                      move_base_server=move_base_server,
                                       init_config_name=init_config_name,
                                       hand_over_policy_config_dir=policy_config_dir,
                                       hand_over_dmp_weights_dir=dmp_weights_dir,
                                       hand_over_position_policy_parameters_file=pos_policy_params_file,
                                       hand_over_dmp=hand_over_dmp,
-                                      dmp_tau=dmp_tau)
+                                      dmp_tau=dmp_tau,
+                                      person_dist_threshold=person_dist_threshold)
         rospy.loginfo('[hand_over] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('hand_over_server',
