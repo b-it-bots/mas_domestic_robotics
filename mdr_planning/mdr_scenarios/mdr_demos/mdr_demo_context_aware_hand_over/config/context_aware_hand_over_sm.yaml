@@ -28,6 +28,9 @@ state_descriptions:
             - transition:
                 name: succeeded
                 state: HAND_OVER
+            - transition:
+                name: failed
+                state: DETECT_PERSON
         arguments:
             - argument:
                 name: posture_height_width_ratio_ranges
