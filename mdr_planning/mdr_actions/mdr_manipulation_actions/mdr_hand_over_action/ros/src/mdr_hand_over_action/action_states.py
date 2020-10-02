@@ -47,7 +47,7 @@ class HandOverSM(ActionSMBase):
 
         self.init_config_name = init_config_name
         self.hand_over_policy_config_dir = hand_over_policy_config_dir
-        self.hand_over_dmp_weights_dir = hand_over_dmp_weights_dir 
+        self.hand_over_dmp_weights_dir = hand_over_dmp_weights_dir
 
         self.hand_over_dmp = hand_over_dmp
         self.dmp_tau = dmp_tau
@@ -89,7 +89,6 @@ class HandOverSM(ActionSMBase):
     def running(self):
         hand_over_pose = PoseStamped()
         hand_over_pose.header.frame_id = 'base_link'
-        hand_over_pose.header.stamp = rospy.Time.now()
         if self.goal.context_aware:
             # > Pick context-dependent hand-over position:
             policy_parameter_a = self.hand_over_position_policy_parameters[0][0]
@@ -101,7 +100,7 @@ class HandOverSM(ActionSMBase):
                 context_vector = np.array([0.5, 0.0, 0.0])
             elif self.goal.posture_type == 'lying':
                 context_vector = np.array([0.0, 0.7, 0.0])
-        
+
             # Sample upper-level policy (with no exploration) for hand-over position;
             # by calculating the mean of the linear-Gaussian model, given context vector s:
             hand_over_position = np.squeeze(policy_parameter_a + context_vector.dot(policy_parameter_A))
@@ -120,17 +119,15 @@ class HandOverSM(ActionSMBase):
         hand_over_pose.pose.orientation.z = 0.000
         hand_over_pose.pose.orientation.w = 1.000
 
-        pose_base_link = self.tf_listener.transformPose('base_link', hand_over_pose)
-
         # > Pick context_dependent hand-over trajectory shape:
         if not self.goal.obstacle:
             trajectory_weights_filename = 'grasp.yaml'
         else:
             ## Uncomment one of the following if testing other learned parameters is desired:
-            
+
             ## Initial learned trajectory:
             # trajectory_weights_filename = 'learned_obstacle_avoiding_weights.yaml'
-            
+
             ## Smoothed learned trajectory:
             # trajectory_weights_filename = 'learned_smoothed_obstacle_avoiding_weights.yaml'
 
@@ -143,7 +140,6 @@ class HandOverSM(ActionSMBase):
         self.hand_over_dmp = join(self.hand_over_dmp_weights_dir, trajectory_weights_filename)
 
         ## TODO: determine whether aligning base is necessary for hand_over action here:
-        self.goal.release_detection = False
         self.goal.person_pose = self.tf_listener.transformPose("base_link", self.goal.person_pose)
         print("\n\n Person pose, x: {} \n\n", self.goal.person_pose.pose.position.x)
         print("\n\n Person pose, y: {} \n\n", self.goal.person_pose.pose.position.y)
@@ -168,7 +164,7 @@ class HandOverSM(ActionSMBase):
 
         # Move to chosen hand_over position, along appropriate trajectory:
         rospy.loginfo('[hand_over] Handing object over...')
-        self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+        self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, hand_over_pose)
 
         if not self.goal.release_detection:
             # Naive object release strategy:
@@ -195,7 +191,7 @@ class HandOverSM(ActionSMBase):
                 rospy.sleep(0.1)
 
             # If a pull is detected, release the object:
-            if self.object_reception_detected:        
+            if self.object_reception_detected:
                 rospy.loginfo('[hand_over] Opening the gripper to release object...')
                 self.gripper.open()
             else:
@@ -259,6 +255,6 @@ class HandOverSM(ActionSMBase):
         if self.cumsum_x > self.force_detection_threshold:
             rospy.loginfo('[hand_over] Object reception detected!')
             self.object_reception_detected = True
-        
+
     def force_sensor_cb(self, force_sensor_msg):
         self.latest_force_measurement_x = force_sensor_msg.wrench.force.x
