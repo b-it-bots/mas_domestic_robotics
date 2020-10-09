@@ -10,14 +10,22 @@ class RecognizeGestureServer(object):
     '''A server exposing an action for recognizing bodily gestures.
 
     The server expects the following parameters to be made available on the ROS parameter server:
-    * gesture_type: Name of the gesture. Providing this bypasses gesture classification (default: '')
+    * gesture_type: Name of the gesture. Providing this bypasses gesture classification (default: 'pointing')
 
     '''
     def __init__(self):
-        gesture_type = rospy.get_param('~gesture_type', 'gesture_type', None)
+        gesture_type = rospy.get_param('~gesture_type', None)
+        openpose_models_dir = rospy.get_param('~openpose_models_dir', '/home/lucy/.models/op_models/')
+        pointcloud_topic = rospy.get_param('~pointcloud_topic', '/mdr_perception/rectified_points')
+        ssd_detector_class_file = rospy.get_param('~ssd_detector_class_file', '')
+        ssd_detector_kwargs_file = rospy.get_param('~ssd_detector_kwargs_file', '')
 
         rospy.loginfo('[recognize_gesture] Initialising state machine')
-        self.action_sm = RecognizeGestureSM(gesture_type=gesture_type)
+        self.action_sm = RecognizeGestureSM(gesture_type=gesture_type,
+                                            openpose_models_dir=openpose_models_dir,
+                                            pointcloud_topic=pointcloud_topic,
+                                            ssd_detector_class_file=ssd_detector_class_file,
+                                            ssd_detector_kwargs_file=ssd_detector_kwargs_file)
         rospy.loginfo('[recognize_gesture] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('recognize_gesture_server',

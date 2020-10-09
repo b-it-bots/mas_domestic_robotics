@@ -1,6 +1,0 @@
-<?xml version="1.0"?>
-<launch>
-    <node pkg="mdr_recognize_gesture_action" type="mdr_recognize_gesture" name="mdr_recognize_gesture_server" output="screen">
-        <param name="gesture_type" value="pointing" />
-    </node>
-</launch>
