@@ -3,13 +3,14 @@
     <node pkg="mdr_hand_over_action" type="hand_over_action" name="hand_over_server" output="screen">
         <param name="move_arm_server" value="move_arm_server" />
         <param name="move_base_server" value="move_base_server" />
-        <param name="gripper_controller_pkg_name" value="mas_hsr_gripper_controller" />
+        <param name="force_sensor_topic" value="/wrench/compensated" />
+        <param name="gripper_controller_pkg_name" value="mdr_gripper_controller" />
         <param name="init_config_name" value="neutral" />
         <param name="hand_over_dmp" value="grasp.yaml" />
         <param name="hand_over_position_policy_parameters_file" value="learned_position_policy_parameters.pkl" />
         <param name="hand_over_policy_config_dir" value="$(find mdr_hand_over_action)/config/learned_policy_parameters/" />
         <param name="hand_over_dmp_weights_dir" value="$(find mdr_hand_over_action)/config/trajectory_weights/" />
         <param name="dmp_tau" value="30" />
-        <param name="person_dist_threshold" value="0.5" />
+        <param name="person_dist_threshold" value="0.4" />
     </node>
 </launch>
