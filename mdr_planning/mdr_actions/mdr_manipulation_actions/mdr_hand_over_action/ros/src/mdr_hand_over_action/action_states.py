@@ -89,7 +89,6 @@ class HandOverSM(ActionSMBase):
     def running(self):
         hand_over_pose = PoseStamped()
         hand_over_pose.header.frame_id = 'base_link'
-        hand_over_pose.header.stamp = rospy.Time.now()
         if self.goal.context_aware:
             # > Pick context-dependent hand-over position:
             policy_parameter_a = self.hand_over_position_policy_parameters[0][0]
@@ -168,7 +167,7 @@ class HandOverSM(ActionSMBase):
 
         # Move to chosen hand_over position, along appropriate trajectory:
         rospy.loginfo('[hand_over] Handing object over...')
-        self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+        self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, hand_over_pose)
 
         if not self.goal.release_detection:
             # Naive object release strategy:
