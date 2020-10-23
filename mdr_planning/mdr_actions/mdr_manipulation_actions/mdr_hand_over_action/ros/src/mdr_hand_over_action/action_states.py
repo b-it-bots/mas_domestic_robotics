@@ -119,17 +119,15 @@ class HandOverSM(ActionSMBase):
         hand_over_pose.pose.orientation.z = 0.000
         hand_over_pose.pose.orientation.w = 1.000
 
-        pose_base_link = self.tf_listener.transformPose('base_link', hand_over_pose)
-
         # > Pick context_dependent hand-over trajectory shape:
         if not self.goal.obstacle:
             trajectory_weights_filename = 'grasp.yaml'
         else:
             ## Uncomment one of the following if testing other learned parameters is desired:
-            
+
             ## Initial learned trajectory:
             # trajectory_weights_filename = 'learned_obstacle_avoiding_weights.yaml'
-            
+
             ## Smoothed learned trajectory:
             # trajectory_weights_filename = 'learned_smoothed_obstacle_avoiding_weights.yaml'
 
@@ -141,25 +139,21 @@ class HandOverSM(ActionSMBase):
 
         self.hand_over_dmp = join(self.hand_over_dmp_weights_dir, trajectory_weights_filename)
 
-        ## TODO: determine whether aligning base is necessary for hand_over action here:
-        self.goal.release_detection = False
         self.goal.person_pose = self.tf_listener.transformPose("base_link", self.goal.person_pose)
-        print("\n\n Person pose, x: {} \n\n", self.goal.person_pose.pose.position.x)
-        print("\n\n Person pose, y: {} \n\n", self.goal.person_pose.pose.position.y)
 
         distance_to_person = np.sqrt(self.goal.person_pose.pose.position.x**2 + self.goal.person_pose.pose.position.y**2)
         if distance_to_person > self.person_dist_threshold:
             move_to_person_goal = MoveBaseGoal()
             move_to_person_goal.goal_type = MoveBaseGoal.POSE
             move_to_person_goal.pose.header.frame_id = self.goal.person_pose.header.frame_id
-            move_to_person_goal.pose.pose.position.x = self.goal.person_pose.pose.position.x - 0.2
-            move_to_person_goal.pose.pose.position.y = self.goal.person_pose.pose.position.y - 0.2
+            move_to_person_goal.pose.pose.position.x = self.goal.person_pose.pose.position.x - 0.3
+            move_to_person_goal.pose.pose.position.y = self.goal.person_pose.pose.position.y - 0.3
             rospy.loginfo('[hand_over] Moving to person...')
 
             self.move_base_client.send_goal(move_to_person_goal)
-            # TODO: check for action getting stuck (due to very close obst, etc.):
             self.move_base_client.wait_for_result(rospy.Duration(10.))
             result = self.move_base_client.get_result()
+            self.move_base_client.cancel_goal()
 
         # Start with arm in neutral position:
         rospy.loginfo('[hand_over] Moving arm to neutral position...')
