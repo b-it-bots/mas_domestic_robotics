@@ -14,9 +14,7 @@ from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
-from mdr_hand_over_action.msg import HandOverGoal, HandOverResult
-
-from mdr_move_arm_action.dmp import DMPExecutor
+from mdr_hand_over_action.msg import HandOverResult
 
 from importlib import import_module
 
@@ -151,8 +149,12 @@ class HandOverSM(ActionSMBase):
             rospy.loginfo('[hand_over] Moving to person...')
 
             self.move_base_client.send_goal(move_to_person_goal)
+
+            # we try moving towards the person before handing the object over;
+            # the person should be close by, so we move for a short time
+            # since the robot will either reach the person in that time,
+            # or will stop as close to the person as possible
             self.move_base_client.wait_for_result(rospy.Duration(10.))
-            result = self.move_base_client.get_result()
             self.move_base_client.cancel_goal()
 
         # Start with arm in neutral position:
