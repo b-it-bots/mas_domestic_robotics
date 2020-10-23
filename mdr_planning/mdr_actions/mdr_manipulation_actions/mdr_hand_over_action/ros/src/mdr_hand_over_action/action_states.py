@@ -58,8 +58,8 @@ class HandOverSM(ActionSMBase):
         self.tf_listener = tf.TransformListener()
         self.force_sensor_topic = force_sensor_topic
 
-        self.latest_force_measurement_x = 0.
-        self.cumsum_x = 0
+        self.latest_force_measurement_z = 0.
+        self.cumsum_z = 0
         self.force_detection_threshold = 1.
         self.object_reception_detected = False
 
@@ -187,7 +187,7 @@ class HandOverSM(ActionSMBase):
             rospy.loginfo('[hand_over] Waiting for object to be received...')
             rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
             self.object_reception_detected = False
-            self.cumsum_x = 0.
+            self.cumsum_z = 0.
 
             start_time = rospy.get_time()
             while (rospy.get_time() - start_time) < 50 and not self.object_reception_detected:
@@ -247,18 +247,18 @@ class HandOverSM(ActionSMBase):
             return pickle.load(f)
 
     def detect_object_reception(self):
-        mu_0 = -2
-        mu_1 = -20
-        std = 1
+        mu_0 = 0.
+        mu_1 = -6.
+        std = 1.
 
         pdf_0 = norm(mu_0, std)
         pdf_1 = norm(mu_1, std)
 
-        self.cumsum_x += max(0, np.log(pdf_1.pdf(self.latest_force_measurement_x) / pdf_0.pdf(self.latest_force_measurement_x)))
+        self.cumsum_z += max(0., np.log(pdf_1.pdf(self.latest_force_measurement_z) / pdf_0.pdf(self.latest_force_measurement_z)))
 
-        if self.cumsum_x > self.force_detection_threshold:
+        if self.cumsum_z > self.force_detection_threshold:
             rospy.loginfo('[hand_over] Object reception detected!')
             self.object_reception_detected = True
-        
+
     def force_sensor_cb(self, force_sensor_msg):
-        self.latest_force_measurement_x = force_sensor_msg.wrench.force.x
+        self.latest_force_measurement_z = force_sensor_msg.wrench.force.z
