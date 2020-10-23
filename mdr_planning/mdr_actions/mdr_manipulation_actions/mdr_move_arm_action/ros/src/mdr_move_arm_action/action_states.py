@@ -33,7 +33,7 @@ class MoveArmSM(ActionSMBase):
             rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
             success = self.arm.go(wait=True)
         elif self.goal.goal_type == MoveArmGoal.END_EFFECTOR_POSE:
-            pose = self.goal.end_effector_pose
+            goal = self.goal.end_effector_pose
             dmp_name = self.goal.dmp_name
             tau = self.goal.dmp_tau
             rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
@@ -42,8 +42,6 @@ class MoveArmSM(ActionSMBase):
             # otherwise, we just use moveit for planning a trajectory and moving the arm
             if dmp_name:
                 dmp_traj_executor = DMPExecutor(dmp_name, tau)
-                goal = np.array([pose.pose.position.x, pose.pose.position.y, pose.pose.position.z])
-
                 dmp_execution_thread = Thread(target=dmp_traj_executor.move_to, args=(goal,))
                 dmp_execution_thread.start()
                 while not dmp_traj_executor.motion_completed and \
@@ -58,8 +56,8 @@ class MoveArmSM(ActionSMBase):
                     self.result = self.set_result(False)
                     return FTSMTransitions.DONE
             else:
-                self.arm.set_pose_reference_frame(pose.header.frame_id)
-                self.arm.set_pose_target(pose.pose)
+                self.arm.set_pose_reference_frame(goal.header.frame_id)
+                self.arm.set_pose_target(goal.pose)
                 success = self.arm.go(wait=True)
         elif self.goal.goal_type == MoveArmGoal.JOINT_VALUES:
             joint_values = self.goal.joint_values
