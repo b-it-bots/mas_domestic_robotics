@@ -70,9 +70,7 @@ class FindPeople(object):
         for i, _ in enumerate(predictions):
             bb2d = bounding_boxes[i]
 
-            cropped_cloud = crop_organized_cloud_msg(cloud_msg, bb2d)
             obj_coords = crop_cloud_to_xyz(cloud_msg, bb2d)
-
             imputer = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
             imputer.fit(obj_coords.reshape(obj_coords.shape[0]*obj_coords.shape[1], obj_coords.shape[2]))
             obj_coords_without_nans = imputer.transform(obj_coords.reshape(obj_coords.shape[0]*obj_coords.shape[1], obj_coords.shape[2]))
