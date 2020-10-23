@@ -14,6 +14,7 @@ class HandOverServer(object):
         gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name', 'mdr_gripper_controller')
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
         move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
+        force_sensor_topic = rospy.get_param('~force_sensor_topic', '/wrist/compensated')
         init_config_name = rospy.get_param('~init_config_name', 'init_config_name')
         hand_over_dmp = rospy.get_param('~hand_over_dmp', '')
         pos_policy_params_file = rospy.get_param('~hand_over_position_policy_parameters_file', '')
@@ -26,6 +27,7 @@ class HandOverServer(object):
         self.action_sm = HandOverSM(gripper_controller_pkg_name=gripper_controller_pkg_name,
                                       move_arm_server=move_arm_server,
                                       move_base_server=move_base_server,
+                                      force_sensor_topic=force_sensor_topic,
                                       init_config_name=init_config_name,
                                       hand_over_policy_config_dir=policy_config_dir,
                                       hand_over_dmp_weights_dir=dmp_weights_dir,

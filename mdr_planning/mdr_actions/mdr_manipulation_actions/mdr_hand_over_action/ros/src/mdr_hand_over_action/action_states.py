@@ -23,7 +23,7 @@ from importlib import import_module
 class HandOverSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mdr_gripper_controller',
-                 force_sensor_topic='/wrench/raw',
+                 force_sensor_topic='/wrench/compensated',
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  init_config_name = 'neutral',
