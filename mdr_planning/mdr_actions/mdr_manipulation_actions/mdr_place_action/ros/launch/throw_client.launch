@@ -4,15 +4,19 @@
     <arg name="action_feedback_topic" default="/kcl_rosplan/action_feedback"/>
     <arg name="knowledge_update_service" default="/rosplan_knowledge_base/update"/>
     <arg name="attribute_fetching_service" default="/rosplan_knowledge_base/state/propositions"/>
+    <arg name="action_name" default="throw" />
+    <arg name="server_name" default="/place_server" />
+    <arg name="action_timeout" default="120" />
+    <arg name="placing_pose_frame" default="base_link" />
 
     <node pkg="mdr_place_action" type="throw_client" name="throw_client" output="screen">
-        <param name="action_name" type="str" value="throw" />
-        <param name="server_name" type="str" value="/place_server" />
-        <param name="action_timeout" type="double" value="120" />
+        <param name="action_name" type="str" value="$(arg action_name)" />
+        <param name="server_name" type="str" value="$(arg server_name)" />
+        <param name="action_timeout" type="double" value="$(arg action_timeout)" />
+        <param name="placing_pose_frame" type="str" value="$(arg placing_pose_frame)" />
         <remap from="action_dispatch_topic" to="$(arg action_dispatch_topic)" />
         <remap from="action_feedback_topic" to="$(arg action_feedback_topic)" />
         <remap from="knowledge_update_service" to="$(arg knowledge_update_service)" />
         <remap from="attribute_fetching_service" to="$(arg attribute_fetching_service)" />
-        <param name="placing_pose_frame" type="str" value="base_link" />
     </node>
 </launch>
