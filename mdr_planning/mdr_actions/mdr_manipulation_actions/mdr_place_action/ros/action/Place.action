@@ -1,5 +1,7 @@
 # goal
-geometry_msgs/PoseStamped pose
+geometry_msgs/PoseStamped pose        # pose at which the object should be placed
+bool release_on_impact                # whether the object should be released only if
+                                      # impact with a placing surface is detected
 ---
 # result
 bool success
