@@ -1,15 +1,26 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="move_arm_server" default="move_arm_server" />
+    <arg name="move_base_server" default="move_base_server" />
+    <arg name="gripper_controller_pkg_name" default="mdr_gripper_controller" />
+    <arg name="preplace_config_name" default="pregrasp" />
+    <arg name="safe_arm_joint_config" default="folded" />
+    <arg name="base_elbow_offset" default="-1." />
+    <arg name="placing_dmp" default="$(find mdr_place_action)/config/trajectory_weights/weights_table_place.yaml" />
+    <arg name="dmp_tau" default="30" />
+    <arg name="placing_orientation" default="[0, 0, 0, 1]" />
+    <arg name="downward_placing_vel" default="-0.02" />
+
     <node pkg="mdr_place_action" type="place_action" name="place_server" output="screen">
-        <param name="move_arm_server" value="move_arm_server" />
-        <param name="move_base_server" value="move_base_server" />
-        <param name="gripper_controller_pkg_name" value="mdr_gripper_controller" />
-        <param name="preplace_config_name" value="pregrasp" />
-        <param name="safe_arm_joint_config" value="folded" />
-        <param name="base_elbow_offset" value="-1." />
-        <param name="placing_dmp" value="$(find mdr_place_action)/config/trajectory_weights/weights_table_place.yaml" />
-        <param name="dmp_tau" value="30" />
-        <param name="downward_placing_vel" value="-0.02" />
-        <rosparam param="placing_orientation">[0, 0, 0, 1]</rosparam>
+        <param name="move_arm_server" value="$(arg move_arm_server)" />
+        <param name="move_base_server" value="$(arg move_base_server)" />
+        <param name="gripper_controller_pkg_name" value="$(arg gripper_controller_pkg_name)" />
+        <param name="preplace_config_name" value="$(arg preplace_config_name)" />
+        <param name="safe_arm_joint_config" value="$(arg safe_arm_joint_config)" />
+        <param name="base_elbow_offset" value="$(arg base_elbow_offset)" />
+        <param name="placing_dmp" value="$(arg placing_dmp)" />
+        <param name="dmp_tau" value="$(arg dmp_tau)" />
+        <param name="downward_placing_vel" value="$(arg downward_placing_vel)" />
+        <rosparam param="placing_orientation" subst_value="True">$(arg placing_orientation)</rosparam>
     </node>
 </launch>

@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="move_arm_server" default="move_arm_server" />
+    <arg name="move_base_server" default="move_base_server" />
+    <arg name="force_sensor_topic" default="/wrench/compensated" />
+    <arg name="gripper_controller_pkg_name" default="mdr_gripper_controller" />
+    <arg name="init_config_name" default="pregrasp" />
+    <arg name="hand_over_dmp" default="grasp.yaml" />
+    <arg name="hand_over_position_policy_parameters_file" default="learned_position_policy_parameters.pkl" />
+    <arg name="hand_over_policy_config_dir" default="$(find mdr_hand_over_action)/config/learned_policy_parameters/" />
+    <arg name="hand_over_dmp_weights_dir" default="$(find mdr_hand_over_action)/config/trajectory_weights/" />
+    <arg name="dmp_tau" default="30" />
+    <arg name="person_dist_threshold" default="0.4" />
+
+    <node pkg="mdr_hand_over_action" type="hand_over_action" name="hand_over_server" output="screen">
+        <param name="move_arm_server" value="$(arg move_arm_server)" />
+        <param name="move_base_server" value="$(arg move_base_server)" />
+        <param name="force_sensor_topic" value="$(arg force_sensor_topic)" />
+        <param name="gripper_controller_pkg_name" value="$(arg gripper_controller_pkg_name)" />
+        <param name="init_config_name" value="$(arg init_config_name)" />
+        <param name="hand_over_dmp" value="$(arg hand_over_dmp)" />
+        <param name="hand_over_position_policy_parameters_file" value="$(arg hand_over_position_policy_parameters_file)" />
+        <param name="hand_over_policy_config_dir" value="$(arg hand_over_policy_config_dir)" />
+        <param name="hand_over_dmp_weights_dir" value="$(arg hand_over_dmp_weights_dir)" />
+        <param name="dmp_tau" value="$(arg dmp_tau)" />
+        <param name="person_dist_threshold" value="$(arg person_dist_threshold)" />
+    </node>
+</launch>

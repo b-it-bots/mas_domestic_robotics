@@ -1,0 +1,13 @@
+# goal
+string posture_type
+bool obstacle
+bool release_detection
+bool context_aware
+geometry_msgs/PoseStamped person_pose
+---
+# result
+bool success
+---
+# feedback
+string current_state
+string message

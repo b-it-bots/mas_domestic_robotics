@@ -1,7 +1,10 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="emotion_model_path" default="$(find mdr_recognize_emotion_action)/common/config/emotion_classifier.hdf5" />
+    <arg name="image_topic" default="/cam3d/rgb/image_raw"/>
+
     <node pkg="mdr_recognize_emotion_action" type="recognize_emotion_action" name="recognize_emotion_server" output="screen" ns="mdr_actions">
-        <param name="emotion_model_path" value="$(find mdr_recognize_emotion_action)/common/config/emotion_classifier.hdf5" />
-        <param name="image_topic" value="/cam3d/rgb/image_raw"/>
+        <param name="emotion_model_path" value="$(arg emotion_model_path)" />
+        <param name="image_topic" value="$(arg image_topic)"/>
     </node>
 </launch>

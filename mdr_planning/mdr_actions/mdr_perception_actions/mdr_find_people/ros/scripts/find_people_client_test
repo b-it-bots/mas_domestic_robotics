@@ -19,8 +19,14 @@ if __name__ == '__main__':
         print('Sending goal...')
         client.send_goal(goal)
         print('Waiting for result...')
-        client.wait_for_result(rospy.Duration.from_sec(20))
-        rospy.loginfo(client.get_result())
+        client.wait_for_result(rospy.Duration.from_sec(120))
+
+        result = client.get_result()
+        if result is None:
+            rospy.logerr('No people found')
+        rospy.loginfo('Found {0} people'.format(len(result.person_list.persons)))
+        for person in result.person_list.persons:
+            rospy.loginfo('Image_size: width -- {0}, height -- {1}'.format(person.rgb_image.width, person.rgb_image.height))
     except Exception as e:
         rospy.logerr('Failed to execute find people action: {}'.format(repr(e)))
 
