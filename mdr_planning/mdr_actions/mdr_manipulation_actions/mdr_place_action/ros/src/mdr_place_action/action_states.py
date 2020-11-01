@@ -101,13 +101,14 @@ class PlaceSM(ActionSMBase):
         rospy.loginfo('[place] Arm motion successful')
 
         # the arm is moved down until it makes an impact with the placing surface
-        rospy.loginfo('[place] Moving arm down until surface impact is detected...')
-        self.gripper.init_impact_detection_z()
-        while not self.gripper.detect_impact_z():
-            self.gripper.move_down()
-            rospy.sleep(0.1)
-        self.gripper.stop_arm()
-        rospy.loginfo('[place] Impact detected')
+        if self.goal.release_on_impact:
+            rospy.loginfo('[place] Moving arm down until surface impact is detected...')
+            self.gripper.init_impact_detection_z()
+            while not self.gripper.detect_impact_z():
+                self.gripper.move_down()
+                rospy.sleep(0.1)
+            self.gripper.stop_arm()
+            rospy.loginfo('[place] Impact detected')
 
         # the object can be released now that impact with the surface has been made
         rospy.loginfo('[place] Opening the gripper...')
