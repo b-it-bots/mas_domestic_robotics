@@ -9,6 +9,7 @@
     <arg name="placing_dmp" default="$(find mdr_place_action)/config/trajectory_weights/weights_table_place.yaml" />
     <arg name="dmp_tau" default="30" />
     <arg name="placing_orientation" default="[0, 0, 0, 1]" />
+    <arg name="downward_placing_vel" default="-0.02" />
 
     <node pkg="mdr_place_action" type="place_action" name="place_server" output="screen">
         <param name="move_arm_server" value="$(arg move_arm_server)" />
@@ -19,6 +20,7 @@
         <param name="base_elbow_offset" value="$(arg base_elbow_offset)" />
         <param name="placing_dmp" value="$(arg placing_dmp)" />
         <param name="dmp_tau" value="$(arg dmp_tau)" />
+        <param name="downward_placing_vel" value="$(arg downward_placing_vel)" />
         <rosparam param="placing_orientation" subst_value="True">$(arg placing_orientation)</rosparam>
     </node>
 </launch>
