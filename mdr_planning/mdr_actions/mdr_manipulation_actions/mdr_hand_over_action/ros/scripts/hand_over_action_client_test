@@ -13,11 +13,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='help text')
     parser.add_argument("--posture", "-p", type=str, default='seated',
-                        help="posture context parameters. Choose from 'standing', 'seated', or 'lying'.") 
-    parser.add_argument("--obstacle", "-o", type=bool, default=0,
-                        help="list of context parameters. Choose 0 for no obstacle or 1 for obstacle.") 
-    parser.add_argument("--release_detection", "-r", type=bool, default=1,
-                        help="list of context parameters. E.g.: 0") 
+                        help="posture context parameters. Choose from 'standing', 'seated', or 'lying'.")
+    parser.add_argument("--context_aware", "-c", action="store_true", dest="context_aware",
+                        help="Use context-based handover")
+    parser.add_argument("--obstacle_avoidance", "-o", action="store_true", dest="obstacle",
+                        help="Use obstacle avoidance")
+    parser.add_argument("--release_detection", "-r", action="store_true", dest="release_detection",
+                        help="Use force-torque sensor for release detection")
     args = parser.parse_args()
 
     rospy.init_node('hand_over_action_client_test')
@@ -31,6 +33,7 @@ if __name__ == '__main__':
     goal.posture_type = args.posture
     goal.obstacle = args.obstacle
     goal.release_detection = args.release_detection
+    goal.context_aware = args.context_aware
     goal.person_pose.header.frame_id = "base_link"
 
     timeout = 15.0
