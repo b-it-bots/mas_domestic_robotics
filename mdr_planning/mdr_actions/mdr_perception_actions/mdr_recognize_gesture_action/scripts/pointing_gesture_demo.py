@@ -27,7 +27,7 @@ bbs = [(75, 75, 50, 50),
        (50, 350, 150, 50),
        (500, 280, 50, 120)]
 
-gesture_recognizer = PointingGestureRecognizer(60., "/home/afaisal/.models/op_models/", False)
+gesture_recognizer = PointingGestureRecognizer(60., "/home/afaisal/.models/openpose_models/", False)
 
 while(True): 
     ret, frame = vid.read()
