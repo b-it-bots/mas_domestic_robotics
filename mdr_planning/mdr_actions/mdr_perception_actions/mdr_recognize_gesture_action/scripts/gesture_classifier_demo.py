@@ -12,6 +12,11 @@ if __name__ == '__main__':
     gesture_classifier = GestureClassifier(gesture_distance_threshold=50., 
                                            model_path='/home/afaisal/.models/openpose_models/',
                                            gesture_types=['waving', 'nodding', 'shaking_head', 'go_away', 'come_closer', 'pointing'],
-                                           known_example_data_dir='data/gesture_examples/')
+                                           known_example_data_dir='../data/gesture_examples/')
     gesture_data = gesture_classifier.capture_gesture_data()
-    gesture_classifier.classify_gesture(gesture_data)
+    most_likely_class = gesture_classifier.classify_gesture(gesture_data)
+
+    if most_likely_class is None:
+        print('Gesture not recognized!')
+    else:
+        print('This is most likely a {} gesture'.format(most_likely_class))

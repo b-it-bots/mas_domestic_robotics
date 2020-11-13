@@ -28,7 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('--dir_path', '-f', type=str,
                         default='../data/gesture_examples/', 
                         help='path to directory in which npy data'
-                        'will be saved')
+                        ' will be saved')
     parser.add_argument('--display', '-D', type=int, default=1, 
                         help='whether to display frames while processing')
     args = parser.parse_args()

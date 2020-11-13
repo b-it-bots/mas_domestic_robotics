@@ -27,8 +27,7 @@ class GestureClassifier(object):
 	self.gesture_example_data_dict = dict(zip(gesture_types, [[] for _ in range(len(gesture_types))]))
         self.gesture_example_pc_indices_dict = copy.deepcopy(self.gesture_example_data_dict)        # pc = principal component i.e. most varying component
 	self.gesture_distances_dict = copy.deepcopy(self.gesture_example_data_dict)
-
-        self.video_device = cv2.VideoCapture(0)
+        self.video_device = None
 
         self._load_known_example_data()
 
@@ -36,7 +35,17 @@ class GestureClassifier(object):
         self.opWrapper.configure({"model_folder" : model_path})
         self.opWrapper.start()
 
-    def capture_gesture_data(self, capture_duration=5., save_data=False, filename=None):
+    def capture_gesture_data(self, device_id=0, capture_duration=5., save_data=False, filename=None):
+        try:
+            self.video_device = cv2.VideoCapture(int(device_id))
+        except ValueError:
+            self.video_device = cv2.VideoCapture(device_id)
+
+        if self.video_device.isOpened():
+            print('Successfully opened video device: {}'.format(device_id))
+        else:
+            print('Could not open video device!')
+
         end_time = time.time() + capture_duration
 	full_poses = []
 
@@ -83,13 +92,11 @@ class GestureClassifier(object):
 
         if self.gesture_distance_threshold is not None:
             if min_distance < self.gesture_distance_threshold:
-                print('This is most likely a {} gesture'.format(most_likely_class))
+                return most_likely_class
             else:
-                print('Gesture not recognized!')
+                return None
         else:
-            print('This is most likely a {} gesture'.format(most_likely_class))
-
-	return most_likely_class
+            return most_likely_class
 
     def _load_known_example_data(self):
 	filenames = [filename for filename in os.listdir(self.known_example_data_dir) if filename.endswith('npy')]
