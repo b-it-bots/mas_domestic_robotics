@@ -1,0 +1,35 @@
+#! /usr/bin/env python
+import argparse
+import rospy
+import actionlib
+
+from mdr_receive_object_action.msg import ReceiveObjectAction, ReceiveObjectGoal
+
+if __name__ == '__main__':
+    posture_contexts = ['standing', 'seated', 'lying']
+    release_detection = [0, 1]
+
+    parser = argparse.ArgumentParser(description='help text')
+    parser.add_argument("--posture", "-p", type=str, default='seated',
+                        help="posture context parameters. Choose from 'standing', 'seated', or 'lying'.")
+    parser.add_argument("--release_detection", "-r", type=bool, default=1,
+                        help="list of context parameters. E.g.: 0")
+    args = parser.parse_args()
+
+    rospy.init_node('receive_object_action_client_test')
+
+    client = actionlib.SimpleActionClient('/receive_object_server', ReceiveObjectAction)
+    client.wait_for_server()
+
+    goal = ReceiveObjectGoal()
+
+    rospy.loginfo('Setting goal for a %s person...', args.posture)
+    goal.posture_type = args.posture
+    goal.release_detection = args.release_detection
+    goal.person_pose.header.frame_id = "base_link"
+
+    timeout = 15.0
+    rospy.loginfo('Sending action lib goal to receive_object_server')
+    client.send_goal(goal)
+    client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
+    print(client.get_result())
