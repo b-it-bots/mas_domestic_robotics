@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_demo_context_aware_receive_object</name>
+  <version>1.0.0</version>
+  <description>State machine and launch files for a scenario in which a robot detects a person and receives and object from them</description>
+  <license>GPLv3</license>
+
+  <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
+  <author email="ahmed.abdelrahman@smail.inf.h-brs.de">Ahmed Faisal Abdelrahman</author>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>mdr_move_arm_action</build_depend>
+  <build_depend>mdr_move_base_action</build_depend>
+  <build_depend>mdr_find_people</build_depend>
+  <build_depend>mdr_receive_object_action</build_depend>
+  <build_depend>mas_execution_manager</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>mdr_move_arm_action</run_depend>
+  <run_depend>mdr_move_base_action</run_depend>
+  <run_depend>mdr_find_people</run_depend>
+  <run_depend>mdr_receive_object_action</run_depend>
+  <run_depend>mas_execution_manager</run_depend>
+</package>

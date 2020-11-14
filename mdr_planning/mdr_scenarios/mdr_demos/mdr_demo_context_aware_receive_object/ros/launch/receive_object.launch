@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+
+    <include file="$(find mdr_rosplan_interface)/ros/launch/rosplan.launch">
+        <arg name="data_path" value="$(find mdr_demo_context_aware_receive_object)/config/" />
+        <arg name="problem_path" value="$(find mdr_demo_context_aware_receive_object)/config/problem.pddl" />
+        <arg name="strl_file_path" value="$(find mdr_demo_context_aware_receive_object)/config/plan.strl" />
+    </include>
+
+    <!-- Actions -->
+    <include file="$(find mdr_find_people)/ros/launch/find_people.launch" />
+    <include file="$(find mdr_receive_object_action)/ros/launch/receive_object.launch" />
+
+    <!-- State machine -->
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="context_aware_receive_object" output="screen">
+        <param name="sm_config_file" type="str" value="$(find mdr_demo_context_aware_receive_object)/config/context_aware_receive_object_sm.yaml" />
+    </node>
+</launch>
