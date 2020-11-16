@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="pointcloud_topic" default="/mdr_perception/rectified_points"/>
-    <arg name="class_annotation_file" default="$(find mas_perception_libs)/models/coco_classes.yaml"/>
+    <arg name="class_annotation_file" default="$(find mas_perception_libs)/models/coco_classes.yml"/>
     <arg name="detector_module" default="torchvision.models.detection"/>
     <arg name="detector_name" default="fasterrcnn_resnet50_fpn"/>
     <arg name="detection_threshold" default="0.8"/>
