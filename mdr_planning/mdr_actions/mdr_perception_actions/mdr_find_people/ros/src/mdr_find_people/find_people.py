@@ -1,67 +1,52 @@
 #!/usr/bin/env python
 
-import os
-
 import numpy as np
 import pcl
 import face_recognition
 from sklearn.impute import SimpleImputer
+import torch
 
 import rospy
-from rospkg import RosPack
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
 
-from mas_perception_libs import ImageDetectionKey, ImageDetectorBase
+from mas_perception_libs import ImageDetectionKey, ImageDetectorBase, TorchImageDetector
 from mas_perception_libs.utils import cloud_msg_to_image_msg, cloud_msg_to_cv_image, \
                                       crop_cloud_to_xyz, crop_organized_cloud_msg
 from mas_perception_libs.visualization import draw_labeled_boxes
-from ssd_keras_ros import SSDKerasObjectDetector
+
+import dataset_interface.object_detection.transforms as T
 
 
 class FindPeople(object):
     @staticmethod
-    def detect(cloud_msg):
-        # Transform point cloud to base link
-        #cloud_msg = transform_cloud_with_listener(cloud_msg, '/base_link', tf.TransformListener())
-
-        # use RosPack to point to appropriate configuration files
-        rp = RosPack()
-        package_path = rp.get_path('ssd_keras_ros')
-        class_ann_file = os.path.join(package_path, 'models', 'coco_classes.yml')
-        kwargs_file = os.path.join(package_path, 'models', 'ssd_keras_object_detector_kwargs.yml')
-
-        # create SSDKerasObjectDetector object and call detection on
-        detector = SSDKerasObjectDetector(class_file=class_ann_file, model_kwargs_file=kwargs_file)
-        predictions = detector.detect([cloud_msg_to_image_msg(cloud_msg)])[0]
+    def detect(cloud_msg, detector, detector_device, class_annotations, detection_threshold):
+        img = cloud_msg_to_cv_image(cloud_msg)
+        transform = T.ToTensor()
+        img, _ = transform(img, None)
+        with torch.no_grad():
+            predictions = detector([img.to(detector_device)])
 
         # Get bounding boxes
-        bb2ds = ImageDetectorBase.prediction_to_bounding_boxes(predictions)[0]
-
-        # Filter results for people
-        predictions, bb2ds = FindPeople.filter_people(predictions, bb2ds)
-
-        # Get poses
-        poses = FindPeople.get_people_poses(cloud_msg, predictions, bb2ds)
-
-        return predictions, bb2ds, poses
-
+        detections = TorchImageDetector.process_predictions(predictions=predictions,
+                                                            classes=class_annotations,
+                                                            detection_threshold=detection_threshold)
+        bounding_boxes = ImageDetectorBase.prediction_to_bounding_boxes(detections)[0]
+        people_detections, bb2ds = FindPeople.filter_people(detections, bounding_boxes)
+        poses = FindPeople.get_people_poses(cloud_msg, people_detections, bounding_boxes)
+        return people_detections, bb2ds, poses
 
     @staticmethod
     def filter_people(predictions, bounding_boxes):
         people_preds = []
         people_bbs = []
-
         for i, _ in enumerate(predictions):
             pred = predictions[i]
             bb2d = bounding_boxes[i]
-
             if pred[ImageDetectionKey.CLASS] == 'person':
                 people_preds.append(pred)
                 people_bbs.append(bb2d)
-
         return people_preds, people_bbs
-
 
     @staticmethod
     def get_people_poses(cloud_msg, predictions, bounding_boxes):
@@ -94,7 +79,6 @@ class FindPeople(object):
             poses.append(mean_ps)
 
         return poses
-
 
     @staticmethod
     def render_image_with_detections(cloud_msg, bounding_boxes):
