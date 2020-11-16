@@ -28,10 +28,10 @@ class FindPeopleState(smach.State):
 
         self._listener = tf.TransformListener()
         self.pointcloud_topic = rospy.get_param("~pointcloud_topic", '/rectified_points')
-        self.class_annotation_file = rospy.get_param('class_annotation_file', '')
-        self.detector_module = rospy.get_param('detector_module', 'torchvision.models.detection')
-        self.detector_name = rospy.get_param('detector_name', 'fasterrcnn_resnet50_fpn')
-        self.detection_threshold = float(rospy.get_param('detection_threshold', 0.))
+        self.class_annotation_file = rospy.get_param('~class_annotation_file', '')
+        self.detector_module = rospy.get_param('~detector_module', 'torchvision.models.detection')
+        self.detector_name = rospy.get_param('~detector_name', 'fasterrcnn_resnet50_fpn')
+        self.detection_threshold = float(rospy.get_param('~detection_threshold', 0.))
         self.face_embedding_model_path = rospy.get_param("~face_embedding_model_path", '')
 
         if not self.class_annotation_file:
