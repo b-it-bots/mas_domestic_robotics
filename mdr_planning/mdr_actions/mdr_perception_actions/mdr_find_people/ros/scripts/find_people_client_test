@@ -3,11 +3,14 @@
 import rospy
 import actionlib
 
+from sensor_msgs.msg import Image
+
 from mdr_find_people.msg import FindPeopleAction, FindPeopleGoal
 
 
 if __name__ == '__main__':
     rospy.init_node('find_people_client_test')
+    person_img_pub = rospy.Publisher('/find_people_client_test/person', Image, queue_size=1)
 
     rospy.loginfo('Waiting for server...')
     client = actionlib.SimpleActionClient('find_people_server', FindPeopleAction)
@@ -16,9 +19,9 @@ if __name__ == '__main__':
     goal = FindPeopleGoal()
 
     try:
-        print('Sending goal...')
+        rospy.loginfo('Sending goal...')
         client.send_goal(goal)
-        print('Waiting for result...')
+        rospy.loginfo('Waiting for result...')
         client.wait_for_result(rospy.Duration.from_sec(120))
 
         result = client.get_result()
@@ -26,7 +29,12 @@ if __name__ == '__main__':
             rospy.logerr('No people found')
         rospy.loginfo('Found {0} people'.format(len(result.person_list.persons)))
         for person in result.person_list.persons:
-            rospy.loginfo('Image_size: width -- {0}, height -- {1}'.format(person.rgb_image.width, person.rgb_image.height))
+            rospy.loginfo('Image_size: width -- {0}, height -- {1}'.format(person.views[0].image.width,
+                                                                           person.views[0].image.height))
+
+            rospy.loginfo('Publishing image and sleeping for 3s')
+            person_img_pub.publish(person.views[0].image)
+            rospy.sleep(3.)
+        rospy.loginfo('Client test done')
     except Exception as e:
         rospy.logerr('Failed to execute find people action: {}'.format(repr(e)))
-
