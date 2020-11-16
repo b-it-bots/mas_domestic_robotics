@@ -24,16 +24,27 @@ class FindPeople(object):
         img = cloud_msg_to_cv_image(cloud_msg)
         transform = T.ToTensor()
         img, _ = transform(img, None)
+
+        rospy.loginfo('Running detector...')
         with torch.no_grad():
             predictions = detector([img.to(detector_device)])
 
         # Get bounding boxes
+        rospy.loginfo('Processing detections...')
         detections = TorchImageDetector.process_predictions(predictions=predictions[0],
                                                             classes=class_annotations,
                                                             detection_threshold=detection_threshold)
+
+        rospy.loginfo('Extracting bounding boxes...')
         bounding_boxes = ImageDetectorBase.prediction_to_bounding_boxes(detections)[0]
+
+        rospy.loginfo('Extracting people detections...')
         people_detections, bb2ds = FindPeople.filter_people(detections, bounding_boxes)
+
+        rospy.loginfo('Extracting person poses...')
         poses = FindPeople.get_people_poses(cloud_msg, people_detections, bounding_boxes)
+        rospy.loginfo('Person detection complete')
+
         return people_detections, bb2ds, poses
 
     @staticmethod
