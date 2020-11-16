@@ -28,7 +28,7 @@ class FindPeople(object):
             predictions = detector([img.to(detector_device)])
 
         # Get bounding boxes
-        detections = TorchImageDetector.process_predictions(predictions=predictions,
+        detections = TorchImageDetector.process_predictions(predictions=predictions[0],
                                                             classes=class_annotations,
                                                             detection_threshold=detection_threshold)
         bounding_boxes = ImageDetectorBase.prediction_to_bounding_boxes(detections)[0]
