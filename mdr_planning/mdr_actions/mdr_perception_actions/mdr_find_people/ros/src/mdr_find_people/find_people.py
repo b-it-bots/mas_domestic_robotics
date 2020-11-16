@@ -39,13 +39,22 @@ class FindPeople(object):
         bounding_boxes = ImageDetectorBase.prediction_to_bounding_boxes(detections)[0]
 
         rospy.loginfo('Extracting people detections...')
-        people_detections, bb2ds = FindPeople.filter_people(detections, bounding_boxes)
+        person_detections, person_bb2ds = FindPeople.filter_people(detections,
+                                                                   bounding_boxes)
 
-        rospy.loginfo('Extracting person poses...')
-        poses = FindPeople.get_people_poses(cloud_msg, people_detections, bounding_boxes)
+        if len(person_detections) == 1:
+            rospy.loginfo('Found one person')
+        else:
+            rospy.loginfo('Found {0} people'.format(len(person_detections)))
+
+        person_poses = []
+        if person_detections:
+            rospy.loginfo('Extracting person poses...')
+            person_poses = FindPeople.get_people_poses(cloud_msg,
+                                                       person_detections,
+                                                       person_bb2ds)
         rospy.loginfo('Person detection complete')
-
-        return people_detections, bb2ds, poses
+        return (person_detections, person_bb2ds, person_poses)
 
     @staticmethod
     def filter_people(predictions, bounding_boxes):
