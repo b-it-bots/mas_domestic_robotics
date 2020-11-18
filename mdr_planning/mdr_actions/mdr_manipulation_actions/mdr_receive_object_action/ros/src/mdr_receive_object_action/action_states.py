@@ -218,7 +218,7 @@ class ReceiveObjectSM(ActionSMBase):
 
     def detect_object_reception(self):
         mu_0 = 0.
-        mu_1 = -6.
+        mu_1 = 6.
         std = 1.
 
         pdf_0 = norm(mu_0, std)
