@@ -28,3 +28,7 @@ class GripperControllerBase(object):
     def get_opening_angle(self):
         rospy.loginfo('[get_opening_angle] Ignoring request')
         raise NotImplementedError()
+
+    def get_gripper_pose(self, frame_name):
+        rospy.loginfo('[get_gripper_pose] Ignoring request')
+        raise NotImplementedError()
