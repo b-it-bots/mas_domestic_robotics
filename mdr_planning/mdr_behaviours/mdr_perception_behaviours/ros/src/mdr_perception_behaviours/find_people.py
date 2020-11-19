@@ -13,6 +13,7 @@ class FindPeople(ScenarioStateBase):
         self.state_name = kwargs.get('state_name', 'find_people')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.debug = kwargs.get('debug', False)
+        self.perform_recognition = kwargs.get('perform_recognition', False)
         self.retry_count = 0
         self.timeout = 120.
 
@@ -51,6 +52,11 @@ class FindPeople(ScenarioStateBase):
         arg_msg = diag_msgs.KeyValue()
         arg_msg.key = 'bot'
         arg_msg.value = self.robot_name
+        dispatch_msg.parameters.append(arg_msg)
+
+        arg_msg = diag_msgs.KeyValue()
+        arg_msg.key = 'perform_recognition'
+        arg_msg.value = self.perform_recognition
         dispatch_msg.parameters.append(arg_msg)
 
         return dispatch_msg
