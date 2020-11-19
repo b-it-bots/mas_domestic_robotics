@@ -5,7 +5,7 @@ import actionlib
 
 from mas_perception_msgs.msg import Person, Object
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
-from mdr__receive_object_action.msg import ReceiveObjectAction, ReceiveObjectGoal
+from mdr_receive_object_action.msg import ReceiveObjectAction, ReceiveObjectGoal
 
 class ReceiveObject(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
@@ -78,6 +78,12 @@ class ReceiveObject(ScenarioStateBase):
     def _insert_object_in_kb(self, name, size):
         obj_msg = Object()
         obj_msg.name = name
+
+        gripper_pose = self.gripper_controller.get_gripper_pose('base_link')
+        obj_msg.pose = gripper_pose
+        obj_msg.bounding_box.center.x = gripper_pose.pose.position.x
+        obj_msg.bounding_box.center.y = gripper_pose.pose.position.y
+        obj_msg.bounding_box.center.z = gripper_pose.pose.position.z
         obj_msg.bounding_box.dimensions.x = size
         obj_msg.bounding_box.dimensions.y = size
 
