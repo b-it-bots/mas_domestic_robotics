@@ -24,3 +24,7 @@ class GripperControllerBase(object):
     def verify_grasp(self):
         rospy.loginfo('[verify_grasp] Ignoring request')
         raise NotImplementedError()
+
+    def get_opening_angle(self):
+        rospy.loginfo('[get_opening_angle] Ignoring request')
+        raise NotImplementedError()
