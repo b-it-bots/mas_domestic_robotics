@@ -1,0 +1,140 @@
+# Description: Defines a state machine for a METRICS task of receiving a drink
+#              from a person and transporting it to a kitchen counter
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_receive_and_transport_drink
+states: [ENTER_PERSON_LOCATION, FIND_PEOPLE, RECEIVE_OBJECT, GO_TO_KITCHEN, SCAN_COUNTER, PLACE_OBJECT]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: ENTER_PERSON_LOCATION
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: FIND_PEOPLE
+            - transition:
+                name: failed
+                state: ENTER_PERSON_LOCATION
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: destination_locations
+                value: [living_room]
+    - state:
+        name: FIND_PEOPLE
+        state_module_name: mdr_perception_behaviours.find_people
+        state_class_name: FindPeople
+        transitions:
+            - transition:
+                name: succeeded
+                state: RECEIVE_OBJECT
+            - transition:
+                name: failed
+                state: FIND_PEOPLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: perform_recognition
+                value: True
+    - state:
+        name: RECEIVE_OBJECT
+        state_module_name: mdr_hri_behaviours.receive_object
+        state_class_name: ReceiveObject
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_KITCHEN
+            - transition:
+                name: failed
+                state: RECEIVE_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: person_name
+                value: alex
+            - argument:
+                name: posture_ratio_ranges
+                value:
+                    standing: [1.65, 5.0]
+                    seated: [0.6, 1.65]
+                    lying: [0.0, 0.6]
+    - state:
+        name: GO_TO_KITCHEN
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: SCAN_COUNTER
+            - transition:
+                name: failed
+                state: GO_TO_KITCHEN
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: destination_locations
+                value: [kitchen]
+    - state:
+        name: SCAN_COUNTER
+        state_module_name: mdr_perception_behaviours.perceive_planes
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: PLACE_OBJECT
+            - transition:
+                name: failed
+                state: SCAN_COUNTER
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: plane_prefix
+                value: kitchen_counter
+    - state:
+        name: PLACE_OBJECT
+        state_module_name: mdr_manipulation_behaviours.place_based_on_category
+        state_class_name: PlaceBasedOnCategory
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: PLACE_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: placing_surface_prefix
+                value: kitchen_counter
