@@ -21,6 +21,7 @@ class ReceiveObject(ScenarioStateBase):
         self.action_server = kwargs.get('action_server', 'receive_object_server')
         self.timeout = kwargs.get('timeout', 120.)
         self.context_aware = kwargs.get('context_aware', True)
+        self.reception_detection = kwargs.get('reception_detection', True)
         self.posture_ratio_ranges = kwargs.get('posture_ratio_ranges', {})
         self.person_name = kwargs.get('person_name', None)
         self.object_to_transport = kwargs.get('object_to_transport', None)
@@ -88,7 +89,7 @@ class ReceiveObject(ScenarioStateBase):
         obj_msg.bounding_box.dimensions.x = size
         obj_msg.bounding_box.dimensions.y = size
 
-        self.kb_interface.insert_obj_instance(name, obj)
+        self.kb_interface.insert_obj_instance(name, obj_msg)
 
     def _get_posture(self, person_msg):
         person_image_bb_width = float(person_msg.views[0].image.width)
