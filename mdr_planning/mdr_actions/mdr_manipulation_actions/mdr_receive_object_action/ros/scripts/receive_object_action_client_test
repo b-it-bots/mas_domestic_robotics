@@ -7,12 +7,12 @@ from mdr_receive_object_action.msg import ReceiveObjectAction, ReceiveObjectGoal
 
 if __name__ == '__main__':
     posture_contexts = ['standing', 'seated', 'lying']
-    release_detection = [0, 1]
+    reception_detection = [0, 1]
 
     parser = argparse.ArgumentParser(description='help text')
     parser.add_argument("--posture", "-p", type=str, default='seated',
                         help="posture context parameters. Choose from 'standing', 'seated', or 'lying'.")
-    parser.add_argument("--release_detection", "-r", type=bool, default=1,
+    parser.add_argument("--reception_detection", "-r", type=bool, default=1,
                         help="list of context parameters. E.g.: 0")
     args = parser.parse_args()
 
@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     rospy.loginfo('Setting goal for a %s person...', args.posture)
     goal.posture_type = args.posture
-    goal.release_detection = args.release_detection
+    goal.reception_detection = args.reception_detection
     goal.person_pose.header.frame_id = "base_link"
 
     timeout = 15.0
