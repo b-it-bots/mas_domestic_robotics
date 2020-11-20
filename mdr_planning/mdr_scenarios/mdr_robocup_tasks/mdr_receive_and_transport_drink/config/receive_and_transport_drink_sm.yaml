@@ -62,6 +62,9 @@ state_descriptions:
             - transition:
                 name: failed_after_retrying
                 state: FAILED
+            - transition:
+                name: person_not_found
+                state: FIND_PEOPLE
         arguments:
             - argument:
                 name: number_of_retries
@@ -69,6 +72,9 @@ state_descriptions:
             - argument:
                 name: person_name
                 value: alex
+            - argument:
+                name: object_to_transport
+                value: glass_of_water
             - argument:
                 name: posture_ratio_ranges
                 value:

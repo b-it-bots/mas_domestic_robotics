@@ -41,6 +41,7 @@ class ReceiveObject(ScenarioStateBase):
 
         person_msg = self.kb_interface.get_obj_instance(person_to_look_for, Person._type)
         if person_msg is None:
+            self.say('I can\'t see {0}'.format(person_to_look_for))
             return 'person_not_found'
 
         posture = self._get_posture(person_msg)
