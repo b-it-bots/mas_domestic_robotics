@@ -18,7 +18,7 @@ class ReceiveObject(ScenarioStateBase):
                                    output_keys=['grasped_object'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'get_person_pose')
-        self.action_server = kwargs.get('action_server', '_receive_object_server')
+        self.action_server = kwargs.get('action_server', 'receive_object_server')
         self.timeout = kwargs.get('timeout', 120.)
         self.context_aware = kwargs.get('context_aware', True)
         self.posture_ratio_ranges = kwargs.get('posture_ratio_ranges', {})
