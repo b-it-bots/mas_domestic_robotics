@@ -56,7 +56,7 @@ class FindPeople(ScenarioStateBase):
 
         arg_msg = diag_msgs.KeyValue()
         arg_msg.key = 'perform_recognition'
-        arg_msg.value = self.perform_recognition
+        arg_msg.value = str(self.perform_recognition)
         dispatch_msg.parameters.append(arg_msg)
 
         return dispatch_msg

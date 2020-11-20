@@ -47,7 +47,7 @@ class FindPeopleClient(ActionClientBase):
             if param.key == 'bot':
                 self.robot_name = param.value
             elif param.key == 'perform_recognition':
-                self.perform_recognition = param.value
+                self.perform_recognition = bool(param.value)
         return goal
 
     def update_knowledge_base(self, person_list):
