@@ -25,6 +25,7 @@ class ReceiveObject(ScenarioStateBase):
         self.posture_ratio_ranges = kwargs.get('posture_ratio_ranges', {})
         self.person_name = kwargs.get('person_name', None)
         self.object_to_transport = kwargs.get('object_to_transport', None)
+        self.object_category = kwargs.get('object_category', None)
         self.gripper_controller_pkg = kwargs.get('gripper_controller_pkg', 'mdr_gripper_controller')
 
         self.number_of_retries = kwargs.get('number_of_retries', 0)
@@ -56,8 +57,12 @@ class ReceiveObject(ScenarioStateBase):
                 object_to_transport = userdata.object_to_transport
             userdata.grasped_object = object_to_transport
 
+            object_category = self.object_category
+            if not object_to_transport:
+                object_to_category = userdata.object_category
+
             estimated_size_m = self._get_estimated_object_size(self.gripper_controller.get_opening_angle())
-            self._insert_object_in_kb(object_to_transport, estimated_size_m)
+            self._insert_object_in_kb(object_to_transport, object_category, estimated_size_m)
             return 'succeeded'
         else:
             rospy.logerr('Could not receive object')
@@ -77,9 +82,10 @@ class ReceiveObject(ScenarioStateBase):
         '''
         return (angle + 0.141) * 0.120
 
-    def _insert_object_in_kb(self, name, size):
+    def _insert_object_in_kb(self, name, category, size):
         obj_msg = Object()
         obj_msg.name = name
+        obj_msg.category = category
 
         gripper_pose = self.gripper_controller.get_gripper_pose('base_link')
         obj_msg.pose = gripper_pose
