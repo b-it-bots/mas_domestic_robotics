@@ -9,6 +9,12 @@
     <arg name="classify_object" default="false"/>
     <arg name="head_controller_pkg_name" default="mdr_head_controller"/>
 
+    <arg name="cloud_topic" default="" />
+    <arg name="object_detection_module" default="mas_perception_libs" />
+    <arg name="object_detection_class" default="TorchImageDetector" />
+    <arg name="object_detection_class_annotations" default="$(find mas_perception_libs)/models/coco_classes.yml" />
+    <arg name="object_detection_kwargs_file" default="$(find mdr_perceive_plane_action)/config/object_detection_kwargs.yml" />
+
     <node pkg="mdr_perceive_plane_action" type="perceive_plane_action" name="perceive_plane_server" output="screen"
           ns="mdr_actions">
         <param name="target_frame" type="string" value="$(arg target_frame)" />
@@ -19,6 +25,16 @@
         <param name="classify_object" type="bool" value="$(arg classify_object)" />
         <param name="head_controller_pkg_name" type="string" value="$(arg head_controller_pkg_name)" />
     </node>
+
+    <include file="$(find mas_perception_libs)/ros/launch/plane_detection.launch" >
+        <arg name="cloud_topic" value="$(arg cloud_topic)" />
+        <arg name="target_frame" value="$(arg target_frame)" />
+        <arg name="action_name" value="$(arg detection_action_name)" />
+        <arg name="detection_module" value="$(arg object_detection_module)" />
+        <arg name="detection_class" value="$(arg object_detection_class)" />
+        <arg name="class_annotations" value="$(arg object_detection_class_annotations)" />
+        <arg name="kwargs_file" value="$(arg object_detection_kwargs_file)" />
+    </include>
 
     <include file="$(find mdr_object_recognition)/ros/launch/object_recognition.launch">
         <arg name="service_name" value="$(arg recognition_service_name)"/>
