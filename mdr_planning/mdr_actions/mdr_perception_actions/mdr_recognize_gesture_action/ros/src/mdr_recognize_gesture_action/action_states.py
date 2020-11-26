@@ -7,6 +7,7 @@ import actionlib
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
+from mdr_recognize_gesture.pointing_gesture_recognizer import PointingGestureRecognizer
 from mdr_recognize_gesture_action.msg import RecognizeGestureGoal, RecognizeGestureResult
 
 from mas_perception_libs import ImageDetectionKey, ImageDetectorBase
@@ -18,7 +19,7 @@ from ssd_keras_ros import SSDKerasObjectDetector
 class RecognizeGestureSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gesture_type=None,
-                 openpose_models_dir='/home/lucy/.models/op_models/',
+                 openpose_models_dir='/home/lucy/.models/openpose_models/',
                  pointcloud_topic='/mdr_perception/rectified_points',
                  ssd_detector_class_file='',
                  ssd_detector_kwargs_file=''):
@@ -30,6 +31,11 @@ class RecognizeGestureSM(ActionSMBase):
         self.pointcloud_topic = pointcloud_topic
         self.ssd_detector_class_file = ssd_detector_class_file
         self.ssd_detector_kwargs_file = ssd_detector_kwargs_file
+
+        self.gesture_classifier = GestureClassifier(gesture_distance_threshold=50.,
+                                                    model_path=self.openpose_models_dir,
+                                                    gesture_types=['waving', 'nodding', 'shaking_head', 'go_away', 'come_closer', 'pointing'],
+                                                    known_example_data_dir='../data/gesture_examples/')
 
         self.pointing_gesture_recognizer = PointingGestureRecognizer(60., self.openpose_models_dir, False)
 
@@ -47,7 +53,15 @@ class RecognizeGestureSM(ActionSMBase):
 
         rospy.loginfo('[recognize_gesture] Recognizing gesture')
         if self.gesture_type is None:
-            self.gesture_type = classify_gesture()
+            rospy.loginfo('[recognize_gesture] Classifying gesture...')
+            gesture_data = gesture_classifier.capture_gesture_data()
+            self.gesture_type = gesture_classifier.classify_gesture(gesture_data)
+
+            if self.gesture_type is None:
+                rospy.loginfo('[recognize_gesture] Gesture not recognized!')
+                return FTSMTransitions.DONE
+            else:
+                rospy.loginfo('This is most likely a {} gesture'.format(self.gesture_type))
 
         if self.gesture_type == 'pointing':
             predictions = detector.detect([cloud_msg_to_image_msg(cloud_msg)])[0]
