@@ -102,8 +102,7 @@ class PointingGestureRecognizer(object):
                 obj_nearest_to_line_index = int(hypothesis_obj_indices)
                 distance_to_hand = np.linalg.norm(bb_centers[obj_nearest_to_line_index] - hand_pose[0:2])
             else:
-            # If multiple objects, take the one closest to the pointing
-            # hand:
+            # If multiple objects, take the one closest to the pointing hand:
                 distances_to_hand = np.linalg.norm(np.array(bb_centers)[hypothesis_obj_indices] - hand_pose[0:2], axis=1)
                 obj_nearest_to_line_index = hypothesis_obj_indices[np.argmin(distances_to_hand)]
                 distance_to_hand = np.min(distances_to_hand)

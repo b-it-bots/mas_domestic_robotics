@@ -15,17 +15,15 @@ class RecognizeGestureServer(object):
     '''
     def __init__(self):
         gesture_type = rospy.get_param('~gesture_type', None)
-        openpose_models_dir = rospy.get_param('~openpose_models_dir', '/home/lucy/.models/op_models/')
-        pointcloud_topic = rospy.get_param('~pointcloud_topic', '/mdr_perception/rectified_points')
-        ssd_detector_class_file = rospy.get_param('~ssd_detector_class_file', '')
-        ssd_detector_kwargs_file = rospy.get_param('~ssd_detector_kwargs_file', '')
+        openpose_models_dir = rospy.get_param('~openpose_models_dir', '/home/lucy/.models/openpose_models/')
+        pointcloud_topic = rospy.get_param('~cloud_topic', '/mdr_perception/rectified_points')
+        object_detection_server = rospy.get_param('~object_detection_server', '/object_detection_server')
 
         rospy.loginfo('[recognize_gesture] Initialising state machine')
         self.action_sm = RecognizeGestureSM(gesture_type=gesture_type,
                                             openpose_models_dir=openpose_models_dir,
-                                            pointcloud_topic=pointcloud_topic,
-                                            ssd_detector_class_file=ssd_detector_class_file,
-                                            ssd_detector_kwargs_file=ssd_detector_kwargs_file)
+                                            object_detection_server=object_detection_server,
+                                            pointcloud_topic=pointcloud_topic)
         rospy.loginfo('[recognize_gesture] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('recognize_gesture_server',
@@ -45,10 +43,10 @@ class RecognizeGestureServer(object):
 
 if __name__ == '__main__':
     rospy.init_node('recognize_gesture_server')
-    handle_open_server = RecognizeGestureServer()
+    recognize_gesture_server = RecognizeGestureServer()
     try:
-        handle_open_server.action_sm.run()
-        while handle_open_server.action_sm.is_running and not rospy.is_shutdown():
+        recognize_gesture_server.action_sm.run()
+        while recognize_gesture_server.action_sm.is_running and not rospy.is_shutdown():
             rospy.spin()
     except (KeyboardInterrupt, SystemExit):
         print('{0} interrupted; exiting...'.format(recognize_gesture_server.action_sm.name))
