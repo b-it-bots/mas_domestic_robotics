@@ -18,7 +18,7 @@ class PointingGestureRecognizer(object):
         self.opWrapper.configure({"model_folder" : model_path})
         self.opWrapper.start()
 
-    def get_object_pointed_to(self, bbs, frame):
+    def get_object_pointed_to(self, bbs, poses, labels, frame):
         success = False
 
         datum = op.Datum()
@@ -30,6 +30,7 @@ class PointingGestureRecognizer(object):
                 print('Body probably too close to adequately estimate pose. Ignoring...')
             return success, None, frame
 
+        neck_pose = datum.poseKeypoints[0, 1, :]
         left_hand_pose = datum.poseKeypoints[0, 7, :]
         left_elbow_pose = datum.poseKeypoints[0, 6, :]
         right_hand_pose = datum.poseKeypoints[0, 4, :]
@@ -43,17 +44,15 @@ class PointingGestureRecognizer(object):
             obj_distance_to_lines = [None, None]
 
             if right_arm_visible:
-                obj_index_right, obj_distance_right, frame = self.process_arm_pose(right_elbow_pose, 
-                                                                                   right_hand_pose, 
-                                                                                   bbs, frame)
+                obj_index_right, obj_distance_right, frame = self.process_arm_pose(right_elbow_pose, right_hand_pose,
+                                                                                   neck_pose, bbs, poses, labels, frame)
                 objs_nearest_to_lines_indices[0] = obj_index_right
                 obj_distance_to_lines[0] = obj_distance_right
                 success = True
 
             if left_arm_visible:
-                obj_index_left, obj_distance_left, frame = self.process_arm_pose(left_elbow_pose, 
-                                                                                 left_hand_pose, 
-                                                                                 bbs, frame)
+                obj_index_left, obj_distance_left, frame = self.process_arm_pose(left_elbow_pose, left_hand_pose,
+                                                                                 neck_pose, bbs, poses, labels, frame)
                 objs_nearest_to_lines_indices[1] = obj_index_left
                 obj_distance_to_lines[1] = obj_distance_left
                 success = True
@@ -66,14 +65,14 @@ class PointingGestureRecognizer(object):
                 frame = cv2.rectangle(frame, (bbs[object_index][0] - 5 , bbs[object_index][1] - 5), 
                                       (bbs[object_index][0] + bbs[object_index][2] + 5 , bbs[object_index][1] + bbs[object_index][3] + 5), 
                                       (0, 0, 255), 3)
-                frame = cv2.putText(frame, 'Pointing to Object {}'.format(object_index), (50,50), cv2.FONT_HERSHEY_SIMPLEX,  
+                frame = cv2.putText(frame, 'Pointing to {}'.format(labels[object_index]), (50,50), cv2.FONT_HERSHEY_SIMPLEX,
                                     1, (0, 0, 255), 2, cv2.LINE_AA) 
 
                 return success, object_index, frame
 
         return success, None, frame
     
-    def process_arm_pose(self, elbow_pose, hand_pose, bbs, frame):
+    def process_arm_pose(self, elbow_pose, hand_pose, neck_pose, bbs, poses, labels, frame, use_pose_estimates_for_decision=True):
         obj_nearest_to_line_index = None
         distance_to_hand = None
         center_distances_to_line = []
@@ -81,20 +80,23 @@ class PointingGestureRecognizer(object):
 
         bb_centers, frame = self.get_bb_centers(bbs, frame, False) 
 
-        line_params, frame, line_points = self.get_pointing_line(elbow_pose,
-                                                                 hand_pose,
-                                                                 frame, False)
+        line_params, frame, line_points = self.get_pointing_line(elbow_pose, hand_pose, frame, False)
 
-        # Find the point on the line nearest to each bb center, and the
-        # perpendicular distances between them.
+        # Find the point on the line nearest to each bb center, and the perpendicular distances between them.
         for i in range(len(bbs)):
-            dist, nearest_point = self.get_shortest_distance_to_segment(bb_centers[i],
-                                                                        line_points)
+            dist, nearest_point = self.get_shortest_distance_to_segment(bb_centers[i], line_points)
             nearest_points_to_line.append(nearest_point)
-            center_distances_to_line.append(dist)
 
-        # Find hypothesis set of objects; those whose distances to the
-        # pointing line fall under a given threshold:
+            if labels[i] == 'person' and self.point_in_bb(bbs[i], neck_pose):
+                # Eliminate pointing person from consideration by setting a high distance value
+                center_distances_to_line.append(float('inf'))
+            elif self.point_in_bb(bbs[i], hand_pose) or self.point_in_bb(bbs[i], elbow_pose):
+                # Similarly eliminate objects if hand or elbow are within them
+                center_distances_to_line.append(float('inf'))
+            else:
+                center_distances_to_line.append(dist)
+
+        # Find hypothesis set of objects; those whose distances to the pointing line fall under a given threshold:
         hypothesis_obj_indices = np.where(np.array(center_distances_to_line) < self.obj_distance_to_line_threshold)[0]
 
         if hypothesis_obj_indices.size != 0:
@@ -103,7 +105,14 @@ class PointingGestureRecognizer(object):
                 distance_to_hand = np.linalg.norm(bb_centers[obj_nearest_to_line_index] - hand_pose[0:2])
             else:
             # If multiple objects, take the one closest to the pointing hand:
-                distances_to_hand = np.linalg.norm(np.array(bb_centers)[hypothesis_obj_indices] - hand_pose[0:2], axis=1)
+                print('Possible objects:', [labels[i] for i in hypothesis_obj_indices])
+                if use_pose_estimates_for_decision:
+                    # Utilize pose info to find object whose pose is closest to hand's:
+                    object_pose_array = np.array([[pose.position.x, pose.position.y, pose.position.z] for pose in poses])[hypothesis_obj_indices]
+                    distances_to_hand = np.linalg.norm(object_pose_array - hand_pose, axis=1)
+                else:
+                    # Use naive rule: distances of bb centers to hand position
+                    distances_to_hand = np.linalg.norm(np.array(bb_centers)[hypothesis_obj_indices] - hand_pose[0:2], axis=1)
                 obj_nearest_to_line_index = hypothesis_obj_indices[np.argmin(distances_to_hand)]
                 distance_to_hand = np.min(distances_to_hand)
 
@@ -162,3 +171,6 @@ class PointingGestureRecognizer(object):
             if draw_on_image:
                 frame = cv2.circle(frame, bb_centers[-1], 1, (0, 255, 0), 3)
         return bb_centers, frame
+
+    def point_in_bb(self, bb, point):
+        return point[0] > bb[0] and point[0] < (bb[0] + bb[2]) and point[1] > bb[1] and point[1] < (bb[1] + bb[3])

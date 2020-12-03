@@ -142,7 +142,7 @@ class RecognizeGestureSM(ActionSMBase):
 
             bbs, labels = self._filter_out_bbs_by_distance(bbs, poses, labels, 5.)
 
-            success, obj_index, frame = self.pointing_gesture_recognizer.get_object_pointed_to(bbs, cv_img)
+            success, obj_index, frame = self.pointing_gesture_recognizer.get_object_pointed_to(bbs, poses, labels, cv_img)
             # For visualization:
             # cv_img = self._draw_bbs(bbs, cv_img)
             # self.image_pub.publish(self.cv_bridge_client.cv2_to_imgmsg(cv_img, "bgr8"))
