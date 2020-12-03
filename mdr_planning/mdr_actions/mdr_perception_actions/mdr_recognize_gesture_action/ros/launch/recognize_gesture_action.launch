@@ -5,7 +5,7 @@
 	<arg name="object_detection_server" default="/object_detection_server"/>
     <arg name="target_frame" default="/base_link" />
     <arg name="class_annotations" default="$(find mas_perception_libs)/models/coco_classes.yml" />
-    <arg name="kwargs_file" default="$(find mdr_recognize_gesture_action)/object_detection_kwargs.yml" />
+    <arg name="kwargs_file" default="$(find mdr_recognize_gesture_action)/config/object_detection_kwargs.yml" />
     <arg name="detection_module" default="mas_perception_libs" />
     <arg name="detection_class" default="TorchImageDetector" />
 
