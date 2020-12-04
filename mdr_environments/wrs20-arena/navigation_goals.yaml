@@ -1,0 +1,12 @@
+# pose_name: [x,y,theta]
+
+table_inspection_area1: [-0.101, 0.847, 0.737]
+table_inspection_area2: [0.696, 0.579, 1.608]
+table_inspection_area3: [1.367, 0.714, 1.745]
+
+long_table_b: [1.240, 0.978, 1.693]
+tall_table: [0.012, 0.981, 1.554]
+long_table_a_boxes: [1.009, 0.063, -1.544]
+long_table_a_trays: [1.721, 0.187, -1.544]
+bin_a: [2.400, 0.047, -1.544]
+bin_b: [2.748, 0.047, -1.544]
