@@ -1,9 +1,10 @@
 #!/usr/bin/python
 from threading import Thread
-import numpy as np
 
 import rospy
 import moveit_commander
+
+from mdr_manipulation_msgs.srv import UpdatePlanningScene, UpdatePlanningSceneRequest, UpdatePlanningSceneResponse
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -11,16 +12,21 @@ from mdr_move_arm_action.msg import MoveArmGoal, MoveArmResult
 from mdr_move_arm_action.dmp import DMPExecutor
 
 class MoveArmSM(ActionSMBase):
-    def __init__(self, timeout=120.0, arm_name='arm',
-                 whole_body_name='', max_recovery_attempts=1):
+    def __init__(self, timeout=120.0,
+                 arm_name='arm',
+                 whole_body_name='',
+                 update_planning_scene_srv_name='/move_arm_action/update_planning_scene',
+                 max_recovery_attempts=1):
         super(MoveArmSM, self).__init__('MoveArm', [], max_recovery_attempts)
         self.timeout = timeout
         self.arm_name = arm_name
         self.whole_body_name = whole_body_name
+        self.update_planning_scene_srv_name = update_planning_scene_srv_name
         self.arm = None
         self.whole_body = None
         self.end_effector = None
         self.planning_scene = None
+        self.update_planning_scene_server = None
 
     def init(self):
         try:
@@ -45,7 +51,14 @@ class MoveArmSM(ActionSMBase):
         else:
             rospy.loginfo('[move_arm] whole_body_name not specified; not initialising whole body group')
 
+        rospy.loginfo('[move_arm] Creating MoveIt! planning scene')
         self.planning_scene = moveit_commander.PlanningSceneInterface()
+
+        rospy.loginfo('[move_arm] Exposing server for planning scene updates as %s', self.update_planning_scene_srv_name)
+        self.update_planning_scene_server = rospy.Service(self.update_planning_scene_srv_name,
+                                                          UpdatePlanningScene,
+                                                          self.update_planning_scene_handler)
+        rospy.loginfo('[move_arm] Move arm action initialised')
 
         return FTSMTransitions.INITIALISED
 
@@ -124,3 +137,30 @@ class MoveArmSM(ActionSMBase):
         result = MoveArmResult()
         result.success = success
         return result
+
+    def update_planning_scene_handler(self, request):
+        rospy.loginfo('[move_arm] Received a planning scene update request to %s %d objects', request.operation,
+                                                                                              len(request.objects.objects))
+        response = UpdatePlanningSceneResponse(success=False)
+        if request.operation == UpdatePlanningSceneRequest.ADD:
+            try:
+                for obj in request.objects.objects:
+                    self.planning_scene.add_box(obj.name, obj.pose,
+                                                (obj.dimensions.vector.x,
+                                                 obj.dimensions.vector.y,
+                                                 obj.dimensions.vector.z))
+                response.success = True
+            except Exception as exc:
+                rospy.logerr('[move_arm/update_planning_scene_handler] Error while adding objects')
+                rospy.logerr(str(exc))
+        elif request.operation == UpdatePlanningSceneRequest.REMOVE:
+            try:
+                for obj in request.objects.objects:
+                    self.planning_scene.remove_world_object(obj.name)
+                response.success = True
+            except Exception as exc:
+                rospy.logerr('[move_arm/update_planning_scene_handler] Error while removing objects')
+                rospy.logerr(str(exc))
+        else:
+            rospy.logerr('[move_arm/update_planning_scene_handler] Received unknown operation %s', request.operation)
+        return response

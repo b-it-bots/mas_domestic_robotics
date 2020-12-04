@@ -18,9 +18,13 @@ class MoveArmServer(object):
     def __init__(self):
         arm_name = rospy.get_param('~arm_name', 'arm')
         whole_body_name = rospy.get_param('~whole_body_name', 'whole_body')
+        update_planning_scene_srv_name = rospy.get_param('~update_planning_scene_srv_name',
+                                                         '/move_arm_action/update_planning_scene')
 
         rospy.loginfo('[move_arm] Initialising state machine')
-        self.action_sm = MoveArmSM(arm_name=arm_name, whole_body_name=whole_body_name)
+        self.action_sm = MoveArmSM(arm_name=arm_name,
+                                   whole_body_name=whole_body_name,
+                                   update_planning_scene_srv_name=update_planning_scene_srv_name)
         rospy.loginfo('[move_arm] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('move_arm_server',
