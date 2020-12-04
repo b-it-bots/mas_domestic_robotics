@@ -2,12 +2,12 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_wrs_tidy_up
-states: [INITIALISE_SCENARIO, CHECK_TIDYING_DONE, SELECT_SCANNING_POSE, GO_TO_SCANNING_POSE, FIND_FLOOR_OBJECTS, SELECT_OBJECT_FOR_PICKING, PICK_UP_OBJECT, MOVE_TO_STORAGE_LOCATION, THROW_OBJECT, GO_TO_SECOND_ROOM_CORRIDOR, FIND_FLOOR_OBSTACLES, SELECT_OBSTACLE_FOR_PICKING, CLEAN_UP_OBSTACLE]
+states: [INITIALISE_SCENARIO, CHECK_TIDYING_DONE, SELECT_SCANNING_POSE, GO_TO_SCANNING_POSE, FIND_OBJECTS, SELECT_OBJECT_FOR_PICKING, PICKUP_OBJECT, MOVE_TO_STORAGE_LOCATION, THROW_OBJECT, INITIALISE_OBSTACLE_REMOVAL, GO_TO_SECOND_ROOM_CORRIDOR, FIND_FLOOR_OBSTACLES, SELECT_OBSTACLE_FOR_PICKING, PICKUP_OBSTACLE, MOVE_TO_BOX, THROW_OBSTACLE]
 outcomes: [DONE, TIMEOUT, FAILED]
 state_descriptions:
     # Task 1: Cleaning up objects
     - state:
-        name: INITIALISE_SCENARIO 
+        name: INITIALISE_SCENARIO
         state_module_name: mdr_wrs_tidy_up.scenario_states.initialise_scenario
         state_class_name: Initialise_scenario
         transitions:
@@ -36,7 +36,7 @@ state_descriptions:
                 state: SELECT_SCANNING_POSE
             - transition:
                 name: room_clear
-                state: GO_TO_SECOND_ROOM_CORRIDOR
+                state: INITIALISE_OBSTACLE_REMOVAL
     - state:
         name: SELECT_SCANNING_POSE
         state_module_name: mdr_wrs_tidy_up.scenario_states.select_scanning_pose
@@ -60,15 +60,12 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_TO_SCANNING_POSE
-        state_module_name: mdr_wrs_tidy_up.scenario_states.go_to_scanning_pose
-        state_class_name: MoveBaseForCleanup
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
         transitions:
             - transition:
-                name: floor_cleanup
-                state: FIND_FLOOR_OBJECTS
-            - transition:
-                name: table_cleanup
-                state: FIND_TABLE_OBJECTS
+                name: succeeded
+                state: FIND_OBJECTS
             - transition:
                 name: failed
                 state: GO_TO_SCANNING_POSE
@@ -92,7 +89,7 @@ state_descriptions:
                 state: SELECT_SCANNING_POSE
             - transition:
                 name: failed
-                state: FIND_FLOOR_OBJECTS
+                state: FIND_OBJECTS
             - transition:
                 name: failed_after_retrying
                 state: SELECT_SCANNING_POSE
@@ -107,7 +104,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: CLEAN_UP_OBJECT
+                state: PICKUP_OBJECT
             - transition:
                 name: failed
                 state: SELECT_OBJECT_FOR_PICKING
@@ -119,7 +116,7 @@ state_descriptions:
                 name: number_of_retries
                 value: 3
     - state:
-        name: PICK_UP_OBJECT
+        name: PICKUP_OBJECT
         state_module_name: mdr_wrs_tidy_up.scenario_states.pickup_object
         state_class_name: PickupObject
         transitions:
@@ -175,6 +172,18 @@ state_descriptions:
 
     # Task 2a: Going to the second room
     - state:
+        name: INITIALISE_OBSTACLE_REMOVAL
+        state_module_name: mdr_wrs_tidy_up.scenario_states.initialise_scenario
+        state_class_name: Initialise_scenario
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_SECOND_ROOM_CORRIDOR
+        arguments:
+            - argument:
+                name: object_location
+                value: floor
+    - state:
         name: GO_TO_SECOND_ROOM_CORRIDOR
         state_module_name: mdr_navigation_behaviours.move_base
         state_class_name: MoveBase
@@ -194,7 +203,7 @@ state_descriptions:
                 value: 3
     - state:
         name: FIND_FLOOR_OBSTACLES
-        state_module_name: mdr_wrs_tidy_up.scenario_states.find_floor_obstacles
+        state_module_name: mdr_wrs_tidy_up.scenario_states.find_objects
         state_class_name: FindObjects
         transitions:
             - transition:
@@ -220,7 +229,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: CLEAN_UP_OBSTACLE
+                state: PICKUP_OBSTACLE
             - transition:
                 name: failed
                 state: SELECT_OBSTACLE_FOR_PICKING
@@ -232,7 +241,7 @@ state_descriptions:
                 name: number_of_retries
                 value: 3
     - state:
-        name: PICK_UP_OBSTACLE
+        name: PICKUP_OBSTACLE
         state_module_name: mdr_wrs_tidy_up.scenario_states.pickup_object
         state_class_name: PickupObject
         transitions:
