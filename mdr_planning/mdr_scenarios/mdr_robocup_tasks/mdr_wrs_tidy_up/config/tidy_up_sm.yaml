@@ -2,21 +2,18 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_wrs_tidy_up
-states: [CHECK_TIDYING_DONE, SELECT_SCANNING_POSE, GO_TO_SCANNING_POSE, FIND_FLOOR_OBJECTS, SELECT_OBJECT_FOR_PICKING, CLEAN_UP_OBJECT, GO_TO_SECOND_ROOM_CORRIDOR, FIND_FLOOR_OBSTACLES, SELECT_OBSTACLE_FOR_PICKING, CLEAN_UP_OBSTACLE]
+states: [INITIALISE_SCENARIO, CHECK_TIDYING_DONE, SELECT_SCANNING_POSE, GO_TO_SCANNING_POSE, FIND_FLOOR_OBJECTS, SELECT_OBJECT_FOR_PICKING, PICK_UP_OBJECT, MOVE_TO_STORAGE_LOCATION, THROW_OBJECT, GO_TO_SECOND_ROOM_CORRIDOR, FIND_FLOOR_OBSTACLES, SELECT_OBSTACLE_FOR_PICKING, CLEAN_UP_OBSTACLE]
 outcomes: [DONE, TIMEOUT, FAILED]
 state_descriptions:
     # Task 1: Cleaning up objects
     - state:
-        name: CHECK_TIDYING_DONE
-        state_module_name: mdr_wrs_tidy_up.scenario_states
-        state_class_name: CheckTidyingDone
+        name: INITIALISE_SCENARIO 
+        state_module_name: mdr_wrs_tidy_up.scenario_states.initialise_scenario
+        state_class_name: Initialise_scenario
         transitions:
             - transition:
-                name: room_not_clear
+                name: succeeded
                 state: SELECT_SCANNING_POSE
-            - transition:
-                name: room_clear
-                state: GO_TO_SECOND_ROOM_CORRIDOR
         arguments:
             - argument:
                 name: floor_objects_cleared
@@ -30,8 +27,19 @@ state_descriptions:
                     long_table_b: false
                     tall_table: false
     - state:
+        name: CHECK_TIDYING_DONE
+        state_module_name: mdr_wrs_tidy_up.scenario_states.check_tidying_done
+        state_class_name: CheckTidyingDone
+        transitions:
+            - transition:
+                name: room_not_clear
+                state: SELECT_SCANNING_POSE
+            - transition:
+                name: room_clear
+                state: GO_TO_SECOND_ROOM_CORRIDOR
+    - state:
         name: SELECT_SCANNING_POSE
-        state_module_name: mdr_wrs_tidy_up.scenario_states
+        state_module_name: mdr_wrs_tidy_up.scenario_states.select_scanning_pose
         state_class_name: SelectScanningPose
         transitions:
             - transition:
@@ -52,12 +60,15 @@ state_descriptions:
                 value: 3
     - state:
         name: GO_TO_SCANNING_POSE
-        state_module_name: mdr_navigation_behaviours.move_base
-        state_class_name: MoveBase
+        state_module_name: mdr_wrs_tidy_up.scenario_states.go_to_scanning_pose
+        state_class_name: MoveBaseForCleanup
         transitions:
             - transition:
-                name: succeeded
+                name: floor_cleanup
                 state: FIND_FLOOR_OBJECTS
+            - transition:
+                name: table_cleanup
+                state: FIND_TABLE_OBJECTS
             - transition:
                 name: failed
                 state: GO_TO_SCANNING_POSE
@@ -69,8 +80,8 @@ state_descriptions:
                 name: number_of_retries
                 value: 3
     - state:
-        name: FIND_FLOOR_OBJECTS
-        state_module_name: mdr_wrs_tidy_up.scenario_states
+        name: FIND_OBJECTS
+        state_module_name: mdr_wrs_tidy_up.scenario_states.find_objects
         state_class_name: FindObjects
         transitions:
             - transition:
@@ -91,7 +102,7 @@ state_descriptions:
                 value: 3
     - state:
         name: SELECT_OBJECT_FOR_PICKING
-        state_module_name: mdr_wrs_tidy_up.scenario_states
+        state_module_name: mdr_wrs_tidy_up.scenario_states.select_object_for_picking
         state_class_name: SelectObjectForPicking
         transitions:
             - transition:
@@ -108,16 +119,52 @@ state_descriptions:
                 name: number_of_retries
                 value: 3
     - state:
-        name: CLEAN_UP_OBJECT
-        state_module_name: mdr_wrs_tidy_up.scenario_states
-        state_class_name: CleanUpObject
+        name: PICK_UP_OBJECT
+        state_module_name: mdr_wrs_tidy_up.scenario_states.pickup_object
+        state_class_name: PickupObject
         transitions:
             - transition:
                 name: succeeded
-                state: SELECT_SCANNING_POSE
+                state: MOVE_TO_STORAGE_LOCATION
             - transition:
                 name: failed
-                state: CLEAN_UP_OBJECT
+                state: PICKUP_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: GO_TO_SCANNING_POSE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: MOVE_TO_STORAGE_LOCATION
+        state_module_name: mdr_wrs_tidy_up.scenario_states.move_to_storage_location
+        state_class_name: MoveToStorageLocation
+        transitions:
+            - transition:
+                name: succeeded
+                state: THROW_OBJECT
+            - transition:
+                name: failed
+                state: MOVE_TO_STORAGE_LOCATION
+            - transition:
+                name: failed_after_retrying
+                state: MOVE_TO_STORAGE_LOCATION
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: THROW_OBJECT
+        state_module_name: mdr_wrs_tidy_up.scenario_states.throw_object
+        state_class_name: ThrowObject
+        transitions:
+            - transition:
+                name: succeeded
+                state: CHECK_TIDYING_DONE
+            - transition:
+                name: failed
+                state: THROW_OBJECT
             - transition:
                 name: failed_after_retrying
                 state: CHECK_TIDYING_DONE
@@ -147,7 +194,7 @@ state_descriptions:
                 value: 3
     - state:
         name: FIND_FLOOR_OBSTACLES
-        state_module_name: mdr_wrs_tidy_up.scenario_states
+        state_module_name: mdr_wrs_tidy_up.scenario_states.find_floor_obstacles
         state_class_name: FindObjects
         transitions:
             - transition:
@@ -168,7 +215,7 @@ state_descriptions:
                 value: 3
     - state:
         name: SELECT_OBSTACLE_FOR_PICKING
-        state_module_name: mdr_wrs_tidy_up.scenario_states
+        state_module_name: mdr_wrs_tidy_up.scenario_states.select_obstacle_for_picking
         state_class_name: SelectObjectForPicking
         transitions:
             - transition:
@@ -185,16 +232,52 @@ state_descriptions:
                 name: number_of_retries
                 value: 3
     - state:
-        name: CLEAN_UP_OBSTACLE
-        state_module_name: mdr_wrs_tidy_up.scenario_states
-        state_class_name: CleanUpObject
+        name: PICK_UP_OBSTACLE
+        state_module_name: mdr_wrs_tidy_up.scenario_states.pickup_object
+        state_class_name: PickupObject
+        transitions:
+            - transition:
+                name: succeeded
+                state: MOVE_TO_BOX
+            - transition:
+                name: failed
+                state: PICKUP_OBSTACLE
+            - transition:
+                name: failed_after_retrying
+                state: GO_TO_SECOND_ROOM_CORRIDOR
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: MOVE_TO_BOX
+        state_module_name: mdr_wrs_tidy_up.scenario_states.move_to_storage_location
+        state_class_name: MoveToStorageLocation
+        transitions:
+            - transition:
+                name: succeeded
+                state: THROW_OBSTACLE
+            - transition:
+                name: failed
+                state: MOVE_TO_BOX
+            - transition:
+                name: failed_after_retrying
+                state: MOVE_TO_BOX
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: THROW_OBSTACLE
+        state_module_name: mdr_wrs_tidy_up.scenario_states.throw_object
+        state_class_name: ThrowObject
         transitions:
             - transition:
                 name: succeeded
                 state: GO_TO_SECOND_ROOM_CORRIDOR
             - transition:
                 name: failed
-                state: CLEAN_UP_OBSTACLE
+                state: THROW_OBSTACLE
             - transition:
                 name: failed_after_retrying
                 state: GO_TO_SECOND_ROOM_CORRIDOR
