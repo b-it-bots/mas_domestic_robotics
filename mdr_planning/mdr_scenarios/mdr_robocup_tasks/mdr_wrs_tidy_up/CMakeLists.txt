@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   roslint
   std_msgs
   geometry_msgs
+  mdr_manipulation_msgs
   mas_execution_manager
   mas_knowledge_base
 )
@@ -17,6 +18,7 @@ catkin_package(
     rospy
     std_msgs
     geometry_msgs
+    mdr_manipulation_msgs
     mas_execution_manager
     mas_knowledge_base
 )
