@@ -11,22 +11,52 @@ from mdr_move_arm_action.msg import MoveArmGoal, MoveArmResult
 from mdr_move_arm_action.dmp import DMPExecutor
 
 class MoveArmSM(ActionSMBase):
-    def __init__(self, timeout=120.0, arm_name='arm', max_recovery_attempts=1):
+    def __init__(self, timeout=120.0, arm_name='arm',
+                 whole_body_name='', max_recovery_attempts=1):
         super(MoveArmSM, self).__init__('MoveArm', [], max_recovery_attempts)
         self.timeout = timeout
         self.arm_name = arm_name
+        self.whole_body_name = whole_body_name
         self.arm = None
+        self.whole_body = None
+        self.end_effector = None
+        self.planning_scene = None
 
     def init(self):
         try:
+            rospy.loginfo('[move_arm] Initialising group %s', self.arm_name)
             self.arm = moveit_commander.MoveGroupCommander(self.arm_name)
+            rospy.loginfo('[move_arm] Group %s initialised', self.arm_name)
         except:
             rospy.logerr('[move_arm] %s could not be initialised', self.arm_name)
             return FTSMTransitions.INIT_FAILED
+
+        if self.whole_body_name:
+            try:
+                rospy.loginfo('[move_arm] Initialising group %s', self.whole_body_name)
+                self.whole_body = moveit_commander.MoveGroupCommander(self.whole_body_name)
+                self.whole_body.allow_replanning(True)
+                self.whole_body.set_planning_time(5)
+                self.end_effector = self.whole_body.get_end_effector_link()
+                rospy.loginfo('[move_arm] Group %s initialised', self.whole_body_name)
+            except:
+                rospy.logerr('[move_arm] %s could not be initialised', self.whole_body_name)
+                return FTSMTransitions.INIT_FAILED
+        else:
+            rospy.loginfo('[move_arm] whole_body_name not specified; not initialising whole body group')
+
+        self.planning_scene = moveit_commander.PlanningSceneInterface()
+
         return FTSMTransitions.INITIALISED
 
     def running(self):
         self.arm.clear_pose_targets()
+
+        if self.whole_body:
+            self.whole_body.clear_pose_targets()
+            self.planning_scene.remove_attached_object(self.end_effector)
+        rospy.sleep(1)
+
         success = False
         if self.goal.goal_type == MoveArmGoal.NAMED_TARGET:
             self.arm.set_named_target(self.goal.named_target)
@@ -41,6 +71,7 @@ class MoveArmSM(ActionSMBase):
             # we use a dynamic motion primitive for moving the arm if one is specified;
             # otherwise, we just use moveit for planning a trajectory and moving the arm
             if dmp_name:
+                rospy.loginfo('[move_arm] Using a DMP for arm motion')
                 dmp_traj_executor = DMPExecutor(dmp_name, tau)
                 dmp_execution_thread = Thread(target=dmp_traj_executor.move_to, args=(goal,))
                 dmp_execution_thread.start()
@@ -56,9 +87,16 @@ class MoveArmSM(ActionSMBase):
                     self.result = self.set_result(False)
                     return FTSMTransitions.DONE
             else:
-                self.arm.set_pose_reference_frame(goal.header.frame_id)
-                self.arm.set_pose_target(goal.pose)
-                success = self.arm.go(wait=True)
+                if self.whole_body:
+                    rospy.loginfo('[move_arm] Planning whole body motion...')
+                    self.whole_body.set_pose_reference_frame(goal.header.frame_id)
+                    self.whole_body.set_pose_target(goal.pose)
+                    success = self.whole_body.go(wait=True)
+                else:
+                    rospy.loginfo('[move_arm] Planning arm motion...')
+                    self.arm.set_pose_reference_frame(goal.header.frame_id)
+                    self.arm.set_pose_target(goal.pose)
+                    success = self.arm.go(wait=True)
         elif self.goal.goal_type == MoveArmGoal.JOINT_VALUES:
             joint_values = self.goal.joint_values
             self.arm.set_joint_value_target(joint_values)

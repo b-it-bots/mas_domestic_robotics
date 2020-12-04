@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="arm_name" default="arm" />
+    <arg name="whole_body_name" default="whole_body" />
     <arg name="palm_link_name" default="/palm_link" />
     <arg name="cartesian_velocity_topic" default="/arm_1/arm_controller/cartesian_velocity_command" />
     <arg name="base_vel_topic" default="/cmd_vel" />
@@ -11,6 +12,7 @@
 
     <node pkg="mdr_move_arm_action" type="move_arm_action" name="move_arm_server" output="screen">
         <param name="arm_name" value="$(arg arm_name)" />
+        <param name="whole_body_name" value="$(arg whole_body_name)" />
         <param name="palm_link_name" value="$(arg palm_link_name)" />
         <param name="cartesian_velocity_topic" value="$(arg cartesian_velocity_topic)" />
         <param name="base_vel_topic" value="$(arg base_vel_topic)" />
