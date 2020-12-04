@@ -5,6 +5,7 @@
     <arg name="action_timeout" default="120" />
     <arg name="action_dispatch_topic" default="/kcl_rosplan/action_dispatch"/>
     <arg name="action_feedback_topic" default="/kcl_rosplan/action_feedback"/>
+    <arg name="clear_person_memory" default="true"/>
 
     <node pkg="mdr_find_people" type="find_people_client" name="find_people_client" output="screen">
         <param name="action_name" type="str" value="$(arg action_name)" />
@@ -12,5 +13,6 @@
         <param name="action_timeout" type="double" value="$(arg action_timeout)" />
         <remap from="action_dispatch_topic" to="$(arg action_dispatch_topic)" />
         <remap from="action_feedback_topic" to="$(arg action_feedback_topic)" />
+        <remap from="clear_person_memory" to="$(arg clear_person_memory)" />
     </node>
 </launch>

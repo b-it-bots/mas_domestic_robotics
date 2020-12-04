@@ -2,13 +2,16 @@
 import rospy
 import actionlib
 
+from mas_perception_msgs.msg import Person
+
 from mdr_rosplan_interface.action_client_base import ActionClientBase
 from mdr_find_people.msg import FindPeopleAction, FindPeopleGoal
 
 class FindPeopleClient(ActionClientBase):
     def __init__(self):
         super(FindPeopleClient, self).__init__()
-
+        self.clear_person_memory = rospy.get_param('~clear_person_memory', False)
+        self.perform_recognition = False
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
 
@@ -43,21 +46,56 @@ class FindPeopleClient(ActionClientBase):
         for param in rosplan_action_msg.parameters:
             if param.key == 'bot':
                 self.robot_name = param.value
+            elif param.key == 'perform_recognition':
+                self.perform_recognition = bool(param.value)
         return goal
 
     def update_knowledge_base(self, person_list):
-        '''Updates the knowledge base with the following facts:
-        * a list of people that the robot sees
+        '''Updates the knowledge base with a list of detected people.
+        Removes all existing people in the knowledge base before adding
+        the new people if "self.clear_person_memory" is set to True.
+        Performs person recognition if set.perform_recognition is set to True.
+
+        Keyword arguments:
+        person_list: List[Person] -- a list of mas_perception_msgs/Person msgs
+
         '''
+        if self.clear_person_memory:
+            self.__delete_people_from_kb()
+
         facts_to_add = []
-        objects_to_add = []
         for i, person in enumerate(person_list.persons):
             person_identifier = 'person_{0}'.format(i)
-            fact = ('unknown', [('person', person_identifier)])
-            facts_to_add.append(fact)
-            objects_to_add.append((person_identifier, person))
+            self.kb_interface.insert_obj_instance(person_identifier, person)
+
+            recognised_person = None
+            if self.perform_recognition:
+                recognised_person = self.recognise_person(person_identifier)
+
+            if recognised_person is None:
+                rospy.loginfo('{0} not recognised'.format(person_identifier))
+                fact = ('unknown', [('person', person_identifier)])
+                facts_to_add.append(fact)
+            else:
+                rospy.loginfo('Recognised {0}'.format(recognised_person.name))
+                fact = ('known', [('person', recognised_person.name)])
+                person.name = recognised_person.name
+
+                # we reinsert the Person object with the name of the known person
+                # (and delete the originally added unknown person)
+                self.kb_interface.remove_obj_instance(person_identifier, Person._type)
+                self.kb_interface.insert_obj_instance(recognised_person.name, person)
+
         self.kb_interface.insert_facts(facts_to_add)
-        self.kb_interface.insert_objects(objects_to_add)
+
+    def __delete_people_from_kb(self):
+        '''Removes previously seen people from the knowledge base.
+        '''
+        people_to_remove = []
+        people = self.kb_interface.get_all_objects(Person._type)
+        for person in people:
+            people_to_remove.append((person.name, Person._type))
+        self.kb_interface.remove_objects(people_to_remove)
 
 if __name__ == '__main__':
     rospy.init_node('mdr_find_people_client')
