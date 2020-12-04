@@ -9,7 +9,7 @@ state_descriptions:
     - state:
         name: INITIALISE_SCENARIO
         state_module_name: mdr_wrs_tidy_up.scenario_states.initialise_scenario
-        state_class_name: Initialise_scenario
+        state_class_name: InitialiseScenario
         transitions:
             - transition:
                 name: succeeded
@@ -105,12 +105,6 @@ state_descriptions:
             - transition:
                 name: succeeded
                 state: PICKUP_OBJECT
-            - transition:
-                name: failed
-                state: SELECT_OBJECT_FOR_PICKING
-            - transition:
-                name: failed_after_retrying
-                state: SELECT_SCANNING_POSE
         arguments:
             - argument:
                 name: number_of_retries
@@ -135,8 +129,8 @@ state_descriptions:
                 value: 3
     - state:
         name: MOVE_TO_STORAGE_LOCATION
-        state_module_name: mdr_wrs_tidy_up.scenario_states.move_to_storage_location
-        state_class_name: MoveToStorageLocation
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
         transitions:
             - transition:
                 name: succeeded
@@ -153,8 +147,8 @@ state_descriptions:
                 value: 3
     - state:
         name: THROW_OBJECT
-        state_module_name: mdr_wrs_tidy_up.scenario_states.throw_object
-        state_class_name: ThrowObject
+        state_module_name: mdr_manipulation_behaviours.throw_object_in
+        state_class_name: ThrowObjectIn
         transitions:
             - transition:
                 name: succeeded
@@ -174,7 +168,7 @@ state_descriptions:
     - state:
         name: INITIALISE_OBSTACLE_REMOVAL
         state_module_name: mdr_wrs_tidy_up.scenario_states.initialise_scenario
-        state_class_name: Initialise_scenario
+        state_class_name: InitialiseScenario
         transitions:
             - transition:
                 name: succeeded
@@ -199,6 +193,9 @@ state_descriptions:
                 state: GO_TO_SECOND_ROOM_CORRIDOR
         arguments:
             - argument:
+                name: destination_locations
+                value: [second_room_corridor]
+            - argument:
                 name: number_of_retries
                 value: 3
     - state:
@@ -220,22 +217,22 @@ state_descriptions:
                 state: GO_TO_SECOND_ROOM_CORRIDOR
         arguments:
             - argument:
+                name: object_detection_server_name
+                value: /mas_perception/detect_objects
+            - argument:
+                name: cloud_obstacle_detection_topic
+                value: /mas_perception/cloud_obstacle_detection/obstacle_objects
+            - argument:
                 name: number_of_retries
                 value: 3
     - state:
         name: SELECT_OBSTACLE_FOR_PICKING
-        state_module_name: mdr_wrs_tidy_up.scenario_states.select_obstacle_for_picking
+        state_module_name: mdr_wrs_tidy_up.scenario_states.select_object_for_picking
         state_class_name: SelectObjectForPicking
         transitions:
             - transition:
                 name: succeeded
                 state: PICKUP_OBSTACLE
-            - transition:
-                name: failed
-                state: SELECT_OBSTACLE_FOR_PICKING
-            - transition:
-                name: failed_after_retrying
-                state: FIND_FLOOR_OBSTACLES
         arguments:
             - argument:
                 name: number_of_retries
@@ -260,8 +257,8 @@ state_descriptions:
                 value: 3
     - state:
         name: MOVE_TO_BOX
-        state_module_name: mdr_wrs_tidy_up.scenario_states.move_to_storage_location
-        state_class_name: MoveToStorageLocation
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
         transitions:
             - transition:
                 name: succeeded
@@ -278,8 +275,8 @@ state_descriptions:
                 value: 3
     - state:
         name: THROW_OBSTACLE
-        state_module_name: mdr_wrs_tidy_up.scenario_states.throw_object
-        state_class_name: ThrowObject
+        state_module_name: mdr_manipulation_behaviours.throw_object_in
+        state_class_name: ThrowObjectIn
         transitions:
             - transition:
                 name: succeeded
