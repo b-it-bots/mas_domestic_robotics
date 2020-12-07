@@ -20,7 +20,8 @@ class PickupObject(ScenarioStateBase):
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed',
                                              'failed_after_retrying'],
-                                   input_keys=['selected_object'])
+                                   input_keys=['selected_object'],
+                                   output_keys=['grasped_object'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'pickup_object')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
@@ -45,7 +46,9 @@ class PickupObject(ScenarioStateBase):
         if self.pickup_client.wait_for_result(rospy.Duration.from_sec(self.grasping_timeout_s)):
             pickup_result = self.pickup_client.get_result()
             if pickup_result.success:
-                rospy.loginfo('[%s] Successfully grasped object', self.state_name)
+                rospy.loginfo('[%s] Successfully grasped object %s', self.state_name, object_to_pick_up.name)
+                userdata.grasped_object = object_to_pick_up.name
+                self.kb_interface.insert_obj_instance(object_to_pick_up.name, object_to_pick_up)
                 return 'succeeded'
             else:
                 rospy.logerr('[%s] Failed to grasp object', self.state_name)
