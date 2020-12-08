@@ -11,6 +11,32 @@ from mas_tools.ros_utils import get_package_path
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
+def get_environment_objects(planning_scene_map_file):
+    object_list = ObjectList()
+
+    scene_file_path = get_package_path('mdr_wrs_tidy_up', 'config', planning_scene_map_file)
+    scene_data = None
+    with open(scene_file_path, 'r') as planning_scene_map:
+        scene_data = yaml.safe_load(planning_scene_map)
+
+    frame_id = scene_data['frame_id']
+    for obj_data in scene_data['objects']:
+        obj = Object()
+        obj.name = obj_data['name']
+        obj.pose.header.frame_id = frame_id
+
+        euler_orientation = obj_data['orientation']
+        quaternion = tf.transformations.quaternion_from_euler(*euler_orientation)
+
+        obj.pose.pose = Pose(Point(*obj_data['position']), Quaternion(*quaternion))
+        obj.dimensions.header.frame_id = frame_id
+        obj.dimensions.vector = Vector3(*obj_data['dimensions'])
+        obj.bounding_box.center = Point(*obj_data['position'])
+        obj.bounding_box.dimensions = Vector3(*obj_data['dimensions'])
+        object_list.objects.append(obj)
+    return object_list
+
+
 class InitialiseScenario(ScenarioStateBase):
     floor_objects_cleared = None
     table_objects_cleared = None
@@ -41,48 +67,44 @@ class InitialiseScenario(ScenarioStateBase):
         userdata.table_objects_cleared = self.table_objects_cleared
         userdata.object_location = self.object_location
 
+        if not self.planning_scene_map_file:
+            rospy.loginfo('[%s] Planning scene map file not specified; not initialising KB and scene', self.state_name)
+            return 'succeeded'
+
+        environment_objects = get_environment_objects(self.planning_scene_map_file)
+
+        # initialising the knowledge base
+        rospy.loginfo('[%s] Initialing knowledge base', self.state_name)
+        self.__init_kb(environment_objects)
+        rospy.loginfo('[%s] Knowledge base initialised', self.state_name)
+
+        # initialising the MoveIt! planning scene
         update_planning_scene_req = UpdatePlanningSceneRequest()
         update_planning_scene_req.operation = UpdatePlanningSceneRequest.ADD
-        update_planning_scene_req.objects = self.__get_environment_objects()
+        update_planning_scene_req.objects = environment_objects
 
-        if self.planning_scene_map_file:
-            rospy.loginfo('[%s] Updating planning scene', self.state_name)
-            response = self.planning_scene_update_proxy(update_planning_scene_req)
-            if response is not None:
-                if response.success:
-                    rospy.loginfo('[%s] Successfully updated the planning scene', self.state_name)
-                else:
-                    rospy.logerr('[%s] Failed to update the planning scene', self.state_name)
+        rospy.loginfo('[%s] Initialising planning scene', self.state_name)
+        response = self.planning_scene_update_proxy(update_planning_scene_req)
+        if response is not None:
+            if response.success:
+                rospy.loginfo('[%s] Successfully updated the planning scene', self.state_name)
             else:
-                rospy.logerr('[%s] Response not received', self.state_name)
+                rospy.logerr('[%s] Failed to update the planning scene', self.state_name)
         else:
-            rospy.loginfo('[%s] Planning scene map file not specified; not updating scene', self.state_name)
+            rospy.logerr('[%s] Response not received', self.state_name)
 
         return 'succeeded'
 
-    def __get_environment_objects(self):
-        object_list = ObjectList()
-
-        scene_file_path = get_package_path('mdr_wrs_tidy_up', 'config',
-                                           self.planning_scene_map_file)
-        scene_data = None
-        with open(scene_file_path, 'r') as planning_scene_map:
-            scene_data = yaml.safe_load(planning_scene_map)
-
-        frame_id = scene_data['frame_id']
-        for obj_data in scene_data['objects']:
-            obj = Object()
-            obj.name = obj_data['name']
-            obj.pose.header.frame_id = frame_id
-
-            euler_orientation = obj_data['orientation']
-            quaternion = tf.transformations.quaternion_from_euler(*euler_orientation)
-
-            obj.pose.pose = Pose(Point(*obj_data['position']), Quaternion(*quaternion))
-            obj.dimensions.header.frame_id = frame_id
-            obj.dimensions.vector = Vector3(*obj_data['dimensions'])
-            object_list.objects.append(obj)
-        return object_list
+    def __init_kb(self, object_list):
+        try:
+            for obj in object_list.objects:
+                # we don't add walls and table legs to the knowledge base
+                if obj.name.find('wall') != -1 or obj.name.find('leg') != -1:
+                    continue
+                self.kb_interface.insert_obj_instance(obj.name, obj)
+        except Exception as exc:
+            rospy.logerr('[%s] Error while initialising the knowledge base', self.state_name)
+            rospy.logerr('[%s] %s', self.state_name, str(exc))
 
     def __init_ros_components(self):
         rospy.loginfo('[%s] Creating a service proxy for %s',
