@@ -18,8 +18,8 @@ class PickupSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mdr_gripper_controller',
                  pregrasp_config_name='pregrasp',
-                 pregrasp_top_config_name='pregrasp_top',
-                 pregrasp_low_config_name='pregrasp_low',
+                 pregrasp_top_config_name='neutral',
+                 pregrasp_low_config_name='neutral',
                  pregrasp_height_threshold=0.5,
                  intermediate_grasp_offset=-1,
                  safe_arm_joint_config='folded',
@@ -28,7 +28,7 @@ class PickupSM(ActionSMBase):
                  move_forward_server='move_forward_server',
                  base_elbow_offset=-1.,
                  arm_base_offset=-1.,
-                 grasping_orientation=list(),
+                 grasping_orientation=None,
                  grasping_dmp='',
                  dmp_tau=1.,
                  number_of_retries=0,
@@ -90,20 +90,20 @@ class PickupSM(ActionSMBase):
     def running(self):
         pose = self.goal.pose
         pose.header.stamp = rospy.Time(0)
-        pose_base_link = self.tf_listener.transformPose('base_link', pose)
+        pose_base_link = self.tf_listener.transformPose('odom', pose)
 
-        if self.base_elbow_offset > 0:
-            self.__align_base_with_pose(pose_base_link)
+        # if self.base_elbow_offset > 0:
+        #     self.__align_base_with_pose(pose_base_link)
+        #
+        #     # the base is now correctly aligned with the pose, so we set the
+        #     # y position of the goal pose to the elbow offset
+        #     pose_base_link.pose.position.y = self.base_elbow_offset
 
-            # the base is now correctly aligned with the pose, so we set the
-            # y position of the goal pose to the elbow offset
-            pose_base_link.pose.position.y = self.base_elbow_offset
-
-        if self.grasping_orientation:
-            pose_base_link.pose.orientation.x = self.grasping_orientation[0]
-            pose_base_link.pose.orientation.y = self.grasping_orientation[1]
-            pose_base_link.pose.orientation.z = self.grasping_orientation[2]
-            pose_base_link.pose.orientation.w = self.grasping_orientation[3]
+        # if self.grasping_orientation:
+        #     pose_base_link.pose.orientation.x = self.grasping_orientation[0]
+        #     pose_base_link.pose.orientation.y = self.grasping_orientation[1]
+        #     pose_base_link.pose.orientation.z = self.grasping_orientation[2]
+        #     pose_base_link.pose.orientation.w = self.grasping_orientation[3]
 
         grasp_successful = False
         retry_count = 0
@@ -131,10 +131,10 @@ class PickupSM(ActionSMBase):
                 rospy.loginfo('[pickup] Arm motion successful')
             elif self.goal.strategy == PickupGoal.TOP_GRASP:
                 rospy.loginfo('[pickup] Preparing top grasp')
-                pose_base_link, x_align_distance = self.__prepare_top_grasp(pose_base_link)
-                self.gripper.orient_z(pose_base_link.pose.orientation)
+                # pose_base_link, x_align_distance = self.__prepare_top_grasp(pose_base_link)
+                # self.gripper.orient_z(pose_base_link.pose.orientation)
 
-                pose_base_link, _ = self.__prepare_top_grasp(pose_base_link)
+                # pose_base_link, _ = self.__prepare_top_grasp(pose_base_link)
                 rospy.loginfo('[pickup] Grasping...')
                 arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
                 if not arm_motion_success:

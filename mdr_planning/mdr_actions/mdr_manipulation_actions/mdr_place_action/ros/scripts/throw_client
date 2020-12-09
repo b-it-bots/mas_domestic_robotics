@@ -80,28 +80,45 @@ class ThrowClient(ActionClientBase):
 
     def get_throwing_pose(self):
         throwing_target = self.kb_interface.get_obj_instance(self.throwing_target, Object._type)
-        throwing_target.pose.header.stamp = rospy.Time(0)
-        throwing_target.pose = self.tf_listener.transformPose(self.frame_id, throwing_target.pose)
         throwing_target_obj = ConverterFactory.convert_ros_msg(throwing_target)
 
         obj_to_throw = self.kb_interface.get_obj_instance(self.obj, Object._type)
-        obj_to_throw.pose.header.frame_id = self.frame_id
         manipulated_obj = ConverterFactory.convert_ros_msg(obj_to_throw)
 
         action_model = Action(action_name='Throw')
         number_of_samples = 10
 
-        robot_pose = PoseStamped(Header(1, rospy.Time.now(), self.frame_id),
-                                 Pose(Point(0., 0., 0.), Quaternion(0., 0., 0., 1.)))
+        base_link_origin_pose = PoseStamped(Header(1, rospy.Time(0), self.frame_id),
+                                            Pose(Point(0., 0., 0.), Quaternion(0., 0., 0., 1.)))
+        robot_pose = self.tf_listener.transformPose(throwing_target.pose.header.frame_id,
+                                                    base_link_origin_pose)
         robot_pose = ConverterFactory.convert_ros_msg(robot_pose)
         model_results = action_model.get_execution_guidelines(data_count=number_of_samples,
-                                                              frame_id=self.frame_id,
+                                                              frame_id=throwing_target.pose.header.frame_id,
                                                               manipulated_object=manipulated_obj,
                                                               target_object=throwing_target_obj,
                                                               robot_pose=robot_pose)
         candidate_pose_idx = np.argmax(model_results['success_probabilities'])
         candidate_pose = model_results['candidate_poses'][candidate_pose_idx]
         candidate_pose = ConverterFactory.convert_to_ros_msg(candidate_pose)
+
+        candidate_pose.header.stamp = rospy.Time(0)
+        candidate_pose.pose.position.z += 0.1
+
+        # use top-down orientation for throwing
+        gripper_pose = PoseStamped()
+        gripper_pose.header.frame_id = 'base_link'
+        gripper_pose.header.stamp = rospy.Time(0)
+
+        gripper_quaternion = tf.transformations.quaternion_from_euler(np.pi, 0., 0.)
+        gripper_pose.pose.orientation.x = gripper_quaternion[0]
+        gripper_pose.pose.orientation.y = gripper_quaternion[1]
+        gripper_pose.pose.orientation.z = gripper_quaternion[2]
+        gripper_pose.pose.orientation.w = gripper_quaternion[3]
+
+        gripper_pose_in_target_frame = self.tf_listener.transformPose(throwing_target.pose.header.frame_id, gripper_pose)
+        candidate_pose.pose.orientation = gripper_pose_in_target_frame.pose.orientation
+
         return candidate_pose
 
     def update_knowledge_base(self, new_object_pose):
