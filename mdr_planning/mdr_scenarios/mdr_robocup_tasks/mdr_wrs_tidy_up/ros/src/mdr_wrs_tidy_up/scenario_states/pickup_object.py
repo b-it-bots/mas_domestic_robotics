@@ -14,6 +14,7 @@ class PickupObject(ScenarioStateBase):
     pickup_client = None
     tf_listener = None
     grasping_timeout_s = 30.
+    grasping_height_offset = 0.
 
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'pickup_object',
@@ -27,6 +28,7 @@ class PickupObject(ScenarioStateBase):
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.pickup_server_name = kwargs.get('pickup_server_name', 'pickup_server')
         self.grasping_timeout_s = kwargs.get('grasping_timeout_s', 30.)
+        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.05)
         self.retry_count = 0
         self.__init_ros_components()
 
@@ -78,7 +80,7 @@ class PickupObject(ScenarioStateBase):
         pose = Pose()
         pose.position.x = object_to_pick_up.bounding_box.center.x
         pose.position.y = object_to_pick_up.bounding_box.center.y
-        pose.position.z = object_to_pick_up.bounding_box.center.z
+        pose.position.z = object_to_pick_up.bounding_box.center.z + self.grasping_height_offset
 
         gripper_orientation_z = np.arctan2(object_to_pick_up.bounding_box.dimensions.y,
                                            object_to_pick_up.bounding_box.dimensions.x)
