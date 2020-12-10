@@ -14,7 +14,7 @@ class MoveBase(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'move_base')
         self.action_server_name = kwargs.get('action_server_name', 'move_base_server')
-        self.destination_locations = list(kwargs.get('destination_locations', None))
+        self.destination_locations = kwargs.get('destination_locations', None)
         self.timeout = kwargs.get('timeout', 120.)
         self.debug = kwargs.get('debug', False)
 
