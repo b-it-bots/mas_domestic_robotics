@@ -129,7 +129,7 @@ state_descriptions:
                 value: 3
     - state:
         name: MOVE_TO_STORAGE_LOCATION
-        state_module_name: mdr_navigation_behaviours.move_base
+        state_module_name: mdr_wrs_tidy_up.scenario_states.move_base
         state_class_name: MoveBase
         transitions:
             - transition:
