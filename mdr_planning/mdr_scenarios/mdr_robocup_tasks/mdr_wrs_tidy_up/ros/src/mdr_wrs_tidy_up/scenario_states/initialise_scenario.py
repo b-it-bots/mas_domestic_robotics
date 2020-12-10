@@ -51,7 +51,8 @@ class InitialiseScenario(ScenarioStateBase):
                                    outcomes=['succeeded'],
                                    output_keys=['floor_objects_cleared',
                                                 'table_objects_cleared',
-                                                'object_location'])
+                                                'object_location',
+                                                'environment_objects'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'initialise_scenario')
         self.floor_objects_cleared = kwargs.get('floor_objects_cleared', None)
@@ -75,7 +76,7 @@ class InitialiseScenario(ScenarioStateBase):
 
         # initialising the knowledge base
         rospy.loginfo('[%s] Initialing knowledge base', self.state_name)
-        self.__init_kb(environment_objects)
+        userdata.environment_objects = self.__init_kb(environment_objects, userdata)
         rospy.loginfo('[%s] Knowledge base initialised', self.state_name)
 
         # initialising the MoveIt! planning scene
@@ -95,16 +96,18 @@ class InitialiseScenario(ScenarioStateBase):
 
         return 'succeeded'
 
-    def __init_kb(self, object_list):
+    def __init_kb(self, object_list, userdata):
+        kb_objects = dict()
         try:
             for obj in object_list.objects:
                 # we don't add walls and table legs to the knowledge base
                 if obj.name.find('wall') != -1 or obj.name.find('leg') != -1:
                     continue
-                self.kb_interface.insert_obj_instance(obj.name, obj)
+                kb_objects[obj.name] = obj
         except Exception as exc:
             rospy.logerr('[%s] Error while initialising the knowledge base', self.state_name)
             rospy.logerr('[%s] %s', self.state_name, str(exc))
+        return kb_objects
 
     def __init_ros_components(self):
         rospy.loginfo('[%s] Creating a service proxy for %s',
