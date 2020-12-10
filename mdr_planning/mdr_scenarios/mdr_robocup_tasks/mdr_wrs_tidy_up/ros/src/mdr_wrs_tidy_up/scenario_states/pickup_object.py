@@ -49,8 +49,7 @@ class PickupObject(ScenarioStateBase):
             pickup_result = self.pickup_client.get_result()
             if pickup_result.success:
                 rospy.loginfo('[%s] Successfully grasped object %s', self.state_name, object_to_pick_up.name)
-                userdata.grasped_object = object_to_pick_up.name
-                self.kb_interface.insert_obj_instance(object_to_pick_up.name, object_to_pick_up)
+                userdata.grasped_object = object_to_pick_up
                 return 'succeeded'
             else:
                 rospy.logerr('[%s] Failed to grasp object', self.state_name)
@@ -61,6 +60,7 @@ class PickupObject(ScenarioStateBase):
 
         if self.retry_count == self.number_of_retries:
             rospy.logerr('[%s] Could not pick up object after retrying; giving up', self.state_name)
+            self.retry_count = 0
             return 'failed_after_retrying'
 
         rospy.loginfo('[%s] Retrying to place object', self.state_name)
