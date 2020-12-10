@@ -64,8 +64,8 @@ class InitialiseScenario(ScenarioStateBase):
         self.__init_ros_components()
 
     def execute(self, userdata):
-        userdata.floor_objects_cleared = self.floor_objects_cleared
-        userdata.table_objects_cleared = self.table_objects_cleared
+        userdata.floor_objects_cleared = dict(self.floor_objects_cleared)
+        userdata.table_objects_cleared = dict(self.table_objects_cleared)
         userdata.object_location = self.object_location
 
         if not self.planning_scene_map_file:
