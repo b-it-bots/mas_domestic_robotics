@@ -51,6 +51,6 @@ class MoveBase(ScenarioStateBase):
                     return 'failed'
             else:
                 rospy.logerr('[%s] Could not move to %s within %f seconds; giving up',
-                             self.state_name, destination_location, self.release_timeout)
+                             self.state_name, destination_location, self.timeout)
                 client.cancel_all_goals()
         return 'succeeded'
