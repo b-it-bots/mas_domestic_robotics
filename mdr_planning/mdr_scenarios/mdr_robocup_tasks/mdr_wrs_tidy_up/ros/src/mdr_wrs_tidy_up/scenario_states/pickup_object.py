@@ -38,7 +38,10 @@ class PickupObject(ScenarioStateBase):
         goal = PickupGoal()
         goal.pose.header.frame_id = object_to_pick_up.pose.header.frame_id
         goal.pose.header.stamp = rospy.Time.now()
-        goal.pose.pose = self.get_grasping_pose(object_to_pick_up)
+
+        grasping_pose, grasping_strategy = self.get_grasping_pose_and_strategy(object_to_pick_up)
+        goal.pose.pose = grasping_pose
+        goal.strategy = grasping_strategy
 
         rospy.loginfo('[%s] Picking up object at %s position (%f %f %f)', self.state_name,
                       goal.pose.header.frame_id, goal.pose.pose.position.x,
@@ -67,7 +70,7 @@ class PickupObject(ScenarioStateBase):
         self.retry_count += 1
         return 'failed'
 
-    def get_grasping_pose(self, object_to_pick_up):
+    def get_grasping_pose_and_strategy(self, object_to_pick_up):
         '''Returns a geometry_msgs.msg.Pose object representing a grasping pose
         for the given object. The grasping position is given by the center of the
         object's bounding box; the orientation ensures a top-down grasp aligned
@@ -85,20 +88,23 @@ class PickupObject(ScenarioStateBase):
         gripper_orientation_z = np.arctan2(object_to_pick_up.bounding_box.dimensions.y,
                                            object_to_pick_up.bounding_box.dimensions.x)
 
+        grasping_strategy = None
         # this orientation guarantees a sideways grasp and
         # alignment along the longest axis of the object
         if object_to_pick_up.dimensions.vector.z > max(object_to_pick_up.dimensions.vector.x,
                                                        object_to_pick_up.dimensions.vector.y):
             desired_gripper_orientation_base_link = (np.pi, -np.pi/2, 0.)
+            grasping_strategy = PickupGoal.SIDEWAYS_GRASP
         # this orientation guarantees a top-down grasp and
         # alignment along the longest axis of the object
         else:
             desired_gripper_orientation_base_link = (np.pi, 0, gripper_orientation_z)
-            pose.position.z += self.grasping_height_offset
+            grasping_strategy = PickupGoal.TOP_GRASP
 
         pose.orientation = self.get_gripper_orientation(desired_gripper_orientation_base_link,
                                                         object_to_pick_up.pose.header.frame_id)
-        return pose
+
+        return pose, grasping_strategy
 
     def get_gripper_orientation(self, orientation, target_frame):
         '''Returns a geometry_msgs.msg.Quaternion object representing the given
