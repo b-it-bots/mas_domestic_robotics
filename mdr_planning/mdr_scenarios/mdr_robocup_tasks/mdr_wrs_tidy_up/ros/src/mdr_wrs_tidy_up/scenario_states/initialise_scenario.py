@@ -1,5 +1,3 @@
-import yaml
-
 import rospy
 import tf
 from geometry_msgs.msg import Pose, Point, Quaternion, Vector3
@@ -12,7 +10,7 @@ from mas_tools.file_utils import load_yaml_file
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
-from mdr_wrs_tidy_up.utils import reconfigure_object_detection_params
+from mdr_wrs_tidy_up.utils import update_object_detection_params
 
 def get_environment_objects(planning_scene_map_file):
     object_list = ObjectList()
@@ -73,7 +71,7 @@ class InitialiseScenario(ScenarioStateBase):
             rospy.loginfo('[%s] Planning scene map file not specified; not initialising KB and scene', self.state_name)
             return 'succeeded'
 
-        reconfigure_object_detection_params(0.02, 0.2)
+        update_object_detection_params("floor")
         environment_objects = get_environment_objects(self.planning_scene_map_file)
 
         # initialising the knowledge base
