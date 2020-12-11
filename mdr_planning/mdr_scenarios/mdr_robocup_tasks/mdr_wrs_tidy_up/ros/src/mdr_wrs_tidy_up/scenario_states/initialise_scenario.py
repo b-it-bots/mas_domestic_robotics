@@ -8,6 +8,7 @@ from mas_perception_msgs.msg import Object, ObjectList
 from mdr_manipulation_msgs.srv import UpdatePlanningScene, UpdatePlanningSceneRequest
 
 from mas_tools.ros_utils import get_package_path
+from mas_tools.file_utils import load_yaml_file
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
@@ -15,9 +16,7 @@ def get_environment_objects(planning_scene_map_file):
     object_list = ObjectList()
 
     scene_file_path = get_package_path('mdr_wrs_tidy_up', 'config', planning_scene_map_file)
-    scene_data = None
-    with open(scene_file_path, 'r') as planning_scene_map:
-        scene_data = yaml.safe_load(planning_scene_map)
+    scene_data = load_yaml_file(scene_file_path)
 
     frame_id = scene_data['frame_id']
     for obj_data in scene_data['objects']:
