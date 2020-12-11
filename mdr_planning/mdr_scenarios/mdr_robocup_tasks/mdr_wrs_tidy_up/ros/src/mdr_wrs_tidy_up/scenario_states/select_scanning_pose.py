@@ -1,6 +1,8 @@
 import random
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
+from mdr_wrs_tidy_up.utils import reconfigure_object_detection_params
+
 def get_dict_keys_with_false_values(d):
     keys_with_false_values = []
     for k, v in d.items():
@@ -28,11 +30,13 @@ class SelectScanningPose(ScenarioStateBase):
             dirty_locations = get_dict_keys_with_false_values(userdata.floor_objects_cleared)
             userdata.object_location = 'floor'
             userdata.destination_locations = [random.choice(dirty_locations)]
+            reconfigure_object_detection_params(0.02, 0.2)
             return 'floor_not_cleared'
         elif False in userdata.table_objects_cleared.values():
             dirty_locations = get_dict_keys_with_false_values(userdata.table_objects_cleared)
             userdata.object_location = 'table'
             userdata.destination_locations = [random.choice(dirty_locations)]
+            reconfigure_object_detection_params(0.4, 0.6)
             return 'table_not_cleared'
         else:
             return 'tidying_done'
