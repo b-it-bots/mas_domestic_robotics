@@ -80,14 +80,21 @@ class PickupObject(ScenarioStateBase):
         pose = Pose()
         pose.position.x = object_to_pick_up.bounding_box.center.x
         pose.position.y = object_to_pick_up.bounding_box.center.y
-        pose.position.z = object_to_pick_up.bounding_box.center.z + self.grasping_height_offset
+        pose.position.z = object_to_pick_up.bounding_box.center.z
 
         gripper_orientation_z = np.arctan2(object_to_pick_up.bounding_box.dimensions.y,
                                            object_to_pick_up.bounding_box.dimensions.x)
 
+        # this orientation guarantees a sideways grasp and
+        # alignment along the longest axis of the object
+        if object_to_pick_up.dimensions.vector.z > max(object_to_pick_up.dimensions.vector.x,
+                                                       object_to_pick_up.dimensions.vector.y):
+            desired_gripper_orientation_base_link = (np.pi, -np.pi/2, 0.)
         # this orientation guarantees a top-down grasp and
         # alignment along the longest axis of the object
-        desired_gripper_orientation_base_link = (np.pi, 0, gripper_orientation_z)
+        else:
+            desired_gripper_orientation_base_link = (np.pi, 0, gripper_orientation_z)
+            pose.position.z += self.grasping_height_offset
 
         pose.orientation = self.get_gripper_orientation(desired_gripper_orientation_base_link,
                                                         object_to_pick_up.pose.header.frame_id)
