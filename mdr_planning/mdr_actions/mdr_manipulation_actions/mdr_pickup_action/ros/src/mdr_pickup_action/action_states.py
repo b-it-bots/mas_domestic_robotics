@@ -119,7 +119,7 @@ class PickupSM(ActionSMBase):
 
             if self.goal.strategy == PickupGoal.SIDEWAYS_GRASP:
                 rospy.loginfo('[pickup] Preparing sideways graps')
-                pose_base_link = self.__prepare_sideways_grasp(pose_base_link)
+                self.__prepare_sideways_grasp(pose_base_link)
 
                 rospy.loginfo('[pickup] Grasping...')
                 arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
@@ -131,10 +131,8 @@ class PickupSM(ActionSMBase):
                 rospy.loginfo('[pickup] Arm motion successful')
             elif self.goal.strategy == PickupGoal.TOP_GRASP:
                 rospy.loginfo('[pickup] Preparing top grasp')
-                # pose_base_link, x_align_distance = self.__prepare_top_grasp(pose_base_link)
-                # self.gripper.orient_z(pose_base_link.pose.orientation)
+                self.__prepare_top_grasp(pose_base_link)
 
-                # pose_base_link, _ = self.__prepare_top_grasp(pose_base_link)
                 rospy.loginfo('[pickup] Grasping...')
                 arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
                 if not arm_motion_success:
@@ -154,11 +152,6 @@ class PickupSM(ActionSMBase):
             if self.goal.context != PickupGoal.CONTEXT_TABLETOP_MANIPULATION:
                 rospy.loginfo('[pickup] Moving the arm back')
                 self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
-
-                if self.goal.strategy == PickupGoal.TOP_GRASP:
-                    rospy.loginfo('[pickup] Moving the base back to the original position')
-                    if abs(x_align_distance) > 0:
-                        self.__move_base_along_x(-x_align_distance)
 
             rospy.loginfo('[pickup] Verifying the grasp...')
             grasp_successful = self.gripper.verify_grasp()
@@ -226,30 +219,27 @@ class PickupSM(ActionSMBase):
         return result
 
     def __prepare_sideways_grasp(self, pose_base_link):
-        rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
         if pose_base_link.pose.position.z > self.pregrasp_height_threshold:
             self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
         else:
             self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_low_config_name)
 
         if self.intermediate_grasp_offset > 0:
-            rospy.loginfo('[PICKUP] Moving to intermediate grasping pose...')
-            pose_base_link.pose.position.x -= self.intermediate_grasp_offset
-            self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-
-        if self.intermediate_grasp_offset > 0:
-            pose_base_link.pose.position.x += self.intermediate_grasp_offset
-        return pose_base_link
+            rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
+            pregrasp_pose_base_link = self.tf_listener.transformPose('/base_link', pose_base_link)
+            pregrasp_pose_base_link.pose.position.x -= self.intermediate_grasp_offset
+            pregrasp_pose_original_frame = self.tf_listener.transformPose(pose_base_link.header.frame_id, pregrasp_pose_base_link)
+            self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pregrasp_pose_original_frame)
 
     def __prepare_top_grasp(self, pose_base_link):
         rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
-        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_top_config_name)
-        x_align_distance = 0
-        if self.arm_base_offset > 0:
-            x_align_distance = pose_base_link.pose.position.x - self.arm_base_offset
-            self.__move_base_along_x(x_align_distance)
-            pose_base_link.pose.position.x = self.arm_base_offset
-        return pose_base_link, x_align_distance
+        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+        if self.intermediate_grasp_offset > 0:
+            rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
+            pregrasp_pose_base_link = self.tf_listener.transformPose('/base_link', pose_base_link)
+            pregrasp_pose_base_link.pose.position.z += self.intermediate_grasp_offset
+            pregrasp_pose_original_frame = self.tf_listener.transformPose(pose_base_link.header.frame_id, pregrasp_pose_base_link)
+            self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pregrasp_pose_original_frame)
 
     def __move_base_along_x(self, distance_to_move):
         movement_speed = np.sign(distance_to_move) * 0.1 # m/s
