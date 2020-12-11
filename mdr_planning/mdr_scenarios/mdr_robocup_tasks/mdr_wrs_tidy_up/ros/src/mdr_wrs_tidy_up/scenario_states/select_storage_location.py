@@ -45,6 +45,4 @@ class SelectStorageLocation(ScenarioStateBase):
             storage_location = random.choice(self.available_bins)
             userdata.storage_location = storage_location
             userdata.destination_locations = [self.bin_locations[storage_location]]
-            rospy.logwarn('STORAGE LOCATION %s', storage_location)
-            rospy.logwarn([self.bin_locations[storage_location]])
         return 'succeeded'
