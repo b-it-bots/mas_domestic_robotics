@@ -31,6 +31,6 @@ def update_object_detection_params(surface, config_file=None):
     if params:
         config = params[surface]
         if config:
-            reconfigure_object_detection_params(z_min=config["z_min"], z_min=config["z_max"])
+            reconfigure_object_detection_params(z_min=config["z_min"], z_max=config["z_max"])
         else:
             rospy.logerr("Unable to load object_detection_params for surface {0}".format(surface))
