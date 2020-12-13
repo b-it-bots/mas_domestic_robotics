@@ -45,6 +45,7 @@ class FindObjects(ScenarioStateBase):
 
             rospy.loginfo('[%s] Resetting cloud obstacle cache and waiting a bit', self.state_name)
             self.obstacle_cache_reset_pub.publish(Bool(data=True))
+            rospy.sleep(0.5)
 
             rospy.loginfo('[%s] Waiting for cloud obstacle detection', self.state_name)
             while last_msg_time == self.last_cloud_object_detection_time:
@@ -53,6 +54,7 @@ class FindObjects(ScenarioStateBase):
             rospy.loginfo('[%s] Detected %d objects', self.state_name, len(self.detected_cloud_objects))
             userdata.detected_objects = self.detected_cloud_objects
 
+            # if no objects are seen in the current view, we register the location as "cleared"
             if not self.detected_cloud_objects:
                 current_location = userdata.destination_locations[0]
                 userdata.floor_objects_cleared[current_location] = True
