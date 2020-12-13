@@ -7,7 +7,7 @@ def load_obstacle_detection_params(filename=None):
     if filename:
         params_file = get_package_path('mdr_wrs_tidy_up', 'config', filename)
     else:
-        params_file = get_package_path('mdr_wrs_tidy_up', 'config', 'object_detection_params')
+        params_file = get_package_path('mdr_wrs_tidy_up', 'config', 'object_detection_params.yaml')
     params = load_yaml_file(params_file)
     if params:
         return params
