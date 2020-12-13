@@ -23,8 +23,11 @@ class FindObjects(ScenarioStateBase):
                                              'failed', 'failed_after_retrying'],
                                    input_keys=['floor_objects_cleared',
                                                'table_objects_cleared',
-                                               'object_location'],
-                                   output_keys=['detected_objects'])
+                                               'object_location',
+                                               'destination_locations'],
+                                   output_keys=['detected_objects',
+                                                'floor_objects_cleared',
+                                                'table_objects_cleared'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'find_objects')
         self.object_detection_server_name = kwargs.get('object_detection_server_name',
@@ -51,6 +54,8 @@ class FindObjects(ScenarioStateBase):
             userdata.detected_objects = self.detected_cloud_objects
 
             if not self.detected_cloud_objects:
+                current_location = userdata.destination_locations[0]
+                userdata.floor_objects_cleared[current_location] = True
                 return 'no_objects'
         else:
             pass
