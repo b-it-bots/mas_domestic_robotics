@@ -22,13 +22,17 @@ class MoveBase(ScenarioStateBase):
         self.retry_count = 0
 
     def execute(self, userdata):
+        destination_locations = None
         if self.destination_locations is None:
-            self.destination_locations = userdata.destination_locations
-            rospy.loginfo("Using userdata's destination_locations %s", self.destination_locations)
+            destination_locations = list(userdata.destination_locations)
+            rospy.loginfo("Using userdata's destination_locations %s", destination_locations)
+        else:
+            destination_locations = list(self.destination_locations)
+            rospy.loginfo("Using predefined destination_locations %s", destination_locations)
 
         client = actionlib.SimpleActionClient(self.action_server_name, MoveBaseAction)
         client.wait_for_server()
-        for destination_location in self.destination_locations:
+        for destination_location in destination_locations:
             goal = MoveBaseGoal()
             goal.goal_type = MoveBaseGoal.NAMED_TARGET
             goal.destination_location = destination_location
