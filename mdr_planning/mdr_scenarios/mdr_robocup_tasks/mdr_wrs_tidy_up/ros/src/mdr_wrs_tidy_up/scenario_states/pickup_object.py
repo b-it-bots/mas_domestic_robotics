@@ -101,6 +101,10 @@ class PickupObject(ScenarioStateBase):
             desired_gripper_orientation_base_link = (np.pi, 0, gripper_orientation_z)
             grasping_strategy = PickupGoal.TOP_GRASP
 
+            # we set the grasping pose along z to be the top of the object to prevent
+            # the robot pushing down the object with the gripper
+            pose.position.z += (object_to_pick_up.bounding_box.dimensions.z / 2)
+
         pose.orientation = self.get_gripper_orientation(desired_gripper_orientation_base_link,
                                                         object_to_pick_up.pose.header.frame_id)
 
