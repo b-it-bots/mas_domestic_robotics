@@ -1,9 +1,12 @@
 import yaml
+import numpy as np
+
 import rospy
 import actionlib
 import tf
 from geometry_msgs.msg import PoseStamped, Quaternion
 import move_base_msgs.msg as move_base_msgs
+from actionlib_msgs.msg import GoalStatus
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -17,6 +20,7 @@ class MoveBaseSM(ActionSMBase):
                  move_base_server='/move_base',
                  pose_description_file='',
                  pose_frame='map',
+                 recovery_position_m_std=0.2,
                  max_recovery_attempts=1):
         super(MoveBaseSM, self).__init__('MoveBase', [], max_recovery_attempts)
         self.pose = None
@@ -27,6 +31,11 @@ class MoveBaseSM(ActionSMBase):
         self.pose_frame = pose_frame
         self.timeout = timeout
         self.move_arm_client = None
+        self.move_base_goal_pub = None
+
+        self.is_recovering = False
+        self.recovery_count = 0
+        self.recovery_position_m_std = recovery_position_m_std
 
     def init(self):
         try:
@@ -35,6 +44,12 @@ class MoveBaseSM(ActionSMBase):
             self.move_arm_client.wait_for_server()
         except:
             rospy.logerr('[move_base] %s server does not seem to respond', self.move_arm_server)
+
+        # we also create a goal pose publisher for debugging purposes
+        goal_pose_topic = self.move_base_server + '_goal'
+        rospy.loginfo('[move_base] Creating a goal pose publisher on topic %s', goal_pose_topic)
+        self.move_base_goal_pub = rospy.Publisher(goal_pose_topic, PoseStamped, queue_size=1)
+
         return FTSMTransitions.INITIALISED
 
     def running(self):
@@ -66,23 +81,50 @@ class MoveBaseSM(ActionSMBase):
             self.result = self.set_result(False)
             return FTSMTransitions.DONE
 
+        # we attempt a recovery in which we send the robot to a slightly
+        # different pose from the one originally requested
+        if self.is_recovering:
+            pose.pose.position.x += np.random.normal(0., self.recovery_position_m_std)
+            pose.pose.position.y += np.random.normal(0., self.recovery_position_m_std)
+
         goal = move_base_msgs.MoveBaseGoal()
         goal.target_pose = pose
+        self.move_base_goal_pub.publish(pose)
 
         move_base_client = actionlib.SimpleActionClient(self.move_base_server,
                                                         move_base_msgs.MoveBaseAction)
         move_base_client.wait_for_server()
         move_base_client.send_goal(goal)
-        success = move_base_client.wait_for_result()
 
-        if success:
-            rospy.loginfo('[move_base] Pose reached successfully')
-            self.result = self.set_result(True)
-            return FTSMTransitions.DONE
+        if move_base_client.wait_for_result(rospy.Duration.from_sec(self.timeout)):
+            result = move_base_client.get_result()
+            resulting_state = move_base_client.get_state()
+            if result and resulting_state == GoalStatus.SUCCEEDED:
+                rospy.loginfo('[move_base] Pose reached successfully')
+                self.reset_state()
+                self.result = self.set_result(True)
+                return FTSMTransitions.DONE
+            else:
+                rospy.logerr('[move_base] Pose could not be reached')
+                if self.recovery_count < self.max_recovery_attempts:
+                    self.recovery_count += 1
+                    rospy.logwarn('[move_base] Attempting recovery')
+                    return FTSMTransitions.RECOVER
+        else:
+            rospy.logerr('[move_base] Pose could not be reached within %f seconds', self.timeout)
+            if self.recovery_count < self.max_recovery_attempts:
+                self.recovery_count += 1
+                rospy.logerr('[move_base] Attempting recovery')
+                return FTSMTransitions.RECOVER
 
-        rospy.logerr('[move_base] Pose could not be reached')
+        rospy.logerr('[move_base] Pose could not be reached; giving up')
+        self.reset_state()
         self.result = self.set_result(False)
         return FTSMTransitions.DONE
+
+    def recovering(self):
+        self.is_recovering = True
+        return FTSMTransitions.DONE_RECOVERING
 
     def convert_pose_name_to_coordinates(self, pose_name):
         stream = open(self.pose_description_file, 'r')
@@ -99,3 +141,7 @@ class MoveBaseSM(ActionSMBase):
         result = MoveBaseResult()
         result.success = success
         return result
+
+    def reset_state(self):
+        self.recovery_count = 0
+        self.is_recovering = False
