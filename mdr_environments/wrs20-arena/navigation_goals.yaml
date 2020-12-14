@@ -1,6 +1,6 @@
 # pose_name: [x,y,theta]
 
-table_inspection_area1: [-0.101, 0.847, 0.737]
+table_inspection_area1: [-0.101, 0.8, 0.737]
 table_inspection_area2: [0.696, 0.579, 1.608]
 table_inspection_area3: [1.367, 0.714, 1.745]
 
