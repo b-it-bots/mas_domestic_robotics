@@ -36,31 +36,36 @@ class FindObjects(ScenarioStateBase):
                                                          '/mas_perception/cloud_obstacle_detection/obstacle_objects')
         self.cloud_obstacle_cache_reset_topic = kwargs.get('cloud_obstacle_cache_reset_topic',
                                                            '/mas_perception/cloud_obstacle_detection/reset_cache')
+        self.max_allowed_obj_height_cm = kwargs.get('max_allowed_obj_height_cm', 0.15)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.__init_ros_components()
 
     def execute(self, userdata):
-        if userdata.object_location == 'floor':
-            last_msg_time = self.last_cloud_object_detection_time
+        last_msg_time = self.last_cloud_object_detection_time
 
-            rospy.loginfo('[%s] Resetting cloud obstacle cache and waiting a bit', self.state_name)
-            self.obstacle_cache_reset_pub.publish(Bool(data=True))
-            rospy.sleep(0.5)
+        rospy.loginfo('[%s] Resetting cloud obstacle cache and waiting a bit', self.state_name)
+        self.obstacle_cache_reset_pub.publish(Bool(data=True))
+        rospy.sleep(0.5)
 
-            rospy.loginfo('[%s] Waiting for cloud obstacle detection', self.state_name)
-            while last_msg_time == self.last_cloud_object_detection_time:
-                rospy.sleep(0.05)
+        rospy.loginfo('[%s] Waiting for cloud obstacle detection', self.state_name)
+        while last_msg_time == self.last_cloud_object_detection_time:
+            rospy.sleep(0.05)
 
-            rospy.loginfo('[%s] Detected %d objects', self.state_name, len(self.detected_cloud_objects))
-            userdata.detected_objects = self.detected_cloud_objects
+        rospy.loginfo('[%s] Detected %d objects', self.state_name, len(self.detected_cloud_objects))
 
-            # if no objects are seen in the current view, we register the location as "cleared"
-            if not self.detected_cloud_objects:
-                current_location = userdata.destination_locations[0]
-                userdata.floor_objects_cleared[current_location] = True
-                return 'no_objects'
-        else:
-            pass
+        # workaround for large objects (such as the pitcher) sticking to the gripper in Gazebo
+        rospy.loginfo('[%s] Filtering detected objects using height threshold %f',
+                      self.state_name, self.max_allowed_obj_height_cm)
+        filtered_objects = [obj for obj in self.detected_cloud_objects
+                            if obj.dimensions.vector.z <= self.max_allowed_obj_height_cm]
+        userdata.detected_objects = filtered_objects
+        rospy.loginfo('[%s] Keeping %d objects', self.state_name, len(filtered_objects))
+
+        # if no objects are seen in the current view, we register the location as "cleared"
+        if not filtered_objects:
+            current_location = userdata.destination_locations[0]
+            userdata.floor_objects_cleared[current_location] = True
+            return 'no_objects'
 
         return 'succeeded'
 
