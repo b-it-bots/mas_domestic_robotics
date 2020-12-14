@@ -147,7 +147,7 @@ state_descriptions:
                 value: ['tray_1', 'tray_2']
             - argument:
                 name: available_bins
-                value: ['bin_a', 'bin_b']
+                value: ['bin_a']
             - argument:
                 name: tray_locations
                 value:
@@ -157,7 +157,6 @@ state_descriptions:
                 name: bin_locations
                 value:
                     bin_a: bin_a
-                    bin_b: bin_b
     - state:
         name: MOVE_TO_STORAGE_LOCATION
         state_module_name: mdr_wrs_tidy_up.scenario_states.move_base
