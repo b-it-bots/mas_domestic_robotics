@@ -28,7 +28,7 @@ class PickupObject(ScenarioStateBase):
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.pickup_server_name = kwargs.get('pickup_server_name', 'pickup_server')
         self.grasping_timeout_s = kwargs.get('grasping_timeout_s', 30.)
-        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.1)
+        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.05)
         self.retry_count = 0
         self.__init_ros_components()
 
@@ -107,7 +107,7 @@ class PickupObject(ScenarioStateBase):
 
             # we set the grasping pose along z to be the top of the object to prevent
             # the robot pushing down the object with the gripper
-            pose.position.z += (object_to_pick_up.dimensions.vector.z / 2)
+            pose.position.z += (object_to_pick_up.dimensions.vector.z / 2) + self.grasping_height_offset
 
         pose.orientation = self.get_gripper_orientation(desired_gripper_orientation_base_link,
                                                         object_to_pick_up.pose.header.frame_id)
