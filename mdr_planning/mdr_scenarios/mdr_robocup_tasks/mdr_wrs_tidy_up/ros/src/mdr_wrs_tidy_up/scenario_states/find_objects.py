@@ -1,4 +1,5 @@
 import numpy as np
+from shapely.geometry import Point, Polygon
 
 import rospy
 import tf
@@ -7,6 +8,13 @@ from std_msgs.msg import Bool
 
 from mas_perception_msgs.msg import ObjectList, DetectObjectsAction, DetectObjectsActionGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
+
+def get_plane_polygon(center_position, dimensions):
+    p1 = (center_position.x - (dimensions.x / 2), center_position.y - (dimensions.y / 2))
+    p2 = (center_position.x - (dimensions.x / 2), center_position.y + (dimensions.y / 2))
+    p3 = (center_position.x + (dimensions.x / 2), center_position.y + (dimensions.y / 2))
+    p4 = (center_position.x + (dimensions.x / 2), center_position.y - (dimensions.y / 2))
+    return Polygon((p1, p2, p3, p4))
 
 class FindObjects(ScenarioStateBase):
     tf_listener = None
@@ -43,6 +51,7 @@ class FindObjects(ScenarioStateBase):
                                                            '/mas_perception/cloud_obstacle_detection/reset_cache')
         self.max_allowed_obj_height_cm = kwargs.get('max_allowed_obj_height_cm', 0.15)
         self.min_allowed_dist_to_leg = kwargs.get('min_allowed_dist_to_leg', 0.15)
+        self.tables_to_clean_up = kwargs.get('tables_to_clean_up', ['long_table_b', 'tall_table'])
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.__init_ros_components()
 
@@ -63,6 +72,9 @@ class FindObjects(ScenarioStateBase):
         filtered_objects = self.filter_objects_by_height(self.detected_cloud_objects)
         filtered_objects = self.filter_objects_by_dist_to_table_legs(filtered_objects,
                                                                      userdata.environment_objects)
+        if userdata.object_location == 'floor':
+            filtered_objects = self.filter_objects_under_tables(filtered_objects,
+                                                                userdata.environment_objects)
         userdata.detected_objects = filtered_objects
 
         # if no objects are seen in the current view, we register the location as "cleared"
@@ -110,6 +122,29 @@ class FindObjects(ScenarioStateBase):
                                         obj_pose_in_map.pose.position.y])
             distances_to_legs = np.linalg.norm(leg_positions - obj_xy_position, axis=1)
             if np.min(distances_to_legs) > self.min_allowed_dist_to_leg:
+                filtered_objects.append(obj)
+
+        rospy.loginfo('[%s] Keeping %d objects', self.state_name, len(filtered_objects))
+        return filtered_objects
+
+    def filter_objects_under_tables(self, objects, environment_objects):
+        rospy.loginfo('[%s] Filtering detected under tables %s',
+                      self.state_name, self.tables_to_clean_up)
+
+        table_plane_polygons = []
+        for table_name in self.tables_to_clean_up:
+            table_obj = environment_objects[table_name]
+            plane_polygon = get_plane_polygon(table_obj.pose.pose.position,
+                                              table_obj.dimensions.vector)
+            table_plane_polygons.append(plane_polygon)
+
+        point_in_any_polygon = lambda point: sum([1 for polygon in table_plane_polygons
+                                                  if polygon.contains(point)]) > 0
+
+        filtered_objects = []
+        for obj in objects:
+            obj_point = Point(obj.pose.pose.position.x, obj.pose.pose.position.y)
+            if not point_in_any_polygon(obj_point):
                 filtered_objects.append(obj)
 
         rospy.loginfo('[%s] Keeping %d objects', self.state_name, len(filtered_objects))
