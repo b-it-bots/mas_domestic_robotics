@@ -70,9 +70,9 @@ class FindObjects(ScenarioStateBase):
 
         # workaround for large objects (such as the pitcher) sticking to the gripper in Gazebo
         filtered_objects = self.filter_objects_by_height(self.detected_cloud_objects)
-        filtered_objects = self.filter_objects_by_dist_to_table_legs(filtered_objects,
-                                                                     userdata.environment_objects)
         if userdata.object_location == 'floor':
+            filtered_objects = self.filter_objects_by_dist_to_table_legs(filtered_objects,
+                                                                         userdata.environment_objects)
             filtered_objects = self.filter_objects_under_tables(filtered_objects,
                                                                 userdata.environment_objects)
         userdata.detected_objects = filtered_objects
