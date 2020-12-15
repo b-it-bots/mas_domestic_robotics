@@ -97,17 +97,9 @@ class InitialiseScenario(ScenarioStateBase):
         return 'succeeded'
 
     def __init_kb(self, object_list, userdata):
-        kb_blacklist_names = ['wall', 'leg', 'support']
-        contains_name = lambda x: sum([1 for name in kb_blacklist_names
-                                       if x.find(name) != -1]) > 0
-
         kb_objects = dict()
         try:
             for obj in object_list.objects:
-                # we don't add the blacklisted objects to the knowledge base
-                if contains_name(obj.name):
-                    rospy.loginfo('[%s] Skipping %s', self.state_name, obj.name)
-                    continue
                 rospy.loginfo('[%s] Adding %s', self.state_name, obj.name)
                 kb_objects[obj.name] = obj
         except Exception as exc:
