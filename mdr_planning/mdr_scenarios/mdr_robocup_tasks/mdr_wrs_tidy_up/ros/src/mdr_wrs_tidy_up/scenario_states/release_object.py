@@ -64,27 +64,14 @@ class ReleaseObject(ScenarioStateBase):
         return 'succeeded'
 
     def get_release_pose(self, release_target, grasped_object):
-        release_target_obj = ConverterFactory.convert_ros_msg(release_target)
-        manipulated_obj = ConverterFactory.convert_ros_msg(grasped_object)
-
-        action_model = Action(action_name='Throw')
-        number_of_samples = 10
-
-        base_link_origin_pose = PoseStamped(Header(1, rospy.Time(0), 'base_link'),
-                                            Pose(Point(0., 0., 0.), Quaternion(0., 0., 0., 1.)))
-        robot_pose = self.tf_listener.transformPose(release_target.pose.header.frame_id,
-                                                    base_link_origin_pose)
-        robot_pose = ConverterFactory.convert_ros_msg(robot_pose)
-        model_results = action_model.get_execution_guidelines(data_count=number_of_samples,
-                                                              frame_id=release_target.pose.header.frame_id,
-                                                              manipulated_object=manipulated_obj,
-                                                              target_object=release_target_obj,
-                                                              robot_pose=robot_pose)
-        candidate_pose_idx = np.argmax(model_results['success_probabilities'])
-        candidate_pose = model_results['candidate_poses'][candidate_pose_idx]
-        candidate_pose = ConverterFactory.convert_to_ros_msg(candidate_pose)
-
+        candidate_pose = PoseStamped()
         candidate_pose.header.stamp = rospy.Time(0)
+        candidate_pose.header.frame_id = release_target.pose.header.frame_id
+
+        candidate_pose.pose.position.x = release_target.pose.pose.position.x
+        candidate_pose.pose.position.y = release_target.pose.pose.position.y
+        candidate_pose.pose.position.z = release_target.pose.pose.position.z + \
+                                         (release_target.dimensions.vector.z / 2)
         candidate_pose.pose.position.z += 0.1
 
         # use top-down orientation for throwing
