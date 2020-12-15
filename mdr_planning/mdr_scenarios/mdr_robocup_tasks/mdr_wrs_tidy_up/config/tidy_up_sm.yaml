@@ -43,6 +43,13 @@ state_descriptions:
             - transition:
                 name: tidying_done
                 state: INITIALISE_OBSTACLE_REMOVAL
+        arguments:
+            - argument:
+                name: tidying_timeout_s
+                value: 900.0
+            - argument:
+                name: avg_obj_cleanup_duration_s
+                value: 90.0
     - state:
         name: GO_TO_SCANNING_POSE
         state_module_name: mdr_wrs_tidy_up.scenario_states.move_base
