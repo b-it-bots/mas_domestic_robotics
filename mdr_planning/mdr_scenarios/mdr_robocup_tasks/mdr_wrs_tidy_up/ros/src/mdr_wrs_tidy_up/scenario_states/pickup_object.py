@@ -11,7 +11,9 @@ from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class PickupObject(ScenarioStateBase):
     pickup_server_name = 'pickup_server'
+    pickup_goal_pose_topic = '/pickup_server/goal_pose'
     pickup_client = None
+    goal_pose_pub = None
     tf_listener = None
     grasping_timeout_s = 30.
     grasping_height_offset = 0.
@@ -27,6 +29,8 @@ class PickupObject(ScenarioStateBase):
         self.state_name = kwargs.get('state_name', 'pickup_object')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.pickup_server_name = kwargs.get('pickup_server_name', 'pickup_server')
+        self.pickup_goal_pose_topic = kwargs.get('pickup_goal_pose_topic',
+                                                 '/pickup_server/goal_pose')
         self.grasping_timeout_s = kwargs.get('grasping_timeout_s', 30.)
         self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.05)
         self.retry_count = 0
@@ -42,6 +46,9 @@ class PickupObject(ScenarioStateBase):
         grasping_pose, grasping_strategy = self.get_grasping_pose_and_strategy(object_to_pick_up)
         goal.pose.pose = grasping_pose
         goal.strategy = grasping_strategy
+
+        rospy.loginfo('Publishing grasping pose on topic %s', self.pickup_goal_pose_topic)
+        self.goal_pose_pub.publish(goal.pose)
 
         rospy.loginfo('[%s] Picking up object at %s position (%f %f %f)', self.state_name,
                       goal.pose.header.frame_id, goal.pose.pose.position.x,
@@ -143,5 +150,9 @@ class PickupObject(ScenarioStateBase):
         self.pickup_client = actionlib.SimpleActionClient(self.pickup_server_name, PickupAction)
         self.pickup_client.wait_for_server()
         rospy.loginfo('Client for action %s initialised', self.pickup_server_name)
+
+        rospy.loginfo('Initialising publisher for goal pose on topic %s', self.pickup_goal_pose_topic)
+        self.goal_pose_pub = rospy.Publisher(self.pickup_goal_pose_topic, PoseStamped, queue_size=1)
+        rospy.loginfo('Publisher for topic %s initialised', self.pickup_goal_pose_topic)
 
         self.tf_listener = tf.TransformListener()
