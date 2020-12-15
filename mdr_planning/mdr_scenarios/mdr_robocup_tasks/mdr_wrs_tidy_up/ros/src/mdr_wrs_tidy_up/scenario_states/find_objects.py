@@ -80,7 +80,10 @@ class FindObjects(ScenarioStateBase):
         # if no objects are seen in the current view, we register the location as "cleared"
         if not filtered_objects:
             current_location = userdata.destination_locations[0]
-            userdata.floor_objects_cleared[current_location] = True
+            if userdata.object_location == 'floor':
+                userdata.floor_objects_cleared[current_location] = True
+            elif userdata.object_location == 'table':
+                userdata.table_objects_cleared[current_location] = True
             return 'no_objects'
 
         return 'succeeded'
