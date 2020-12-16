@@ -133,7 +133,7 @@ state_descriptions:
                 value: 45.0
             - argument:
                 name: number_of_retries
-                value: 1
+                value: 0
     - state:
         name: SELECT_STORAGE_LOCATION
         state_module_name: mdr_wrs_tidy_up.scenario_states.select_storage_location
