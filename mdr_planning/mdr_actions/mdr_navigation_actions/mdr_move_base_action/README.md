@@ -65,6 +65,9 @@ The following parameters may be passed when launching the action server:
 * ``pose_frame``: Name of the frame in which the poses in `pose_description_file` are given (default: 'map')
 * ``safe_arm_joint_config``: Name of a configuration specified in which the robot can safely move around the environment (default: 'folded')
 * ``move_arm_server``: Name of the `move_arm` action server (default: 'move_arm_server')
+* ``timeout``: Navigation timeout (in seconds) (default: 120)
+* ``recovery_position_m_std``: If a navigation to a pose fails, an attempted recovery is to change the goal's (x, y) position a little and retry the navigation (the assumption is that the robot moves over the xy-plane)). The position is changed by adding Gaussian noise with zero mean and the given standard deviation (in meters) to the original goal position. (default: 0.2)
+* ``max_recovery_attempts``: Maximum number of recovery attempts in case of navigation failures (default 1)
 
 ### Action client
 

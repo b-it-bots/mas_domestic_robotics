@@ -5,12 +5,18 @@
     <arg name="move_base_server" default="/move_base" />
     <arg name="pose_frame" default="map" />
     <arg name="safe_arm_joint_config" default="folded" />
+    <arg name="timeout" default="120.0" />
+    <arg name="recovery_position_m_std" default="0.2" />
+    <arg name="max_recovery_attempts" default="1" />
 
     <node pkg="mdr_move_base_action" type="move_base_action" name="move_base_server" output="screen">
         <param name="move_arm_server" value="$(arg move_arm_server)" />
         <param name="move_base_server" value="$(arg move_base_server)" />
         <param name="pose_frame" value="$(arg pose_frame)" />
         <param name="safe_arm_joint_config" value="$(arg safe_arm_joint_config)" />
+        <param name="timeout" value="$(arg timeout)" />
+        <param name="recovery_position_m_std" value="$(arg recovery_position_m_std)" />
+        <param name="max_recovery_attempts" value="$(arg max_recovery_attempts)" />
         <param name="pose_description_file" value="$(find mdr_environments)/$(arg robot_env)/navigation_goals.yaml" />
     </node>
 </launch>

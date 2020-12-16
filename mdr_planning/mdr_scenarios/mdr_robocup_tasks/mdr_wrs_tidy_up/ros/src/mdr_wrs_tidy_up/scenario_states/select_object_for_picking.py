@@ -19,21 +19,27 @@ class SelectObjectForPicking(ScenarioStateBase):
         closest_obj_index = 0
         closest_obj_distance = float('inf')
         for index, obj in enumerate(userdata.detected_objects):
-            while not rospy.is_shutdown():
-                try:
-                    (obj_position, obj_orientation) = self.tf_listener.lookupTransform('/base_link',
-                                                                                       obj.pose.header.frame_id,
-                                                                                       rospy.Time(0))
-                    break
-                except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                    continue
+            try:
+                pose_base_link = self.tf_listener.transformPose('base_link', obj.pose)
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException) as exc:
+                rospy.logerr('[%s] %s', self.state_name, str(exc))
+                continue
 
-            distance_to_obj = np.linalg.norm(np.array(obj_position))
+            # we want to grasp the closest object along the xy-plane
+            distance_to_obj = np.linalg.norm(np.array([pose_base_link.pose.position.x,
+                                                       pose_base_link.pose.position.y]))
 
             if distance_to_obj < closest_obj_distance:
                 closest_obj_index = index
                 closest_obj_distance = distance_to_obj
 
-        userdata.selected_object = userdata.detected_objects[closest_obj_index]
-
+        selected_object = userdata.detected_objects[closest_obj_index]
+        rospy.loginfo('[%s] Selected object at position\n    (%f, %f, %f) \n with size\n    (%f, %f, %f)',
+                      self.state_name, selected_object.pose.pose.position.x,
+                      selected_object.pose.pose.position.y,
+                      selected_object.pose.pose.position.z,
+                      selected_object.dimensions.vector.x,
+                      selected_object.dimensions.vector.y,
+                      selected_object.dimensions.vector.z)
+        userdata.selected_object = selected_object
         return 'succeeded'

@@ -1,5 +1,3 @@
-import yaml
-
 import rospy
 import tf
 from geometry_msgs.msg import Pose, Point, Quaternion, Vector3
@@ -8,16 +6,17 @@ from mas_perception_msgs.msg import Object, ObjectList
 from mdr_manipulation_msgs.srv import UpdatePlanningScene, UpdatePlanningSceneRequest
 
 from mas_tools.ros_utils import get_package_path
+from mas_tools.file_utils import load_yaml_file
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
+
+from mdr_wrs_tidy_up.utils import update_object_detection_params
 
 def get_environment_objects(planning_scene_map_file):
     object_list = ObjectList()
 
     scene_file_path = get_package_path('mdr_wrs_tidy_up', 'config', planning_scene_map_file)
-    scene_data = None
-    with open(scene_file_path, 'r') as planning_scene_map:
-        scene_data = yaml.safe_load(planning_scene_map)
+    scene_data = load_yaml_file(scene_file_path)
 
     frame_id = scene_data['frame_id']
     for obj_data in scene_data['objects']:
@@ -51,7 +50,9 @@ class InitialiseScenario(ScenarioStateBase):
                                    outcomes=['succeeded'],
                                    output_keys=['floor_objects_cleared',
                                                 'table_objects_cleared',
-                                                'object_location'])
+                                                'object_location',
+                                                'environment_objects',
+                                                'operation_start_time'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'initialise_scenario')
         self.floor_objects_cleared = kwargs.get('floor_objects_cleared', None)
@@ -63,19 +64,21 @@ class InitialiseScenario(ScenarioStateBase):
         self.__init_ros_components()
 
     def execute(self, userdata):
-        userdata.floor_objects_cleared = self.floor_objects_cleared
-        userdata.table_objects_cleared = self.table_objects_cleared
+        userdata.floor_objects_cleared = dict(self.floor_objects_cleared)
+        userdata.table_objects_cleared = dict(self.table_objects_cleared)
         userdata.object_location = self.object_location
+        userdata.operation_start_time = rospy.Time.now().to_sec()
 
         if not self.planning_scene_map_file:
             rospy.loginfo('[%s] Planning scene map file not specified; not initialising KB and scene', self.state_name)
             return 'succeeded'
 
+        update_object_detection_params("floor")
         environment_objects = get_environment_objects(self.planning_scene_map_file)
 
         # initialising the knowledge base
         rospy.loginfo('[%s] Initialing knowledge base', self.state_name)
-        self.__init_kb(environment_objects)
+        userdata.environment_objects = self.__init_kb(environment_objects, userdata)
         rospy.loginfo('[%s] Knowledge base initialised', self.state_name)
 
         # initialising the MoveIt! planning scene
@@ -95,16 +98,16 @@ class InitialiseScenario(ScenarioStateBase):
 
         return 'succeeded'
 
-    def __init_kb(self, object_list):
+    def __init_kb(self, object_list, userdata):
+        kb_objects = dict()
         try:
             for obj in object_list.objects:
-                # we don't add walls and table legs to the knowledge base
-                if obj.name.find('wall') != -1 or obj.name.find('leg') != -1:
-                    continue
-                self.kb_interface.insert_obj_instance(obj.name, obj)
+                rospy.loginfo('[%s] Adding %s', self.state_name, obj.name)
+                kb_objects[obj.name] = obj
         except Exception as exc:
             rospy.logerr('[%s] Error while initialising the knowledge base', self.state_name)
             rospy.logerr('[%s] %s', self.state_name, str(exc))
+        return kb_objects
 
     def __init_ros_components(self):
         rospy.loginfo('[%s] Creating a service proxy for %s',

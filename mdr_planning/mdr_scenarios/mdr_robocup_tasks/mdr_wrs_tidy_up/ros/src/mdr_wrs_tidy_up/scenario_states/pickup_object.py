@@ -11,7 +11,9 @@ from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class PickupObject(ScenarioStateBase):
     pickup_server_name = 'pickup_server'
+    pickup_goal_pose_topic = '/pickup_server/goal_pose'
     pickup_client = None
+    goal_pose_pub = None
     tf_listener = None
     grasping_timeout_s = 30.
     grasping_height_offset = 0.
@@ -27,8 +29,10 @@ class PickupObject(ScenarioStateBase):
         self.state_name = kwargs.get('state_name', 'pickup_object')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.pickup_server_name = kwargs.get('pickup_server_name', 'pickup_server')
+        self.pickup_goal_pose_topic = kwargs.get('pickup_goal_pose_topic',
+                                                 '/pickup_server/goal_pose')
         self.grasping_timeout_s = kwargs.get('grasping_timeout_s', 30.)
-        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.05)
+        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.)
         self.retry_count = 0
         self.__init_ros_components()
 
@@ -38,7 +42,13 @@ class PickupObject(ScenarioStateBase):
         goal = PickupGoal()
         goal.pose.header.frame_id = object_to_pick_up.pose.header.frame_id
         goal.pose.header.stamp = rospy.Time.now()
-        goal.pose.pose = self.get_grasping_pose(object_to_pick_up)
+
+        grasping_pose, grasping_strategy = self.get_grasping_pose_and_strategy(object_to_pick_up)
+        goal.pose.pose = grasping_pose
+        goal.strategy = grasping_strategy
+
+        rospy.loginfo('Publishing grasping pose on topic %s', self.pickup_goal_pose_topic)
+        self.goal_pose_pub.publish(goal.pose)
 
         rospy.loginfo('[%s] Picking up object at %s position (%f %f %f)', self.state_name,
                       goal.pose.header.frame_id, goal.pose.pose.position.x,
@@ -49,8 +59,7 @@ class PickupObject(ScenarioStateBase):
             pickup_result = self.pickup_client.get_result()
             if pickup_result.success:
                 rospy.loginfo('[%s] Successfully grasped object %s', self.state_name, object_to_pick_up.name)
-                userdata.grasped_object = object_to_pick_up.name
-                self.kb_interface.insert_obj_instance(object_to_pick_up.name, object_to_pick_up)
+                userdata.grasped_object = object_to_pick_up
                 return 'succeeded'
             else:
                 rospy.logerr('[%s] Failed to grasp object', self.state_name)
@@ -61,13 +70,14 @@ class PickupObject(ScenarioStateBase):
 
         if self.retry_count == self.number_of_retries:
             rospy.logerr('[%s] Could not pick up object after retrying; giving up', self.state_name)
+            self.retry_count = 0
             return 'failed_after_retrying'
 
         rospy.loginfo('[%s] Retrying to place object', self.state_name)
         self.retry_count += 1
         return 'failed'
 
-    def get_grasping_pose(self, object_to_pick_up):
+    def get_grasping_pose_and_strategy(self, object_to_pick_up):
         '''Returns a geometry_msgs.msg.Pose object representing a grasping pose
         for the given object. The grasping position is given by the center of the
         object's bounding box; the orientation ensures a top-down grasp aligned
@@ -80,18 +90,36 @@ class PickupObject(ScenarioStateBase):
         pose = Pose()
         pose.position.x = object_to_pick_up.bounding_box.center.x
         pose.position.y = object_to_pick_up.bounding_box.center.y
-        pose.position.z = object_to_pick_up.bounding_box.center.z + self.grasping_height_offset
+        pose.position.z = object_to_pick_up.bounding_box.center.z
 
-        gripper_orientation_z = np.arctan2(object_to_pick_up.bounding_box.dimensions.y,
-                                           object_to_pick_up.bounding_box.dimensions.x)
-
+        grasping_strategy = None
+        # this orientation guarantees a sideways grasp and
+        # alignment along the longest axis of the object
+        if object_to_pick_up.dimensions.vector.z > max(object_to_pick_up.dimensions.vector.x,
+                                                       object_to_pick_up.dimensions.vector.y):
+            desired_gripper_orientation_base_link = (np.pi, -np.pi/2, 0.)
+            grasping_strategy = PickupGoal.SIDEWAYS_GRASP
         # this orientation guarantees a top-down grasp and
         # alignment along the longest axis of the object
-        desired_gripper_orientation_base_link = (np.pi, 0, gripper_orientation_z)
+        else:
+            object_pose_in_base_link = self.tf_listener.transformPose('base_link', object_to_pick_up.pose)
+            euler_orientation = tf.transformations.euler_from_quaternion([object_pose_in_base_link.pose.orientation.x,
+                                                                          object_pose_in_base_link.pose.orientation.y,
+                                                                          object_pose_in_base_link.pose.orientation.z,
+                                                                          object_pose_in_base_link.pose.orientation.w])
+            gripper_orientation_z = euler_orientation[2]
+
+            desired_gripper_orientation_base_link = (np.pi, 0, gripper_orientation_z)
+            grasping_strategy = PickupGoal.TOP_GRASP
+
+            # we set the grasping pose along z to be the top of the object to prevent
+            # the robot pushing down the object with the gripper
+            pose.position.z += (object_to_pick_up.dimensions.vector.z / 2) + self.grasping_height_offset
 
         pose.orientation = self.get_gripper_orientation(desired_gripper_orientation_base_link,
                                                         object_to_pick_up.pose.header.frame_id)
-        return pose
+
+        return pose, grasping_strategy
 
     def get_gripper_orientation(self, orientation, target_frame):
         '''Returns a geometry_msgs.msg.Quaternion object representing the given
@@ -122,5 +150,9 @@ class PickupObject(ScenarioStateBase):
         self.pickup_client = actionlib.SimpleActionClient(self.pickup_server_name, PickupAction)
         self.pickup_client.wait_for_server()
         rospy.loginfo('Client for action %s initialised', self.pickup_server_name)
+
+        rospy.loginfo('Initialising publisher for goal pose on topic %s', self.pickup_goal_pose_topic)
+        self.goal_pose_pub = rospy.Publisher(self.pickup_goal_pose_topic, PoseStamped, queue_size=1)
+        rospy.loginfo('Publisher for topic %s initialised', self.pickup_goal_pose_topic)
 
         self.tf_listener = tf.TransformListener()
