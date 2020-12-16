@@ -32,7 +32,7 @@ class PickupObject(ScenarioStateBase):
         self.pickup_goal_pose_topic = kwargs.get('pickup_goal_pose_topic',
                                                  '/pickup_server/goal_pose')
         self.grasping_timeout_s = kwargs.get('grasping_timeout_s', 30.)
-        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.05)
+        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.)
         self.retry_count = 0
         self.__init_ros_components()
 
