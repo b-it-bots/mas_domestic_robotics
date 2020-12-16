@@ -2,6 +2,7 @@ import numpy as np
 from shapely.geometry import Point, Polygon
 
 import rospy
+from geometry_msgs.msg import PoseArray
 import tf
 import actionlib
 from std_msgs.msg import Bool
@@ -27,6 +28,11 @@ class FindObjects(ScenarioStateBase):
     obstacle_cache_reset_pub = None
     last_cloud_object_detection_time = None
     retry_count = 0
+    large_object_size_threshold = None
+    large_object_height_threshold = None
+    large_object_aspect_ratio_threshold = None
+    filtered_poses_topic = None
+    filtered_poses_pub = None
 
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'find_objects',
@@ -53,6 +59,11 @@ class FindObjects(ScenarioStateBase):
         self.min_allowed_dist_to_leg = kwargs.get('min_allowed_dist_to_leg', 0.15)
         self.tables_to_clean_up = kwargs.get('tables_to_clean_up', ['long_table_b', 'tall_table'])
         self.number_of_retries = kwargs.get('number_of_retries', 0)
+        self.large_object_size_threshold = kwargs.get('large_object_size_threshold', 0.15)
+        self.large_object_height_threshold = kwargs.get('large_object_height_threshold', 0.075)
+        self.large_object_aspect_ratio_threshold = kwargs.get('large_object_aspect_ratio_threshold', 0.4)
+        self.filtered_poses_topic = kwargs.get('filtered_poses_topic', 'filtered_object_poses')
+        self.filtered_poses_pub = rospy.Publisher(self.filtered_poses_topic, PoseArray, queue_size=1)
         self.__init_ros_components()
 
     def execute(self, userdata):
@@ -75,6 +86,7 @@ class FindObjects(ScenarioStateBase):
                                                                          userdata.environment_objects)
             filtered_objects = self.filter_objects_under_tables(filtered_objects,
                                                                 userdata.environment_objects)
+            filtered_objects = self.filter_large_objects(filtered_objects)
         userdata.detected_objects = filtered_objects
 
         # if no objects are seen in the current view, we register the location as "cleared"
@@ -85,6 +97,13 @@ class FindObjects(ScenarioStateBase):
             elif userdata.object_location == 'table':
                 userdata.table_objects_cleared[current_location] = True
             return 'no_objects'
+        else:
+            pose_array = PoseArray()
+            pose_array.header.frame_id = filtered_objects[0].pose.header.frame_id
+            pose_array.header.stamp = rospy.Time.now()
+            for obj in filtered_objects:
+                pose_array.poses.append(obj.pose.pose)
+            self.filtered_poses_pub.publish(pose_array)
 
         return 'succeeded'
 
@@ -149,6 +168,30 @@ class FindObjects(ScenarioStateBase):
             obj_point = Point(obj.pose.pose.position.x, obj.pose.pose.position.y)
             if not point_in_any_polygon(obj_point):
                 filtered_objects.append(obj)
+
+        rospy.loginfo('[%s] Keeping %d objects', self.state_name, len(filtered_objects))
+        return filtered_objects
+
+    def filter_large_objects(self, objects):
+        rospy.loginfo('[%s] Filtering large objects with params: max_size(%f), max_height(%f), max_aspect_ratio(%f)',
+                      self.state_name, self.large_object_size_threshold, 
+                      self.large_object_height_threshold, 
+                      self.large_object_aspect_ratio_threshold)
+
+        filtered_objects = []
+        for obj in objects:
+            if obj.dimensions.vector.x <= self.large_object_size_threshold and \
+               obj.dimensions.vector.y <= self.large_object_size_threshold:
+               # The object is not considered as a large object
+               filtered_objects.append(obj)
+            else:
+                # Found a large object
+                if obj.dimensions.vector.z <= self.large_object_height_threshold:
+                    dimensions = obj.bounding_box.dimensions
+                    obb_aspect_ratio_xy = dimensions.y / dimensions.x if dimensions.y < dimensions.x else \
+                                          dimensions.x / dimensions.y
+                    if obb_aspect_ratio_xy <= self.large_object_aspect_ratio_threshold:
+                        filtered_objects.append(obj)
 
         rospy.loginfo('[%s] Keeping %d objects', self.state_name, len(filtered_objects))
         return filtered_objects
