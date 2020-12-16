@@ -33,5 +33,13 @@ class SelectObjectForPicking(ScenarioStateBase):
                 closest_obj_index = index
                 closest_obj_distance = distance_to_obj
 
-        userdata.selected_object = userdata.detected_objects[closest_obj_index]
+        selected_object = userdata.detected_objects[closest_obj_index]
+        rospy.loginfo('[%s] Selected object at position\n    (%f, %f, %f) \n with size\n    (%f, %f, %f)',
+                      self.state_name, selected_object.pose.pose.position.x,
+                      selected_object.pose.pose.position.y,
+                      selected_object.pose.pose.position.z,
+                      selected_object.dimensions.vector.x,
+                      selected_object.dimensions.vector.y,
+                      selected_object.dimensions.vector.z)
+        userdata.selected_object = selected_object
         return 'succeeded'
