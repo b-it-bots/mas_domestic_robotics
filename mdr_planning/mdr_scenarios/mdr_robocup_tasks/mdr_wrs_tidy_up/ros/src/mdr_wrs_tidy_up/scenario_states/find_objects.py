@@ -49,6 +49,7 @@ class FindObjects(ScenarioStateBase):
                                                 'table_objects_cleared'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'find_objects')
+        self.object_detection_timeout_s = kwargs.get('object_detection_timeout', 5.)
         self.object_detection_server_name = kwargs.get('object_detection_server_name',
                                                        '/mas_perception/detect_objects')
         self.cloud_obstacle_detection_topic = kwargs.get('cloud_obstacle_detection_topic',
@@ -74,8 +75,18 @@ class FindObjects(ScenarioStateBase):
         rospy.sleep(0.5)
 
         rospy.loginfo('[%s] Waiting for cloud obstacle detection', self.state_name)
-        while last_msg_time == self.last_cloud_object_detection_time:
+        timeout_reached = False
+        waiting_start_time = rospy.Time.now().to_sec()
+        while abs(last_msg_time - self.last_cloud_object_detection_time) < 1e-5 and \
+              not timeout_reached:
             rospy.sleep(0.05)
+            if (rospy.Time.now().to_sec() - waiting_start_time) > self.object_detection_timeout_s:
+                timeout_reached = True
+
+        if timeout_reached:
+            rospy.loginfo('[%s] No objects detected within %f seconds; giving up',
+                          self.state_name, self.object_detection_timeout_s)
+            return 'no_objects'
 
         rospy.loginfo('[%s] Detected %d objects', self.state_name, len(self.detected_cloud_objects))
 
@@ -160,13 +171,23 @@ class FindObjects(ScenarioStateBase):
                                               table_obj.dimensions.vector)
             table_plane_polygons.append(plane_polygon)
 
+        polygon_convex_hull = None
+        if table_plane_polygons:
+            polygon_union = table_plane_polygons[0]
+            for polygon in table_plane_polygons:
+                polygon_union = polygon_union.union(polygon)
+            polygon_convex_hull = polygon_union.convex_hull
+
         point_in_any_polygon = lambda point: sum([1 for polygon in table_plane_polygons
                                                   if polygon.contains(point)]) > 0
+
+        point_in_union_convex_hull = lambda point: False if polygon_convex_hull is None \
+                                                         else polygon_convex_hull.contains(point)
 
         filtered_objects = []
         for obj in objects:
             obj_point = Point(obj.pose.pose.position.x, obj.pose.pose.position.y)
-            if not point_in_any_polygon(obj_point):
+            if not point_in_any_polygon(obj_point) and not point_in_union_convex_hull(obj_point):
                 filtered_objects.append(obj)
 
         rospy.loginfo('[%s] Keeping %d objects', self.state_name, len(filtered_objects))
@@ -174,8 +195,8 @@ class FindObjects(ScenarioStateBase):
 
     def filter_large_objects(self, objects):
         rospy.loginfo('[%s] Filtering large objects with params: max_size(%f), max_height(%f), max_aspect_ratio(%f)',
-                      self.state_name, self.large_object_size_threshold, 
-                      self.large_object_height_threshold, 
+                      self.state_name, self.large_object_size_threshold,
+                      self.large_object_height_threshold,
                       self.large_object_aspect_ratio_threshold)
 
         filtered_objects = []
