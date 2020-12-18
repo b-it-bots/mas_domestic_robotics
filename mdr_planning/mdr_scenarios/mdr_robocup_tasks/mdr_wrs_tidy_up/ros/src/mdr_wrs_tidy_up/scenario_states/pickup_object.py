@@ -37,7 +37,7 @@ class PickupObject(ScenarioStateBase):
         self.pickup_goal_pose_topic = kwargs.get('pickup_goal_pose_topic',
                                                  '/pickup_server/goal_pose')
         self.grasping_timeout_s = kwargs.get('grasping_timeout_s', 30.)
-        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.025)
+        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.05)
         self.planning_scene_update_service_name = kwargs.get('planning_scene_update_service_name',
                                                              '/move_arm_action/update_planning_scene')
         self.retry_count = 0
