@@ -86,6 +86,11 @@ class FindObjects(ScenarioStateBase):
         if timeout_reached:
             rospy.loginfo('[%s] No objects detected within %f seconds; giving up',
                           self.state_name, self.object_detection_timeout_s)
+            current_location = userdata.destination_locations[0]
+            if userdata.object_location == 'floor':
+                userdata.floor_objects_cleared[current_location] = True
+            elif userdata.object_location == 'table':
+                userdata.table_objects_cleared[current_location] = True
             return 'no_objects'
 
         rospy.loginfo('[%s] Detected %d objects', self.state_name, len(self.detected_cloud_objects))
