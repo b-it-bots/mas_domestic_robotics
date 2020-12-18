@@ -46,7 +46,7 @@ objects:
     - name: long_table_a
       position:   [1.5, -0.6, 0.39]
       orientation: [0.0, 0.0, 0.0]
-      dimensions: [1.2, 0.4, 0.02]
+      dimensions: [1.2, 0.4, 0.01]
     - name: long_table_a_support
       position:   [1.5, -0.6, 0.29]
       orientation: [0.0, 0.0, 0.0]
@@ -72,7 +72,7 @@ objects:
     - name: tall_table
       position:   [0.0, 1.8, 0.59]
       orientation: [0.0, 0.0, 0.0]
-      dimensions: [0.40, 0.40, 0.02]
+      dimensions: [0.40, 0.40, 0.01]
     - name: tall_table_support
       position:   [0.0, 1.8, 0.49]
       orientation: [0.0, 0.0, 0.0]
@@ -98,7 +98,7 @@ objects:
     - name: long_table_b
       position:   [1.0, 1.8, 0.39]
       orientation: [0.0, 0.0, 0.0]
-      dimensions: [1.2, 0.4, 0.02]
+      dimensions: [1.2, 0.4, 0.01]
     - name: long_table_b_support
       position:   [1.0, 1.8, 0.29]
       orientation: [0.0, 0.0, 0.0]
