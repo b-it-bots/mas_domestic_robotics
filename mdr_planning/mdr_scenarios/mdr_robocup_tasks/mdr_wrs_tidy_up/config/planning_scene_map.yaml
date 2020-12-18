@@ -6,29 +6,29 @@ frame_id: map
 objects:
     # object ID: wall_back
     - name: wall_back
-      position: [-0.8, 2.7, 0.3]
+      position: [-0.8, 2.7, 1.0]
       orientation: [0.0, 0.0, 0.0]
-      dimensions: [0.1, 4.8, 0.6]
+      dimensions: [0.1, 4.8, 2.0]
     # object ID: wall_front
     - name: wall_front
-      position: [3.2, 2.1, 0.3]
+      position: [3.2, 2.1, 1.0]
       orientation: [0.0, 0.0, 0.0]
-      dimensions: [0.1, 6.0, 0.6]
+      dimensions: [0.1, 6.0, 2.0]
     # object ID: wall_left
     - name: wall_left
-      position: [1.2, -0.9, 0.3]
+      position: [1.2, -0.9, 1.0]
       orientation: [0.0, 0.0, 0.0]
-      dimensions: [4.1, 0.1, 0.6]
+      dimensions: [4.1, 0.1, 2.0]
     # object ID: wall_right
     - name: wall_right
-      position: [1.2, 5.1, 0.3]
+      position: [1.2, 5.1, 1.0]
       orientation: [0.0, 0.0, 0.0]
-      dimensions: [4.1, 0.1, 0.6]
+      dimensions: [4.1, 0.1, 2.0]
     # object ID: wall_center
     - name: wall_center
-      position: [0.6, 2.1, 0.3]
+      position: [0.6, 2.1, 1.0]
       orientation: [0.0, 0.0, 0.0]
-      dimensions: [2.8, 0.1, 0.6]
+      dimensions: [2.8, 0.1, 2.0]
 
     # object ID: wrc_bin_green
     - name: bin_a
