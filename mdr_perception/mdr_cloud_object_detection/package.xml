@@ -19,14 +19,7 @@
   <depend>mas_navigation_tools</depend>
   <depend>mas_perception_msgs</depend>
 
-  <!-- <build_export_depend>dynamic_reconfigure</build_export_depend>
-  <build_export_depend>pcl_ros</build_export_depend>
-  <build_export_depend>roscpp</build_export_depend> -->
   <build_export_depend>message_runtime</build_export_depend>
 
-  <!-- <exec_depend>dynamic_reconfigure</exec_depend> -->
-
   <exec_depend>message_runtime</exec_depend>
-  <!-- <exec_depend>pcl_ros</exec_depend>
-  <exec_depend>roscpp</exec_depend> -->
 </package>
