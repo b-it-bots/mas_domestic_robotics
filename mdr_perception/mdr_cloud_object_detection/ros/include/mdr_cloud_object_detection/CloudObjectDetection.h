@@ -73,6 +73,9 @@ namespace mdr_cloud_object_detection
 
         void resetObjectCacheCallback(const std_msgs::Bool& reset);
 
+        PointCloud::Ptr transformPointCloud(const PointCloud& cloudIn,
+                                            const std::string& targetFrame);
+
         void getClusterClouds(std::vector<PointCloud::Ptr>& clusterClouds,
                               PointCloud::ConstPtr filteredCloud,
                               const std::vector<pcl::PointIndices>& cluster_indices);
