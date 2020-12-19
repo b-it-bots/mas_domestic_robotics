@@ -37,7 +37,6 @@ include_directories(
   ros/include
   ${catkin_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
-#   ${Boost_INCLUDE_DIRS}
 )
 
 ###################################
@@ -48,9 +47,7 @@ add_executable(cloud_object_detection
   ros/src/main.cpp
 )
 target_link_libraries(cloud_object_detection
-#   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
-#   ${OpenCV_LIBRARIES}
 )
 
 #############
