@@ -1,4 +1,10 @@
-#include "mdr_cloud_object_detection/CloudObjectDetection.h"
+/*!
+ * @copyright 2020 Bonn-Rhein-Sieg University
+ *
+ * @author Sushant Vijay Chavan
+ *
+ */
+#include <mdr_cloud_object_detection/CloudObjectDetection.h>
 
 int main(int pArgc, char** pArgv)
 {
@@ -6,10 +12,10 @@ int main(int pArgc, char** pArgv)
     ros::NodeHandle nh("~");
 
     // load launch parameters
-    std::string cloudTopic;
-    if (!nh.getParam("cloud_topic", cloudTopic) || cloudTopic.empty())
+    std::string cloudInTopic;
+    if (!nh.getParam("cloud_in_topic", cloudInTopic) || cloudInTopic.empty())
     {
-        ROS_ERROR("No 'cloud_topic' specified as parameter");
+        ROS_ERROR("No 'cloud_in_topic' specified as parameter");
         return EXIT_FAILURE;
     }
 
@@ -55,10 +61,10 @@ int main(int pArgc, char** pArgv)
         return EXIT_FAILURE;
     }
 
-    std::string objectObjectsTopic;
-    if (!nh.getParam("objects_object_topic", objectObjectsTopic) || objectObjectsTopic.empty())
+    std::string objectListTopic;
+    if (!nh.getParam("object_list_topic", objectListTopic) || objectListTopic.empty())
     {
-        ROS_ERROR("No 'objects_object_topic' specified as parameter");
+        ROS_ERROR("No 'object_list_topic' specified as parameter");
         return EXIT_FAILURE;
     }
 
@@ -66,11 +72,16 @@ int main(int pArgc, char** pArgv)
     nh.getParam("publish_oriented_bbox", publishOrientedBBox);
 
     // run cloud filtering and object detection
-    mdr_cloud_object_detection::CloudObjectDetection objectDetection(nh, cloudTopic, filteredCloudTopic,
-                                                                      objectCloudTopic, transformTargetFrame,
-                                                                      clusterTargetFrame, occupancyCheckerActionName,
-                                                                      objectBoundsTopic, objectObjectsTopic,
-                                                                      publishOrientedBBox);
+    mdr_cloud_object_detection::CloudObjectDetection objectDetection(nh,
+                                                                     cloudInTopic,
+                                                                     filteredCloudTopic,
+                                                                     objectCloudTopic,
+                                                                     transformTargetFrame,
+                                                                     clusterTargetFrame,
+                                                                     occupancyCheckerActionName,
+                                                                     objectBoundsTopic,
+                                                                     objectListTopic,
+                                                                     publishOrientedBBox);
 
     while (ros::ok())
         ros::spin();

@@ -1,11 +1,17 @@
+/*!
+ * @copyright 2020 Bonn-Rhein-Sieg University
+ *
+ * @author Sushant Vijay Chavan
+ *
+ */
 #ifndef MDR_CLOUD_OBJECT_DETECTION_PASS_THROUGH_VOXEL_FILTER
 #define MDR_CLOUD_OBJECT_DETECTION_PASS_THROUGH_VOXEL_FILTER
 
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include "mdr_cloud_object_detection/Aliases.h"
-#include "mdr_cloud_object_detection/PassThroughVoxelFilterParams.h"
+#include <mdr_cloud_object_detection/Aliases.h>
+#include <mdr_cloud_object_detection/PassThroughVoxelFilterParams.h>
 
 namespace mdr_cloud_object_detection
 {
