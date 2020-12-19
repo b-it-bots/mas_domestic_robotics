@@ -64,16 +64,24 @@ class InitialiseScenario(ScenarioStateBase):
         self.__init_ros_components()
 
     def execute(self, userdata):
-        userdata.floor_objects_cleared = dict(self.floor_objects_cleared)
-        userdata.table_objects_cleared = dict(self.table_objects_cleared)
-        userdata.object_location = self.object_location
+        rospy.loginfo('[%s] Updating object detection parameters for floor')
+        update_object_detection_params("floor")
+
+        if self.floor_objects_cleared:
+            userdata.floor_objects_cleared = dict(self.floor_objects_cleared)
+
+        if self.table_objects_cleared:
+            userdata.table_objects_cleared = dict(self.table_objects_cleared)
+
+        if self.object_location:
+            userdata.object_location = self.object_location
+
         userdata.operation_start_time = rospy.Time.now().to_sec()
 
         if not self.planning_scene_map_file:
             rospy.loginfo('[%s] Planning scene map file not specified; not initialising KB and scene', self.state_name)
             return 'succeeded'
 
-        update_object_detection_params("floor")
         environment_objects = get_environment_objects(self.planning_scene_map_file)
 
         # initialising the knowledge base

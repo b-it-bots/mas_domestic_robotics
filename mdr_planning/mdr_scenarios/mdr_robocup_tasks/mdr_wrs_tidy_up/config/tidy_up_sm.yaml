@@ -296,8 +296,14 @@ state_descriptions:
                 state: GO_TO_SECOND_ROOM_CORRIDOR
         arguments:
             - argument:
+                name: pickup_server_name
+                value: pickup_server
+            - argument:
+                name: grasping_timeout_s
+                value: 45.0
+            - argument:
                 name: number_of_retries
-                value: 3
+                value: 0
     - state:
         name: MOVE_TO_BOX
         state_module_name: mdr_wrs_tidy_up.scenario_states.move_base

@@ -5,6 +5,8 @@ import actionlib
 import tf
 
 from geometry_msgs.msg import Pose, PoseStamped
+from mas_perception_msgs.msg import ObjectList
+from mdr_manipulation_msgs.srv import UpdatePlanningScene, UpdatePlanningSceneRequest
 from mdr_pickup_action.msg import PickupAction, PickupGoal
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
@@ -17,13 +19,16 @@ class PickupObject(ScenarioStateBase):
     tf_listener = None
     grasping_timeout_s = 30.
     grasping_height_offset = 0.
+    planning_scene_update_service_name = ''
+    planning_scene_update_proxy = None
 
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'pickup_object',
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed',
                                              'failed_after_retrying'],
-                                   input_keys=['selected_object'],
+                                   input_keys=['selected_object',
+                                               'detected_objects'],
                                    output_keys=['grasped_object'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'pickup_object')
@@ -32,12 +37,17 @@ class PickupObject(ScenarioStateBase):
         self.pickup_goal_pose_topic = kwargs.get('pickup_goal_pose_topic',
                                                  '/pickup_server/goal_pose')
         self.grasping_timeout_s = kwargs.get('grasping_timeout_s', 30.)
-        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.)
+        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.05)
+        self.planning_scene_update_service_name = kwargs.get('planning_scene_update_service_name',
+                                                             '/move_arm_action/update_planning_scene')
         self.retry_count = 0
         self.__init_ros_components()
 
     def execute(self, userdata):
         object_to_pick_up = userdata.selected_object
+        objects_except_target = [obj for obj in userdata.detected_objects
+                                 if obj.name != object_to_pick_up.name]
+        self.update_planning_scene(objects_except_target, UpdatePlanningSceneRequest.ADD)
 
         goal = PickupGoal()
         goal.pose.header.frame_id = object_to_pick_up.pose.header.frame_id
@@ -60,6 +70,7 @@ class PickupObject(ScenarioStateBase):
             if pickup_result.success:
                 rospy.loginfo('[%s] Successfully grasped object %s', self.state_name, object_to_pick_up.name)
                 userdata.grasped_object = object_to_pick_up
+                self.update_planning_scene(objects_except_target, UpdatePlanningSceneRequest.REMOVE)
                 return 'succeeded'
             else:
                 rospy.logerr('[%s] Failed to grasp object', self.state_name)
@@ -71,11 +82,34 @@ class PickupObject(ScenarioStateBase):
         if self.retry_count == self.number_of_retries:
             rospy.logerr('[%s] Could not pick up object after retrying; giving up', self.state_name)
             self.retry_count = 0
+            self.update_planning_scene(objects_except_target, UpdatePlanningSceneRequest.REMOVE)
             return 'failed_after_retrying'
 
         rospy.loginfo('[%s] Retrying to place object', self.state_name)
         self.retry_count += 1
+        self.update_planning_scene(objects_except_target, UpdatePlanningSceneRequest.REMOVE)
         return 'failed'
+
+    def update_planning_scene(self, objects, operation):
+        object_list = ObjectList()
+        object_list.objects = objects
+
+        update_planning_scene_req = UpdatePlanningSceneRequest()
+        update_planning_scene_req.objects = object_list
+        update_planning_scene_req.operation = operation
+        if operation == UpdatePlanningSceneRequest.ADD:
+            rospy.loginfo('[%s] Adding static objects to planning scene', self.state_name)
+        elif operation == UpdatePlanningSceneRequest.REMOVE:
+            rospy.loginfo('[%s] Removing static objects from planning scene', self.state_name)
+
+        response = self.planning_scene_update_proxy(update_planning_scene_req)
+        if response is not None:
+            if response.success:
+                rospy.loginfo('[%s] Successfully updated the planning scene', self.state_name)
+            else:
+                rospy.logerr('[%s] Failed to update the planning scene', self.state_name)
+        else:
+            rospy.logerr('[%s] Response not received', self.state_name)
 
     def get_grasping_pose_and_strategy(self, object_to_pick_up):
         '''Returns a geometry_msgs.msg.Pose object representing a grasping pose
@@ -150,6 +184,14 @@ class PickupObject(ScenarioStateBase):
         self.pickup_client = actionlib.SimpleActionClient(self.pickup_server_name, PickupAction)
         self.pickup_client.wait_for_server()
         rospy.loginfo('Client for action %s initialised', self.pickup_server_name)
+
+        rospy.loginfo('[%s] Creating a service proxy for %s',
+                      self.state_name, self.planning_scene_update_service_name)
+        rospy.wait_for_service(self.planning_scene_update_service_name)
+        self.planning_scene_update_proxy = rospy.ServiceProxy(self.planning_scene_update_service_name,
+                                                              UpdatePlanningScene)
+        rospy.loginfo('[%s] Service proxy for %s created',
+                      self.state_name, self.planning_scene_update_service_name)
 
         rospy.loginfo('Initialising publisher for goal pose on topic %s', self.pickup_goal_pose_topic)
         self.goal_pose_pub = rospy.Publisher(self.pickup_goal_pose_topic, PoseStamped, queue_size=1)
