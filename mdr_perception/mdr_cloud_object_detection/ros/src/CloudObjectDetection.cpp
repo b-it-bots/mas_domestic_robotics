@@ -1,24 +1,29 @@
 /*!
- * @copyright 2018 Bonn-Rhein-Sieg University
+ * @copyright 2020 Bonn-Rhein-Sieg University
  *
- * @author Sushant Chavan
+ * @author Sushant Vijay Chavan
  *
- * @brief script to detect objects from a point cloud
+ * @brief Class to detect objects from a point cloud
  */
+#include <pcl/common/common.h>
+#include <pcl/features/moment_of_inertia_estimation.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-#include "mdr_cloud_object_detection/CloudObjectDetection.h"
+#include <mdr_cloud_object_detection/Color.h>
+#include <mdr_cloud_object_detection/CloudObjectDetection.h>
 
 using namespace mdr_cloud_object_detection;
 
 CloudObjectDetection::CloudObjectDetection(const ros::NodeHandle &pNodeHandle, 
-                                           const std::string &pCloudTopic,
+                                           const std::string &pCloudInTopic,
                                            const std::string &pFilteredCloudTopic,
                                            const std::string &pObjectCloudTopic,
                                            const std::string &pTransformTargetFrame,
                                            const std::string &pClusterTargetFrame,
                                            const std::string &pOccupancyCheckerActionName,
                                            const std::string &pObjectsBoundsTopic,
-                                           const std::string &pObjectObjectsTopic,
+                                           const std::string &pObjectListTopic,
                                            bool pPublishOrientedBBox)
 : mNodeHandle(pNodeHandle)
 , mObjectDetectionConfigServer(mNodeHandle)
@@ -36,12 +41,12 @@ CloudObjectDetection::CloudObjectDetection(const ros::NodeHandle &pNodeHandle,
     mObjectDetectionConfigServer.setCallback(odCallback);
 
     ROS_INFO("subscribing to point cloud topic and advertising processed result");
-    mCloudSub = mNodeHandle.subscribe(pCloudTopic, 1, &CloudObjectDetection::cloudCallback, this);
-    mResetSub = mNodeHandle.subscribe("reset_cache", 1, &CloudObjectDetection::resetCallback, this);
+    mCloudInSub = mNodeHandle.subscribe(pCloudInTopic, 1, &CloudObjectDetection::cloudCallback, this);
+    mResetObjectCacheSub = mNodeHandle.subscribe("reset_cache", 1, &CloudObjectDetection::resetObjectCacheCallback, this);
     mFilteredCloudPub = mNodeHandle.advertise<sensor_msgs::PointCloud2>(pFilteredCloudTopic, 1);
     mObjectCloudPub = mNodeHandle.advertise<sensor_msgs::PointCloud2>(pObjectCloudTopic, 1);
     mObjectBoundsPub = mNodeHandle.advertise<visualization_msgs::MarkerArray>(pObjectsBoundsTopic, 1);
-    mObjectObjectsPub = mNodeHandle.advertise<mas_perception_msgs::ObjectList>(pObjectObjectsTopic, 1);
+    mObjectListPub = mNodeHandle.advertise<mas_perception_msgs::ObjectList>(pObjectListTopic, 1);
 }
 
 void CloudObjectDetection::objectDetectionConfigCallback(const ObjectDetectionConfig &pConfig,
@@ -81,7 +86,7 @@ void CloudObjectDetection::cloudCallback(const sensor_msgs::PointCloud2::ConstPt
     // do not process cloud when there's no subscriber
     if (mFilteredCloudPub.getNumSubscribers() == 0 &&
         mObjectBoundsPub.getNumSubscribers() == 0 &&
-        mObjectObjectsPub.getNumSubscribers() == 0 &&
+        mObjectListPub.getNumSubscribers() == 0 &&
         mObjectCloudPub.getNumSubscribers() == 0)
         return;
 
@@ -142,12 +147,12 @@ void CloudObjectDetection::cloudCallback(const sensor_msgs::PointCloud2::ConstPt
 
     publishObjectCloud();
     publishObjectBoundsMarkers();
-    publishObjectObjectMessages();
+    publishObjectListMessages();
 
     cleanup();
 }
 
-void CloudObjectDetection::resetCallback(const std_msgs::Bool& reset)
+void CloudObjectDetection::resetObjectCacheCallback(const std_msgs::Bool& reset)
 {
     if (reset.data)
     {
@@ -227,8 +232,8 @@ void CloudObjectDetection::filterClusterCloudsNearOccupiedSpaces(std::vector<Poi
 }
 
 void CloudObjectDetection::getClusterClouds(std::vector<PointCloud::Ptr>& clusterClouds,
-                     PointCloud::ConstPtr filteredCloud,
-                     const std::vector<pcl::PointIndices>& cluster_indices)
+                                            PointCloud::ConstPtr filteredCloud,
+                                            const std::vector<pcl::PointIndices>& cluster_indices)
 {
     for (const auto& idx: cluster_indices)
     {
@@ -254,7 +259,8 @@ void CloudObjectDetection::getClusterClouds(std::vector<PointCloud::Ptr>& cluste
 }
 
 // Cloud comparison sample from https://stackoverflow.com/a/55930847
-float CloudObjectDetection::nearestDistance(const pcl::search::KdTree<PointT>& tree, const PointT& pt)
+float CloudObjectDetection::nearestDistance(const pcl::search::KdTree<PointT>& tree, 
+                                            const PointT& pt)
 {
     const int k = 1;
     std::vector<int> indices (k);
@@ -268,7 +274,9 @@ float CloudObjectDetection::nearestDistance(const pcl::search::KdTree<PointT>& t
 // compare cloudB to cloudA
 // use threshold for identifying outliers and not considering those for the similarity
 // a good value for threshold is 5 * <cloud_resolution>, e.g. 10cm for a cloud with 2cm resolution
-float CloudObjectDetection::getCloudSimilarity(const PointCloud& cloudA, const PointCloud& cloudB, float threshold)
+float CloudObjectDetection::getCloudSimilarity(const PointCloud& cloudA,
+                                               const PointCloud& cloudB,
+                                               float threshold)
 {
     // compare B to A
     int num_outlier = 0;
@@ -291,7 +299,8 @@ float CloudObjectDetection::getCloudSimilarity(const PointCloud& cloudA, const P
     return sum / (cloudB.size() - num_outlier);
 }
 
-bool CloudObjectDetection::isNewObject(const PointCloud& cloud, int& knownObjectId)
+bool CloudObjectDetection::isNewObject(const PointCloud& cloud,
+                                       int& knownObjectId)
 {
     for (const auto& o : mObjectsCache)
     {
@@ -365,7 +374,9 @@ void CloudObjectDetection::removeStaleObjects()
     }
 }
 
-geometry_msgs::Point CloudObjectDetection::getGeomPoint(float x, float y, float z)
+geometry_msgs::Point CloudObjectDetection::getPointMsg(float x,
+                                                       float y,
+                                                       float z)
 {
     geometry_msgs::Point p;
     p.x = x;
@@ -374,7 +385,9 @@ geometry_msgs::Point CloudObjectDetection::getGeomPoint(float x, float y, float 
     return p;
 }
 
-visualization_msgs::Marker CloudObjectDetection::getObjectBoundsMarker(const Eigen::Vector4f& min, const Eigen::Vector4f& max, int id)
+visualization_msgs::Marker CloudObjectDetection::getObjectBoundsMarker(const Eigen::Vector4f& min,
+                                                                       const Eigen::Vector4f& max,
+                                                                       int id)
 {
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::LINE_LIST;
@@ -387,18 +400,19 @@ visualization_msgs::Marker CloudObjectDetection::getObjectBoundsMarker(const Eig
     marker.ns = "";
     marker.id = id;
     marker.color = std_msgs::ColorRGBA(Color(Color::SCARLET));
-    marker.points.push_back(getGeomPoint(min[0], min[1], min[2]));
-    marker.points.push_back(getGeomPoint(min[0], max[1], min[2]));
-    marker.points.push_back(getGeomPoint(min[0], max[1], min[2]));
-    marker.points.push_back(getGeomPoint(max[0], max[1], min[2]));
-    marker.points.push_back(getGeomPoint(max[0], max[1], min[2]));
-    marker.points.push_back(getGeomPoint(max[0], min[1], min[2]));
-    marker.points.push_back(getGeomPoint(max[0], min[1], min[2]));
-    marker.points.push_back(getGeomPoint(min[0], min[1], min[2]));
+    marker.points.push_back(getPointMsg(min[0], min[1], min[2]));
+    marker.points.push_back(getPointMsg(min[0], max[1], min[2]));
+    marker.points.push_back(getPointMsg(min[0], max[1], min[2]));
+    marker.points.push_back(getPointMsg(max[0], max[1], min[2]));
+    marker.points.push_back(getPointMsg(max[0], max[1], min[2]));
+    marker.points.push_back(getPointMsg(max[0], min[1], min[2]));
+    marker.points.push_back(getPointMsg(max[0], min[1], min[2]));
+    marker.points.push_back(getPointMsg(min[0], min[1], min[2]));
     return marker;
 }
 
-visualization_msgs::Marker CloudObjectDetection::getObjectBoundsMarker(const mas_perception_msgs::Object& objMsg, int id)
+visualization_msgs::Marker CloudObjectDetection::getObjectBoundsMarker(const mas_perception_msgs::Object& objMsg,
+                                                                       int id)
 {
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::LINE_LIST;
@@ -440,7 +454,8 @@ visualization_msgs::Marker CloudObjectDetection::getObjectBoundsMarker(const mas
     return marker;
 }
 
-visualization_msgs::Marker CloudObjectDetection::getObjectOrientationMarker(const mas_perception_msgs::Object& objMsg, int id)
+visualization_msgs::Marker CloudObjectDetection::getObjectOrientationMarker(const mas_perception_msgs::Object& objMsg,
+                                                                            int id)
 {
     visualization_msgs::Marker marker;
     marker.type = visualization_msgs::Marker::ARROW;
@@ -457,7 +472,9 @@ visualization_msgs::Marker CloudObjectDetection::getObjectOrientationMarker(cons
     return marker;
 }
 
-visualization_msgs::Marker CloudObjectDetection::getObjectIdMarker(const Eigen::Vector4f& min, const Eigen::Vector4f& max, int id)
+visualization_msgs::Marker CloudObjectDetection::getObjectIdMarker(const Eigen::Vector4f& min,
+                                                                   const Eigen::Vector4f& max,
+                                                                   int id)
 {
     Eigen::Vector4f center = min + (max - min)/2.0;
     visualization_msgs::Marker marker;
@@ -474,7 +491,8 @@ visualization_msgs::Marker CloudObjectDetection::getObjectIdMarker(const Eigen::
     return marker;
 }
 
-mas_perception_msgs::Object CloudObjectDetection::createObjectMessage(PointCloud::ConstPtr cloudPtr, int id)
+mas_perception_msgs::Object CloudObjectDetection::createObjectMessage(PointCloud::ConstPtr cloudPtr,
+                                                                      int id)
 {
     // Solution inspired from: https://stackoverflow.com/a/49705361
     PointT minPoint;
@@ -582,7 +600,8 @@ const mas_perception_msgs::Object* CloudObjectDetection::getObjectMessage(int id
     return &(itr->second);
 }
 
-void CloudObjectDetection::publishCloud(PointCloud::ConstPtr cloudPtr, const ros::Publisher& publisher)
+void CloudObjectDetection::publishCloud(PointCloud::ConstPtr cloudPtr,
+                                        const ros::Publisher& publisher)
 {
     // publish the cloud
     sensor_msgs::PointCloud2::Ptr cloudMsgPtr = boost::make_shared<sensor_msgs::PointCloud2>();
@@ -642,9 +661,9 @@ void CloudObjectDetection::publishObjectBoundsMarkers()
     mObjectBoundsPub.publish(markerArray);
 }
 
-void CloudObjectDetection::publishObjectObjectMessages()
+void CloudObjectDetection::publishObjectListMessages()
 {
-    if (mObjectObjectsPub.getNumSubscribers() <= 0)
+    if (mObjectListPub.getNumSubscribers() <= 0)
         return;
 
     updateObjectMsgCache();
@@ -653,7 +672,7 @@ void CloudObjectDetection::publishObjectObjectMessages()
     {
         objectList.objects.push_back(msg.second);
     }
-    mObjectObjectsPub.publish(objectList);
+    mObjectListPub.publish(objectList);
 }
 
 void CloudObjectDetection::cleanup()

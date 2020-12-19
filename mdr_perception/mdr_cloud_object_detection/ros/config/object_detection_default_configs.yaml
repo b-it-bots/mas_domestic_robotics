@@ -1,5 +1,6 @@
-# config file loaded during launch as default configurations for the cloud filter, assuming base_link frame for
-# passthrough filter
+# config file loaded during launch as default configurations for the cloud object detector
+
+# passthrough and voxel-grid filter params in base_link frame
 passthrough_limit_min_x:  0.0
 passthrough_limit_max_x:  1.5
 passthrough_limit_min_y: -0.5
@@ -9,14 +10,17 @@ passthrough_limit_max_z:  0.2
 voxel_limit_min_z:        0.0
 voxel_limit_max_z:        1.8
 voxel_leaf_size:          0.02
-# config file loaded during launch as default configurations for the clustering algorithm
+
+# Euclidean clustering params
 cluster_tolerance:       0.05
 min_cluster_size:        4
 max_cluster_size:        10000
-# Object Filtering
+
+# Object filtering params
 max_bbox_edge_length:           0.3
 min_dist_from_occupied_cell:    0.05
-# Object Cache
+
+# Object cache params
 object_cache_time:            5.0
 similarity_threshold:           2.0
 position_history_cache_size:    10

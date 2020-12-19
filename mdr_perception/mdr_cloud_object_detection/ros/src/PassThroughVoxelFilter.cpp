@@ -1,4 +1,10 @@
-#include "mdr_cloud_object_detection/PassThroughVoxelFilter.h"
+/*!
+ * @copyright 2020 Bonn-Rhein-Sieg University
+ *
+ * @author Sushant Vijay Chavan
+ *
+ */
+#include <mdr_cloud_object_detection/PassThroughVoxelFilter.h>
 
 using namespace mdr_cloud_object_detection;
 

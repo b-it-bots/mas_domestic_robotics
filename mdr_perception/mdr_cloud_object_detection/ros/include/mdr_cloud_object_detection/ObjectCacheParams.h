@@ -1,3 +1,9 @@
+/*!
+ * @copyright 2020 Bonn-Rhein-Sieg University
+ *
+ * @author Sushant Vijay Chavan
+ *
+ */
 #ifndef MDR_CLOUD_OBJECT_DETECTION_OBJECT_CACHE_PARAMS
 #define MDR_CLOUD_OBJECT_DETECTION_OBJECT_CACHE_PARAMS
 
