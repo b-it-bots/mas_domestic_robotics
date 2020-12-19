@@ -43,7 +43,9 @@ include_directories(
 ###################################
 # Node for object detection
 add_executable(cloud_object_detection
-  ros/src/cloud_object_detection.cpp
+  ros/src/PassThroughVoxelFilter.cpp
+  ros/src/CloudObjectDetection.cpp
+  ros/src/main.cpp
 )
 target_link_libraries(cloud_object_detection
 #   ${PROJECT_NAME}
