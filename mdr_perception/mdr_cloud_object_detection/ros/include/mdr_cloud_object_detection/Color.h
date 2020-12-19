@@ -9,7 +9,7 @@
 #define MDR_CLOUD_OBJECT_DETECTION_COLOR_H
 
 #include <std_msgs/ColorRGBA.h>
-#include <mdr_cloud_object_detection/aliases.h>
+#include <mdr_cloud_object_detection/Aliases.h>
 
 namespace mdr_cloud_object_detection
 {
