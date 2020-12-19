@@ -10,6 +10,7 @@
 
     <!-- Input topic names -->
     <arg name="cloud_in_topic" default="/hsrb/head_rgbd_sensor/depth_registered/rectified_points"/>
+    <arg name="map_topic" default="/map"/>
 
     <!-- Output topic names -->
     <arg name="filtered_cloud_topic" default="filtered_cloud"/>
@@ -17,10 +18,11 @@
     <arg name="objects_bounds_topic" default="object_bounds"/>
     <arg name="object_list_topic" default="object_list"/>
 
-    <node pkg="mas_navigation_tools" type="occupancy_checker" name="occupancy_checker" output="screen" ns="mas_navigation_tools">
-        <param name="action_name" type="string" value="$(arg occupancy_checker_action_name)" />
-        <param name="map_topic" type="string" value="/map" />
-    </node>
+    <!-- Launch the occupancy_checker -->
+    <include file="$(find mas_navigation_tools)/ros/launch/occupancy_checker.launch">
+        <arg name="action_name" value="$(arg occupancy_checker_action_name)"/>
+        <arg name="map_topic" value="$(arg map_topic)"/>
+    </include>
 
     <node pkg="mdr_cloud_object_detection" type="cloud_object_detection" name="cloud_object_detection" output="screen"
           ns="mdr_cloud_object_detection">
