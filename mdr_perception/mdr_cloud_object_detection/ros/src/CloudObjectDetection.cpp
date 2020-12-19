@@ -95,19 +95,14 @@ void CloudObjectDetection::cloudCallback(const sensor_msgs::PointCloud2::ConstPt
         return;
 
     // transform the cloud to a desired frame
-    auto transformedCloudPtr = boost::make_shared<sensor_msgs::PointCloud2>();
-    if (!pcl_ros::transformPointCloud(mTransformTargetFrame, *pCloudMsgPtr, *transformedCloudPtr, mTfListener))
-    {
-        ROS_WARN("failed to transform cloud to frame '%s' from frame '%s'",
-                 mTransformTargetFrame.c_str(), pCloudMsgPtr->header.frame_id.c_str());
+    PointCloud::Ptr cloudInPtr = boost::make_shared<PointCloud>();
+    pcl::fromROSMsg(*pCloudMsgPtr, *cloudInPtr);
+    PointCloud::Ptr transformedCloudPtr = transformPointCloud(*cloudInPtr, mTransformTargetFrame);
+    if (transformedCloudPtr == nullptr)
         return;
-    }
 
     // filter the cloud
-    PointCloud::Ptr pclCloudPtr = boost::make_shared<PointCloud>();
-    pcl::fromROSMsg(*transformedCloudPtr, *pclCloudPtr);
-    PointCloud::Ptr filteredCloudPtr = mCloudFilter.filterCloud(pclCloudPtr);
-
+    PointCloud::Ptr filteredCloudPtr = mCloudFilter.filterCloud(transformedCloudPtr);
     if (filteredCloudPtr->size() < mClusterParams.mMinClusterSize)
     {
         // Stop processing the point cloud if the filtered cloud does
@@ -115,13 +110,13 @@ void CloudObjectDetection::cloudCallback(const sensor_msgs::PointCloud2::ConstPt
         return;
     }
 
-    mCurrTime = pCloudMsgPtr->header.stamp.sec;
-
     if (mFilteredCloudPub.getNumSubscribers() > 0)
     {
         // publish the filtered cloud for debugging
         publishCloud(filteredCloudPtr, mFilteredCloudPub);
     }
+
+    mCurrTime = pCloudMsgPtr->header.stamp.sec;
 
     // Euclidean clustering
     pcl::search::Search<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
@@ -163,6 +158,19 @@ void CloudObjectDetection::resetObjectCacheCallback(const std_msgs::Bool& reset)
         mPrevPositionsCache.clear();
         mObjectMsgCache.clear();
     }
+}
+
+PointCloud::Ptr CloudObjectDetection::transformPointCloud(const PointCloud& cloudIn,
+                                                          const std::string& targetFrame)
+{
+    PointCloud::Ptr transformedCloudPtr = boost::make_shared<PointCloud>();
+    if (!pcl_ros::transformPointCloud(targetFrame, cloudIn, *transformedCloudPtr, mTfListener))
+    {
+        ROS_WARN("Failed to transform cloud to frame '%s' from frame '%s'.",
+                targetFrame.c_str(), cloudIn.header.frame_id.c_str());
+        return nullptr;
+    }
+    return transformedCloudPtr;
 }
 
 void CloudObjectDetection::filterClusterCloudsBySize(std::vector<PointCloud::Ptr>& clusterClouds)
@@ -246,11 +254,10 @@ void CloudObjectDetection::getClusterClouds(std::vector<PointCloud::Ptr>& cluste
         clusterCloud->height = 1;
         clusterCloud->is_dense = true;
 
-        PointCloud::Ptr transformedCloudPtr = boost::make_shared<PointCloud>();
-        if (!pcl_ros::transformPointCloud(mClusterTargetFrame, *clusterCloud, *transformedCloudPtr, mTfListener))
+        PointCloud::Ptr transformedCloudPtr = transformPointCloud(*clusterCloud, mClusterTargetFrame);
+        if (transformedCloudPtr == nullptr)
         {
-            ROS_WARN("Failed to transform cluster cloud to frame '%s' from frame '%s'. This cluster will be skipped in the current frame!",
-                    mClusterTargetFrame.c_str(), clusterCloud->header.frame_id.c_str());
+            ROS_WARN("Failed to transform cluster cloudThis cluster will be skipped in the current frame!");
             continue;
         }
 
@@ -517,15 +524,22 @@ mas_perception_msgs::Object CloudObjectDetection::createObjectMessage(PointCloud
     points.push_back(Eigen::Vector3f(maxPoint.x, maxPoint.y, maxPoint.z));
     points.push_back(Eigen::Vector3f(maxPoint.x, minPoint.y, maxPoint.z));
 
-    // Copy the cluster cloud and set the z-value to that of the mass center for all points
-    PointCloud::Ptr copy(new PointCloud);
-    pcl::copyPointCloud(*cloudPtr, *copy);
-    for(unsigned int i = 0; i < copy->points.size(); i++)
-    {
-        copy->points[i].z = massCenter.z();
-    }
-
     mas_perception_msgs::Object msg;
+    msg.name = std::string("object_") + std::to_string(id);
+
+    // Add the cluster cloud
+    sensor_msgs::PointCloud2::Ptr cloudMsgPtr = boost::make_shared<sensor_msgs::PointCloud2>();
+    pcl::toROSMsg(*cloudPtr, *cloudMsgPtr);
+    mas_perception_msgs::ObjectView view;
+    view.point_cloud = *cloudMsgPtr;
+    msg.views.push_back(view);
+
+    // Add bounding box values
+    geometry_msgs::Point center;
+    center.x = massCenter.x();
+    center.y = massCenter.y();
+    center.z = massCenter.z();
+    msg.bounding_box.center = center;
     for (unsigned int i = 0 ; i < points.size(); i++)
     {
         points[i] = rotMatrix * points[i] + offset;
@@ -535,43 +549,39 @@ mas_perception_msgs::Object CloudObjectDetection::createObjectMessage(PointCloud
         p.z = points[i].z();
         msg.bounding_box.vertices.push_back(p);
     }
-
     msg.bounding_box.dimensions.x = std::abs(maxPoint.x - minPoint.x);
     msg.bounding_box.dimensions.y = std::abs(maxPoint.y - minPoint.y);
     msg.bounding_box.dimensions.z = std::abs(maxPoint.z - minPoint.z);
+    msg.dimensions.header.frame_id = mClusterTargetFrame;
+    msg.dimensions.vector = msg.bounding_box.dimensions;
 
-    geometry_msgs::Point center;
-    center.x = massCenter.x();
-    center.y = massCenter.y();
-    center.z = massCenter.z();
-    msg.bounding_box.center = center;
+    // Copy the cluster cloud and set the z-value to that of the mass center for all points
+    PointCloud::Ptr copy(new PointCloud);
+    pcl::copyPointCloud(*cloudPtr, *copy);
+    for(unsigned int i = 0; i < copy->points.size(); i++)
+    {
+        copy->points[i].z = massCenter.z();
+    }
 
-    // Compute the pose for the object
+    // Add pose to the Object message
+    msg.pose.header.frame_id = mClusterTargetFrame;
+    msg.pose.pose.position = center;
+    // Compute the orientation of the object in the XY plane of the mClusterTargetFrame
     pcl::MomentOfInertiaEstimation<PointT> orientationEstimator;
     Eigen::Vector3f major_vector, middle_vector, minor_vector;
     orientationEstimator.setInputCloud(copy);
     orientationEstimator.compute();
     orientationEstimator.getEigenVectors (major_vector, middle_vector, minor_vector);
-
-    // Add pose to the Object message
     double yaw = std::atan2(major_vector.y(), major_vector.x());
+    // restrict yaw to the first two quadrants of the mClusterTargetFrame
+    constexpr double pi = 3.14159265358979323846;
+    if (yaw > pi/2.0)
+        yaw -= pi;
+    else if (yaw < -pi/2.0)
+        yaw += pi;
     tf2::Quaternion orientation;
     orientation.setRPY(0.0, 0.0, yaw);
-    msg.pose.pose.position = center;
     msg.pose.pose.orientation = tf2::toMsg(orientation);
-    msg.pose.header.frame_id = mClusterTargetFrame;
-
-    // Add dimensions to the Object message
-    Eigen::Vector4f min, max;
-    pcl::getMinMax3D(*cloudPtr, min, max);
-    geometry_msgs::Vector3 dimensions;
-    dimensions.x = std::abs(max[0] - min[0]);
-    dimensions.y = std::abs(max[1] - min[1]);
-    dimensions.z = std::abs(max[2] - min[2]);
-    msg.dimensions.header.frame_id = mClusterTargetFrame;
-    msg.dimensions.vector = dimensions;
-
-    msg.name = std::string("object_") + std::to_string(id);
 
     return msg;
 }
