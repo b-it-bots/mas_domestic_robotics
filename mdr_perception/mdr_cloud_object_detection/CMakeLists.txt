@@ -28,6 +28,7 @@ catkin_package(
   LIBRARIES
     ${PROJECT_NAME}
   CATKIN_DEPENDS
+    dynamic_reconfigure
     mas_navigation_tools
 )
 
@@ -47,6 +48,9 @@ add_executable(cloud_object_detection
   ros/src/CloudObjectDetection.cpp
   ros/src/main.cpp
 )
+
+add_dependencies(cloud_object_detection ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 target_link_libraries(cloud_object_detection
   ${catkin_LIBRARIES}
 )
