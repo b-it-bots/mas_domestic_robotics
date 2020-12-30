@@ -30,11 +30,39 @@ class PointingGestureRecognizer(object):
                 print('Body probably too close to adequately estimate pose. Ignoring...')
             return success, None, frame
 
-        neck_pose = datum.poseKeypoints[0, 1, :]
-        left_hand_pose = datum.poseKeypoints[0, 7, :]
-        left_elbow_pose = datum.poseKeypoints[0, 6, :]
-        right_hand_pose = datum.poseKeypoints[0, 4, :]
-        right_elbow_pose = datum.poseKeypoints[0, 3, :]
+        pointing_person_index = 0
+        if datum.poseKeypoints.shape[0] > 1:
+            max_right_gradient = float('inf')
+            max_left_gradient = float('inf')
+
+            for person_index in range(datum.poseKeypoints.shape[0]):
+                left_hand_pose = datum.poseKeypoints[person_index, 7, :]
+                left_elbow_pose = datum.poseKeypoints[person_index, 6, :]
+                right_hand_pose = datum.poseKeypoints[person_index, 4, :]
+                right_elbow_pose = datum.poseKeypoints[person_index, 3, :]
+
+                right_arm_visible = right_elbow_pose[2] > 0.1 and right_hand_pose[2] > 0.1
+                left_arm_visible = left_elbow_pose[2] > 0.1 and left_hand_pose[2] > 0.1
+
+                if right_arm_visible:
+                    _, _, right_line_points = self.get_pointing_line(right_elbow_pose, right_hand_pose, frame)
+                    right_estimated_gradient = (right_line_points[3] - right_line_points[1]) / float(right_line_points[2] - right_line_points[0])
+                    if abs(right_estimated_gradient) < max_right_gradient:
+                        max_right_gradient = abs(right_estimated_gradient)
+                        pointing_person_index = person_index
+
+                if left_arm_visible:
+                    _, _, left_line_points = self.get_pointing_line(left_elbow_pose, left_hand_pose, frame)
+                    left_estimated_gradient = (left_line_points[3] - left_line_points[1]) / float(left_line_points[2] - left_line_points[0])
+                    if abs(left_estimated_gradient) < max_left_gradient:
+                        max_left_gradient = abs(left_estimated_gradient)
+                        pointing_person_index = person_index
+
+        neck_pose = datum.poseKeypoints[pointing_person_index, 1, :]
+        left_hand_pose = datum.poseKeypoints[pointing_person_index, 7, :]
+        left_elbow_pose = datum.poseKeypoints[pointing_person_index, 6, :]
+        right_hand_pose = datum.poseKeypoints[pointing_person_index, 4, :]
+        right_elbow_pose = datum.poseKeypoints[pointing_person_index, 3, :]
 
         right_arm_visible = right_elbow_pose[2] > 0.1 and right_hand_pose[2] > 0.1
         left_arm_visible = left_elbow_pose[2] > 0.1 and left_hand_pose[2] > 0.1
@@ -60,12 +88,10 @@ class PointingGestureRecognizer(object):
             if any(obj_distance_to_lines):
                 min_arg = obj_distance_to_lines.index(min([x for x in obj_distance_to_lines if x is not None]))
                 object_index = objs_nearest_to_lines_indices[min_arg]
-                if self.debug: 
-                    print('Pointing to object:', object_index)
                 frame = cv2.rectangle(frame, (bbs[object_index][0] - 5 , bbs[object_index][1] - 5), 
                                       (bbs[object_index][0] + bbs[object_index][2] + 5 , bbs[object_index][1] + bbs[object_index][3] + 5), 
                                       (0, 0, 255), 3)
-                frame = cv2.putText(frame, 'Pointing to {}'.format(labels[object_index]), (50,50), cv2.FONT_HERSHEY_SIMPLEX,
+                frame = cv2.putText(frame, 'Person {} pointing to {}'.format(pointing_person_index, labels[object_index]), (50,50), cv2.FONT_HERSHEY_SIMPLEX,
                                     1, (0, 0, 255), 2, cv2.LINE_AA) 
 
                 return success, object_index, frame
@@ -158,7 +184,7 @@ class PointingGestureRecognizer(object):
         end_point[1] = int(-((a/b) * end_point[0]) - (c/b))
         if draw_on_image:
             image = cv2.line(image, tuple(elbow_pose[0:2]), tuple(end_point), 
-                             (0, 0, 255), thickness=3)
+                             (0, 0, 255), thickness=2)
         return (a, b, c), image, (hand_pose[0], hand_pose[1], end_point[0], end_point[1]) 
 
     def get_bb_centers(self, bbs, frame, draw_on_image=True):
