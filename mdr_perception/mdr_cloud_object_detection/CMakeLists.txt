@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   actionlib
   dynamic_reconfigure
+  tf2_geometry_msgs
   pcl_ros
   roscpp
   mas_navigation_tools
