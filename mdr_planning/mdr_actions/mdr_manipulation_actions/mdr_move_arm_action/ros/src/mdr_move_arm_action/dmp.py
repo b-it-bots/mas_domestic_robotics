@@ -6,9 +6,7 @@ from nav_msgs.msg import Path
 import tf
 from ros_dmp.roll_dmp import RollDmp
 import pydmps
-
-import yaml
-
+from mas_tools.file_utils import load_yaml_file
 
 class DMPExecutor(object):
     def __init__(self, dmp_name, tau):
@@ -273,9 +271,7 @@ class DMPExecutor(object):
         initial_pose: numpy.ndarray -- initial pose coordinates of end-effector
         goal_pose: numpy.ndarray -- target pose coordinates of end-effector
         '''
-        with open(self.dmp_name) as f:
-            dmp_weights_dict = yaml.load(f)
-
+        dmp_weights_dict = load_yaml_file(self.dmp_name)
         n_dmps, n_bfs = len(dmp_weights_dict), len(dmp_weights_dict['x'])
 
         dmp_weights = np.zeros((n_dmps, n_bfs))

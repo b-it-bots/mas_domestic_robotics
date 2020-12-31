@@ -1,5 +1,4 @@
 import random
-import rospy
 from mas_tools.ros_utils import get_package_path
 from mas_tools.file_utils import load_yaml_file
 from mas_execution_manager.scenario_state_base import ScenarioStateBase

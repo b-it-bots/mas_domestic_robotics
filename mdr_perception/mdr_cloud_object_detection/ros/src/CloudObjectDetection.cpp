@@ -15,7 +15,7 @@
 
 using namespace mdr_cloud_object_detection;
 
-CloudObjectDetection::CloudObjectDetection(const ros::NodeHandle &pNodeHandle, 
+CloudObjectDetection::CloudObjectDetection(const ros::NodeHandle &pNodeHandle,
                                            const std::string &pCloudInTopic,
                                            const std::string &pFilteredCloudTopic,
                                            const std::string &pObjectCloudTopic,
@@ -129,7 +129,7 @@ void CloudObjectDetection::cloudCallback(const sensor_msgs::PointCloud2::ConstPt
                                   mClusterParams.mMinClusterSize,
                                   mClusterParams.mMaxClusterSize);
 
-    if (cluster_indices.size() <= 0)
+    if (cluster_indices.size() == 0)
         return;
 
     std::vector<PointCloud::Ptr> clusterClouds;
@@ -266,7 +266,7 @@ void CloudObjectDetection::getClusterClouds(std::vector<PointCloud::Ptr>& cluste
 }
 
 // Cloud comparison sample from https://stackoverflow.com/a/55930847
-float CloudObjectDetection::nearestDistance(const pcl::search::KdTree<PointT>& tree, 
+float CloudObjectDetection::nearestDistance(const pcl::search::KdTree<PointT>& tree,
                                             const PointT& pt)
 {
     const int k = 1;
