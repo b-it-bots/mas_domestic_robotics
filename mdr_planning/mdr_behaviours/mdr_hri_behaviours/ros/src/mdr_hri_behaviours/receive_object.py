@@ -59,7 +59,7 @@ class ReceiveObject(ScenarioStateBase):
 
             object_category = self.object_category
             if not object_to_transport:
-                object_to_category = userdata.object_category
+                object_category = userdata.object_category
 
             estimated_size_m = self._get_estimated_object_size(self.gripper_controller.get_opening_angle())
             self._insert_object_in_kb(object_to_transport, object_category, estimated_size_m)
@@ -72,7 +72,6 @@ class ReceiveObject(ScenarioStateBase):
                 return 'failed_after_retrying'
             self.retry_count += 1
             return 'failed'
-        return 'succeeded'
 
     def _get_estimated_object_size(self, angle):
         '''Get estimate of object size from gripper opening angle, assuming
