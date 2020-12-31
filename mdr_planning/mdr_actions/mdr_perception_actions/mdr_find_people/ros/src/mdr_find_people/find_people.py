@@ -11,8 +11,7 @@ from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
 
 from mas_perception_libs import ImageDetectionKey, ImageDetectorBase, TorchImageDetector
-from mas_perception_libs.utils import cloud_msg_to_image_msg, cloud_msg_to_cv_image, \
-                                      crop_cloud_to_xyz
+from mas_perception_libs.utils import cloud_msg_to_cv_image, crop_cloud_to_xyz
 from mas_perception_libs.visualization import draw_labeled_boxes
 
 import dataset_interface.object_detection.transforms as T

@@ -1,0 +1,3 @@
+disable=
+    no-self-use,
+    bare-except
