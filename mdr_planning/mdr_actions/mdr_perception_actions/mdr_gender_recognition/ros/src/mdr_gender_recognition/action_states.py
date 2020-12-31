@@ -33,8 +33,9 @@ class RecognizeGenderSM(ActionSMBase):
             # the following two lines are necessary for avoiding https://github.com/keras-team/keras/issues/2397
             self.gender_model._make_predict_function()
             self.computation_graph = tf.get_default_graph()
-        except:
-            rospy.logerr('[recognize_gender] Failed to load model %s', self.gender_model_path)
+        except Exception as exc:
+            rospy.logerr('[recognize_gender] Failed to load model %s: %s',
+                         self.gender_model_path, str(exc))
         return FTSMTransitions.INITIALISED
 
     def running(self):

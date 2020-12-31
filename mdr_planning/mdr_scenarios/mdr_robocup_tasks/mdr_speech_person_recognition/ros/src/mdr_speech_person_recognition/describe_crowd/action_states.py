@@ -1,6 +1,5 @@
 import rospy
 import smach
-import smach_ros
 from std_msgs.msg import String
 from mdr_detect_person.msg import DetectPersonAction, DetectPersonGoal
 
