@@ -1,4 +1,3 @@
-import yaml
 import numpy as np
 
 import rospy
@@ -7,6 +6,8 @@ import tf
 from geometry_msgs.msg import PoseStamped, Quaternion
 import move_base_msgs.msg as move_base_msgs
 from actionlib_msgs.msg import GoalStatus
+
+from mas_tools.file_utils import load_yaml_file
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -127,14 +128,12 @@ class MoveBaseSM(ActionSMBase):
         return FTSMTransitions.DONE_RECOVERING
 
     def convert_pose_name_to_coordinates(self, pose_name):
-        stream = open(self.pose_description_file, 'r')
-        poses = yaml.load(stream)
-        stream.close()
+        poses = load_yaml_file(self.pose_description_file)
         try:
             coordinates = poses[pose_name]
             return coordinates
         except:
-            rospy.logerr('Pose name "%s" does not exist' % (pose_name))
+            rospy.logerr('Pose name "%s" does not exist', pose_name)
             return None
 
     def set_result(self, success):

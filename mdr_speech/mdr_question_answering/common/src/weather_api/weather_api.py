@@ -97,7 +97,6 @@ class WeatherApi(object):
             cond_adj = cond_data['conditions']['adjectives']
             cond_subs = cond_data['conditions']['substantives']
             cond_subs_sg = cond_data['conditions']['substantives_sg']
-            sond_subs_pl = cond_data['conditions']['substantives_pl']
 
         # format condition: remove parentheses and whitespace, make lowercase
         condition = re.sub(r'\([^)]*\)', '', condition).strip().lower()
