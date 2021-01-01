@@ -1,5 +1,4 @@
 import rospy
-from std_msgs.msg import String
 from actionlib import SimpleActionClient
 from mdr_enter_door_action.msg import EnterDoorAction, EnterDoorGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase

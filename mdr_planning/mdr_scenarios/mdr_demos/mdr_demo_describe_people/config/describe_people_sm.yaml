@@ -3,7 +3,7 @@
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_demo_describe_people
 states: [WAIT_FOR_NAME, GIVE_POSITIONING_INSTRUCTIONS, DESCRIBE_PEOPLE, THANK_PEOPLE]
-outcomes: [DONE, TIMEOUT, FAILED]
+outcomes: []
 state_descriptions:
     - state:
         name: WAIT_FOR_NAME

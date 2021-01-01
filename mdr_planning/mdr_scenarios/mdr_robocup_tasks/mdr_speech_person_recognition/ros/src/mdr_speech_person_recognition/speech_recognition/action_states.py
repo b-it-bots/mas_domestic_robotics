@@ -1,10 +1,6 @@
 import rospy
 import smach
-import smach_ros
 from std_msgs.msg import String
-from actionlib import SimpleActionClient
-
-from mdr_answer_action.msg import AnswerGoal, AnswerAction
 
 
 def say(publisher, message):

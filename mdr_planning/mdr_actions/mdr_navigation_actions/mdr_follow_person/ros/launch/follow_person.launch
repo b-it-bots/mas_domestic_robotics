@@ -1,23 +1,28 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="max_translational_velocity" default="0.5" />
+    <arg name="max_rotational_velocity" default="1.0" />
+    <arg name="translational_deacceleration_factor" default="1.0" />
+    <arg name="rotational_deacceleration_factor" default="1.0" />
+    <arg name="minimum_distance_to_person" default="1.15" />	<!-- in meters -->
+    <arg name="allowed_angular_variance" default="5.0" />   <!-- in degrees !-->
+    <arg name="driving_backward_enabled" default="true" />   <!-- bool !-->
+    <arg name="distance_when_driving_backward" default="1.0" />	<!-- in meters -->
+    <arg name="people_positions_topic" default="/mcr_perception/waist_tracking/people_positions" />
+    <arg name="odom_topic" default="/base_controller/odometry" />
+    <arg name="cmd_vel_topic" default="/base_controller/command_direct" />
 
-  <node name="follow_person" pkg="mcr_follow_person" type="follow_person_node" ns="mcr_behaviors" output="screen">		
-    <param name="max_translational_velocity" value="0.5" />	
-    <param name="max_rotational_velocity" value="1.0" />
-		
-    <param name="translational_deacceleration_factor" value="1.0" />
-    <param name="rotational_deacceleration_factor" value="1.0" />
-		
-    <param name="minimum_distance_to_person" value="1.15" />	<!-- in meter -->
-    <param name="allowed_angular_variance" value="5.0" />   <!-- in degree !-->
-		
-    <param name="driving_backward_enabled" value="true" />   <!-- bool !-->
-    <param name="distance_when_driving_backward" value="1.0" />	<!-- in meter -->
-	
-    <remap from="~people_positions" to="/mcr_perception/waist_tracking/people_positions" />
-    <remap from="~odometry" to="/base_controller/odometry" />
-    <remap from="~cmd_vel" to="/base_controller/command_direct" />
-
-  </node>
-
+    <node name="follow_person" pkg="mcr_follow_person" type="follow_person_node" ns="mcr_behaviors" output="screen">
+        <param name="max_translational_velocity" value="$(arg max_translational_velocity)" />
+        <param name="max_rotational_velocity" value="$(arg max_rotational_velocity)" />
+        <param name="translational_deacceleration_factor" value="$(arg translational_deacceleration_factor)" />
+        <param name="rotational_deacceleration_factor" value="$(arg rotational_deacceleration_factor)" />
+        <param name="minimum_distance_to_person" value="$(arg minimum_distance_to_person)" />
+        <param name="allowed_angular_variance" value="$(arg allowed_angular_variance)" />
+        <param name="driving_backward_enabled" value="$(arg driving_backward_enabled)" />
+        <param name="distance_when_driving_backward" value="$(arg distance_when_driving_backward)" />
+        <remap from="~people_positions" to="$(arg people_positions_topic)" />
+        <remap from="~odometry" to="$(arg odom_topic)" />
+        <remap from="~cmd_vel" to="$(arg cmd_vel_topic)" />
+    </node>
 </launch>

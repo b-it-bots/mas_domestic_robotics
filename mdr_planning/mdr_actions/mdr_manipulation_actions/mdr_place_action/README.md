@@ -61,6 +61,7 @@ The following parameters may be passed when launching the action server:
 * ``base_elbow_offset``: An optional offset between `base_link` and the manipulator's elbow; used for aligning the base with the placing pose so that the manipulator can easily reach it (default: -1)
 * ``placing_dmp``:  Path to a YAML file containing the weights of a dynamic motion primitive used for placing (default: '')
 * ``dmp_tau``: The value of the temporal dynamic motion primitive parameter (default: 1)
+* ``downward_placing_vel``: Velocity with which the arm moves downwards to detect impact with the placing surface (default: -0.02)
 * ``placing_orientation``: For more constrained manipulators, it might make sense to use a fixed placing orientation (expressed as an (x, y, z, w) quaternion) to ensure easier reachability; for instance, we might want to keep the orientation with which an object was grasped instead of allowing arbitrary orientations (default: [], in which case the argument is ignored)
 
 ### Action client

@@ -1,0 +1,371 @@
+# Description: Defines a state machine for a World Robot Summit Tidy Up task
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_wrs_tidy_up
+states: [INITIALISE_SCENARIO, SELECT_SCANNING_POSE, GO_TO_SCANNING_POSE, FIND_OBJECTS, SELECT_OBJECT_FOR_PICKING, PICKUP_OBJECT, SELECT_STORAGE_LOCATION, MOVE_TO_STORAGE_LOCATION, RELEASE_OBJECT, INITIALISE_OBSTACLE_REMOVAL, GO_TO_SECOND_ROOM_CORRIDOR, FIND_FLOOR_OBSTACLES, SELECT_OBSTACLE_FOR_PICKING, PICKUP_OBSTACLE, MOVE_TO_BOX, THROW_OBSTACLE, MOVE_TO_CUPBOARD]
+outcomes: [DONE, TIMEOUT, FAILED]
+state_descriptions:
+    # Task 1: Cleaning up objects
+    - state:
+        name: INITIALISE_SCENARIO
+        state_module_name: mdr_wrs_tidy_up.scenario_states.initialise_scenario
+        state_class_name: InitialiseScenario
+        transitions:
+            - transition:
+                name: succeeded
+                state: SELECT_SCANNING_POSE
+        arguments:
+            - argument:
+                name: floor_objects_cleared
+                value:
+                    table_inspection_area1: false
+                    table_inspection_area2: false
+                    table_inspection_area3: false
+            - argument:
+                name: table_objects_cleared
+                value:
+                    long_table_b: false
+                    tall_table: false
+            - argument:
+                name: planning_scene_map_file
+                value: planning_scene_map.yaml
+    - state:
+        name: SELECT_SCANNING_POSE
+        state_module_name: mdr_wrs_tidy_up.scenario_states.select_scanning_pose
+        state_class_name: SelectScanningPose
+        transitions:
+            - transition:
+                name: floor_not_cleared
+                state: GO_TO_SCANNING_POSE
+            - transition:
+                name: table_not_cleared
+                state: GO_TO_SCANNING_POSE
+            - transition:
+                name: tidying_done
+                state: INITIALISE_OBSTACLE_REMOVAL
+        arguments:
+            - argument:
+                name: tidying_timeout_s
+                value: 900.0
+            - argument:
+                name: avg_obj_cleanup_duration_s
+                value: 90.0
+    - state:
+        name: GO_TO_SCANNING_POSE
+        state_module_name: mdr_wrs_tidy_up.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: FIND_OBJECTS
+            - transition:
+                name: failed
+                state: GO_TO_SCANNING_POSE
+            - transition:
+                name: failed_after_retrying
+                state: SELECT_SCANNING_POSE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: FIND_OBJECTS
+        state_module_name: mdr_wrs_tidy_up.scenario_states.find_objects
+        state_class_name: FindObjects
+        transitions:
+            - transition:
+                name: succeeded
+                state: SELECT_OBJECT_FOR_PICKING
+            - transition:
+                name: no_objects
+                state: SELECT_SCANNING_POSE
+            - transition:
+                name: failed
+                state: FIND_OBJECTS
+            - transition:
+                name: failed_after_retrying
+                state: SELECT_SCANNING_POSE
+        arguments:
+            - argument:
+                name: object_detection_server_name
+                value: /mas_perception/detect_objects
+            - argument:
+                name: cloud_obstacle_detection_topic
+                value: /mas_perception/cloud_obstacle_detection/obstacle_objects
+            - argument:
+                name: cloud_obstacle_cache_reset_topic
+                value: /mas_perception/cloud_obstacle_detection/reset_cache
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: SELECT_OBJECT_FOR_PICKING
+        state_module_name: mdr_wrs_tidy_up.scenario_states.select_object_for_picking
+        state_class_name: SelectObjectForPicking
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICKUP_OBJECT
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PICKUP_OBJECT
+        state_module_name: mdr_wrs_tidy_up.scenario_states.pickup_object
+        state_class_name: PickupObject
+        transitions:
+            - transition:
+                name: succeeded
+                state: SELECT_STORAGE_LOCATION
+            - transition:
+                name: failed
+                state: PICKUP_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: GO_TO_SCANNING_POSE
+        arguments:
+            - argument:
+                name: pickup_server_name
+                value: pickup_server
+            - argument:
+                name: grasping_timeout_s
+                value: 45.0
+            - argument:
+                name: number_of_retries
+                value: 0
+    - state:
+        name: SELECT_STORAGE_LOCATION
+        state_module_name: mdr_wrs_tidy_up.scenario_states.select_storage_location
+        state_class_name: SelectStorageLocation
+        transitions:
+            - transition:
+                name: succeeded
+                state: MOVE_TO_STORAGE_LOCATION
+        arguments:
+            - argument:
+                name: default_storage_location
+                value: bin
+            - argument:
+                name: storage_locations_file
+                value: storage_locations.yaml
+            - argument:
+                name: available_trays
+                value: ['tray_1', 'tray_2']
+            - argument:
+                name: available_bins
+                value: ['bin_a']
+            - argument:
+                name: tray_locations
+                value:
+                    tray_1: long_table_a_trays
+                    tray_2: long_table_a_trays
+            - argument:
+                name: bin_locations
+                value:
+                    bin_a: bin_a
+    - state:
+        name: MOVE_TO_STORAGE_LOCATION
+        state_module_name: mdr_wrs_tidy_up.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: RELEASE_OBJECT
+            - transition:
+                name: failed
+                state: MOVE_TO_STORAGE_LOCATION
+            - transition:
+                name: failed_after_retrying
+                state: MOVE_TO_STORAGE_LOCATION
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: RELEASE_OBJECT
+        state_module_name: mdr_wrs_tidy_up.scenario_states.release_object
+        state_class_name: ReleaseObject
+        transitions:
+            - transition:
+                name: succeeded
+                state: SELECT_SCANNING_POSE
+            - transition:
+                name: failed
+                state: RELEASE_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: SELECT_SCANNING_POSE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    # Task 2a: Going to the second room
+    - state:
+        name: INITIALISE_OBSTACLE_REMOVAL
+        state_module_name: mdr_wrs_tidy_up.scenario_states.initialise_scenario
+        state_class_name: InitialiseScenario
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_SECOND_ROOM_CORRIDOR
+        arguments:
+            - argument:
+                name: planning_scene_map_file
+                value: planning_scene_map.yaml
+            - argument:
+                name: object_location
+                value: floor
+    - state:
+        name: GO_TO_SECOND_ROOM_CORRIDOR
+        state_module_name: mdr_wrs_tidy_up.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: FIND_FLOOR_OBSTACLES
+            - transition:
+                name: failed
+                state: GO_TO_SECOND_ROOM_CORRIDOR
+            - transition:
+                name: failed_after_retrying
+                state: GO_TO_SECOND_ROOM_CORRIDOR
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [second_room_corridor]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: FIND_FLOOR_OBSTACLES
+        state_module_name: mdr_wrs_tidy_up.scenario_states.find_objects
+        state_class_name: FindObjects
+        transitions:
+            - transition:
+                name: succeeded
+                state: SELECT_OBSTACLE_FOR_PICKING
+            - transition:
+                name: no_objects
+                state: MOVE_TO_CUPBOARD
+            - transition:
+                name: failed
+                state: GO_TO_SECOND_ROOM_CORRIDOR
+            - transition:
+                name: failed_after_retrying
+                state: GO_TO_SECOND_ROOM_CORRIDOR
+        arguments:
+            - argument:
+                name: object_detection_server_name
+                value: /mas_perception/detect_objects
+            - argument:
+                name: cloud_obstacle_detection_topic
+                value: /mas_perception/cloud_obstacle_detection/obstacle_objects
+            - argument:
+                name: cloud_obstacle_cache_reset_topic
+                value: /mas_perception/cloud_obstacle_detection/reset_cache
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: SELECT_OBSTACLE_FOR_PICKING
+        state_module_name: mdr_wrs_tidy_up.scenario_states.select_object_for_picking
+        state_class_name: SelectObjectForPicking
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICKUP_OBSTACLE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PICKUP_OBSTACLE
+        state_module_name: mdr_wrs_tidy_up.scenario_states.pickup_object
+        state_class_name: PickupObject
+        transitions:
+            - transition:
+                name: succeeded
+                state: MOVE_TO_BOX
+            - transition:
+                name: failed
+                state: PICKUP_OBSTACLE
+            - transition:
+                name: failed_after_retrying
+                state: GO_TO_SECOND_ROOM_CORRIDOR
+        arguments:
+            - argument:
+                name: pickup_server_name
+                value: pickup_server
+            - argument:
+                name: grasping_timeout_s
+                value: 45.0
+            - argument:
+                name: number_of_retries
+                value: 0
+    - state:
+        name: MOVE_TO_BOX
+        state_module_name: mdr_wrs_tidy_up.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: THROW_OBSTACLE
+            - transition:
+                name: failed
+                state: MOVE_TO_BOX
+            - transition:
+                name: failed_after_retrying
+                state: MOVE_TO_BOX
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [bin_a]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: THROW_OBSTACLE
+        state_module_name: mdr_wrs_tidy_up.scenario_states.release_object
+        state_class_name: ReleaseObject
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_SECOND_ROOM_CORRIDOR
+            - transition:
+                name: failed
+                state: THROW_OBSTACLE
+            - transition:
+                name: failed_after_retrying
+                state: GO_TO_SECOND_ROOM_CORRIDOR
+        arguments:
+            - argument:
+                name: release_target_name
+                value: bin_a
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    # TODO: Task 2b: Delivering an object to a person
+    - state:
+        name: MOVE_TO_CUPBOARD
+        state_module_name: mdr_wrs_tidy_up.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: MOVE_TO_CUPBOARD
+            - transition:
+                name: failed_after_retrying
+                state: MOVE_TO_CUPBOARD
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [second_room_cupboard]
+            - argument:
+                name: number_of_retries
+                value: 3

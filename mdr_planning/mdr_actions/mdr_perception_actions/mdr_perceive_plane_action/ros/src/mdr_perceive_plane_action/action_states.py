@@ -21,9 +21,12 @@ class PerceivePlaneSM(ActionSMBase):
                  max_recovery_attempts=1):
         super(PerceivePlaneSM, self).__init__('PerceivePlane', [], max_recovery_attempts)
         self._detector = PlaneDetector(detection_service_proxy)
-        self._recog_service_proxy = RecognizeImageServiceProxy(recog_service_name, recog_model_name,
-                                                               preprocess_input_module)
         self._classify_object = classify_object
+        self._recog_service_proxy = None
+        if self._classify_object:
+            self._recog_service_proxy = RecognizeImageServiceProxy(recog_service_name,
+                                                                   recog_model_name,
+                                                                   preprocess_input_module)
         self._timeout_duration = timeout_duration
         self._target_frame = target_frame
         self._detecting_done = False

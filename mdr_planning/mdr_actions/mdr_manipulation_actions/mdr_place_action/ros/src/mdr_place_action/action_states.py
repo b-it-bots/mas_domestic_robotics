@@ -10,7 +10,7 @@ from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
-from mdr_place_action.msg import PlaceFeedback, PlaceResult
+from mdr_place_action.msg import PlaceResult
 
 class PlaceSM(ActionSMBase):
     def __init__(self, timeout=120.0,
@@ -22,9 +22,10 @@ class PlaceSM(ActionSMBase):
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
                  base_elbow_offset=-1.,
-                 placing_orientation=list(),
+                 placing_orientation=None,
                  placing_dmp='',
                  dmp_tau=1.,
+                 downward_placing_vel=-0.02,
                  max_recovery_attempts=1):
         super(PlaceSM, self).__init__('Place', [], max_recovery_attempts)
         self.timeout = timeout
@@ -32,7 +33,7 @@ class PlaceSM(ActionSMBase):
         gripper_controller_module_name = '{0}.gripper_controller'.format(gripper_controller_pkg_name)
         GripperControllerClass = getattr(import_module(gripper_controller_module_name),
                                          'GripperController')
-        self.gripper = GripperControllerClass()
+        self.gripper = GripperControllerClass(joint_vel=downward_placing_vel)
 
         self.preplace_config_name = preplace_config_name
         self.preplace_low_config_name = preplace_low_config_name
@@ -71,7 +72,7 @@ class PlaceSM(ActionSMBase):
         pose = self.goal.pose
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
-        if self.placing_orientation:
+        if self.placing_orientation is not None:
             pose_base_link.pose.orientation.x = self.placing_orientation[0]
             pose_base_link.pose.orientation.y = self.placing_orientation[1]
             pose_base_link.pose.orientation.z = self.placing_orientation[2]
@@ -97,8 +98,19 @@ class PlaceSM(ActionSMBase):
             rospy.logerr('[place] Arm motion unsuccessful')
             self.result = self.set_result(False)
             return FTSMTransitions.DONE
-
         rospy.loginfo('[place] Arm motion successful')
+
+        # the arm is moved down until it makes an impact with the placing surface
+        if self.goal.release_on_impact:
+            rospy.loginfo('[place] Moving arm down until surface impact is detected...')
+            self.gripper.init_impact_detection_z()
+            while not self.gripper.detect_impact_z():
+                self.gripper.move_down()
+                rospy.sleep(0.1)
+            self.gripper.stop_arm()
+            rospy.loginfo('[place] Impact detected')
+
+        # the object can be released now that impact with the surface has been made
         rospy.loginfo('[place] Opening the gripper...')
         self.gripper.open()
 

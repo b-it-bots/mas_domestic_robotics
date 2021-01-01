@@ -1,0 +1,176 @@
+# Description: Defines a state machine for a scenario in which a robot "learns" a person by
+# collecting images of the person and storing those in its permanent knowledge base.
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_util_register_person
+states: [GIVE_INSTRUCTIONS, GIVE_FRONT_INSTRUCTIONS, TAKE_FRONT_PICTURE, STORE_FRONT_PICTURE, GIVE_LEFT_INSTRUCTIONS, TAKE_LEFT_PICTURE, STORE_LEFT_PICTURE, GIVE_RIGHT_INSTRUCTIONS, TAKE_RIGHT_PICTURE, STORE_RIGHT_PICTURE, SAY_THANKS]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: GIVE_INSTRUCTIONS
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: GIVE_FRONT_INSTRUCTIONS
+        arguments:
+            - argument:
+                name: sentences
+                value: ['I would like to take a few pictures of you so that I can learn your face. Please stand in front of my camera and follow my instructions.']
+    - state:
+        name: GIVE_FRONT_INSTRUCTIONS
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: TAKE_FRONT_PICTURE
+        arguments:
+            - argument:
+                name: sentences
+                value: ['Please keep your face straight towards me.']
+    - state:
+        name: TAKE_FRONT_PICTURE
+        state_module_name: mdr_perception_behaviours.find_people
+        state_class_name: FindPeople
+        transitions:
+            - transition:
+                name: succeeded
+                state: STORE_FRONT_PICTURE
+            - transition:
+                name: failed
+                state: TAKE_FRONT_PICTURE
+            - transition:
+                name: failed_after_retrying
+                state: TAKE_FRONT_PICTURE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 0
+    - state:
+        name: STORE_FRONT_PICTURE
+        state_module_name: mdr_util_register_person.scenario_states.store_person
+        state_class_name: StorePerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: GIVE_LEFT_INSTRUCTIONS
+            - transition:
+                name: failed
+                state: FAILED
+            - transition:
+                name: retake_picture
+                state: TAKE_FRONT_PICTURE
+        arguments:
+            - argument:
+                name: person_msg_id
+                value: person_0
+    - state:
+        name: GIVE_LEFT_INSTRUCTIONS
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: TAKE_LEFT_PICTURE
+        arguments:
+            - argument:
+                name: sentences
+                value: ['Please turn your face so that it is facing a bit to the left.']
+    - state:
+        name: TAKE_LEFT_PICTURE
+        state_module_name: mdr_perception_behaviours.find_people
+        state_class_name: FindPeople
+        transitions:
+            - transition:
+                name: succeeded
+                state: STORE_LEFT_PICTURE
+            - transition:
+                name: failed
+                state: TAKE_LEFT_PICTURE
+            - transition:
+                name: failed_after_retrying
+                state: TAKE_LEFT_PICTURE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 0
+    - state:
+        name: STORE_LEFT_PICTURE
+        state_module_name: mdr_util_register_person.scenario_states.store_person
+        state_class_name: StorePerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: GIVE_RIGHT_INSTRUCTIONS
+            - transition:
+                name: failed
+                state: FAILED
+            - transition:
+                name: retake_picture
+                state: TAKE_LEFT_PICTURE
+        arguments:
+            - argument:
+                name: person_msg_id
+                value: person_0
+    - state:
+        name: GIVE_RIGHT_INSTRUCTIONS
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: TAKE_RIGHT_PICTURE
+        arguments:
+            - argument:
+                name: sentences
+                value: ['Please turn your face so that it is facing a bit to the right.']
+    - state:
+        name: TAKE_RIGHT_PICTURE
+        state_module_name: mdr_perception_behaviours.find_people
+        state_class_name: FindPeople
+        transitions:
+            - transition:
+                name: succeeded
+                state: STORE_RIGHT_PICTURE
+            - transition:
+                name: failed
+                state: TAKE_RIGHT_PICTURE
+            - transition:
+                name: failed_after_retrying
+                state: TAKE_RIGHT_PICTURE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 0
+    - state:
+        name: STORE_RIGHT_PICTURE
+        state_module_name: mdr_util_register_person.scenario_states.store_person
+        state_class_name: StorePerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: SAY_THANKS
+            - transition:
+                name: failed
+                state: FAILED
+            - transition:
+                name: retake_picture
+                state: TAKE_RIGHT_PICTURE
+        arguments:
+            - argument:
+                name: person_msg_id
+                value: person_0
+    - state:
+        name: SAY_THANKS
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+        arguments:
+            - argument:
+                name: sentences
+                value: ['I have now learned your face. Thanks for the help!']

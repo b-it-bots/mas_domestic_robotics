@@ -72,6 +72,10 @@ class ThrowClient(ActionClientBase):
                 self.robot_name = param.value
 
         goal.pose = self.get_throwing_pose()
+
+        # we don't want to wait for impact when throwing the object
+        goal.release_on_impact = False
+
         return goal
 
     def get_throwing_pose(self):
