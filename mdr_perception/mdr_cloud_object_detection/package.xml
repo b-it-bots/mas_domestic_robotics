@@ -19,6 +19,7 @@
   <depend>roscpp</depend>
   <depend>mas_navigation_tools</depend>
   <depend>mas_perception_msgs</depend>
+  <depend>mas_perception_libs</depend>
 
   <build_export_depend>message_runtime</build_export_depend>
 

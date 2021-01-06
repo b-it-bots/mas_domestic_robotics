@@ -10,7 +10,7 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 
-#include <mdr_cloud_object_detection/Color.h>
+#include <mas_perception_libs/color.h>
 #include <mdr_cloud_object_detection/CloudObjectDetection.h>
 
 using namespace mdr_cloud_object_detection;
@@ -53,13 +53,13 @@ void CloudObjectDetection::objectDetectionConfigCallback(const ObjectDetectionCo
                                                          uint32_t pLevel)
 {
     // Cloud Filter params
-    PassThroughVoxelFilterParams cloudFilterParams;
-    cloudFilterParams.mPassThroughLimitMinX = static_cast<float>(pConfig.passthrough_limit_min_x);
-    cloudFilterParams.mPassThroughLimitMaxX = static_cast<float>(pConfig.passthrough_limit_max_x);
-    cloudFilterParams.mPassThroughLimitMinY = static_cast<float>(pConfig.passthrough_limit_min_y);
-    cloudFilterParams.mPassThroughLimitMaxY = static_cast<float>(pConfig.passthrough_limit_max_y);
-    cloudFilterParams.mPassThroughLimitMinZ = static_cast<float>(pConfig.passthrough_limit_min_z);
-    cloudFilterParams.mPassThroughLimitMaxZ = static_cast<float>(pConfig.passthrough_limit_max_z);
+    CropBoxVoxelFilterParams cloudFilterParams;
+    cloudFilterParams.mCropBoxLimitMinX = static_cast<float>(pConfig.cropbox_limit_min_x);
+    cloudFilterParams.mCropBoxLimitMaxX = static_cast<float>(pConfig.cropbox_limit_max_x);
+    cloudFilterParams.mCropBoxLimitMinY = static_cast<float>(pConfig.cropbox_limit_min_y);
+    cloudFilterParams.mCropBoxLimitMaxY = static_cast<float>(pConfig.cropbox_limit_max_y);
+    cloudFilterParams.mCropBoxLimitMinZ = static_cast<float>(pConfig.cropbox_limit_min_z);
+    cloudFilterParams.mCropBoxLimitMaxZ = static_cast<float>(pConfig.cropbox_limit_max_z);
     cloudFilterParams.mVoxelLimitMinZ = static_cast<float>(pConfig.voxel_limit_min_z);
     cloudFilterParams.mVoxelLimitMaxZ = static_cast<float>(pConfig.voxel_limit_max_z);
     cloudFilterParams.mVoxelLeafSize = static_cast<float>(pConfig.voxel_leaf_size);
@@ -406,7 +406,7 @@ visualization_msgs::Marker CloudObjectDetection::getObjectBoundsMarker(const Eig
     marker.color.a = 2.0;
     marker.ns = "";
     marker.id = id;
-    marker.color = std_msgs::ColorRGBA(Color(Color::SCARLET));
+    marker.color = std_msgs::ColorRGBA(mas_perception_libs::Color(mas_perception_libs::Color::SCARLET));
     marker.points.push_back(getPointMsg(min[0], min[1], min[2]));
     marker.points.push_back(getPointMsg(min[0], max[1], min[2]));
     marker.points.push_back(getPointMsg(min[0], max[1], min[2]));
@@ -430,7 +430,7 @@ visualization_msgs::Marker CloudObjectDetection::getObjectBoundsMarker(const mas
     marker.scale.y = 0.005;
     marker.ns = "";
     marker.id = id;
-    marker.color = std_msgs::ColorRGBA(Color(Color::SCARLET));
+    marker.color = std_msgs::ColorRGBA(mas_perception_libs::Color(mas_perception_libs::Color::SCARLET));
 
     marker.points.push_back(objMsg.bounding_box.vertices[0]);
     marker.points.push_back(objMsg.bounding_box.vertices[1]);
@@ -474,7 +474,7 @@ visualization_msgs::Marker CloudObjectDetection::getObjectOrientationMarker(cons
     marker.scale.z = .005;
     marker.ns = "";
     marker.id = id + 2000;
-    marker.color = std_msgs::ColorRGBA(Color(Color::SCARLET));
+    marker.color = std_msgs::ColorRGBA(mas_perception_libs::Color(mas_perception_libs::Color::SCARLET));
     marker.pose = objMsg.pose.pose;
     return marker;
 }
@@ -494,7 +494,7 @@ visualization_msgs::Marker CloudObjectDetection::getObjectIdMarker(const Eigen::
     marker.pose.position.z = center[2];
     marker.scale.z = 0.05;
     marker.id = id + 1000;
-    marker.color = std_msgs::ColorRGBA(Color(Color::SCARLET));
+    marker.color = std_msgs::ColorRGBA(mas_perception_libs::Color(mas_perception_libs::Color::SCARLET));
     return marker;
 }
 

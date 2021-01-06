@@ -20,7 +20,7 @@
 #include <mas_perception_msgs/ObjectList.h>
 
 #include <mdr_cloud_object_detection/Utils.h>
-#include <mdr_cloud_object_detection/PassThroughVoxelFilter.h>
+#include <mdr_cloud_object_detection/CropBoxVoxelFilter.h>
 #include <mdr_cloud_object_detection/ObjectDetectionConfig.h>
 
 namespace mdr_cloud_object_detection
@@ -40,7 +40,7 @@ namespace mdr_cloud_object_detection
         tf::TransformListener mTfListener;
         std::string mTransformTargetFrame;
         std::string mClusterTargetFrame;
-        PassThroughVoxelFilter mCloudFilter;
+        CropBoxVoxelFilter mCloudFilter;
         EuclideanClusterParams mClusterParams;
         ObjectFilterParams mObjectFilterParams;
         ObjectCacheParams mObjectCacheParams;

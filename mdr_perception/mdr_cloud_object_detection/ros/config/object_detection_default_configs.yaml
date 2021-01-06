@@ -1,12 +1,12 @@
 # config file loaded during launch as default configurations for the cloud object detector
 
-# passthrough and voxel-grid filter params in base_link frame
-passthrough_limit_min_x:  0.0
-passthrough_limit_max_x:  1.5
-passthrough_limit_min_y: -0.5
-passthrough_limit_max_y:  0.5
-passthrough_limit_min_z:  0.025
-passthrough_limit_max_z:  0.2
+# cropbox and voxel-grid filter params in base_link frame
+cropbox_limit_min_x:  0.0
+cropbox_limit_max_x:  1.5
+cropbox_limit_min_y: -0.5
+cropbox_limit_max_y:  0.5
+cropbox_limit_min_z:  0.025
+cropbox_limit_max_z:  0.2
 voxel_limit_min_z:        0.0
 voxel_limit_max_z:        1.8
 voxel_leaf_size:          0.02

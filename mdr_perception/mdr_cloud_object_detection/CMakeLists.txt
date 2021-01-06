@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   mas_navigation_tools
   mas_perception_msgs
+  mas_perception_libs
 )
 
 find_package(PCL 1.7 REQUIRED)
@@ -44,7 +45,7 @@ include_directories(
 ###################################
 # Node for object detection
 add_executable(cloud_object_detection
-  ros/src/PassThroughVoxelFilter.cpp
+  ros/src/CropBoxVoxelFilter.cpp
   ros/src/CloudObjectDetection.cpp
   ros/src/main.cpp
 )
