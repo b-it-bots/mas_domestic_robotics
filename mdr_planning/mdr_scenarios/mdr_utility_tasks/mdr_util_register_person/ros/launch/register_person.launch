@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<launch>
+    <include file="$(find mdr_rosplan_interface)/ros/launch/rosplan.launch" />
+
+    <!-- Actions -->
+    <include file="$(find mdr_find_people)/ros/launch/find_people.launch" />
+    <include file="$(find mdr_find_people)/ros/launch/find_people_client.launch" />
+
+    <!-- State machine -->
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="register_person" output="screen">
+        <param name="sm_config_file" type="str" value="$(find mdr_util_register_person)/config/register_person_sm.yaml" />
+    </node>
+</launch>

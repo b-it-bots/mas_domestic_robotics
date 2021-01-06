@@ -75,6 +75,10 @@ class PlaceClient(ActionClientBase):
                 self.robot_name = param.value
 
         goal.pose = self.get_placing_pose()
+
+        # we want to place the object by detecting impact with the placing surface
+        goal.release_on_impact = True
+
         return goal
 
     def get_placing_pose(self):

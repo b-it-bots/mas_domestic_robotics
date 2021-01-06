@@ -1,0 +1,145 @@
+# the positions of the objects in the map frame have been calculated based on:
+# * the object poses given in the wrs2020_fast world file and
+# * the object sizes as specified in their respective model files
+# * the initial position of the robot in the world: pos=(-2.1, -1.2, 0.), rot=(0, -1.57, 0.)
+frame_id: map
+objects:
+    # object ID: wall_back
+    - name: wall_back
+      position: [-0.8, 2.7, 1.0]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.1, 4.8, 2.0]
+    # object ID: wall_front
+    - name: wall_front
+      position: [3.2, 2.1, 1.0]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.1, 6.0, 2.0]
+    # object ID: wall_left
+    - name: wall_left
+      position: [1.2, -0.9, 1.0]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [4.1, 0.1, 2.0]
+    # object ID: wall_right
+    - name: wall_right
+      position: [1.2, 5.1, 1.0]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [4.1, 0.1, 2.0]
+    # object ID: wall_center
+    - name: wall_center
+      position: [0.6, 2.1, 1.0]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [2.8, 0.1, 2.0]
+
+    # object ID: wrc_bin_green
+    - name: bin_a
+      position:   [2.4, -0.6, 0.165]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.33, 0.33, 0.33]
+
+    # object ID: wrs_bin_black
+    - name: bin_b
+      position:   [2.9, -0.6, 0.165]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.33, 0.33, 0.33]
+
+    # object ID: wrc_long_table_0
+    - name: long_table_a
+      position:   [1.5, -0.6, 0.39]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [1.2, 0.4, 0.01]
+    - name: long_table_a_support
+      position:   [1.5, -0.6, 0.29]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [1.2, 0.4, 0.02]
+    - name: long_table_a_leg1
+      position:   [2.1, -0.4, 0.195]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.02, 0.40]
+    - name: long_table_a_leg2
+      position:   [2.1, -0.8, 0.195]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.02, 0.40]
+    - name: long_table_a_leg3
+      position:   [0.9, -0.4, 0.195]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.02, 0.40]
+    - name: long_table_a_leg4
+      position:   [0.9, -0.8, 0.195]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.02, 0.40]
+
+    # object ID: wrc_tall_table
+    - name: tall_table
+      position:   [0.0, 1.8, 0.59]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.40, 0.40, 0.01]
+    - name: tall_table_support
+      position:   [0.0, 1.8, 0.49]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.40, 0.40, 0.02]
+    - name: tall_table_leg1
+      position:   [-0.2, 1.6, 0.295]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.02, 0.60]
+    - name: tall_table_leg2
+      position:   [-0.2, 2.0, 0.295]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.02, 0.60]
+    - name: tall_table_leg3
+      position:   [0.2, 1.6, 0.295]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.02, 0.60]
+    - name: tall_table_leg4
+      position:   [0.2, 2.0, 0.295]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.02, 0.60]
+
+    # object ID: wrc_long_table
+    - name: long_table_b
+      position:   [1.0, 1.8, 0.39]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [1.2, 0.4, 0.01]
+    - name: long_table_b_support
+      position:   [1.0, 1.8, 0.29]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [1.2, 0.4, 0.02]
+    - name: long_table_b_leg1
+      position:   [0.4, 2.0, 0.195]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.02, 0.40]
+    - name: long_table_b_leg2
+      position:   [0.4, 1.6, 0.195]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.02, 0.40]
+    - name: long_table_b_leg3
+      position:   [1.6, 2.0, 0.195]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.02, 0.40]
+    - name: long_table_b_leg4
+      position:   [1.6, 1.6, 0.195]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.02, 0.40]
+
+    # object ID: wrc_tray_1
+    - name: tray_1
+      position:   [1.95, -0.6, 0.4]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.285, 0.37, 0.004]
+
+    # object ID: wrc_tray_2
+    - name: tray_2
+      position:   [1.65, -0.6, 0.4]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.285, 0.37, 0.004]
+
+    # object ID: wrc_container_a
+    - name: container_a
+      position:   [1.4, -0.6, 0.45]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.1, 0.1, 0.1]
+
+    # object ID: wrc_container_b
+    - name: container_b
+      position:   [1.1, -0.6, 0.455]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.26, 0.18, 0.11]

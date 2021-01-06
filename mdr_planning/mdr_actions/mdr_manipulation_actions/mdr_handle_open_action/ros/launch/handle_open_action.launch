@@ -1,14 +1,26 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="gripper_controller_pkg_name" default="mdr_gripper_controller" />
+    <arg name="move_arm_server" default="move_arm_server" />
+    <arg name="move_base_server" default="move_base_server" />
+    <arg name="move_forward_server" default="move_forward_server" />
+    <arg name="detect_handle_server" default="detect_handle_server" />
+    <arg name="force_sensor_topic" default="/wrist_force/raw"/>
+    <arg name="pregrasp_config_name" default="pregrasp_low" />
+    <arg name="final_config_name" default="pregrasp" />
+    <arg name="handle_open_dmp" default="$(find mdr_handle_open_action)/config/trajectory_weights/weights_grasp_handle.yaml" />
+    <arg name="dmp_tau" default="30" />
+
     <node pkg="mdr_handle_open_action" type="handle_open_action" name="handle_open_server" output="screen">
-        <param name="gripper_controller_pkg_name" value="mdr_gripper_controller" />
-        <param name="move_arm_server" value="move_arm_server" />
-        <param name="move_base_server" value="move_base_server" />
-        <param name="move_forward_server" value="move_forward_server" />
-        <param name="force_sensor_topic" value="/wrist_force/raw"/>
-        <param name="pregrasp_config_name" value="pregrasp_low" />
-        <param name="final_config_name" value="pregrasp" />
-        <param name="handle_open_dmp" value="$(find mdr_handle_open_action)/config/trajectory_weights/weights_grasp_handle.yaml" />
-        <param name="dmp_tau" value="30" />
+        <param name="gripper_controller_pkg_name" value="$(arg gripper_controller_pkg_name)" />
+        <param name="move_arm_server" value="$(arg move_arm_server)" />
+        <param name="move_base_server" value="$(arg move_base_server)" />
+        <param name="move_forward_server" value="$(arg move_forward_server)" />
+        <param name="detect_handle_server" value="$(arg detect_handle_server)" />
+        <param name="force_sensor_topic" value="$(arg force_sensor_topic)"/>
+        <param name="pregrasp_config_name" value="$(arg pregrasp_config_name)" />
+        <param name="final_config_name" value="$(arg final_config_name)" />
+        <param name="handle_open_dmp" value="$(arg handle_open_dmp)" />
+        <param name="dmp_tau" value="$(arg dmp_tau)" />
     </node>
 </launch>

@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="cmd_vel_topic" default="/cmd_vel" />
+
     <node pkg="mdr_move_forward_action" type="move_forward_action" name="move_forward_server" output="screen">
-        <param name="velocity_topic" value="/cmd_vel" />
+        <param name="velocity_topic" value="$(arg cmd_vel_topic)" />
     </node>
 </launch>
