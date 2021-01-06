@@ -114,13 +114,28 @@ class DMPExecutor(object):
                                  0., 0., 0.])
         goal_pose = np.array([goal[0], goal[1], goal[2], 0., 0., 0.])
 
-        current_path = initial_pose[:3]
-
         self.dmp = self.instantiate_dmp(initial_pose, goal_pose)
+        next_pose, _, _ = self.dmp.step(tau=self.tau)
+
+        current_path = initial_pose[:3]
+        next_pos = next_pose[:3]
+        current_path = np.vstack((current_path, next_pos))
 
         self.motion_completed = False
         self.motion_cancelled = False
+
+        # sequence count for the cmd vel header
         cmd_count = 0
+
+        # we want to publish the path only when it changes, which is
+        # why we keep track of the path state during execution
+        path_changed =  True
+
+        # DMP control loop:
+        #     * we unroll the trajectory step-by-step and control the robot towards
+        #       each intermediate goal (using only arm motion whenever possible, but also
+        #       including base motion if the arm joints approach a singularity)
+        #     * the execution is stopped when the end effector reaches the goal position
         while not self.motion_completed and \
               not self.motion_cancelled and \
               not rospy.is_shutdown():
@@ -135,9 +150,14 @@ class DMPExecutor(object):
                 self.motion_completed = True
                 break
 
-            next_pose, _, _ = self.dmp.step(tau=self.tau)
-            next_pos = next_pose[:3]
-            current_path = np.vstack((current_path, next_pos))
+            # if the end effector has reached the current waypoint,
+            # we unroll the trajectory further
+            distance_to_intermediate_goal = np.linalg.norm((next_pos - current_pos))
+            if distance_to_intermediate_goal <= self.goal_tolerance:
+                next_pose, _, _ = self.dmp.step(tau=self.tau)
+                next_pos = next_pose[:3]
+                current_path = np.vstack((current_path, next_pos))
+                path_changed = True
 
             vel = self.feedback_gain * (next_pos - current_pos)
 
@@ -186,7 +206,9 @@ class DMPExecutor(object):
             self.vel_publisher_arm.publish(twist_arm)
             cmd_count += 1
 
-            self.publish_path(current_path)
+            if path_changed:
+                self.publish_path(current_path)
+                path_changed = False
 
         # stop arm and base motion after converging
         twist_arm = TwistStamped()
