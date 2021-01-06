@@ -102,7 +102,7 @@ class PickupSM(ActionSMBase):
             # y position of the goal pose to the elbow offset
             pose_base_link.pose.position.y = self.base_elbow_offset
 
-        if self.grasping_orientation is not None:
+        if self.grasping_orientation:
             pose_base_link.pose.orientation.x = self.grasping_orientation[0]
             pose_base_link.pose.orientation.y = self.grasping_orientation[1]
             pose_base_link.pose.orientation.z = self.grasping_orientation[2]

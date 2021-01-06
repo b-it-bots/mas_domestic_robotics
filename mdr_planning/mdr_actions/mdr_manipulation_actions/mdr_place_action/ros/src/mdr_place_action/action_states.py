@@ -72,7 +72,7 @@ class PlaceSM(ActionSMBase):
         pose = self.goal.pose
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
-        if self.placing_orientation is not None:
+        if self.placing_orientation:
             pose_base_link.pose.orientation.x = self.placing_orientation[0]
             pose_base_link.pose.orientation.y = self.placing_orientation[1]
             pose_base_link.pose.orientation.z = self.placing_orientation[2]
