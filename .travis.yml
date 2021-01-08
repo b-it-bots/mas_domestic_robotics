@@ -19,10 +19,12 @@ before_install:
 
 
 stages:
-  - build
-  - test
+  - name: build
+    if: branch IN (devel, kinetic, melodic) OR type == "pull_request" OR tag = true
+  - name: test
+    if: branch IN (devel, kinetic, melodic) OR type == "pull_request" OR tag = true
   - name: deploy
-    if: (branch IN (devel, indigo, kinetic, melodic) AND type != "pull_request") OR tag = true
+    if: (branch IN (devel, kinetic, melodic) AND type != "pull_request") OR tag = true
 
 
 jobs:
