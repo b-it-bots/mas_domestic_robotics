@@ -1,0 +1,4 @@
+skips: 
+    - 'B403' # `import_pickle` (Consider possible security implications associated with these modules.)
+    - 'B301' # `pickle` (Pickle and modules that wrap it can be unsafe when used to deserialize untrusted data, possible security issue.)
+    - 'B311' # `random` (Standard pseudo-random generators are not suitable for security/cryptographic purposes.)

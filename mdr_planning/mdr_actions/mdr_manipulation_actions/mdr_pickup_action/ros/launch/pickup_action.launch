@@ -1,16 +1,28 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="move_arm_server" default="move_arm_server" />
+    <arg name="move_base_server" default="move_base_server" />
+    <arg name="gripper_controller_pkg_name" default="mdr_gripper_controller" />
+    <arg name="pregrasp_config_name" default="pregrasp" />
+    <arg name="intermediate_grasp_offset" default="0.1" />
+    <arg name="safe_arm_joint_config" default="folded" />
+    <arg name="base_elbow_offset" default="-1." />
+    <arg name="grasping_dmp" default="$(find mdr_pickup_action)/config/trajectory_weights/weights_table_grasp.yaml" />
+    <arg name="dmp_tau" default="30" />
+    <arg name="number_of_retries" default="0" />
+    <arg name="grasping_orientation" default="[0, 0, 0, 1]" />
+
     <node pkg="mdr_pickup_action" type="pickup_action" name="pickup_server" output="screen">
-        <param name="move_arm_server" value="move_arm_server" />
-        <param name="move_base_server" value="move_base_server" />
-        <param name="gripper_controller_pkg_name" value="mdr_gripper_controller" />
-        <param name="pregrasp_config_name" value="pregrasp" />
-        <param name="intermediate_grasp_offset" value="0.1" />
-        <param name="safe_arm_joint_config" value="folded" />
-        <param name="base_elbow_offset" value="-1." />
-        <param name="grasping_dmp" value="$(find mdr_pickup_action)/config/trajectory_weights/weights_table_grasp.yaml" />
-        <param name="dmp_tau" value="30" />
-        <rosparam param="grasping_orientation">[0, 0, 0, 1]</rosparam>
-        <param name="number_of_retries" value="0" />
+        <param name="move_arm_server" value="$(arg move_arm_server)" />
+        <param name="move_base_server" value="$(arg move_base_server)" />
+        <param name="gripper_controller_pkg_name" value="$(arg gripper_controller_pkg_name)" />
+        <param name="pregrasp_config_name" value="$(arg pregrasp_config_name)" />
+        <param name="intermediate_grasp_offset" value="$(arg intermediate_grasp_offset)" />
+        <param name="safe_arm_joint_config" value="$(arg safe_arm_joint_config)" />
+        <param name="base_elbow_offset" value="$(arg base_elbow_offset)" />
+        <param name="grasping_dmp" value="$(arg grasping_dmp)" />
+        <param name="dmp_tau" value="$(arg dmp_tau)" />
+        <param name="number_of_retries" value="$(arg number_of_retries)" />
+        <rosparam param="grasping_orientation" subst_value="True">$(arg grasping_orientation)</rosparam>
     </node>
 </launch>

@@ -11,6 +11,7 @@ env:
     - CONTAINER_RELEASE_IMAGE: bitbots/bitbots-domestic:$TRAVIS_BRANCH
 
 before_install:
+  - sudo pip install --upgrade pip
   - sudo rm /usr/local/bin/docker-compose
   - sudo curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
   - sudo chmod +x /usr/local/bin/docker-compose
@@ -18,10 +19,12 @@ before_install:
 
 
 stages:
-  - build
-  - test
+  - name: build
+    if: branch IN (devel, kinetic, melodic) OR type == "pull_request" OR tag = true
+  - name: test
+    if: branch IN (devel, kinetic, melodic) OR type == "pull_request" OR tag = true
   - name: deploy
-    if: (branch IN (devel, indigo, kinetic, melodic) AND type != "pull_request") OR tag = true
+    if: (branch IN (devel, kinetic, melodic) AND type != "pull_request") OR tag = true
 
 
 jobs:

@@ -1,0 +1,64 @@
+sm_id: mdr_demo_context_aware_receive_object
+states: [DETECT_PERSON, IDENTIFY_POSTURE, RECEIVE_OBJECT]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: DETECT_PERSON
+        state_module_name: mdr_demo_context_aware_hand_over.scenario_states.detect_person
+        state_class_name: DetectPerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: IDENTIFY_POSTURE
+            - transition:
+                name: failed
+                state: DETECT_PERSON
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: IDENTIFY_POSTURE
+        state_module_name: mdr_demo_context_aware_hand_over.scenario_states.identify_posture
+        state_class_name: IdentifyPosture
+        transitions:
+            - transition:
+                name: succeeded
+                state: RECEIVE_OBJECT
+            - transition:
+                name: failed
+                state: DETECT_PERSON
+        arguments:
+            - argument:
+                name: posture_height_width_ratio_ranges
+                value:
+                    standing: [1.65, 5.0]
+                    seated: [0.6, 1.65]
+                    lying: [0.0, 0.6]
+    - state:
+        name: RECEIVE_OBJECT
+        state_module_name: mdr_demo_context_aware_receive_object.scenario_states.receive_object
+        state_class_name: ReceiveObject
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: RECEIVE_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: context_aware
+                value: True
+            - argument:
+                name: release_detection
+                value: True

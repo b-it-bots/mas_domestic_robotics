@@ -1,7 +1,10 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="model_directory" type="str" default="$(find kaldi_speech_models)/common/config/en-US" />
+    <arg name="use_kaldi" default="true"/>
+
     <node pkg="mdr_listen_action" type="listen" name="listen_server" output="screen" >
-        <param name="model_directory" type="str" value="$(find kaldi_speech_models)/common/config/en-US" />
-        <param name="use_kaldi"       value="true"/>
+        <param name="model_directory" type="str" value="$(arg model_directory)" />
+        <param name="use_kaldi" value="$(arg use_kaldi)"/>
     </node>
 </launch>

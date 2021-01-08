@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>mdr_wrs_tidy_up</name>
+  <version>0.0.0</version>
+  <description>State machine and launch files for the Tidy Up task for the RoboCup Japan Open 2020 @Home Simulation League</description>
+  <license>GPLv3</license>
+
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
+  <author email="sushant.chavan@smail.inf.h-brs.de">Sushant Chavan</author>
+
+  <license>GPLv3</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>mdr_manipulation_msgs</build_depend>
+  <build_depend>mas_execution_manager</build_depend>
+  <build_depend>mas_knowledge_base</build_depend>
+
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>mdr_manipulation_msgs</exec_depend>
+  <exec_depend>mas_execution_manager</exec_depend>
+  <exec_depend>mas_knowledge_base</exec_depend>
+
+  <export>
+  </export>
+</package>

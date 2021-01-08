@@ -1,13 +1,26 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="arm_name" default="arm" />
+    <arg name="whole_body_name" default="whole_body" />
+    <arg name="update_planning_scene_srv_name" default="/move_arm_action/update_planning_scene" />
+    <arg name="palm_link_name" default="/palm_link" />
+    <arg name="cartesian_velocity_topic" default="/arm_1/arm_controller/cartesian_velocity_command" />
+    <arg name="base_vel_topic" default="/cmd_vel" />
+    <arg name="arm_controller_sigma_values_topic" default="/arm_1/arm_controller/sigma_values" />
+    <arg name="path_topic" default="/dmp_executor/path" />
+    <arg name="move_base_server" default="move_base" />
+    <arg name="dmp_param_file" default="$(find mdr_move_arm_action)/config/dmp.yaml" />
+
     <node pkg="mdr_move_arm_action" type="move_arm_action" name="move_arm_server" output="screen">
-        <param name="arm_name" value="arm" />
-        <param name="palm_link_name" value="/palm_link" />
-        <param name="cartesian_velocity_topic" value="/arm_1/arm_controller/cartesian_velocity_command" />
-        <param name="base_vel_topic" value="/cmd_vel" />
-        <param name="arm_controller_sigma_values_topic" value="/arm_1/arm_controller/sigma_values" />
-        <param name="path_topic" value="/dmp_executor/path" />
-        <param name="move_base_server" value="move_base" />
-        <rosparam command="load" file="$(find mdr_move_arm_action)/config/dmp.yaml" />
+        <param name="arm_name" value="$(arg arm_name)" />
+        <param name="whole_body_name" value="$(arg whole_body_name)" />
+        <param name="update_planning_scene_srv_name" value="$(arg update_planning_scene_srv_name)" />
+        <param name="palm_link_name" value="$(arg palm_link_name)" />
+        <param name="cartesian_velocity_topic" value="$(arg cartesian_velocity_topic)" />
+        <param name="base_vel_topic" value="$(arg base_vel_topic)" />
+        <param name="arm_controller_sigma_values_topic" value="$(arg arm_controller_sigma_values_topic)" />
+        <param name="path_topic" value="$(arg path_topic)" />
+        <param name="move_base_server" value="$(arg move_base_server)" />
+        <rosparam command="load" file="$(arg dmp_param_file)" />
     </node>
 </launch>

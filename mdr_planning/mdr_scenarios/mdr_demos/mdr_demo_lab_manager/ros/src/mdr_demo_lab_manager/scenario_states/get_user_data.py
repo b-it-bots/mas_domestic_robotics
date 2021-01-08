@@ -72,7 +72,7 @@ class GetUserData(ScenarioStateBase):
         rospy.logerr("[get_user_data] Query timed out!")
 
         if self.retry_count == self.number_of_retries:
-            self.say("Sorry, I could get our name. I shall proceed without it.")
+            self.say("Sorry, I could not get your name. I shall proceed without it.")
             self.retry_count = 0
             return "failed_after_retrying"
 

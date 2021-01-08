@@ -1,0 +1,62 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_receive_object_action.msg import ReceiveObjectAction
+from mdr_receive_object_action.action_states import ReceiveObjectSM
+
+class ReceiveObjectServer(object):
+    '''A server exposing an action for receiving objects from people.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    '''
+    def __init__(self):
+        gripper_controller_pkg_name = rospy.get_param('~gripper_controller_pkg_name', 'mdr_gripper_controller')
+        move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
+        move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
+        force_sensor_topic = rospy.get_param('~force_sensor_topic', '/wrist/compensated')
+        init_config_name = rospy.get_param('~init_config_name', 'init_config_name')
+        receive_object_dmp = rospy.get_param('~receive_object_dmp', '')
+        pos_policy_params_file = rospy.get_param('~receive_object_position_policy_parameters_file', '')
+        policy_config_dir = rospy.get_param('~receive_object_policy_config_dir', '')
+        dmp_tau = rospy.get_param('~dmp_tau', 'dmp_tau')
+        person_dist_threshold = rospy.get_param('~person_dist_threshold', 'person_dist_threshold')
+
+        rospy.loginfo('[receive_object] Initialising state machine')
+        self.action_sm = ReceiveObjectSM(gripper_controller_pkg_name=gripper_controller_pkg_name,
+                                         move_arm_server=move_arm_server,
+                                         move_base_server=move_base_server,
+                                         force_sensor_topic=force_sensor_topic,
+                                         init_config_name=init_config_name,
+                                         receive_object_policy_config_dir=policy_config_dir,
+                                         receive_object_position_policy_parameters_file=pos_policy_params_file,
+                                         receive_object_dmp=receive_object_dmp,
+                                         dmp_tau=dmp_tau,
+                                         person_dist_threshold=person_dist_threshold)
+        rospy.loginfo('[receive_object] State machine initialised')
+
+        self.action_server = actionlib.SimpleActionServer('receive_object_server',
+                                                          ReceiveObjectAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('receive_object action server ready')
+
+    def execute(self, goal):
+        rospy.loginfo('[receive_object] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.result = None
+        self.action_sm.execution_requested = True
+        while not self.action_sm.result:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
+
+if __name__ == '__main__':
+    rospy.init_node('receive_object_server')
+    receive_object_server = ReceiveObjectServer()
+    try:
+        receive_object_server.action_sm.run()
+        while receive_object_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(receive_object_server.action_sm.name))
+        receive_object_server.action_sm.stop()

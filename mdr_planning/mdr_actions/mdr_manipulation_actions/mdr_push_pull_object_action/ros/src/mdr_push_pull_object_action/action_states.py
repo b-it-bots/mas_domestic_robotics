@@ -46,8 +46,9 @@ class PushPullSM(ActionSMBase):
             self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
             rospy.loginfo('[push_pull] Waiting for %s server', self.move_arm_server)
             self.move_arm_client.wait_for_server()
-        except:
-            rospy.logerr('[push_pull] %s server does not seem to respond', self.move_arm_server)
+        except Exception as exc:
+            rospy.logerr('[push_pull] %s server does not seem to respond %s',
+                         self.move_arm_server, str(exc))
 
         rospy.loginfo('[push_pull] Creating a %s publisher', self.cmd_vel_topic)
         self.cmd_vel_pub = rospy.Publisher(self.cmd_vel_topic, Twist, queue_size=1)

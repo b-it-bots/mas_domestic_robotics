@@ -1,0 +1,8 @@
+string ADD=add
+string REMOVE=remove
+
+mas_perception_msgs/ObjectList objects
+string operation
+
+---
+bool success

@@ -1,8 +1,8 @@
 # mdr_move_arm_action
 
-An action for moving the arm of a robot.
+An action for moving the arm (or the whole body) of a robot.
 
-The action uses MoveIt! for moving the arm to named targets and specified joint values; motion to arbitrary 3D poses can be performed either using a dynamic motion primitives or using MoveIt!.
+The action uses MoveIt! for moving the arm to named targets and specified joint values; motion to arbitrary 3D poses can be performed either using a dynamic motion primitives or using MoveIt! (motion using MoveIt! may require whole body motion planning depending on the robot).
 
 ## Action definition
 

@@ -1,10 +1,18 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="pointcloud_topic" default="/mdr_perception/rectified_points"/>
+    <arg name="class_annotation_file" default="$(find mas_perception_libs)/models/coco_classes.yml"/>
+    <arg name="detector_module" default="torchvision.models.detection"/>
+    <arg name="detector_name" default="fasterrcnn_resnet50_fpn"/>
+    <arg name="detection_threshold" default="0.8"/>
     <arg name="face_embedding_model_path" default="/home/robot/models/face_embedding_model.pt"/>
 
     <node pkg="mdr_find_people" type="find_people_server" name="find_people_server" output="screen" >
         <param name="pointcloud_topic" type="string" value="$(arg pointcloud_topic)" />
+        <param name="class_annotation_file" type="string" value="$(arg class_annotation_file)" />
+        <param name="detector_module" type="string" value="$(arg detector_module)" />
+        <param name="detector_name" type="string" value="$(arg detector_name)" />
+        <param name="detection_threshold" type="string" value="$(arg detection_threshold)" />
         <param name="face_embedding_model_path" type="string" value="$(arg face_embedding_model_path)" />
     </node>
 </launch>

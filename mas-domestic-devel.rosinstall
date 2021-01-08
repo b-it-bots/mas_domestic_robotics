@@ -83,6 +83,16 @@
     version: kinetic-devel
 
 - git:
+    local-name: demonstrated_trajectory_recorder
+    uri: https://github.com/b-it-bots/demonstrated_trajectory_recorder.git
+    version: master
+
+- git:
     local-name: ros_dmp
     uri: https://github.com/b-it-bots/ros_dmp.git
     version: master
+
+- git:
+    local-name: mas_tools
+    uri: https://github.com/b-it-bots/mas_tools.git
+    version: devel
