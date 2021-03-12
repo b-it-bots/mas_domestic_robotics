@@ -21,7 +21,7 @@
 - git:
     local-name: mas_perception_msgs
     uri: https://github.com/b-it-bots/mas_perception_msgs.git
-    version: devel
+    version: kinetic-devel
 
 - git:
     local-name: mas_execution_manager
