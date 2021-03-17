@@ -7,7 +7,7 @@ import tf
 import actionlib
 from std_msgs.msg import Bool
 
-from mas_perception_msgs.msg import ObjectList, DetectObjectsAction, DetectObjectsActionGoal
+from mas_perception_msgs.msg import ObjectList, DetectObjectsAction
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 def get_plane_polygon(center_position, dimensions):

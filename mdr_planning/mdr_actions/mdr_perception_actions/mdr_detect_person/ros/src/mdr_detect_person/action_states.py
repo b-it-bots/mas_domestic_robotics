@@ -8,7 +8,7 @@ from cv_bridge import CvBridge
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
-from mdr_detect_person.msg import DetectPersonFeedback, DetectPersonResult
+from mdr_detect_person.msg import DetectPersonResult
 from mdr_perception_msgs.msg import FaceBoundingBox
 from mdr_detect_person.inference import load_detection_model, detect_faces
 
@@ -28,8 +28,9 @@ class DetectPersonSM(ActionSMBase):
         try:
             rospy.loginfo('[detect_person] Loading detection model %s', self.detection_model_path)
             self.face_detection = load_detection_model(detection_model_path)
-        except:
-            rospy.logerr('[detect_person] Model %s could not be loaded', self.detection_model_path)
+        except Exception as exc:
+            rospy.logerr('[detect_person] Model %s could not be loaded: %s',
+                         self.detection_model_path, str(exc))
         return FTSMTransitions.INITIALISED
 
     def running(self):
@@ -49,7 +50,6 @@ class DetectPersonSM(ActionSMBase):
                 bounding_box.bounding_box_coordinates = face_coordinates.tolist()
                 bounding_boxes.append(bounding_box)
 
-                x, y, w, h = face_coordinates
             output_ros_image = self.bridge.cv2_to_imgmsg(rgb_image, 'bgr8')
             self.image_publisher.publish(output_ros_image)
         except:

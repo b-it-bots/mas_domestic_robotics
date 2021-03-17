@@ -18,8 +18,8 @@ def load_obstacle_detection_params(filename=None):
 def reconfigure_object_detection_params(z_min, z_max, node_name = "/mas_perception/cloud_obstacle_detection"):
     try:
         client = dynamic_reconfigure.client.Client(node_name, timeout=1.5)
-    except Exception as e:
-        rospy.logerr("Service {0} does not exist".format(node_name + '/set_parameters'))
+    except Exception as exc:
+        rospy.logerr("Service {0} does not exist: {1}".format(node_name + '/set_parameters', str(exc)))
         return False
 
     updates = {"passthrough_limit_min_z":  z_min,

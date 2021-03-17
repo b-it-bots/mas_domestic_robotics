@@ -26,11 +26,4 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>mas_perception_msgs</run_depend>
   <run_depend>mas_perception_libs</run_depend>
-
-  <run_depend>numpy</run_depend>
-  <run_depend>torch</run_depend>
-  <run_depend>scikit-learn</run_depend>
-  <run_depend>face_recognition</run_depend>
-  <run_depend>python-pcl</run_depend>
-
 </package>

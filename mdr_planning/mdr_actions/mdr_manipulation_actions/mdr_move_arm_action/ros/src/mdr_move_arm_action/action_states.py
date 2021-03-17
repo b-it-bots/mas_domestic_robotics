@@ -33,8 +33,9 @@ class MoveArmSM(ActionSMBase):
             rospy.loginfo('[move_arm] Initialising group %s', self.arm_name)
             self.arm = moveit_commander.MoveGroupCommander(self.arm_name)
             rospy.loginfo('[move_arm] Group %s initialised', self.arm_name)
-        except:
-            rospy.logerr('[move_arm] %s could not be initialised', self.arm_name)
+        except Exception as exc:
+            rospy.logerr('[move_arm] %s could not be initialised: %s',
+                         self.arm_name, str(exc))
             return FTSMTransitions.INIT_FAILED
 
         if self.whole_body_name:
@@ -45,8 +46,9 @@ class MoveArmSM(ActionSMBase):
                 self.whole_body.set_planning_time(5)
                 self.end_effector = self.whole_body.get_end_effector_link()
                 rospy.loginfo('[move_arm] Group %s initialised', self.whole_body_name)
-            except:
-                rospy.logerr('[move_arm] %s could not be initialised', self.whole_body_name)
+            except Exception as exc:
+                rospy.logerr('[move_arm] %s could not be initialised: %s',
+                             self.whole_body_name, str(exc))
                 return FTSMTransitions.INIT_FAILED
         else:
             rospy.loginfo('[move_arm] whole_body_name not specified; not initialising whole body group')

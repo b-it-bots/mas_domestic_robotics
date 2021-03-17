@@ -1,6 +1,5 @@
 import rospy
 import smach
-import smach_ros
 from std_msgs.msg import String
 
 
@@ -60,10 +59,12 @@ class DescribeResults(smach.State):
     def __init__(self, topic, crowd_size, men, women):
         smach.State.__init__(self, outcomes=['succeeded'])
         self.pub = rospy.Publisher(topic, String, queue_size=10)
+        self.crowd_size = crowd_size
+        self.men = men
+        self.women = women
 
     def execute(self, userdata):
-        rospy.loginfo("Waiting for %i seconds" % self.timeout)
         msg = String("The crowd of %i people is composed of %i men and %i women"
-                     % (crowd_size, men, women))
-        self.pub.publish()
+                     % (self.crowd_size, self.men, self.women))
+        self.pub.publish(msg)
         return 'succeeded'

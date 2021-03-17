@@ -3,6 +3,7 @@ project(mdr_manipulation_msgs)
 
 find_package(catkin REQUIRED COMPONENTS
   message_generation
+  actionlib_msgs
   geometry_msgs
   mas_perception_msgs
 )
@@ -14,6 +15,7 @@ add_service_files(FILES
 )
 
 generate_messages(DEPENDENCIES
+  actionlib_msgs
   geometry_msgs
   mas_perception_msgs
 )

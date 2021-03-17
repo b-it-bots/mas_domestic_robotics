@@ -3,11 +3,7 @@ import tf
 import rospy
 import actionlib
 
-from std_msgs.msg import Header
-from geometry_msgs.msg import Point, Quaternion, Pose, PoseStamped
-
-from action_execution.action import Action
-from ae_ros_message_converter.converter_factory import ConverterFactory
+from geometry_msgs.msg import PoseStamped
 
 from mdr_place_action.msg import PlaceAction, PlaceGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
