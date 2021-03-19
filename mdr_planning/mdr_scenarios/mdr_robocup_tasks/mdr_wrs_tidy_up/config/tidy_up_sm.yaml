@@ -91,10 +91,10 @@ state_descriptions:
                 value: /mas_perception/detect_objects
             - argument:
                 name: cloud_obstacle_detection_topic
-                value: /mas_perception/cloud_obstacle_detection/obstacle_objects
+                value: /mdr_cloud_object_detection/cloud_object_detection/object_list
             - argument:
                 name: cloud_obstacle_cache_reset_topic
-                value: /mas_perception/cloud_obstacle_detection/reset_cache
+                value: /mdr_cloud_object_detection/cloud_object_detection/reset_cache
             - argument:
                 name: number_of_retries
                 value: 3
@@ -261,10 +261,10 @@ state_descriptions:
                 value: /mas_perception/detect_objects
             - argument:
                 name: cloud_obstacle_detection_topic
-                value: /mas_perception/cloud_obstacle_detection/obstacle_objects
+                value: /mdr_cloud_object_detection/cloud_object_detection/object_list
             - argument:
                 name: cloud_obstacle_cache_reset_topic
-                value: /mas_perception/cloud_obstacle_detection/reset_cache
+                value: /mdr_cloud_object_detection/cloud_object_detection/reset_cache
             - argument:
                 name: number_of_retries
                 value: 3

@@ -15,15 +15,15 @@ def load_obstacle_detection_params(filename=None):
         rospy.logerr("Unable to load object_detection_params from file {0}".format(params_file))
         return None
 
-def reconfigure_object_detection_params(z_min, z_max, node_name = "/mas_perception/cloud_obstacle_detection"):
+def reconfigure_object_detection_params(z_min, z_max, node_name = "/mdr_cloud_object_detection/cloud_object_detection"):
     try:
         client = dynamic_reconfigure.client.Client(node_name, timeout=1.5)
     except Exception as exc:
         rospy.logerr("Service {0} does not exist: {1}".format(node_name + '/set_parameters', str(exc)))
         return False
 
-    updates = {"passthrough_limit_min_z":  z_min,
-               "passthrough_limit_max_z":  z_max}
+    updates = {"cropbox_limit_min_z":  z_min,
+               "cropbox_limit_max_z":  z_max}
     client.update_configuration(updates)
 
 def update_object_detection_params(surface, config_file=None):
