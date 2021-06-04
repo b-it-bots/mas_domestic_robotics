@@ -117,8 +117,8 @@ class PickupSM(ActionSMBase):
             rospy.loginfo('[pickup] Opening the gripper...')
             self.gripper.open()
 
-            rospy.loginfo('[pickup] Preparing for grasp verification')
-            self.gripper.init_grasp_verification()
+            # rospy.loginfo('[pickup] Preparing for grasp verification')
+            # self.gripper.init_grasp_verification()
 
             if self.goal.strategy == PickupGoal.SIDEWAYS_GRASP:
                 rospy.loginfo('[pickup] Preparing sideways graps')
@@ -159,8 +159,9 @@ class PickupSM(ActionSMBase):
                 rospy.loginfo('[pickup] Moving the arm back')
                 self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
 
-            rospy.loginfo('[pickup] Verifying the grasp...')
-            grasp_successful = self.gripper.verify_grasp()
+            # rospy.loginfo('[pickup] Verifying the grasp...')
+            # grasp_successful = self.gripper.verify_grasp()
+            grasp_successful = True
             if grasp_successful:
                 rospy.loginfo('[pickup] Successfully grasped object')
             else:
