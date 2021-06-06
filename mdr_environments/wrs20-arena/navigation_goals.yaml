@@ -12,4 +12,6 @@ bin_a: [2.400, 0.047, -1.544]
 bin_b: [2.748, 0.047, -1.544]
 
 second_room_corridor: [2.535, 1.585, 1.571]
-second_room_cupboard: [2.199, 3.839, 1.501]
+second_room_cupboard: [2.199, 4.2, 1.501]
+
+persons: [0.34, 3.37, 3.14]
