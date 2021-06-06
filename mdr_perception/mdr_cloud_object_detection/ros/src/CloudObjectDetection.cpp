@@ -24,7 +24,8 @@ CloudObjectDetection::CloudObjectDetection(const ros::NodeHandle &pNodeHandle,
                                            const std::string &pOccupancyCheckerActionName,
                                            const std::string &pObjectsBoundsTopic,
                                            const std::string &pObjectListTopic,
-                                           bool pPublishOrientedBBox)
+                                           bool pPublishOrientedBBox,
+                                           bool pVerbose)
 : mNodeHandle(pNodeHandle)
 , mObjectDetectionConfigServer(mNodeHandle)
 , mTransformTargetFrame(pTransformTargetFrame)
@@ -32,6 +33,7 @@ CloudObjectDetection::CloudObjectDetection(const ros::NodeHandle &pNodeHandle,
 , mPublishOrientedBBox(pPublishOrientedBBox)
 , mUniqueObjectId(0)
 , mOccupancyCheckerClient(pOccupancyCheckerActionName, true)
+, mVerbose(pVerbose)
 {
     ROS_INFO("[CloudObjectDetection] Waiting for OccupancyChecker server");
     mOccupancyCheckerClient.waitForServer();
@@ -79,34 +81,50 @@ void CloudObjectDetection::objectDetectionConfigCallback(const ObjectDetectionCo
     mObjectCacheParams.mSimilarityThreshold = static_cast<float>(pConfig.similarity_threshold);
     mObjectCacheParams.mUniquenessThreshold = static_cast<float>(pConfig.uniqueness_threshold);
     mObjectCacheParams.mPositionHistoryCacheSize = static_cast<float>(pConfig.position_history_cache_size);
+
+    // Logging
+    mVerbose = static_cast<bool>(pConfig.verbose);
 }
 
 void CloudObjectDetection::cloudCallback(const sensor_msgs::PointCloud2::ConstPtr& pCloudMsgPtr)
 {
+    verbose("=== [CloudObjectDetection] Received new point cloud ===");
     // do not process cloud when there's no subscriber
     if (mFilteredCloudPub.getNumSubscribers() == 0 &&
         mObjectBoundsPub.getNumSubscribers() == 0 &&
         mObjectListPub.getNumSubscribers() == 0 &&
         mObjectCloudPub.getNumSubscribers() == 0)
+    {
+        verbose("[CloudObjectDetection] No subscribers for any published topics. Skip processing the point cloud!");
         return;
+    }
 
     if (!mTfListener.waitForTransform(mTransformTargetFrame, pCloudMsgPtr->header.frame_id.c_str(), pCloudMsgPtr->header.stamp, ros::Duration(1.0)) ||
         !mTfListener.waitForTransform(mClusterTargetFrame, mTransformTargetFrame, pCloudMsgPtr->header.stamp, ros::Duration(1.0)))
+    {
+        verbose("[CloudObjectDetection] Timed out waiting for transform! Skip processing the point cloud!");
         return;
+    }
 
     // transform the cloud to a desired frame
+    verbose(std::string("[CloudObjectDetection] Transforming point cloud to ") + mTransformTargetFrame + std::string(" frame..."));
     PointCloud::Ptr cloudInPtr = boost::make_shared<PointCloud>();
     pcl::fromROSMsg(*pCloudMsgPtr, *cloudInPtr);
     PointCloud::Ptr transformedCloudPtr = transformPointCloud(*cloudInPtr, mTransformTargetFrame);
     if (transformedCloudPtr == nullptr)
+    {
+        verbose("[CloudObjectDetection] Failed to transform point cloud! Skip processing the point cloud!");
         return;
+    }
 
     // filter the cloud
+    verbose("[CloudObjectDetection] Filtering point cloud...");
     PointCloud::Ptr filteredCloudPtr = mCloudFilter.filterCloud(transformedCloudPtr);
     if (filteredCloudPtr->size() < mClusterParams.mMinClusterSize)
     {
         // Stop processing the point cloud if the filtered cloud does
         // not have enough points to create even one cluster
+        verbose("[CloudObjectDetection] Not enough points in the filtered point cloud! Skip processing the point cloud!");
         return;
     }
 
@@ -119,6 +137,7 @@ void CloudObjectDetection::cloudCallback(const sensor_msgs::PointCloud2::ConstPt
     mCurrTime = pCloudMsgPtr->header.stamp.sec;
 
     // Euclidean clustering
+    verbose("[CloudObjectDetection] Clustering the filtered point cloud...");
     pcl::search::Search<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
     tree->setInputCloud(filteredCloudPtr);
     std::vector<pcl::PointIndices> cluster_indices;
@@ -130,7 +149,16 @@ void CloudObjectDetection::cloudCallback(const sensor_msgs::PointCloud2::ConstPt
                                   mClusterParams.mMaxClusterSize);
 
     if (cluster_indices.size() == 0)
+    {
+        verbose("[CloudObjectDetection] Failed to detect any clusters!");
         return;
+    }
+    else
+    {
+        std::stringstream ss;
+        ss << "[CloudObjectDetection] Found " << cluster_indices.size() << " clusters";
+        verbose(ss.str());
+    }
 
     std::vector<PointCloud::Ptr> clusterClouds;
     getClusterClouds(clusterClouds, filteredCloudPtr, cluster_indices);
@@ -176,6 +204,7 @@ PointCloud::Ptr CloudObjectDetection::transformPointCloud(const PointCloud& clou
 void CloudObjectDetection::filterClusterCloudsBySize(std::vector<PointCloud::Ptr>& clusterClouds)
 {
     // Check if the size of the object is within the specified limits
+    unsigned int nFilteredClouds = 0;
     for (std::vector<PointCloud::Ptr>::iterator it = clusterClouds.begin(); it != clusterClouds.end(); )
     {
         Eigen::Vector4f min, max;
@@ -188,17 +217,26 @@ void CloudObjectDetection::filterClusterCloudsBySize(std::vector<PointCloud::Ptr
             sizeZ > mObjectFilterParams.mMaxBboxEdgeLength)
         {
             it = clusterClouds.erase(it);
+            nFilteredClouds++;
         }
         else
         {
             ++it;
         }
     }
+
+    if (nFilteredClouds > 0)
+    {
+        std::stringstream ss;
+        ss << "[CloudObjectDetection] Removed " << nFilteredClouds << " clusters due to size constraint violations";
+        verbose(ss.str());
+    }
 }
 
 void CloudObjectDetection::filterClusterCloudsNearOccupiedSpaces(std::vector<PointCloud::Ptr>& clusterClouds)
 {
     mas_navigation_tools::OccupancyCheckerGoal goal;
+    unsigned int nFilteredClouds = 0;
     for (std::vector<PointCloud::Ptr>::iterator it = clusterClouds.begin(); it != clusterClouds.end(); )
     {
         Eigen::Vector4f centroid;
@@ -206,6 +244,7 @@ void CloudObjectDetection::filterClusterCloudsNearOccupiedSpaces(std::vector<Poi
         {
             ROS_WARN("Could not compute centroid of point cloud. The cluster will be filtered out!");
             it = clusterClouds.erase(it);
+            nFilteredClouds++;
         }
         else
         {
@@ -227,9 +266,19 @@ void CloudObjectDetection::filterClusterCloudsNearOccupiedSpaces(std::vector<Poi
         for (std::vector<PointCloud::Ptr>::iterator it = clusterClouds.begin(); it != clusterClouds.end(); )
         {
             if (!result->far_from_obstacle[pos++])
+            {
                 it = clusterClouds.erase(it);
+                nFilteredClouds++;
+            }
             else
                 ++it;
+        }
+
+        if (nFilteredClouds > 0)
+        {
+            std::stringstream ss;
+            ss << "[CloudObjectDetection] Removed " << nFilteredClouds << " clusters due to closeness to obstacles in occupancy grid map";
+            verbose(ss.str());
         }
     }
     else
@@ -686,6 +735,23 @@ void CloudObjectDetection::publishObjectListMessages()
 }
 
 void CloudObjectDetection::cleanup()
-    {
-        mObjectMsgCache.clear();
-    }
+{
+    mObjectMsgCache.clear();
+}
+
+void CloudObjectDetection::verbose(const std::string& msg, ros::console::levels::Level logLevel) const
+{
+    if (!mVerbose)
+        return;
+
+    if (logLevel == ros::console::levels::Debug)
+        ROS_DEBUG(msg.c_str());
+    else if (logLevel == ros::console::levels::Info)
+        ROS_INFO(msg.c_str());
+    else if (logLevel == ros::console::levels::Warn)
+        ROS_WARN(msg.c_str());
+    else if (logLevel == ros::console::levels::Error)
+        ROS_ERROR(msg.c_str());
+    else
+        std::cout << msg.c_str() << std::endl;
+}

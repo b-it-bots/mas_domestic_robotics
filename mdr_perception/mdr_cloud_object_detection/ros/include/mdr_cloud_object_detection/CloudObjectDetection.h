@@ -45,6 +45,7 @@ namespace mdr_cloud_object_detection
         ObjectFilterParams mObjectFilterParams;
         ObjectCacheParams mObjectCacheParams;
         bool mPublishOrientedBBox;
+        bool mVerbose;
 
         unsigned int mUniqueObjectId;
         unsigned int mCurrTime;
@@ -63,7 +64,8 @@ namespace mdr_cloud_object_detection
                              const std::string &pOccupancyCheckerActionName,
                              const std::string &pObjectsBoundsTopic,
                              const std::string &pObjectListTopic,
-                             bool pPublishOrientedBBox);
+                             bool pPublishOrientedBBox,
+                             bool pVerbose = false);
 
     protected:
         void objectDetectionConfigCallback(const ObjectDetectionConfig &pConfig,
@@ -133,6 +135,8 @@ namespace mdr_cloud_object_detection
         void publishObjectListMessages();
 
         void cleanup();
+
+        void verbose(const std::string& msg, ros::console::levels::Level logLevel = ros::console::levels::Info) const;
     };
 
 }   // namespace mdr_cloud_object_detection

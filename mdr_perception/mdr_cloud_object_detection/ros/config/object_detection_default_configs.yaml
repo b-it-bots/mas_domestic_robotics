@@ -25,3 +25,5 @@ object_cache_time:            5.0
 similarity_threshold:           2.0
 position_history_cache_size:    10
 uniqueness_threshold:           0.005
+
+verbose: False

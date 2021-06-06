@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(mdr_cloud_object_detection)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++11 -Wno-format-security)
 
 find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
