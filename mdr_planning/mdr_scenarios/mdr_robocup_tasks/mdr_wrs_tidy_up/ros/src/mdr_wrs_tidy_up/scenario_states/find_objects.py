@@ -77,7 +77,8 @@ class FindObjects(ScenarioStateBase):
         rospy.loginfo('[%s] Waiting for cloud obstacle detection', self.state_name)
         timeout_reached = False
         waiting_start_time = rospy.Time.now().to_sec()
-        while abs(last_msg_time - self.last_cloud_object_detection_time) < 1e-5 and \
+        while self.last_cloud_object_detection_time and \
+              abs(last_msg_time - self.last_cloud_object_detection_time) < 1e-5 and \
               not timeout_reached:
             rospy.sleep(0.05)
             if (rospy.Time.now().to_sec() - waiting_start_time) > self.object_detection_timeout_s:

@@ -1,12 +1,25 @@
 floor:
-  z_min: 0.01
-  z_max: 0.2
+  cropbox_limit_min_z: 0.01
+  cropbox_limit_max_z: 0.2
 long_table_b:
-  z_min: 0.415
-  z_max: 0.6
+  cropbox_limit_min_z: 0.415
+  cropbox_limit_max_z: 0.6
+  min_dist_from_occupied_cell: 0.0
 tall_table:
-  z_min: 0.615
-  z_max: 0.8
-shelf:
-  z_min: 0.51
-  z_max: 1.0
+  cropbox_limit_min_z: 0.615
+  cropbox_limit_max_z: 0.8
+  min_dist_from_occupied_cell: 0.0
+top_shelf:
+  #cropbox_limit_max_x: 0.65 # chop off the bottom wall of the shelf 
+  cropbox_limit_min_z: 0.82
+  cropbox_limit_max_z: 1.0
+  cluster_tolerance: 0.03
+  min_cluster_size: 8
+  min_dist_from_occupied_cell: 0.0
+bottom_shelf:
+  #cropbox_limit_max_x: 0.65 # chop off the bottom wall of the shelf
+  cropbox_limit_min_z: 0.51
+  cropbox_limit_max_z: 0.69
+  cluster_tolerance: 0.03
+  min_cluster_size: 8
+  min_dist_from_occupied_cell: 0.0

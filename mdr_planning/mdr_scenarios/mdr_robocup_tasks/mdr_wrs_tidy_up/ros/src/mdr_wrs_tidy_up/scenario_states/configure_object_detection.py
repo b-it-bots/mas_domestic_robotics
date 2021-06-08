@@ -16,7 +16,7 @@ class ConfigureObjectDetection(ScenarioStateBase):
         self.state_name = kwargs.get('state_name', 'configure_object_detection')
 
     def execute(self, userdata):
-        destination_location = 'shelf'
+        destination_location = 'top_shelf'
         ## Expected by FIND_OBJECTS state:
         userdata.destination_locations = [destination_location]
         ## Required to configure cloud detector 
