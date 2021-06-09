@@ -143,3 +143,37 @@ objects:
       position:   [1.1, -0.6, 0.455]
       orientation: [0.0, 0.0, 0.0]
       dimensions: [0.26, 0.18, 0.11]
+
+    # object ID: wrc_shelf
+    - name: shelf_left_support
+      position:   [1.8, 4.8, 1.01]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.28, 2.02]
+    - name: shelf_right_support
+      position:   [2.6, 4.8, 1.01]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.02, 0.28, 2.02]
+    - name: shelf_back_support
+      position:   [2.2, 4.95, 1.01]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.8, 0.02, 2.02]
+    - name: shelf_top_support
+      position:   [2.2, 4.8, 2.01]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.8, 0.28, 0.02]
+    - name: shelf_bottom_support
+      position:   [2.2, 4.8, 0.03]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.8, 0.28, 0.06]
+    - name: shelf_plane_0
+      position:   [2.2, 4.8, 0.49]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.8, 0.28, 0.02]
+    - name: shelf_plane_1
+      position:   [2.2, 4.8, 0.79]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.8, 0.28, 0.02]
+    - name: shelf_plane_2
+      position:   [2.2, 4.8, 1.04]
+      orientation: [0.0, 0.0, 0.0]
+      dimensions: [0.8, 0.28, 0.02]
