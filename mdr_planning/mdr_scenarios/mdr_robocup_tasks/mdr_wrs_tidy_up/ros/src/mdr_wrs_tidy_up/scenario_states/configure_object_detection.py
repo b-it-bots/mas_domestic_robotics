@@ -8,15 +8,15 @@ class ConfigureObjectDetection(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'configure_object_detection',
                                    save_sm_state=save_sm_state,
-                                   input_keys=[],
-                                   output_keys=['destination_locations',
-                                                'object_location'],
+                                   input_keys=['object_location'],
+                                   output_keys=['destination_locations'],
                                    outcomes=['succeeded'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'configure_object_detection')
 
     def execute(self, userdata):
-        destination_location = 'top_shelf'
+        # print('     In ConfigureObjectDetection:', userdata.object_location)
+        destination_location = userdata.object_location
         ## Expected by FIND_OBJECTS state:
         userdata.destination_locations = [destination_location]
         ## Required to configure cloud detector 
