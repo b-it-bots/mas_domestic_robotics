@@ -68,6 +68,8 @@ class FindObjects(ScenarioStateBase):
         self.__init_ros_components()
 
     def execute(self, userdata):
+        if self.last_cloud_object_detection_time is None:
+            self.last_cloud_object_detection_time = rospy.Time.now().to_sec()
         last_msg_time = self.last_cloud_object_detection_time
 
         rospy.loginfo('[%s] Resetting cloud obstacle cache and waiting a bit', self.state_name)
@@ -77,8 +79,7 @@ class FindObjects(ScenarioStateBase):
         rospy.loginfo('[%s] Waiting for cloud obstacle detection', self.state_name)
         timeout_reached = False
         waiting_start_time = rospy.Time.now().to_sec()
-        while self.last_cloud_object_detection_time and \
-              abs(last_msg_time - self.last_cloud_object_detection_time) < 1e-5 and \
+        while abs(last_msg_time - self.last_cloud_object_detection_time) < 1e-5 and \
               not timeout_reached:
             rospy.sleep(0.05)
             if (rospy.Time.now().to_sec() - waiting_start_time) > self.object_detection_timeout_s:
@@ -94,7 +95,10 @@ class FindObjects(ScenarioStateBase):
                 userdata.table_objects_cleared[current_location] = True
             return 'no_objects'
 
-        rospy.loginfo('[%s] Detected %d objects', self.state_name, len(self.detected_cloud_objects))
+        if self.detected_cloud_objects is None:
+            rospy.loginfo('[%s] Detected %d objects', self.state_name, 0)
+        else:
+            rospy.loginfo('[%s] Detected %d objects', self.state_name, len(self.detected_cloud_objects))
 
         # workaround for large objects (such as the pitcher) sticking to the gripper in Gazebo
         filtered_objects = self.filter_objects_by_height(self.detected_cloud_objects)
