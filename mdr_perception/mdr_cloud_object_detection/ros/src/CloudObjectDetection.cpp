@@ -38,11 +38,11 @@ CloudObjectDetection::CloudObjectDetection(const ros::NodeHandle &pNodeHandle,
     ROS_INFO("[CloudObjectDetection] Waiting for OccupancyChecker server");
     mOccupancyCheckerClient.waitForServer();
 
-    ROS_INFO("setting up dynamic reconfiguration server for object detection");
+    ROS_INFO("[CloudObjectDetection] Setting up dynamic reconfiguration server for object detection");
     auto odCallback = boost::bind(&CloudObjectDetection::objectDetectionConfigCallback, this, _1, _2);
     mObjectDetectionConfigServer.setCallback(odCallback);
 
-    ROS_INFO("subscribing to point cloud topic and advertising processed result");
+    ROS_INFO("[CloudObjectDetection] Subscribing to point cloud topic and advertising processed result");
     mCloudInSub = mNodeHandle.subscribe(pCloudInTopic, 1, &CloudObjectDetection::cloudCallback, this);
     mResetObjectCacheSub = mNodeHandle.subscribe("reset_cache", 1, &CloudObjectDetection::resetObjectCacheCallback, this);
     mFilteredCloudPub = mNodeHandle.advertise<sensor_msgs::PointCloud2>(pFilteredCloudTopic, 1);
@@ -107,7 +107,7 @@ void CloudObjectDetection::cloudCallback(const sensor_msgs::PointCloud2::ConstPt
     }
 
     // transform the cloud to a desired frame
-    verbose(std::string("[CloudObjectDetection] Transforming point cloud to ") + mTransformTargetFrame + std::string(" frame..."));
+    verbose(std::string("[CloudObjectDetection] Transforming point cloud to ") + mTransformTargetFrame + std::string(" frame..."), ros::console::levels::Debug);
     PointCloud::Ptr cloudInPtr = boost::make_shared<PointCloud>();
     pcl::fromROSMsg(*pCloudMsgPtr, *cloudInPtr);
     PointCloud::Ptr transformedCloudPtr = transformPointCloud(*cloudInPtr, mTransformTargetFrame);
@@ -118,7 +118,7 @@ void CloudObjectDetection::cloudCallback(const sensor_msgs::PointCloud2::ConstPt
     }
 
     // filter the cloud
-    verbose("[CloudObjectDetection] Filtering point cloud...");
+    verbose("[CloudObjectDetection] Filtering point cloud...", ros::console::levels::Debug);
     PointCloud::Ptr filteredCloudPtr = mCloudFilter.filterCloud(transformedCloudPtr);
     if (filteredCloudPtr->size() < mClusterParams.mMinClusterSize)
     {
@@ -137,7 +137,7 @@ void CloudObjectDetection::cloudCallback(const sensor_msgs::PointCloud2::ConstPt
     mCurrTime = pCloudMsgPtr->header.stamp.sec;
 
     // Euclidean clustering
-    verbose("[CloudObjectDetection] Clustering the filtered point cloud...");
+    verbose("[CloudObjectDetection] Clustering the filtered point cloud...", ros::console::levels::Debug);
     pcl::search::Search<PointT>::Ptr tree(new pcl::search::KdTree<PointT>);
     tree->setInputCloud(filteredCloudPtr);
     std::vector<pcl::PointIndices> cluster_indices;
@@ -150,7 +150,7 @@ void CloudObjectDetection::cloudCallback(const sensor_msgs::PointCloud2::ConstPt
 
     if (cluster_indices.size() == 0)
     {
-        verbose("[CloudObjectDetection] Failed to detect any clusters!");
+        verbose("[CloudObjectDetection] Failed to detect any clusters in the filtered point cloud!");
         return;
     }
     else
@@ -179,7 +179,7 @@ void CloudObjectDetection::resetObjectCacheCallback(const std_msgs::Bool& reset)
 {
     if (reset.data)
     {
-        ROS_WARN("Cache reset requested! Resetting the object cache!");
+        ROS_WARN("[CloudObjectDetection] Cache reset requested! Resetting the object cache!");
         mUniqueObjectId = 0;
         mLastSeenTimeCache.clear();
         mObjectsCache.clear();
@@ -194,7 +194,7 @@ PointCloud::Ptr CloudObjectDetection::transformPointCloud(const PointCloud& clou
     PointCloud::Ptr transformedCloudPtr = boost::make_shared<PointCloud>();
     if (!pcl_ros::transformPointCloud(targetFrame, cloudIn, *transformedCloudPtr, mTfListener))
     {
-        ROS_WARN("Failed to transform cloud to frame '%s' from frame '%s'.",
+        ROS_WARN("[CloudObjectDetection] Failed to transform cloud to frame '%s' from frame '%s'.",
                 targetFrame.c_str(), cloudIn.header.frame_id.c_str());
         return nullptr;
     }
@@ -242,7 +242,7 @@ void CloudObjectDetection::filterClusterCloudsNearOccupiedSpaces(std::vector<Poi
         Eigen::Vector4f centroid;
         if (pcl::compute3DCentroid(*(*it), centroid) <= 0)
         {
-            ROS_WARN("Could not compute centroid of point cloud. The cluster will be filtered out!");
+            ROS_WARN("[CloudObjectDetection] Could not compute centroid of point cloud. The cluster will be filtered out!");
             it = clusterClouds.erase(it);
             nFilteredClouds++;
         }
@@ -283,7 +283,7 @@ void CloudObjectDetection::filterClusterCloudsNearOccupiedSpaces(std::vector<Poi
     }
     else
     {
-        ROS_ERROR("Could not complete checking if the objects lie close to the occupied regions in the map. Discarding all the clusters!");
+        ROS_ERROR("[CloudObjectDetection] Could not complete checking if the objects lie close to the occupied regions in the map. Discarding all the clusters!");
         clusterClouds.clear();
     }
 }
@@ -306,7 +306,7 @@ void CloudObjectDetection::getClusterClouds(std::vector<PointCloud::Ptr>& cluste
         PointCloud::Ptr transformedCloudPtr = transformPointCloud(*clusterCloud, mClusterTargetFrame);
         if (transformedCloudPtr == nullptr)
         {
-            ROS_WARN("Failed to transform cluster cloudThis cluster will be skipped in the current frame!");
+            ROS_WARN("[CloudObjectDetection] Failed to transform cluster cloud. This cluster will be skipped in the current frame!");
             continue;
         }
 
@@ -377,7 +377,7 @@ void CloudObjectDetection::processNewClusters(const std::vector<PointCloud::Ptr>
         Eigen::Vector4f centroid;
         if (pcl::compute3DCentroid(*cloud, centroid) <= 0)
         {
-            ROS_WARN("Could not compute centroid of point cloud. Skipping processing of potential object cluster!");
+            ROS_WARN("[CloudObjectDetection] Could not compute centroid of point cloud. Skipping processing of potential object cluster!");
             return;
         }
 
@@ -385,7 +385,9 @@ void CloudObjectDetection::processNewClusters(const std::vector<PointCloud::Ptr>
         if (isNewObject(*cloud, objectID))
         {
             objectID = mUniqueObjectId++;
-            ROS_INFO("Adding new object: %d", objectID);
+            std::stringstream ss;
+            ss << "[CloudObjectDetection] Adding new object: " << objectID;
+            verbose(ss.str());
             mObjectsCache.insert(std::pair<int, const PointCloud::Ptr>(objectID, cloud));
             std::vector<Eigen::Vector4f> prevPositions;
             prevPositions.push_back(centroid);
@@ -418,7 +420,9 @@ void CloudObjectDetection::removeStaleObjects()
         int id = it->first;
         if (mCurrTime - it->second > mObjectCacheParams.mObjectCacheTime)
         {
-            ROS_INFO("Removing Stale object: %d", id);
+            std::stringstream ss;
+            ss << "[CloudObjectDetection] Removing Stale object: " << id;
+            verbose(ss.str());
             mLastSeenTimeCache.erase(it++);
             mPrevPositionsCache.erase(id);
             mObjectsCache.erase(id);
@@ -652,7 +656,7 @@ const mas_perception_msgs::Object* CloudObjectDetection::getObjectMessage(int id
     std::map<int, mas_perception_msgs::Object>::iterator itr = mObjectMsgCache.find(id);
     if (itr == mObjectMsgCache.end())
     {
-        ROS_WARN("Unable to find Object message for object %d", id);
+        ROS_WARN("[CloudObjectDetection] Unable to find Object message for object %d", id);
         return nullptr;
     }
 
