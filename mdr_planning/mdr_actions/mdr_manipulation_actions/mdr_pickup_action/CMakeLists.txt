@@ -13,7 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   geometry_msgs
   trajectory_msgs
-  rosplan_dispatch_msgs
+  # rosplan_dispatch_msgs
   rosplan_knowledge_msgs
   diagnostic_msgs
   mas_perception_msgs

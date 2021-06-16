@@ -22,7 +22,7 @@
   <build_depend>smach_ros</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>trajectory_msgs</build_depend>
-  <build_depend>rosplan_dispatch_msgs</build_depend>
+  <!-- <build_depend>rosplan_dispatch_msgs</build_depend> -->
   <build_depend>rosplan_knowledge_msgs</build_depend>
   <build_depend>diagnostic_msgs</build_depend>
   <build_depend>mas_perception_msgs</build_depend>
@@ -40,7 +40,7 @@
   <run_depend>smach_ros</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>trajectory_msgs</run_depend>
-  <run_depend>rosplan_dispatch_msgs</run_depend>
+  <!-- <run_depend>rosplan_dispatch_msgs</run_depend> -->
   <run_depend>rosplan_knowledge_msgs</run_depend>
   <run_depend>diagnostic_msgs</run_depend>
   <run_depend>mas_perception_msgs</run_depend>
