@@ -93,6 +93,7 @@ class FindObjects(ScenarioStateBase):
                 userdata.floor_objects_cleared[current_location] = True
             elif userdata.object_location == 'table':
                 userdata.table_objects_cleared[current_location] = True
+            userdata.detected_objects = None
             return 'no_objects'
 
         if self.detected_cloud_objects is None:
