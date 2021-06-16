@@ -130,7 +130,7 @@ state_descriptions:
                 value: pickup_server
             - argument:
                 name: grasping_timeout_s
-                value: 45.0
+                value: 120.0
             - argument:
                 name: number_of_retries
                 value: 0
