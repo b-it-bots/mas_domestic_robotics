@@ -83,8 +83,12 @@ int main(int pArgc, char** pArgv)
                                                                      objectListTopic,
                                                                      publishOrientedBBox);
 
+    ros::Rate node_rate(2);
     while (ros::ok())
-        ros::spin();
+    {
+        ros::spinOnce();
+        node_rate.sleep();
+    }
 
     return 0;
 }
