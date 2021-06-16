@@ -373,11 +373,11 @@ class ReleaseObject(ScenarioStateBase):
                 t1_cells.append(np.array([t1[0], t1[1], t1[0]+t1_cell_size[0], t1[1]+t1_cell_size[1]]))
                 t2_cells.append(np.array([t2[0], t2[1], t2[0]+t2_cell_size[0], t2[1]+t2_cell_size[1]]))
 
-        tray_cells = np.array([t1_cells[0]])
-        for cell in range(1, len(t1_cells)):
-            tray_cells = np.vstack((tray_cells, t1_cells[cell]))
-        for cell in range(len(t2_cells)):
+        tray_cells = np.array([t2_cells[0]])
+        for cell in range(1, len(t2_cells)):
             tray_cells = np.vstack((tray_cells, t2_cells[cell]))
+        for cell in range(len(t1_cells)):
+            tray_cells = np.vstack((tray_cells, t1_cells[cell]))
 
         return tray_cells
 
