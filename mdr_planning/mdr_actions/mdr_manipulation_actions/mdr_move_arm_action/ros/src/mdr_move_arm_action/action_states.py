@@ -23,6 +23,9 @@ class MoveArmSM(ActionSMBase):
         self.arm_name = arm_name
         self.whole_body_name = whole_body_name
         self.update_planning_scene_srv_name = update_planning_scene_srv_name
+        self.workspace_bounds = None
+        if workspace_bounds:
+            self.workspace_bounds = list(workspace_bounds)
         self.arm = None
         self.whole_body = None
         self.end_effector = None
@@ -45,7 +48,8 @@ class MoveArmSM(ActionSMBase):
                 self.whole_body = moveit_commander.MoveGroupCommander(self.whole_body_name)
                 self.whole_body.allow_replanning(True)
                 self.whole_body.set_planning_time(5)
-                self.whole_body.set_workspace(workspace_bounds)
+                if self.workspace_bounds:
+                    self.whole_body.set_workspace(self.workspace_bounds)
                 self.end_effector = self.whole_body.get_end_effector_link()
                 rospy.loginfo('[move_arm] Group %s initialised', self.whole_body_name)
             except Exception as exc:
