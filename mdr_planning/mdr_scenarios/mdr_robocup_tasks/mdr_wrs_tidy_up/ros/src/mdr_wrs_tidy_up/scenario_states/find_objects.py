@@ -94,9 +94,8 @@ class FindObjects(ScenarioStateBase):
                 detected_cam_obj_labels.append(obj.category)
             rospy.loginfo('[{0}] Detected cam object labels: {1}'.format(self.state_name, detected_cam_obj_labels))
         else:
-            rospy.logerr('[%s] No objects detected within %f seconds',
+            rospy.logerr('[%s] No objects detected within %f seconds; proceeding with cloud object detection',
                          self.state_name, self.object_detection_timeout_s)
-            return 'no_objects'
 
         rospy.loginfo('[%s] Resetting cloud obstacle cache and waiting a bit', self.state_name)
         self.obstacle_cache_reset_pub.publish(Bool(data=True))
