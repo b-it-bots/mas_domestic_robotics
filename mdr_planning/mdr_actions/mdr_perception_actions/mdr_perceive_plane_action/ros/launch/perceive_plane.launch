@@ -26,6 +26,12 @@
         <param name="head_controller_pkg_name" type="string" value="$(arg head_controller_pkg_name)" />
     </node>
 
+    <node pkg="mas_perception_libs" type="py3_object_detector" name="img_object_detection_server" output="screen">
+        <param name="detection_action_name" type="string" value="/mas_perception/detect_image_objects" />
+        <param name="class_annotations" type="string" value="$(arg object_detection_class_annotations)" />
+        <param name="kwargs_file" type="string" value="$(arg object_detection_kwargs_file)" />
+    </node>
+
     <include file="$(find mas_perception_libs)/ros/launch/plane_detection.launch" >
         <arg name="cloud_topic" value="$(arg cloud_topic)" />
         <arg name="target_frame" value="$(arg target_frame)" />
