@@ -86,6 +86,7 @@ class FindObjects(ScenarioStateBase):
 
         detected_cam_objects = []
         self.object_detection_client.send_goal(DetectObjectsGoal())
+        detection_start_time = rospy.Time.now().to_sec()
         if self.object_detection_client.wait_for_result(rospy.Duration.from_sec(self.object_detection_timeout_s)):
             result = self.object_detection_client.get_result()
             detected_cam_objects = result.objects.objects
@@ -96,6 +97,9 @@ class FindObjects(ScenarioStateBase):
         else:
             rospy.logerr('[%s] No objects detected within %f seconds; proceeding with cloud object detection',
                          self.state_name, self.object_detection_timeout_s)
+        detection_end_time = rospy.Time.now().to_sec()
+        detection_elapsed_time = detection_end_time - detection_start_time
+        rospy.loginfo('[%s] Elapsed detection time: %s', self.state_name, detection_elapsed_time)
 
         rospy.loginfo('[%s] Resetting cloud obstacle cache and waiting a bit', self.state_name)
         self.obstacle_cache_reset_pub.publish(Bool(data=True))
