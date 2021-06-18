@@ -89,6 +89,10 @@ class FindObjects(ScenarioStateBase):
         if self.object_detection_client.wait_for_result(rospy.Duration.from_sec(self.object_detection_timeout_s)):
             result = self.object_detection_client.get_result()
             detected_cam_objects = result.objects.objects
+            detected_cam_obj_labels = []
+            for obj in detected_cam_obj_labels:
+                detected_cam_obj_labels.append(obj.category)
+            rospy.loginfo('[{0}] Detected cam object labels: {1}'.format(self.state_name, detected_cam_obj_labels))
         else:
             rospy.logerr('[%s] No objects detected within %f seconds',
                          self.state_name, self.object_detection_timeout_s)
@@ -158,10 +162,13 @@ class FindObjects(ScenarioStateBase):
         self.last_cloud_object_detection_time = rospy.Time.now().to_sec()
 
     def label_detected_cloud_objects(self, detected_cam_objects, cloud_objects):
-        for obj in cloud_objects:
+        for i, obj in enumerate(cloud_objects):
             closest_object_label = find_closest_object(obj, detected_cam_objects)
             obj.name = '{0}-{1}'.format(closest_object_label, str(uuid.uuid4()))
             obj.category = closest_object_label
+            rospy.loginfo('[%s] Assigned label "%s" to detected cloud object at position (%f, %f, %f)',
+                            self.state_name, closest_object_label, obj.pose.position.x,
+                            obj.pose.position.y, obj.pose.position.z)
         return cloud_objects
 
     def filter_objects_by_height(self, objects):

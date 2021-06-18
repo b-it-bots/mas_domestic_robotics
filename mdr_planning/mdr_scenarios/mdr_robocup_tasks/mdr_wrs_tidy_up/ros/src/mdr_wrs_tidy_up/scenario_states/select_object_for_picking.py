@@ -55,13 +55,14 @@ class SelectObjectForPicking(ScenarioStateBase):
 
             userdata.destination_locations = [self.requesting_person]
 
-        rospy.loginfo('[%s] Selected object at position\n    (%f, %f, %f) \n with size\n    (%f, %f, %f)',
+        rospy.loginfo('[%s] Selected object at position\n    (%f, %f, %f) \n with size\n    (%f, %f, %f) \n with label\n    "%s"',
                       self.state_name, selected_object.pose.pose.position.x,
                       selected_object.pose.pose.position.y,
                       selected_object.pose.pose.position.z,
                       selected_object.dimensions.vector.x,
                       selected_object.dimensions.vector.y,
-                      selected_object.dimensions.vector.z)
+                      selected_object.dimensions.vector.z,
+                      selected_object.category)
         userdata.selected_object = selected_object
         return 'succeeded'
 
