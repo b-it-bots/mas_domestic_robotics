@@ -96,6 +96,9 @@ state_descriptions:
                 name: cloud_obstacle_cache_reset_topic
                 value: /mdr_cloud_object_detection/cloud_object_detection/reset_cache
             - argument:
+                name: object_detection_timeout
+                value: 30.
+            - argument:
                 name: number_of_retries
                 value: 3
     - state:
