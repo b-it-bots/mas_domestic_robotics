@@ -1,3 +1,4 @@
+import uuid
 import numpy as np
 from shapely.geometry import Point, Polygon
 
@@ -7,7 +8,7 @@ import tf
 import actionlib
 from std_msgs.msg import Bool
 
-from mas_perception_msgs.msg import ObjectList, DetectObjectsAction
+from mas_perception_msgs.msg import ObjectList, DetectObjectsAction, DetectObjectsGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 def get_plane_polygon(center_position, dimensions):
@@ -16,6 +17,19 @@ def get_plane_polygon(center_position, dimensions):
     p3 = (center_position.x + (dimensions.x / 2), center_position.y + (dimensions.y / 2))
     p4 = (center_position.x + (dimensions.x / 2), center_position.y - (dimensions.y / 2))
     return Polygon((p1, p2, p3, p4))
+
+def find_closest_object(obj, obj_list):
+    min_dist = 1e10
+    min_dist_class = ''
+    for x in obj_list:
+        relative_position = np.array([obj.pose.pose.position.x - x.pose.pose.position.x,
+                                      obj.pose.pose.position.y - x.pose.pose.position.y,
+                                      obj.pose.pose.position.z - x.pose.pose.position.z])
+        dist = np.linalg.norm(relative_position)
+        if dist < min_dist:
+            min_dist = dist
+            min_dist_class = x.category
+    return min_dist_class
 
 class FindObjects(ScenarioStateBase):
     tf_listener = None
@@ -68,9 +82,17 @@ class FindObjects(ScenarioStateBase):
         self.__init_ros_components()
 
     def execute(self, userdata):
-        if self.last_cloud_object_detection_time is None:
-            self.last_cloud_object_detection_time = rospy.Time.now().to_sec()
         last_msg_time = self.last_cloud_object_detection_time
+
+        detected_cam_objects = []
+        self.object_detection_client.send_goal(DetectObjectsGoal())
+        if self.object_detection_client.wait_for_result(rospy.Duration.from_sec(self.object_detection_timeout_s)):
+            result = self.object_detection_client.get_result()
+            detected_cam_objects = result.objects.objects
+        else:
+            rospy.logerr('[%s] No objects detected within %f seconds',
+                         self.state_name, self.object_detection_timeout_s)
+            return 'no_objects'
 
         rospy.loginfo('[%s] Resetting cloud obstacle cache and waiting a bit', self.state_name)
         self.obstacle_cache_reset_pub.publish(Bool(data=True))
@@ -93,13 +115,9 @@ class FindObjects(ScenarioStateBase):
                 userdata.floor_objects_cleared[current_location] = True
             elif userdata.object_location == 'table':
                 userdata.table_objects_cleared[current_location] = True
-            userdata.detected_objects = None
             return 'no_objects'
 
-        if self.detected_cloud_objects is None:
-            rospy.loginfo('[%s] Detected %d objects', self.state_name, 0)
-        else:
-            rospy.loginfo('[%s] Detected %d objects', self.state_name, len(self.detected_cloud_objects))
+        rospy.loginfo('[%s] Detected %d objects', self.state_name, len(self.detected_cloud_objects))
 
         # workaround for large objects (such as the pitcher) sticking to the gripper in Gazebo
         filtered_objects = self.filter_objects_by_height(self.detected_cloud_objects)
@@ -109,7 +127,7 @@ class FindObjects(ScenarioStateBase):
             filtered_objects = self.filter_objects_under_tables(filtered_objects,
                                                                 userdata.environment_objects)
             filtered_objects = self.filter_large_objects(filtered_objects)
-        userdata.detected_objects = filtered_objects
+        userdata.detected_objects = self.label_detected_cloud_objects(detected_cam_objects, filtered_objects)
 
         # if no objects are seen in the current view, we register the location as "cleared"
         if not filtered_objects:
@@ -138,6 +156,13 @@ class FindObjects(ScenarioStateBase):
         '''
         self.detected_cloud_objects = object_msg.objects
         self.last_cloud_object_detection_time = rospy.Time.now().to_sec()
+
+    def label_detected_cloud_objects(self, detected_cam_objects, cloud_objects):
+        for obj in cloud_objects:
+            closest_object_label = find_closest_object(obj, detected_cam_objects)
+            obj.name = '{0}-{1}'.format(closest_object_label, str(uuid.uuid4()))
+            obj.category = closest_object_label
+        return cloud_objects
 
     def filter_objects_by_height(self, objects):
         rospy.loginfo('[%s] Filtering detected objects using height threshold %f',
