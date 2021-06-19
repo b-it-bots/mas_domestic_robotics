@@ -47,7 +47,7 @@ class MoveArmSM(ActionSMBase):
                 rospy.loginfo('[move_arm] Initialising group %s', self.whole_body_name)
                 self.whole_body = moveit_commander.MoveGroupCommander(self.whole_body_name)
                 self.whole_body.allow_replanning(True)
-                self.whole_body.set_planning_time(5)
+                self.whole_body.set_planning_time(15)
                 if self.workspace_bounds:
                     self.whole_body.set_workspace(self.workspace_bounds)
                 self.end_effector = self.whole_body.get_end_effector_link()
