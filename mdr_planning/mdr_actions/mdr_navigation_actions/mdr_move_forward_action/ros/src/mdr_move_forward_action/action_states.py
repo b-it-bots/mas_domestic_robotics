@@ -20,7 +20,7 @@ class MoveForwardSM(ActionSMBase):
         twist = Twist()
         twist.linear.x = speed
 
-        rospy.loginfo('[move_forward] moving the base forward for %s s at %s m/s', str(duration), str(speed))
+        rospy.loginfo('[move_forward] moving the base forward for {:.2f} s at {:.2f} m/s'.format(self.goal.movement_duration, speed))
         start_time = rospy.Time.now()
         while (rospy.Time.now() - start_time) < duration:
             self.velocity_pub.publish(twist)
