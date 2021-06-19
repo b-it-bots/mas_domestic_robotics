@@ -13,6 +13,7 @@ from mas_perception_msgs.msg import ObjectList
 from mdr_place_action.msg import PlaceAction, PlaceGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from mdr_wrs_tidy_up.utils import update_object_detection_params
+from mdr_manipulation_msgs.srv import UpdatePlanningScene, UpdatePlanningSceneRequest
 
 class ReleaseObject(ScenarioStateBase):
     tf_listener = None
@@ -34,6 +35,8 @@ class ReleaseObject(ScenarioStateBase):
     num_cell_rows_per_tray = 3
     num_cell_cols_per_tray = 2
     planning_scene_map_file = None
+    planning_scene_update_service_name = ''
+    planning_scene_update_proxy = None
 
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'release_object',
@@ -61,6 +64,8 @@ class ReleaseObject(ScenarioStateBase):
         self.num_cell_rows_per_tray = kwargs.get('num_cell_rows_per_tray', 3)
         self.num_cell_cols_per_tray = kwargs.get('num_cell_cols_per_tray', 1)
         self.planning_scene_map_file = kwargs.get('planning_scene_map_file', '')
+        self.planning_scene_update_service_name = kwargs.get('planning_scene_update_service_name',
+                                                             '/move_arm_action/update_planning_scene')
         self.__init_ros_components()
 
     def execute(self, userdata):
@@ -69,6 +74,8 @@ class ReleaseObject(ScenarioStateBase):
 
         goal = PlaceGoal()
         goal.release_on_impact = False
+
+        self.update_planning_scene(userdata.environment_objects)
 
         storage_location = userdata.storage_location.lower()
         if storage_location.find('bin') != -1:
@@ -408,6 +415,22 @@ class ReleaseObject(ScenarioStateBase):
         cell_max = self.cells[cell_id][2:]
         return cell_min + ((cell_max - cell_min) / 2.0)
 
+    def update_planning_scene(self, environment_objects):
+        # initialising the MoveIt! planning scene
+        update_planning_scene_req = UpdatePlanningSceneRequest()
+        update_planning_scene_req.operation = UpdatePlanningSceneRequest.ADD
+        update_planning_scene_req.objects = environment_objects
+
+        rospy.loginfo('[%s] Initialising planning scene', self.state_name)
+        response = self.planning_scene_update_proxy(update_planning_scene_req)
+        if response is not None:
+            if response.success:
+                rospy.loginfo('[%s] Successfully updated the planning scene', self.state_name)
+            else:
+                rospy.logerr('[%s] Failed to update the planning scene', self.state_name)
+        else:
+            rospy.logerr('[%s] Response not received', self.state_name)
+
     def __init_ros_components(self):
         '''Initialises:
         * an object detection action client
@@ -458,5 +481,13 @@ class ReleaseObject(ScenarioStateBase):
         rospy.sleep(0.5)
         rospy.loginfo('[%s] Publisher for topic %s created',
                       self.state_name, self.free_cell_center_marker_topic)
+
+        rospy.loginfo('[%s] Creating a service proxy for %s',
+                      self.state_name, self.planning_scene_update_service_name)
+        rospy.wait_for_service(self.planning_scene_update_service_name)
+        self.planning_scene_update_proxy = rospy.ServiceProxy(self.planning_scene_update_service_name,
+                                                              UpdatePlanningScene)
+        rospy.loginfo('[%s] Service proxy for %s created',
+                      self.state_name, self.planning_scene_update_service_name)
 
         self.tf_listener = tf.TransformListener()

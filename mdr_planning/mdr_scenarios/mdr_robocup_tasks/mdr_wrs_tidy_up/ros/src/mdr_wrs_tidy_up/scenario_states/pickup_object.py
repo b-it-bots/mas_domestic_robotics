@@ -28,7 +28,8 @@ class PickupObject(ScenarioStateBase):
                                    outcomes=['succeeded', 'failed',
                                              'failed_after_retrying'],
                                    input_keys=['selected_object',
-                                               'detected_objects'],
+                                               'detected_objects',
+                                               'environment_objects'],
                                    output_keys=['grasped_object'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'pickup_object')
@@ -44,6 +45,7 @@ class PickupObject(ScenarioStateBase):
         self.__init_ros_components()
 
     def execute(self, userdata):
+        self.reset_planning_scene(userdata.environment_objects)
         object_to_pick_up = userdata.selected_object
         objects_except_target = [obj for obj in userdata.detected_objects
                                  if obj.name != object_to_pick_up.name]
@@ -89,6 +91,22 @@ class PickupObject(ScenarioStateBase):
         self.retry_count += 1
         self.update_planning_scene(objects_except_target, UpdatePlanningSceneRequest.REMOVE)
         return 'failed'
+
+    def reset_planning_scene(self, environment_objects):
+        # initialising the MoveIt! planning scene
+        update_planning_scene_req = UpdatePlanningSceneRequest()
+        update_planning_scene_req.operation = UpdatePlanningSceneRequest.ADD
+        update_planning_scene_req.objects = environment_objects
+
+        rospy.loginfo('[%s] Initialising planning scene', self.state_name)
+        response = self.planning_scene_update_proxy(update_planning_scene_req)
+        if response is not None:
+            if response.success:
+                rospy.loginfo('[%s] Successfully updated the planning scene', self.state_name)
+            else:
+                rospy.logerr('[%s] Failed to update the planning scene', self.state_name)
+        else:
+            rospy.logerr('[%s] Response not received', self.state_name)
 
     def update_planning_scene(self, objects, operation):
         object_list = ObjectList()
