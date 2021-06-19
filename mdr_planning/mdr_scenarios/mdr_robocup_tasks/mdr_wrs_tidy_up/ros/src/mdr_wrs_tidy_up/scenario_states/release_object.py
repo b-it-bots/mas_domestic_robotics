@@ -416,10 +416,12 @@ class ReleaseObject(ScenarioStateBase):
         return cell_min + ((cell_max - cell_min) / 2.0)
 
     def update_planning_scene(self, environment_objects):
+        object_list = ObjectList()
+        object_list.objects = [environment_objects[name] for name in environment_objects]
         # initialising the MoveIt! planning scene
         update_planning_scene_req = UpdatePlanningSceneRequest()
         update_planning_scene_req.operation = UpdatePlanningSceneRequest.ADD
-        update_planning_scene_req.objects = environment_objects
+        update_planning_scene_req.objects = object_list
 
         rospy.loginfo('[%s] Initialising planning scene', self.state_name)
         response = self.planning_scene_update_proxy(update_planning_scene_req)

@@ -93,10 +93,14 @@ class PickupObject(ScenarioStateBase):
         return 'failed'
 
     def reset_planning_scene(self, environment_objects):
+        object_list = ObjectList()
+        object_list.objects = [environment_objects[name] for name in environment_objects]
+        
+
         # initialising the MoveIt! planning scene
         update_planning_scene_req = UpdatePlanningSceneRequest()
         update_planning_scene_req.operation = UpdatePlanningSceneRequest.ADD
-        update_planning_scene_req.objects = environment_objects
+        update_planning_scene_req.objects = object_list
 
         rospy.loginfo('[%s] Initialising planning scene', self.state_name)
         response = self.planning_scene_update_proxy(update_planning_scene_req)
