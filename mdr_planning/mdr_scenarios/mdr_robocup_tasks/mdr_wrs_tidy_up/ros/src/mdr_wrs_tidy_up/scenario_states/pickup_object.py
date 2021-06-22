@@ -37,7 +37,7 @@ class PickupObject(ScenarioStateBase):
         self.pickup_goal_pose_topic = kwargs.get('pickup_goal_pose_topic',
                                                  '/pickup_server/goal_pose')
         self.grasping_timeout_s = kwargs.get('grasping_timeout_s', 30.)
-        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.05)
+        self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.025)
         self.planning_scene_update_service_name = kwargs.get('planning_scene_update_service_name',
                                                              '/move_arm_action/update_planning_scene')
         self.retry_count = 0
@@ -124,7 +124,7 @@ class PickupObject(ScenarioStateBase):
         pose = Pose()
         pose.position.x = object_to_pick_up.bounding_box.center.x
         pose.position.y = object_to_pick_up.bounding_box.center.y
-        pose.position.z = object_to_pick_up.bounding_box.center.z
+        pose.position.z = object_to_pick_up.bounding_box.center.z + self.grasping_height_offset
 
         grasping_strategy = None
         # this orientation guarantees a sideways grasp and
