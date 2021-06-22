@@ -140,7 +140,7 @@ class PlaceSM(ActionSMBase):
         self.move_arm_joints_client.wait_for_result()
 
         self.__move_base_along_x(pose_base_link.pose.position.x-0.55)
-        self.align_base_with_orientation(orientation_before_alignment)
+        # self.align_base_with_orientation(orientation_before_alignment)
 
         # the arm is moved down until it makes an impact with the placing surface
         if self.goal.release_on_impact:
@@ -213,16 +213,47 @@ class PlaceSM(ActionSMBase):
         return result
 
     def __move_base_along_x(self, distance_to_move):
-        movement_speed = np.sign(distance_to_move) * 0.05 # m/s
-        movement_duration = distance_to_move / movement_speed
+        aligned_base_pose = PoseStamped()
+        aligned_base_pose.header.frame_id = 'base_link'
+        aligned_base_pose.header.stamp = rospy.Time.now()
+        aligned_base_pose.pose.position.x = distance_to_move
+        aligned_base_pose.pose.orientation.w = 1.
+
+        self.tf_listener.waitForTransform('map', 'base_link', rospy.Time.now(), rospy.Duration(5))
+        goal_pose_map = self.tf_listener.transformPose('map', aligned_base_pose)
+
+        movement_speed_linear = 0.05
+        movement_speed_angular = 0.01
 
         twist_msg = Twist()
-        twist_msg.linear.x = movement_speed
+        goal_reached = False
+        while not goal_reached:
+            goal_pose_map.header.stamp = rospy.Time.now()
+            self.tf_listener.waitForTransform('base_link', 'map', rospy.Time.now(), rospy.Duration(5))
+            goal_base_link = self.tf_listener.transformPose('base_link', goal_pose_map)
+            euler_rotation = tf.transformations.euler_from_quaternion([goal_base_link.pose.orientation.x,
+                                                                       goal_base_link.pose.orientation.y,
+                                                                       goal_base_link.pose.orientation.z,
+                                                                       goal_base_link.pose.orientation.w])
+            goal_rotation = euler_rotation[2]
+            if abs(goal_base_link.pose.position.x) > 0:
+                twist_msg.linear.x = np.sign(goal_base_link.pose.position.x) * movement_speed_linear
+            if abs(goal_base_link.pose.position.y) > 0:
+                twist_msg.linear.y = np.sign(goal_base_link.pose.position.y) * movement_speed_linear
+            if abs(goal_rotation) > 0:
+                twist_msg.angular.z = np.sign(goal_rotation) * movement_speed_angular
+            # rospy.logwarn('%s %s %s',
+            #               goal_base_link.pose.position.x,
+            #               goal_base_link.pose.position.y,
+            #               goal_rotation)
 
-        start_time = rospy.Time.now().to_sec()
-        while (rospy.Time.now().to_sec() - start_time) < movement_duration:
+            goal_reached = abs(goal_base_link.pose.position.x) < 0.05 and\
+                           abs(goal_base_link.pose.position.y) < 1e-2 and\
+                           abs(goal_rotation) < 1e-2
             self.base_vel_pub.publish(twist_msg)
             rospy.sleep(0.01)
+
+        self.base_vel_pub.publish(Twist())
 
         # movement_speed = np.sign(distance_to_move) * 0.1 # m/s
         # movement_duration = distance_to_move / movement_speed

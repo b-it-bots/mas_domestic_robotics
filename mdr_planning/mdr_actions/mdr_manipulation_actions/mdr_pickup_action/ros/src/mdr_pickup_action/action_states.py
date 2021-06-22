@@ -5,7 +5,7 @@ import numpy as np
 import rospy
 import tf
 import actionlib
-from geometry_msgs.msg import PoseStamped, Twist
+from geometry_msgs.msg import PoseStamped, Twist, Quaternion
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -143,8 +143,8 @@ class PickupSM(ActionSMBase):
 
                 rospy.loginfo('[pickup] Grasping...')
                 rospy.loginfo('[pickup] Goal pose: %s', pose_base_link)
-                self.__move_base_along_x(pose_base_link.pose.position.x-0.55)
-                self.align_base_with_orientation(rotation_before_alignment)
+                self.__move_base_along_x(pose_base_link.pose.position.x-0.5)
+                # self.align_base_with_orientation(rotation_before_alignment)
 
                 # arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
                 # if not arm_motion_success:
@@ -159,9 +159,10 @@ class PickupSM(ActionSMBase):
 
                 rospy.loginfo('[pickup] Grasping...')
                 rospy.loginfo('[pickup] Goal pose: %s', pose_base_link)
-                self.__move_base_along_x(pose_base_link.pose.position.x-0.55)
-                self.align_base_with_orientation(rotation_before_alignment)
+                self.__move_base_along_x(pose_base_link.pose.position.x-0.5)
+                # self.align_base_with_orientation(rotation_before_alignment)
 
+                rospy.loginfo('[pickup] Moving arm down...')
                 palm_base_link_trans, _ = self.get_transform('base_link', 'hand_palm_link', rospy.Time.now())
                 z_position_reached = abs(palm_base_link_trans[2] - pose_base_link.pose.position.z) < 1e-2
                 while not z_position_reached:
@@ -320,16 +321,47 @@ class PickupSM(ActionSMBase):
         #     self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pregrasp_pose_original_frame)
 
     def __move_base_along_x(self, distance_to_move):
-        movement_speed = np.sign(distance_to_move) * 0.05 # m/s
-        movement_duration = distance_to_move / movement_speed
+        aligned_base_pose = PoseStamped()
+        aligned_base_pose.header.frame_id = 'base_link'
+        aligned_base_pose.header.stamp = rospy.Time.now()
+        aligned_base_pose.pose.position.x = distance_to_move
+        aligned_base_pose.pose.orientation.w = 1.
+
+        self.tf_listener.waitForTransform('map', 'base_link', rospy.Time.now(), rospy.Duration(5))
+        goal_pose_map = self.tf_listener.transformPose('map', aligned_base_pose)
+
+        movement_speed_linear = 0.05
+        movement_speed_angular = 0.01
 
         twist_msg = Twist()
-        twist_msg.linear.x = movement_speed
+        goal_reached = False
+        while not goal_reached:
+            goal_pose_map.header.stamp = rospy.Time.now()
+            self.tf_listener.waitForTransform('base_link', 'map', rospy.Time.now(), rospy.Duration(5))
+            goal_base_link = self.tf_listener.transformPose('base_link', goal_pose_map)
+            euler_rotation = tf.transformations.euler_from_quaternion([goal_base_link.pose.orientation.x,
+                                                                       goal_base_link.pose.orientation.y,
+                                                                       goal_base_link.pose.orientation.z,
+                                                                       goal_base_link.pose.orientation.w])
+            goal_rotation = euler_rotation[2]
+            if abs(goal_base_link.pose.position.x) > 0:
+                twist_msg.linear.x = np.sign(goal_base_link.pose.position.x) * movement_speed_linear
+            if abs(goal_base_link.pose.position.y) > 0:
+                twist_msg.linear.y = np.sign(goal_base_link.pose.position.y) * movement_speed_linear
+            if abs(goal_rotation) > 0:
+                twist_msg.angular.z = np.sign(goal_rotation) * movement_speed_angular
+            # rospy.logwarn('%s %s %s',
+            #               goal_base_link.pose.position.x,
+            #               goal_base_link.pose.position.y,
+            #               goal_rotation)
 
-        start_time = rospy.Time.now().to_sec()
-        while (rospy.Time.now().to_sec() - start_time) < movement_duration:
+            goal_reached = abs(goal_base_link.pose.position.x) < 0.05 and\
+                           abs(goal_base_link.pose.position.y) < 1e-2 and\
+                           abs(goal_rotation) < 1e-2
             self.base_vel_pub.publish(twist_msg)
             rospy.sleep(0.01)
+
+        self.base_vel_pub.publish(Twist())
 
         # move_forward_goal = MoveForwardGoal()
         # move_forward_goal.movement_duration = movement_duration
