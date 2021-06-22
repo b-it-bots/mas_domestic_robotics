@@ -5,7 +5,7 @@ import numpy as np
 import rospy
 import tf
 import actionlib
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Twist
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -14,13 +14,15 @@ from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_pickup_action.msg import PickupGoal, PickupResult
 
+from mas_hsr_move_arm_joints_action.msg import MoveArmJointsAction, MoveArmJointsGoal
+
 class PickupSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mdr_gripper_controller',
                  pregrasp_config_name='pregrasp',
                  pregrasp_top_config_name='neutral',
                  pregrasp_low_config_name='neutral',
-                 pregrasp_height_threshold=0.5,
+                 pregrasp_height_threshold=0.6,
                  intermediate_grasp_offset=-1,
                  safe_arm_joint_config='folded',
                  move_arm_server='move_arm_server',
@@ -62,6 +64,8 @@ class PickupSM(ActionSMBase):
         self.move_arm_client = None
         self.move_base_client = None
         self.move_forward_client = None
+        self.move_arm_joints_client = None
+        self.base_vel_pub = None
 
     def init(self):
         try:
@@ -88,25 +92,38 @@ class PickupSM(ActionSMBase):
             rospy.logerr('[pickup] %s server does not seem to respond: %s',
                          self.move_forward_server, str(exc))
 
+        try:
+            self.move_arm_joints_client = actionlib.SimpleActionClient('mas_hsr_move_arm_joints_server', MoveArmJointsAction)
+            rospy.loginfo('[pickup] Waiting for server mas_hsr_move_arm_joints_server')
+            self.move_arm_joints_client.wait_for_server()
+        except Exception as exc:
+            rospy.logerr('[pickup] mas_hsr_move_arm_joints_server server does not seem to respond: %s', str(exc))
+
+        self.base_vel_pub = rospy.Publisher('/hsrb/command_velocity', Twist, queue_size=10)
+
         return FTSMTransitions.INITIALISED
 
     def running(self):
         pose = self.goal.pose
         pose.header.stamp = rospy.Time(0)
-        pose_base_link = self.tf_listener.transformPose('odom', pose)
+        pose_base_link = self.tf_listener.transformPose('base_link', pose)
 
-        # if self.base_elbow_offset > 0:
-        #     self.__align_base_with_pose(pose_base_link)
-        #
-        #     # the base is now correctly aligned with the pose, so we set the
-        #     # y position of the goal pose to the elbow offset
-        #     pose_base_link.pose.position.y = self.base_elbow_offset
+        _, base_link_map_rot = self.get_transform('map', 'base_link', rospy.Time.now())
+        euler_rotation = tf.transformations.euler_from_quaternion(base_link_map_rot)
+        rotation_before_alignment = euler_rotation[2]
 
-        # if self.grasping_orientation:
-        #     pose_base_link.pose.orientation.x = self.grasping_orientation[0]
-        #     pose_base_link.pose.orientation.y = self.grasping_orientation[1]
-        #     pose_base_link.pose.orientation.z = self.grasping_orientation[2]
-        #     pose_base_link.pose.orientation.w = self.grasping_orientation[3]
+        if self.base_elbow_offset > 0:
+            self.__align_base_with_pose(pose_base_link)
+
+            # the base is now correctly aligned with the pose, so we set the
+            # y position of the goal pose to the elbow offset
+            pose_base_link.pose.position.y = self.base_elbow_offset
+
+        if self.grasping_orientation:
+            pose_base_link.pose.orientation.x = self.grasping_orientation[0]
+            pose_base_link.pose.orientation.y = self.grasping_orientation[1]
+            pose_base_link.pose.orientation.z = self.grasping_orientation[2]
+            pose_base_link.pose.orientation.w = self.grasping_orientation[3]
 
         grasp_successful = False
         retry_count = 0
@@ -122,28 +139,43 @@ class PickupSM(ActionSMBase):
 
             if self.goal.strategy == PickupGoal.SIDEWAYS_GRASP:
                 rospy.loginfo('[pickup] Preparing sideways graps')
-                self.__prepare_sideways_grasp(pose_base_link)
+                self.__prepare_sideways_grasp(pose_base_link, rotation_before_alignment)
 
                 rospy.loginfo('[pickup] Grasping...')
-                arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-                if not arm_motion_success:
-                    rospy.logerr('[pickup] Arm motion unsuccessful')
-                    self.result = self.set_result(False)
-                    return FTSMTransitions.DONE
+                rospy.loginfo('[pickup] Goal pose: %s', pose_base_link)
+                self.__move_base_along_x(pose_base_link.pose.position.x-0.55)
+                self.align_base_with_orientation(rotation_before_alignment)
 
-                rospy.loginfo('[pickup] Arm motion successful')
+                # arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+                # if not arm_motion_success:
+                #     rospy.logerr('[pickup] Arm motion unsuccessful')
+                #     self.result = self.set_result(False)
+                #     return FTSMTransitions.DONE
+                #
+                # rospy.loginfo('[pickup] Arm motion successful')
             elif self.goal.strategy == PickupGoal.TOP_GRASP:
                 rospy.loginfo('[pickup] Preparing top grasp')
-                self.__prepare_top_grasp(pose_base_link)
+                self.__prepare_top_grasp(pose_base_link, rotation_before_alignment)
 
                 rospy.loginfo('[pickup] Grasping...')
-                arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-                if not arm_motion_success:
-                    rospy.logerr('[pickup] Arm motion unsuccessful')
-                    self.result = self.set_result(False)
-                    return FTSMTransitions.DONE
+                rospy.loginfo('[pickup] Goal pose: %s', pose_base_link)
+                self.__move_base_along_x(pose_base_link.pose.position.x-0.55)
+                self.align_base_with_orientation(rotation_before_alignment)
 
-                rospy.loginfo('[pickup] Arm motion successful')
+                palm_base_link_trans, _ = self.get_transform('base_link', 'hand_palm_link', rospy.Time.now())
+                z_position_reached = abs(palm_base_link_trans[2] - pose_base_link.pose.position.z) < 1e-2
+                while not z_position_reached:
+                    self.gripper.move_down()
+                    palm_base_link_trans, _ = self.get_transform('base_link', 'hand_palm_link', rospy.Time.now())
+                    z_position_reached = abs(palm_base_link_trans[2] - pose_base_link.pose.position.z) < 1e-2
+                self.gripper.stop_arm()
+                # arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+                # if not arm_motion_success:
+                #     rospy.logerr('[pickup] Arm motion unsuccessful')
+                #     self.result = self.set_result(False)
+                #     return FTSMTransitions.DONE
+                #
+                # rospy.loginfo('[pickup] Arm motion successful')
             else:
                 rospy.logerr('[pickup] Unknown grasping strategy requested; ignoring request')
                 self.result = self.set_result(False)
@@ -188,7 +220,13 @@ class PickupSM(ActionSMBase):
         aligned_base_pose.header.frame_id = 'base_link'
         aligned_base_pose.header.stamp = rospy.Time.now()
         aligned_base_pose.pose.position.x = 0.
-        aligned_base_pose.pose.position.y = pose_base_link.pose.position.y - self.base_elbow_offset
+
+        # different goals because the error when moving to the right/left seems to be different
+        if (pose_base_link.pose.position.y - self.base_elbow_offset) < 0:
+            aligned_base_pose.pose.position.y = pose_base_link.pose.position.y - (2 * self.base_elbow_offset)
+        else:
+            aligned_base_pose.pose.position.y = pose_base_link.pose.position.y
+
         aligned_base_pose.pose.position.z = 0.
         aligned_base_pose.pose.orientation.x = 0.
         aligned_base_pose.pose.orientation.y = 0.
@@ -225,40 +263,118 @@ class PickupSM(ActionSMBase):
         result = self.move_arm_client.get_result()
         return result
 
-    def __prepare_sideways_grasp(self, pose_base_link):
-        if pose_base_link.pose.position.z > self.pregrasp_height_threshold:
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
-        else:
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_low_config_name)
+    def __prepare_sideways_grasp(self, pose_base_link, orientation_before_alignment):
+        goal = MoveArmJointsGoal()
+        goal.arm_joint_names = ['arm_flex_joint', 'arm_roll_joint',
+                                'arm_lift_joint', 'wrist_roll_joint', 'wrist_flex_joint']
+        goal.arm_joint_values = [-1.95, 0., pose_base_link.pose.position.z-0.25, 0., 0.35]
+        self.move_arm_joints_client.send_goal(goal)
+        self.move_arm_joints_client.wait_for_result()
 
-        if self.intermediate_grasp_offset > 0:
-            rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
-            pregrasp_pose_base_link = self.tf_listener.transformPose('/base_link', pose_base_link)
-            pregrasp_pose_base_link.pose.position.x -= self.intermediate_grasp_offset
-            pregrasp_pose_original_frame = self.tf_listener.transformPose(pose_base_link.header.frame_id, pregrasp_pose_base_link)
-            self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pregrasp_pose_original_frame)
+        # if pose_base_link.pose.position.z > self.pregrasp_height_threshold:
+        #     self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+        # else:
+        #     # self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_low_config_name)
+        #     goal = MoveArmJointsGoal()
+        #
+        #     goal.head_joint_names = ['head_pan_joint', 'head_tilt_joint']
+        #     goal.head_joint_values = [0., -0.35]
+        #
+        #     goal.arm_joint_names = ['arm_flex_joint', 'arm_roll_joint',
+        #                             'arm_lift_joint', 'wrist_roll_joint', 'wrist_flex_joint']
+        #     goal.arm_joint_values = [-1.95, 0., 0.1, 0., 0.35]
+        #
+        #     self.move_arm_joints_client.send_goal(goal)
+        #     self.move_arm_joints_client.wait_for_result()
+        #
+        # if self.intermediate_grasp_offset > 0:
+        #     rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
+        #     pregrasp_pose_base_link = self.tf_listener.transformPose('/base_link', pose_base_link)
+        #     pregrasp_pose_base_link.pose.position.x -= self.intermediate_grasp_offset
+        #     pregrasp_pose_original_frame = self.tf_listener.transformPose(pose_base_link.header.frame_id, pregrasp_pose_base_link)
+        #     self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pregrasp_pose_original_frame)
 
-    def __prepare_top_grasp(self, pose_base_link):
-        rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
-        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
-        if self.intermediate_grasp_offset > 0:
-            rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
-            pregrasp_pose_base_link = self.tf_listener.transformPose('/base_link', pose_base_link)
-            pregrasp_pose_base_link.pose.position.z += self.intermediate_grasp_offset
-            pregrasp_pose_original_frame = self.tf_listener.transformPose(pose_base_link.header.frame_id, pregrasp_pose_base_link)
-            self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pregrasp_pose_original_frame)
+        self.align_base_with_orientation(orientation_before_alignment)
+
+    def __prepare_top_grasp(self, pose_base_link, orientation_before_alignment):
+        goal_orientation = tf.transformations.euler_from_quaternion([pose_base_link.pose.orientation.x,
+                                                                     pose_base_link.pose.orientation.y,
+                                                                     pose_base_link.pose.orientation.z,
+                                                                     pose_base_link.pose.orientation.w])
+
+        goal = MoveArmJointsGoal()
+        goal.arm_joint_names = ['arm_flex_joint', 'arm_roll_joint',
+                                'arm_lift_joint', 'wrist_roll_joint', 'wrist_flex_joint']
+        goal.arm_joint_values = [-1.57, 0., min(0.69, pose_base_link.pose.position.z), goal_orientation[2], -1.57]
+        self.move_arm_joints_client.send_goal(goal)
+        self.move_arm_joints_client.wait_for_result()
+
+        self.align_base_with_orientation(orientation_before_alignment)
+        # rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
+        # self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+        # if self.intermediate_grasp_offset > 0:
+        #     rospy.loginfo('[PICKUP] Moving to a pregrasp configuration...')
+        #     pregrasp_pose_base_link = self.tf_listener.transformPose('/base_link', pose_base_link)
+        #     pregrasp_pose_base_link.pose.position.z += self.intermediate_grasp_offset
+        #     pregrasp_pose_original_frame = self.tf_listener.transformPose(pose_base_link.header.frame_id, pregrasp_pose_base_link)
+        #     self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pregrasp_pose_original_frame)
 
     def __move_base_along_x(self, distance_to_move):
-        movement_speed = np.sign(distance_to_move) * 0.1 # m/s
+        movement_speed = np.sign(distance_to_move) * 0.05 # m/s
         movement_duration = distance_to_move / movement_speed
-        move_forward_goal = MoveForwardGoal()
-        move_forward_goal.movement_duration = movement_duration
-        move_forward_goal.speed = movement_speed
-        self.move_forward_client.send_goal(move_forward_goal)
-        self.move_forward_client.wait_for_result()
-        self.move_forward_client.get_result()
+
+        twist_msg = Twist()
+        twist_msg.linear.x = movement_speed
+
+        start_time = rospy.Time.now().to_sec()
+        while (rospy.Time.now().to_sec() - start_time) < movement_duration:
+            self.base_vel_pub.publish(twist_msg)
+            rospy.sleep(0.01)
+
+        # move_forward_goal = MoveForwardGoal()
+        # move_forward_goal.movement_duration = movement_duration
+        # move_forward_goal.speed = movement_speed
+        # self.move_forward_client.send_goal(move_forward_goal)
+        # self.move_forward_client.wait_for_result()
+        # self.move_forward_client.get_result()
 
     def set_result(self, success):
         result = PickupResult()
         result.success = success
         return result
+
+    def get_transform(self, target_frame, source_frame, tf_time):
+        '''Returns the translation and rotation of the source frame
+        with respect to the target frame at the given time.
+
+        Keyword arguments:
+        target_frame: str -- name of the transformation target frame
+        source_frame: str -- name of the transformation source frame
+        tf_time: rospy.rostime.Time -- time of the transform
+
+        '''
+        trans = None
+        rot = None
+        while not rospy.is_shutdown():
+            try:
+                (trans, rot) = self.tf_listener.lookupTransform(target_frame, source_frame, tf_time)
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+        return (trans, rot)
+
+    def align_base_with_orientation(self, orientation):
+        _, base_link_map_rot = self.get_transform('map', 'base_link', rospy.Time.now())
+        euler_rotation = tf.transformations.euler_from_quaternion(base_link_map_rot)
+        current_rotation = euler_rotation[2]
+        aligned = abs(orientation - current_rotation) < 1e-2
+
+        alignment_direction = np.sign(orientation - current_rotation)
+        twist_msg = Twist()
+        twist_msg.angular.z = alignment_direction * 0.05
+        while not aligned:
+            self.base_vel_pub.publish(twist_msg)
+            _, base_link_map_rot = self.get_transform('map', 'base_link', rospy.Time.now())
+            euler_rotation = tf.transformations.euler_from_quaternion(base_link_map_rot)
+            current_rotation = euler_rotation[2]
+            aligned = abs(orientation - current_rotation) < 1e-2
