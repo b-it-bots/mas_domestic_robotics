@@ -5,7 +5,7 @@ import numpy as np
 import rospy
 import tf
 import actionlib
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Twist
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -14,12 +14,14 @@ from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_place_action.msg import PlaceResult
 
+from mas_hsr_move_arm_joints_action.msg import MoveArmJointsAction, MoveArmJointsGoal
+
 class PlaceSM(ActionSMBase):
     def __init__(self, timeout=120.0,
                  gripper_controller_pkg_name='mdr_gripper_controller',
                  preplace_config_name='pregrasp',
                  preplace_low_config_name='neutral',
-                 preplace_height_threshold=0.5,
+                 preplace_height_threshold=0.6,
                  safe_arm_joint_config='folded',
                  move_arm_server='move_arm_server',
                  move_base_server='move_base_server',
@@ -55,6 +57,8 @@ class PlaceSM(ActionSMBase):
         self.move_arm_client = None
         self.move_base_client = None
         self.move_forward_client = None
+        self.move_arm_joints_client = None
+        self.base_vel_pub = None
 
     def init(self):
         try:
@@ -78,40 +82,65 @@ class PlaceSM(ActionSMBase):
         except:
             rospy.logerr('[place] %s server does not seem to respond', self.move_forward_server)
 
+        try:
+            self.move_arm_joints_client = actionlib.SimpleActionClient('mas_hsr_move_arm_joints_server', MoveArmJointsAction)
+            rospy.loginfo('[pickup] Waiting for server mas_hsr_move_arm_joints_server')
+            self.move_arm_joints_client.wait_for_server()
+        except Exception as exc:
+            rospy.logerr('[pickup] mas_hsr_move_arm_joints_server server does not seem to respond: %s', str(exc))
+
+        self.base_vel_pub = rospy.Publisher('/hsrb/command_velocity', Twist, queue_size=10)
+
         return FTSMTransitions.INITIALISED
 
     def running(self):
         pose = self.goal.pose
         pose.header.stamp = rospy.Time(0)
-        pose_base_link = self.tf_listener.transformPose('odom', pose)
+        pose_base_link = self.tf_listener.transformPose('base_link', pose)
 
-        # if self.placing_orientation is not None:
-        #     pose_base_link.pose.orientation.x = self.placing_orientation[0]
-        #     pose_base_link.pose.orientation.y = self.placing_orientation[1]
-        #     pose_base_link.pose.orientation.z = self.placing_orientation[2]
-        #     pose_base_link.pose.orientation.w = self.placing_orientation[3]
+        _, base_link_map_rot = self.get_transform('map', 'base_link', rospy.Time.now())
+        euler_rotation = tf.transformations.euler_from_quaternion(base_link_map_rot)
+        orientation_before_alignment = euler_rotation[2]
 
-        # if self.base_elbow_offset > 0:
-        #     self.__align_base_with_pose(pose_base_link)
+        if self.placing_orientation is not None:
+            pose_base_link.pose.orientation.x = self.placing_orientation[0]
+            pose_base_link.pose.orientation.y = self.placing_orientation[1]
+            pose_base_link.pose.orientation.z = self.placing_orientation[2]
+            pose_base_link.pose.orientation.w = self.placing_orientation[3]
+
+        if self.base_elbow_offset > 0:
+            self.__align_base_with_pose(pose_base_link)
+
+            # the base is now correctly aligned with the pose, so we set the
+            # y position of the goal pose to the elbow offset
+            pose_base_link.pose.position.y = self.base_elbow_offset
+
+        # rospy.loginfo('[place] Moving to a preplace configuration...')
+        # if pose_base_link.pose.position.z > self.preplace_height_threshold:
+        #     self.__move_arm(MoveArmGoal.NAMED_TARGET, self.preplace_config_name)
+        # else:
+        #     self.__move_arm(MoveArmGoal.NAMED_TARGET, self.preplace_low_config_name)
         #
-        #     # the base is now correctly aligned with the pose, so we set the
-        #     # y position of the goal pose to the elbow offset
-        #     pose_base_link.pose.position.y = self.base_elbow_offset
+        # # we set up the arm group for moving
+        # rospy.loginfo('[place] Placing...')
+        # success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+        # if not success:
+        #     rospy.logerr('[place] Arm motion unsuccessful')
+        #     self.result = self.set_result(False)
+        #     return FTSMTransitions.DONE
+        # rospy.loginfo('[place] Arm motion successful')
 
-        rospy.loginfo('[place] Moving to a preplace configuration...')
-        if pose_base_link.pose.position.z > self.preplace_height_threshold:
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.preplace_config_name)
-        else:
-            self.__move_arm(MoveArmGoal.NAMED_TARGET, self.preplace_low_config_name)
+        self.align_base_with_orientation(orientation_before_alignment)
 
-        # we set up the arm group for moving
-        rospy.loginfo('[place] Placing...')
-        success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-        if not success:
-            rospy.logerr('[place] Arm motion unsuccessful')
-            self.result = self.set_result(False)
-            return FTSMTransitions.DONE
-        rospy.loginfo('[place] Arm motion successful')
+        goal = MoveArmJointsGoal()
+        goal.arm_joint_names = ['arm_flex_joint', 'arm_roll_joint',
+                                'arm_lift_joint', 'wrist_roll_joint', 'wrist_flex_joint']
+        goal.arm_joint_values = [-1.57, 0., min(0.69, pose_base_link.pose.position.z), 0., -1.57]
+        self.move_arm_joints_client.send_goal(goal)
+        self.move_arm_joints_client.wait_for_result()
+
+        self.__move_base_along_x(pose_base_link.pose.position.x-0.55)
+        self.align_base_with_orientation(orientation_before_alignment)
 
         # the arm is moved down until it makes an impact with the placing surface
         if self.goal.release_on_impact:
@@ -184,16 +213,63 @@ class PlaceSM(ActionSMBase):
         return result
 
     def __move_base_along_x(self, distance_to_move):
-        movement_speed = np.sign(distance_to_move) * 0.1 # m/s
+        movement_speed = np.sign(distance_to_move) * 0.05 # m/s
         movement_duration = distance_to_move / movement_speed
-        move_forward_goal = MoveForwardGoal()
-        move_forward_goal.movement_duration = movement_duration
-        move_forward_goal.speed = movement_speed
-        self.move_forward_client.send_goal(move_forward_goal)
-        self.move_forward_client.wait_for_result()
-        self.move_forward_client.get_result()
+
+        twist_msg = Twist()
+        twist_msg.linear.x = movement_speed
+
+        start_time = rospy.Time.now().to_sec()
+        while (rospy.Time.now().to_sec() - start_time) < movement_duration:
+            self.base_vel_pub.publish(twist_msg)
+            rospy.sleep(0.01)
+
+        # movement_speed = np.sign(distance_to_move) * 0.1 # m/s
+        # movement_duration = distance_to_move / movement_speed
+        # move_forward_goal = MoveForwardGoal()
+        # move_forward_goal.movement_duration = movement_duration
+        # move_forward_goal.speed = movement_speed
+        # self.move_forward_client.send_goal(move_forward_goal)
+        # self.move_forward_client.wait_for_result()
+        # self.move_forward_client.get_result()
 
     def set_result(self, success):
         result = PlaceResult()
         result.success = success
         return result
+
+    def get_transform(self, target_frame, source_frame, tf_time):
+        '''Returns the translation and rotation of the source frame
+        with respect to the target frame at the given time.
+
+        Keyword arguments:
+        target_frame: str -- name of the transformation target frame
+        source_frame: str -- name of the transformation source frame
+        tf_time: rospy.rostime.Time -- time of the transform
+
+        '''
+        trans = None
+        rot = None
+        while not rospy.is_shutdown():
+            try:
+                (trans, rot) = self.tf_listener.lookupTransform(target_frame, source_frame, tf_time)
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+        return (trans, rot)
+
+    def align_base_with_orientation(self, orientation):
+        _, base_link_map_rot = self.get_transform('map', 'base_link', rospy.Time.now())
+        euler_rotation = tf.transformations.euler_from_quaternion(base_link_map_rot)
+        current_rotation = euler_rotation[2]
+        aligned = abs(orientation - current_rotation) < 1e-2
+
+        alignment_direction = np.sign(orientation - current_rotation)
+        twist_msg = Twist()
+        twist_msg.angular.z = alignment_direction * 0.05
+        while not aligned:
+            self.base_vel_pub.publish(twist_msg)
+            _, base_link_map_rot = self.get_transform('map', 'base_link', rospy.Time.now())
+            euler_rotation = tf.transformations.euler_from_quaternion(base_link_map_rot)
+            current_rotation = euler_rotation[2]
+            aligned = abs(orientation - current_rotation) < 1e-2
