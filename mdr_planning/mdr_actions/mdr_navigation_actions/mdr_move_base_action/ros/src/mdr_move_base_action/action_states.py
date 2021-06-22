@@ -3,7 +3,7 @@ import numpy as np
 import rospy
 import actionlib
 import tf
-from geometry_msgs.msg import PoseStamped, Quaternion
+from geometry_msgs.msg import PoseStamped, Quaternion, Twist
 import move_base_msgs.msg as move_base_msgs
 from actionlib_msgs.msg import GoalStatus
 
@@ -37,6 +37,8 @@ class MoveBaseSM(ActionSMBase):
         self.is_recovering = False
         self.recovery_count = 0
         self.recovery_position_m_std = recovery_position_m_std
+        self.tf_listener = tf.TransformListener()
+        self.base_vel_pub = None
 
     def init(self):
         try:
@@ -50,6 +52,7 @@ class MoveBaseSM(ActionSMBase):
         goal_pose_topic = self.move_base_server + '_goal'
         rospy.loginfo('[move_base] Creating a goal pose publisher on topic %s', goal_pose_topic)
         self.move_base_goal_pub = rospy.Publisher(goal_pose_topic, PoseStamped, queue_size=1)
+        self.base_vel_pub = rospy.Publisher('/hsrb/command_velocity', Twist, queue_size=10)
 
         return FTSMTransitions.INITIALISED
 
@@ -67,6 +70,7 @@ class MoveBaseSM(ActionSMBase):
             rospy.loginfo('[move_base] Moving base to %s', destination)
 
             self.pose = self.convert_pose_name_to_coordinates(destination)
+            rospy.loginfo('[move_base] Destination pose %s', self.pose)
             pose.header.stamp = rospy.Time.now()
             pose.header.frame_id = self.pose_frame
             pose.pose.position.x = self.pose[0]
@@ -101,7 +105,23 @@ class MoveBaseSM(ActionSMBase):
             result = move_base_client.get_result()
             resulting_state = move_base_client.get_state()
             if result and resulting_state == GoalStatus.SUCCEEDED:
+                desired_orientation = self.pose[2]
+                _, base_link_map_rot = self.get_transform('map', 'base_link', rospy.Time.now())
+                euler_rotation = tf.transformations.euler_from_quaternion(base_link_map_rot)
+                current_rotation = euler_rotation[2]
+                aligned = abs(desired_orientation - current_rotation) < 1e-2
+
+                alignment_direction = np.sign(desired_orientation - current_rotation)
+                twist_msg = Twist()
+                twist_msg.angular.z = alignment_direction * 0.05
+                while not aligned:
+                    self.base_vel_pub.publish(twist_msg)
+                    _, base_link_map_rot = self.get_transform('map', 'base_link', rospy.Time.now())
+                    euler_rotation = tf.transformations.euler_from_quaternion(base_link_map_rot)
+                    current_rotation = euler_rotation[2]
+                    aligned = abs(desired_orientation - current_rotation) < 1e-2
                 rospy.loginfo('[move_base] Pose reached successfully')
+
                 self.reset_state()
                 self.result = self.set_result(True)
                 return FTSMTransitions.DONE
@@ -144,3 +164,23 @@ class MoveBaseSM(ActionSMBase):
     def reset_state(self):
         self.recovery_count = 0
         self.is_recovering = False
+
+    def get_transform(self, target_frame, source_frame, tf_time):
+        '''Returns the translation and rotation of the source frame
+        with respect to the target frame at the given time.
+
+        Keyword arguments:
+        target_frame: str -- name of the transformation target frame
+        source_frame: str -- name of the transformation source frame
+        tf_time: rospy.rostime.Time -- time of the transform
+
+        '''
+        trans = None
+        rot = None
+        while not rospy.is_shutdown():
+            try:
+                (trans, rot) = self.tf_listener.lookupTransform(target_frame, source_frame, tf_time)
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+        return (trans, rot)
