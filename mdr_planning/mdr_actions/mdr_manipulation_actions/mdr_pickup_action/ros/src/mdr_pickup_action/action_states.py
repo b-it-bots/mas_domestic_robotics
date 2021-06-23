@@ -93,7 +93,7 @@ class PickupSM(ActionSMBase):
     def running(self):
         pose = self.goal.pose
         pose.header.stamp = rospy.Time(0)
-        pose_base_link = self.tf_listener.transformPose('odom', pose)
+        pose_base_link = self.tf_listener.transformPose('map', pose)
 
         if self.base_elbow_offset > 0:
             self.__align_base_with_pose(self.tf_listener.transformPose('base_link', pose))

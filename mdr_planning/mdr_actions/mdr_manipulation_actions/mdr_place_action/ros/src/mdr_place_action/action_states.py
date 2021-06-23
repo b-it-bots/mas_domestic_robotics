@@ -83,7 +83,7 @@ class PlaceSM(ActionSMBase):
     def running(self):
         pose = self.goal.pose
         pose.header.stamp = rospy.Time(0)
-        pose_base_link = self.tf_listener.transformPose('odom', pose)
+        pose_base_link = self.tf_listener.transformPose('map', pose)
 
         # if self.placing_orientation is not None:
         #     pose_base_link.pose.orientation.x = self.placing_orientation[0]
