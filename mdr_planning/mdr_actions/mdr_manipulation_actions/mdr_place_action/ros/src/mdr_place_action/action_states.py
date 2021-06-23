@@ -91,8 +91,8 @@ class PlaceSM(ActionSMBase):
         #     pose_base_link.pose.orientation.z = self.placing_orientation[2]
         #     pose_base_link.pose.orientation.w = self.placing_orientation[3]
 
-        if self.base_elbow_offset > 0:
-            self.__align_base_with_pose(self.tf_listener.transformPose('base_link', pose))
+        # if self.base_elbow_offset > 0:
+        #     self.__align_base_with_pose(self.tf_listener.transformPose('base_link', pose))
 
             # the base is now correctly aligned with the pose, so we set the
             # y position of the goal pose to the elbow offset
@@ -127,11 +127,12 @@ class PlaceSM(ActionSMBase):
         rospy.loginfo('[place] Opening the gripper...')
         self.gripper.open()
 
+        self.__move_base_along_x(-0.2)
+
         rospy.loginfo('[place] Moving the arm back')
         self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
         self.result = self.set_result(True)
 
-        self.__move_base_along_x(-0.2)
         return FTSMTransitions.DONE
 
     def __align_base_with_pose(self, pose_base_link):
