@@ -1,8 +1,8 @@
 # pose_name: [x,y,theta]
 
-table_inspection_area1: [0.015, 0.6, 1.57]
-table_inspection_area2: [0.816, 0.6, 1.57]
-table_inspection_area3: [1.350, 0.6, 1.57]
+table_inspection_area1: [0.015, 0.55, 1.57]
+table_inspection_area2: [0.816, 0.55, 1.57]
+table_inspection_area3: [1.350, 0.55, 1.57]
 
 long_table_b: [1.22, 0.85, 1.57]
 tall_table: [0.012, 0.931, 1.57]

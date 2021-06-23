@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="arm_name" default="arm" />
-    <arg name="whole_body_name" default="whole_body" />
+    <arg name="whole_body_name" default="whole_body_light" />
     <arg name="update_planning_scene_srv_name" default="/move_arm_action/update_planning_scene" />
     <arg name="palm_link_name" default="/palm_link" />
     <arg name="cartesian_velocity_topic" default="/arm_1/arm_controller/cartesian_velocity_command" />

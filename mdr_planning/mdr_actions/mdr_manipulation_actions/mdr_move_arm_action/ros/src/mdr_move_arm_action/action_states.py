@@ -16,7 +16,7 @@ class MoveArmSM(ActionSMBase):
                  arm_name='arm',
                  whole_body_name='',
                  update_planning_scene_srv_name='/move_arm_action/update_planning_scene',
-                 workspace_bounds=[-10., -10., 10., 10.],
+                 workspace_bounds=[-3., -3., 3., 3.],
                  max_recovery_attempts=1):
         super(MoveArmSM, self).__init__('MoveArm', [], max_recovery_attempts)
         self.timeout = timeout
