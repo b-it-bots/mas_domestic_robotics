@@ -33,6 +33,7 @@ class PickupSM(ActionSMBase):
                  grasping_orientation=None,
                  grasping_dmp='',
                  dmp_tau=1.,
+                 arm_motion_timeout=5.,
                  number_of_retries=0,
                  max_recovery_attempts=1):
         super(PickupSM, self).__init__('Pick', [], max_recovery_attempts)
@@ -57,6 +58,7 @@ class PickupSM(ActionSMBase):
         self.grasping_orientation = grasping_orientation
         self.grasping_dmp = grasping_dmp
         self.dmp_tau = dmp_tau
+        self.arm_motion_timeout = arm_motion_timeout
         self.number_of_retries = number_of_retries
 
         self.tf_listener = tf.TransformListener()
@@ -143,8 +145,8 @@ class PickupSM(ActionSMBase):
 
                 rospy.loginfo('[pickup] Grasping...')
                 rospy.loginfo('[pickup] Goal pose: %s', pose_base_link)
-                self.__move_base_along_x(pose_base_link.pose.position.x-0.5)
-                # self.align_base_with_orientation(rotation_before_alignment)
+                self.__move_base_along_x(pose_base_link.pose.position.x-0.6)
+                self.align_base_with_orientation(rotation_before_alignment)
 
                 # arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
                 # if not arm_motion_success:
@@ -159,13 +161,14 @@ class PickupSM(ActionSMBase):
 
                 rospy.loginfo('[pickup] Grasping...')
                 rospy.loginfo('[pickup] Goal pose: %s', pose_base_link)
-                self.__move_base_along_x(pose_base_link.pose.position.x-0.5)
-                # self.align_base_with_orientation(rotation_before_alignment)
+                self.__move_base_along_x(pose_base_link.pose.position.x-0.425)
+                self.align_base_with_orientation(rotation_before_alignment)
 
                 rospy.loginfo('[pickup] Moving arm down...')
+                start_time = rospy.Time.now().to_sec()
                 palm_base_link_trans, _ = self.get_transform('base_link', 'hand_palm_link', rospy.Time.now())
                 z_position_reached = abs(palm_base_link_trans[2] - pose_base_link.pose.position.z) < 1e-2
-                while not z_position_reached:
+                while not z_position_reached and (rospy.Time.now().to_sec() - start_time) < self.arm_motion_timeout:
                     self.gripper.move_down()
                     palm_base_link_trans, _ = self.get_transform('base_link', 'hand_palm_link', rospy.Time.now())
                     z_position_reached = abs(palm_base_link_trans[2] - pose_base_link.pose.position.z) < 1e-2
@@ -187,7 +190,7 @@ class PickupSM(ActionSMBase):
 
             if self.goal.context != PickupGoal.CONTEXT_TABLETOP_MANIPULATION:
                 rospy.loginfo('[pickup] Moving the base back')
-                self.__move_base_along_x(-0.1)
+                self.__move_base_along_x_basic(-0.1)
 
                 rospy.loginfo('[pickup] Moving the arm back')
                 self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
@@ -306,7 +309,7 @@ class PickupSM(ActionSMBase):
         goal = MoveArmJointsGoal()
         goal.arm_joint_names = ['arm_flex_joint', 'arm_roll_joint',
                                 'arm_lift_joint', 'wrist_roll_joint', 'wrist_flex_joint']
-        goal.arm_joint_values = [-1.57, 0., min(0.69, pose_base_link.pose.position.z), goal_orientation[2], -1.57]
+        goal.arm_joint_values = [-1.95, 0., min(0.69, pose_base_link.pose.position.z), goal_orientation[2], -1.57]
         self.move_arm_joints_client.send_goal(goal)
         self.move_arm_joints_client.wait_for_result()
 
@@ -330,8 +333,12 @@ class PickupSM(ActionSMBase):
         self.tf_listener.waitForTransform('map', 'base_link', rospy.Time.now(), rospy.Duration(5))
         goal_pose_map = self.tf_listener.transformPose('map', aligned_base_pose)
 
-        movement_speed_linear = 0.05
+        movement_speed_linear = 0.02
         movement_speed_angular = 0.01
+
+        x_tolerance = 0.05
+        y_tolerance = 0.05
+        angle_tolerance = 0.1
 
         twist_msg = Twist()
         goal_reached = False
@@ -344,24 +351,34 @@ class PickupSM(ActionSMBase):
                                                                        goal_base_link.pose.orientation.z,
                                                                        goal_base_link.pose.orientation.w])
             goal_rotation = euler_rotation[2]
-            if abs(goal_base_link.pose.position.x) > 0:
+            if abs(goal_base_link.pose.position.x) > x_tolerance:
                 twist_msg.linear.x = np.sign(goal_base_link.pose.position.x) * movement_speed_linear
-            if abs(goal_base_link.pose.position.y) > 0:
+            else:
+                twist_msg.linear.x = 0.
+
+            if abs(goal_base_link.pose.position.y) > y_tolerance:
                 twist_msg.linear.y = np.sign(goal_base_link.pose.position.y) * movement_speed_linear
-            if abs(goal_rotation) > 0:
+            else:
+                twist_msg.linear.y = 0.
+
+            if abs(goal_rotation) > angle_tolerance:
                 twist_msg.angular.z = np.sign(goal_rotation) * movement_speed_angular
+            else:
+                twist_msg.angular.z = 0.
+
             # rospy.logwarn('%s %s %s',
             #               goal_base_link.pose.position.x,
             #               goal_base_link.pose.position.y,
             #               goal_rotation)
 
-            goal_reached = abs(goal_base_link.pose.position.x) < 0.05 and\
-                           abs(goal_base_link.pose.position.y) < 1e-2 and\
-                           abs(goal_rotation) < 1e-2
+            goal_reached = abs(goal_base_link.pose.position.x) < x_tolerance and\
+                           abs(goal_base_link.pose.position.y) < y_tolerance and\
+                           abs(goal_rotation) < angle_tolerance
             self.base_vel_pub.publish(twist_msg)
             rospy.sleep(0.01)
 
         self.base_vel_pub.publish(Twist())
+        rospy.sleep(0.01)
 
         # move_forward_goal = MoveForwardGoal()
         # move_forward_goal.movement_duration = movement_duration
@@ -369,6 +386,16 @@ class PickupSM(ActionSMBase):
         # self.move_forward_client.send_goal(move_forward_goal)
         # self.move_forward_client.wait_for_result()
         # self.move_forward_client.get_result()
+
+    def __move_base_along_x_basic(self, distance_to_move):
+        movement_speed = np.sign(distance_to_move) * 0.1 # m/s
+        movement_duration = distance_to_move / movement_speed
+        move_forward_goal = MoveForwardGoal()
+        move_forward_goal.movement_duration = movement_duration
+        move_forward_goal.speed = movement_speed
+        self.move_forward_client.send_goal(move_forward_goal)
+        self.move_forward_client.wait_for_result()
+        self.move_forward_client.get_result()
 
     def set_result(self, success):
         result = PickupResult()

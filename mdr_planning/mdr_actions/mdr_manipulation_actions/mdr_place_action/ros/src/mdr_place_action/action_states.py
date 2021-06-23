@@ -140,7 +140,7 @@ class PlaceSM(ActionSMBase):
         self.move_arm_joints_client.wait_for_result()
 
         self.__move_base_along_x(pose_base_link.pose.position.x-0.55)
-        # self.align_base_with_orientation(orientation_before_alignment)
+        self.align_base_with_orientation(orientation_before_alignment)
 
         # the arm is moved down until it makes an impact with the placing surface
         if self.goal.release_on_impact:
@@ -160,7 +160,7 @@ class PlaceSM(ActionSMBase):
         self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
         self.result = self.set_result(True)
 
-        self.__move_base_along_x(-0.2)
+        self.__move_base_along_x_basic(-0.2)
         return FTSMTransitions.DONE
 
     def __align_base_with_pose(self, pose_base_link):
@@ -222,8 +222,12 @@ class PlaceSM(ActionSMBase):
         self.tf_listener.waitForTransform('map', 'base_link', rospy.Time.now(), rospy.Duration(5))
         goal_pose_map = self.tf_listener.transformPose('map', aligned_base_pose)
 
-        movement_speed_linear = 0.05
+        movement_speed_linear = 0.02
         movement_speed_angular = 0.01
+
+        x_tolerance = 0.05
+        y_tolerance = 0.05
+        angle_tolerance = 0.1
 
         twist_msg = Twist()
         goal_reached = False
@@ -236,24 +240,34 @@ class PlaceSM(ActionSMBase):
                                                                        goal_base_link.pose.orientation.z,
                                                                        goal_base_link.pose.orientation.w])
             goal_rotation = euler_rotation[2]
-            if abs(goal_base_link.pose.position.x) > 0:
+            if abs(goal_base_link.pose.position.x) > x_tolerance:
                 twist_msg.linear.x = np.sign(goal_base_link.pose.position.x) * movement_speed_linear
-            if abs(goal_base_link.pose.position.y) > 0:
+            else:
+                twist_msg.linear.x = 0.
+
+            if abs(goal_base_link.pose.position.y) > y_tolerance:
                 twist_msg.linear.y = np.sign(goal_base_link.pose.position.y) * movement_speed_linear
-            if abs(goal_rotation) > 0:
+            else:
+                twist_msg.linear.y = 0.
+
+            if abs(goal_rotation) > angle_tolerance:
                 twist_msg.angular.z = np.sign(goal_rotation) * movement_speed_angular
+            else:
+                twist_msg.angular.z = 0.
+
             # rospy.logwarn('%s %s %s',
             #               goal_base_link.pose.position.x,
             #               goal_base_link.pose.position.y,
             #               goal_rotation)
 
-            goal_reached = abs(goal_base_link.pose.position.x) < 0.05 and\
-                           abs(goal_base_link.pose.position.y) < 1e-2 and\
-                           abs(goal_rotation) < 1e-2
+            goal_reached = abs(goal_base_link.pose.position.x) < x_tolerance and\
+                           abs(goal_base_link.pose.position.y) < y_tolerance and\
+                           abs(goal_rotation) < angle_tolerance
             self.base_vel_pub.publish(twist_msg)
             rospy.sleep(0.01)
 
         self.base_vel_pub.publish(Twist())
+        rospy.sleep(0.01)
 
         # movement_speed = np.sign(distance_to_move) * 0.1 # m/s
         # movement_duration = distance_to_move / movement_speed
@@ -263,6 +277,16 @@ class PlaceSM(ActionSMBase):
         # self.move_forward_client.send_goal(move_forward_goal)
         # self.move_forward_client.wait_for_result()
         # self.move_forward_client.get_result()
+
+    def __move_base_along_x_basic(self, distance_to_move):
+        movement_speed = np.sign(distance_to_move) * 0.1 # m/s
+        movement_duration = distance_to_move / movement_speed
+        move_forward_goal = MoveForwardGoal()
+        move_forward_goal.movement_duration = movement_duration
+        move_forward_goal.speed = movement_speed
+        self.move_forward_client.send_goal(move_forward_goal)
+        self.move_forward_client.wait_for_result()
+        self.move_forward_client.get_result()
 
     def set_result(self, success):
         result = PlaceResult()
