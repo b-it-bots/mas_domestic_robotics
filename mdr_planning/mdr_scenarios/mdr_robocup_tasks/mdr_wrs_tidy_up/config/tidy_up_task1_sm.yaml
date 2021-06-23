@@ -1,0 +1,210 @@
+# Description: Defines a state machine for a World Robot Summit Clean Up task
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_wrs_tidy_up
+states: [INITIALISE_SCENARIO, SELECT_SCANNING_POSE, GO_TO_SCANNING_POSE, FIND_OBJECTS, SELECT_OBJECT_FOR_PICKING, PICKUP_OBJECT, SELECT_STORAGE_LOCATION, MOVE_TO_STORAGE_LOCATION, RELEASE_OBJECT]
+outcomes: [DONE, TIMEOUT, FAILED]
+state_descriptions:
+    - state:
+        name: INITIALISE_SCENARIO
+        state_module_name: mdr_wrs_tidy_up.scenario_states.initialise_scenario
+        state_class_name: InitialiseScenario
+        transitions:
+            - transition:
+                name: succeeded
+                state: SELECT_SCANNING_POSE
+        arguments:
+            - argument:
+                name: floor_objects_cleared
+                value:
+                    table_inspection_area1: false
+                    table_inspection_area2: false
+                    table_inspection_area3: false
+            - argument:
+                name: table_objects_cleared
+                value:
+                    long_table_b: false
+                    tall_table: false
+            - argument:
+                name: planning_scene_map_file
+                value: planning_scene_map.yaml
+    - state:
+        name: SELECT_SCANNING_POSE
+        state_module_name: mdr_wrs_tidy_up.scenario_states.select_scanning_pose
+        state_class_name: SelectScanningPose
+        transitions:
+            - transition:
+                name: floor_not_cleared
+                state: GO_TO_SCANNING_POSE
+            - transition:
+                name: table_not_cleared
+                state: GO_TO_SCANNING_POSE
+            - transition:
+                name: tidying_done
+                state: DONE
+        arguments:
+            - argument:
+                name: tidying_timeout_s
+                value: 300.0
+            - argument:
+                name: avg_obj_cleanup_duration_s
+                value: 90.0
+    - state:
+        name: GO_TO_SCANNING_POSE
+        state_module_name: mdr_wrs_tidy_up.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: FIND_OBJECTS
+            - transition:
+                name: failed
+                state: GO_TO_SCANNING_POSE
+            - transition:
+                name: failed_after_retrying
+                state: SELECT_SCANNING_POSE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: FIND_OBJECTS
+        state_module_name: mdr_wrs_tidy_up.scenario_states.find_objects
+        state_class_name: FindObjects
+        transitions:
+            - transition:
+                name: succeeded
+                state: SELECT_OBJECT_FOR_PICKING
+            - transition:
+                name: no_objects
+                state: SELECT_SCANNING_POSE
+            - transition:
+                name: failed
+                state: FIND_OBJECTS
+            - transition:
+                name: failed_after_retrying
+                state: SELECT_SCANNING_POSE
+        arguments:
+            - argument:
+                name: object_detection_server_name
+                value: /mas_perception/detect_objects
+            - argument:
+                name: cloud_obstacle_detection_topic
+                value: /mdr_cloud_object_detection/cloud_object_detection/object_list
+            - argument:
+                name: cloud_obstacle_cache_reset_topic
+                value: /mdr_cloud_object_detection/cloud_object_detection/reset_cache
+            - argument:
+                name: object_detection_timeout
+                value: 30.
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: SELECT_OBJECT_FOR_PICKING
+        state_module_name: mdr_wrs_tidy_up.scenario_states.select_object_for_picking
+        state_class_name: SelectObjectForPicking
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICKUP_OBJECT
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PICKUP_OBJECT
+        state_module_name: mdr_wrs_tidy_up.scenario_states.pickup_object
+        state_class_name: PickupObject
+        transitions:
+            - transition:
+                name: succeeded
+                state: SELECT_STORAGE_LOCATION
+            - transition:
+                name: failed
+                state: PICKUP_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: GO_TO_SCANNING_POSE
+        arguments:
+            - argument:
+                name: pickup_server_name
+                value: pickup_server
+            - argument:
+                name: grasping_timeout_s
+                value: 120.0
+            - argument:
+                name: number_of_retries
+                value: 0
+    - state:
+        name: SELECT_STORAGE_LOCATION
+        state_module_name: mdr_wrs_tidy_up.scenario_states.select_storage_location
+        state_class_name: SelectStorageLocation
+        transitions:
+            - transition:
+                name: succeeded
+                state: MOVE_TO_STORAGE_LOCATION
+        arguments:
+            - argument:
+                name: default_storage_location
+                value: bin
+            - argument:
+                name: storage_locations_file
+                value: storage_locations.yaml
+            - argument:
+                name: available_trays
+                value: ['tray_1', 'tray_2']
+            - argument:
+                name: available_bins
+                value: ['bin_a']
+            - argument:
+                name: tray_locations
+                value:
+                    tray_1: long_table_a_trays
+                    tray_2: long_table_a_trays
+            - argument:
+                name: bin_locations
+                value:
+                    bin_a: bin_a
+    - state:
+        name: MOVE_TO_STORAGE_LOCATION
+        state_module_name: mdr_wrs_tidy_up.scenario_states.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: RELEASE_OBJECT
+            - transition:
+                name: failed
+                state: MOVE_TO_STORAGE_LOCATION
+            - transition:
+                name: failed_after_retrying
+                state: MOVE_TO_STORAGE_LOCATION
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: RELEASE_OBJECT
+        state_module_name: mdr_wrs_tidy_up.scenario_states.release_object
+        state_class_name: ReleaseObject
+        transitions:
+            - transition:
+                name: succeeded
+                state: SELECT_SCANNING_POSE
+            - transition:
+                name: failed
+                state: RELEASE_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: SELECT_SCANNING_POSE
+        arguments:
+            - argument:
+                name: cloud_obstacle_detection_topic
+                value: /mdr_cloud_object_detection/cloud_object_detection/object_list
+            - argument:
+                name: cloud_obstacle_cache_reset_topic
+                value: /mdr_cloud_object_detection/cloud_object_detection/reset_cache
+            - argument:
+                name: number_of_retries
+                value: 3
