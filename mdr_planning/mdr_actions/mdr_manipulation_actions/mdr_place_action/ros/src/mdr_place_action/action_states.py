@@ -222,8 +222,8 @@ class PlaceSM(ActionSMBase):
         self.tf_listener.waitForTransform('map', 'base_link', rospy.Time.now(), rospy.Duration(5))
         goal_pose_map = self.tf_listener.transformPose('map', aligned_base_pose)
 
-        movement_speed_linear = 0.02
-        movement_speed_angular = 0.01
+        movement_speed_linear = 0.1
+        movement_speed_angular = 0.05
 
         x_tolerance = 0.05
         y_tolerance = 0.05
