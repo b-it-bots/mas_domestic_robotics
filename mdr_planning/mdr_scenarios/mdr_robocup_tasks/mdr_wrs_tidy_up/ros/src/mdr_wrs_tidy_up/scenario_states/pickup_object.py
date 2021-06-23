@@ -28,7 +28,8 @@ class PickupObject(ScenarioStateBase):
                                    outcomes=['succeeded', 'failed',
                                              'failed_after_retrying'],
                                    input_keys=['selected_object',
-                                               'detected_objects'],
+                                               'detected_objects',
+                                               'environment_objects'],
                                    output_keys=['grasped_object'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'pickup_object')
@@ -44,6 +45,7 @@ class PickupObject(ScenarioStateBase):
         self.__init_ros_components()
 
     def execute(self, userdata):
+        self.reset_planning_scene(userdata.environment_objects)
         object_to_pick_up = userdata.selected_object
         objects_except_target = [obj for obj in userdata.detected_objects
                                  if obj.name != object_to_pick_up.name]
@@ -90,6 +92,25 @@ class PickupObject(ScenarioStateBase):
         self.update_planning_scene(objects_except_target, UpdatePlanningSceneRequest.REMOVE)
         return 'failed'
 
+    def reset_planning_scene(self, environment_objects):
+        object_list = ObjectList()
+        object_list.objects = [environment_objects[name] for name in environment_objects]
+
+        # initialising the MoveIt! planning scene
+        update_planning_scene_req = UpdatePlanningSceneRequest()
+        update_planning_scene_req.operation = UpdatePlanningSceneRequest.ADD
+        update_planning_scene_req.objects = object_list
+
+        rospy.loginfo('[%s] Initialising planning scene', self.state_name)
+        response = self.planning_scene_update_proxy(update_planning_scene_req)
+        if response is not None:
+            if response.success:
+                rospy.loginfo('[%s] Successfully updated the planning scene', self.state_name)
+            else:
+                rospy.logerr('[%s] Failed to update the planning scene', self.state_name)
+        else:
+            rospy.logerr('[%s] Response not received', self.state_name)
+
     def update_planning_scene(self, objects, operation):
         object_list = ObjectList()
         object_list.objects = objects
@@ -124,7 +145,7 @@ class PickupObject(ScenarioStateBase):
         pose = Pose()
         pose.position.x = object_to_pick_up.bounding_box.center.x
         pose.position.y = object_to_pick_up.bounding_box.center.y
-        pose.position.z = object_to_pick_up.bounding_box.center.z + self.grasping_height_offset
+        pose.position.z = object_to_pick_up.bounding_box.center.z
 
         grasping_strategy = None
         # this orientation guarantees a sideways grasp and
