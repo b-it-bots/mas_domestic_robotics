@@ -17,5 +17,5 @@ throwing_location_room1: [2.535, 1.2, -1.57]
 second_room_corridor: [2.535, 1.585, 1.57]
 second_room_cupboard: [2.199, 3.8, 1.57]
 
-person_left: [0.43, 2.74, 3.14]
-person_right: [0.34, 3.83, 3.14]
+person_left: [0.43, 2.74, -3.14]
+person_right: [0.34, 3.83, -3.14]
