@@ -140,7 +140,7 @@ class FindObjects(ScenarioStateBase):
             filtered_objects = self.filter_large_objects(filtered_objects)
 
         if self.task_context == TaskContext.GO_AND_GET_IT:
-            filtered_objects = self.filter_objects_outside_bounds(self.detected_cloud_objects)
+            filtered_objects = self.filter_objects_outside_bounds(filtered_objects)
 
         userdata.detected_objects = self.label_detected_cloud_objects(detected_cam_objects, filtered_objects)
 
@@ -194,7 +194,7 @@ class FindObjects(ScenarioStateBase):
         rospy.loginfo('[%s] Filtering objects that are close to walls in corridor', self.state_name)
         filtered_objects = []
         for obj in objects:
-            if obj.pose.pose.position.y < 2.2 or obj.pose.pose.position.y > 3.0:
+            if obj.pose.pose.position.x > 2.25 and obj.pose.pose.position.x < 2.95:
                 # bounds: (2.05, 3.15)
                 filtered_objects.append(obj)
             else:
