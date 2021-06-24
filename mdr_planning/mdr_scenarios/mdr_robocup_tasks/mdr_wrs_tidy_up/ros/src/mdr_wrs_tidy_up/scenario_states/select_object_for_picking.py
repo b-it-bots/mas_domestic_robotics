@@ -52,7 +52,7 @@ class SelectObjectForPicking(ScenarioStateBase):
                 rospy.loginfo('[%s] Selecting %s to deliver to %s', self.state_name,
                               self.requested_object_category, requesting_person)
                 for obj in userdata.detected_objects:
-                    if obj.category == self.requested_object_category:
+                    if obj.category and obj.category[4:] == self.requested_object_category:
                         rospy.loginfo('[%s] Found requested object among detected objects!', self.state_name)
                         rospy.loginfo('[%s] Selecting requested object: %s', self.state_name, self.requested_object_category)
                         selected_object = obj

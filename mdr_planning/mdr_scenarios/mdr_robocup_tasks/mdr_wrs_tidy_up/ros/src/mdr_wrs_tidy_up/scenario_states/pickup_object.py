@@ -11,6 +11,8 @@ from mdr_pickup_action.msg import PickupAction, PickupGoal
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
+from moveit_commander import PlanningSceneInterface
+
 class GraspingContext(object):
     CLEAN_UP = 'clean_up'
     GO_AND_GET_IT = 'go_and_get_it'
@@ -25,6 +27,7 @@ class PickupObject(ScenarioStateBase):
     grasping_height_offset = 0.
     planning_scene_update_service_name = ''
     planning_scene_update_proxy = None
+    planning_scene_interface = None
 
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'pickup_object',
@@ -98,6 +101,7 @@ class PickupObject(ScenarioStateBase):
         return 'failed'
 
     def reset_planning_scene(self, environment_objects):
+        self.planning_scene_interface.remove_world_object() # Clears the whole planning scene
         object_list = ObjectList()
         object_list.objects = [environment_objects[name] for name in environment_objects]
 
@@ -117,6 +121,7 @@ class PickupObject(ScenarioStateBase):
             rospy.logerr('[%s] Response not received', self.state_name)
 
     def update_planning_scene(self, objects, operation):
+        return
         object_list = ObjectList()
         object_list.objects = objects
 
@@ -170,7 +175,7 @@ class PickupObject(ScenarioStateBase):
                                                                               object_pose_in_base_link.pose.orientation.w])
                 gripper_orientation_z = euler_orientation[2]
 
-                desired_gripper_orientation_base_link = (np.pi, 0, gripper_orientation_z)
+                desired_gripper_orientation_base_link = (np.pi, 0, 0)
                 grasping_strategy = PickupGoal.TOP_GRASP
 
                 # we set the grasping pose along z to be the top of the object to prevent
@@ -228,3 +233,4 @@ class PickupObject(ScenarioStateBase):
         rospy.loginfo('Publisher for topic %s initialised', self.pickup_goal_pose_topic)
 
         self.tf_listener = tf.TransformListener()
+        self.planning_scene_interface = PlanningSceneInterface()

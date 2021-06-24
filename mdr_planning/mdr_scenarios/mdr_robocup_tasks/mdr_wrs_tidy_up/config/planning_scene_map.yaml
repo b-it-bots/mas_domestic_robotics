@@ -25,10 +25,10 @@ objects:
       orientation: [0.0, 0.0, 0.0]
       dimensions: [4.1, 0.1, 2.0]
     # object ID: wall_center
-    - name: wall_center
-      position: [0.6, 2.1, 1.0]
-      orientation: [0.0, 0.0, 0.0]
-      dimensions: [2.8, 0.1, 2.0]
+    # - name: wall_center
+    #   position: [0.6, 2.1, 1.0]
+    #   orientation: [0.0, 0.0, 0.0]
+    #   dimensions: [2.8, 0.1, 2.0]
 
     # object ID: wrc_bin_green
     - name: bin_a

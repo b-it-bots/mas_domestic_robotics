@@ -13,7 +13,8 @@ from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class TaskContext(object):
     CLEAN_UP = 'clean_up'
-    GO_AND_GET_IT = 'go_and_get_it'
+    CLEAR_OBSTACLES = 'clear_obstacles'
+    FETCH_OBJECT = 'fetch_object'
 
 
 def get_plane_polygon(center_position, dimensions):
@@ -107,7 +108,7 @@ class FindObjects(ScenarioStateBase):
 
         rospy.loginfo('[%s] Resetting cloud obstacle cache and waiting a bit', self.state_name)
         self.obstacle_cache_reset_pub.publish(Bool(data=True))
-        rospy.sleep(0.5)
+        rospy.sleep(1.0)
 
         rospy.loginfo('[%s] Waiting for cloud obstacle detection', self.state_name)
         timeout_reached = False
@@ -139,7 +140,7 @@ class FindObjects(ScenarioStateBase):
                                                                 userdata.environment_objects)
             filtered_objects = self.filter_large_objects(filtered_objects)
 
-        if self.task_context == TaskContext.GO_AND_GET_IT:
+        if self.task_context == TaskContext.CLEAR_OBSTACLES or self.task_context == TaskContext.FETCH_OBJECT:
             filtered_objects = self.filter_objects_outside_bounds(filtered_objects)
 
         userdata.detected_objects = self.label_detected_cloud_objects(detected_cam_objects, filtered_objects)
@@ -193,12 +194,20 @@ class FindObjects(ScenarioStateBase):
     def filter_objects_outside_bounds(self, objects):
         rospy.loginfo('[%s] Filtering objects that are close to walls in corridor', self.state_name)
         filtered_objects = []
-        for obj in objects:
-            if obj.pose.pose.position.x > 2.25 and obj.pose.pose.position.x < 2.95:
-                # bounds: (2.05, 3.15)
-                filtered_objects.append(obj)
-            else:
-                print('Filtered object:')
+        if self.task_context == TaskContext.CLEAR_OBSTACLES:
+            for obj in objects:
+                if obj.pose.pose.position.x > 2.25 and obj.pose.pose.position.x < 2.95:
+                    filtered_objects.append(obj)
+                else:
+                    print('Filtered object:')
+                    print(obj.name)
+                    print(obj.pose)
+        elif self.task_context == TaskContext.FETCH_OBJECT:
+            for obj in objects:
+                if obj.pose.pose.position.x > 1.87 and obj.pose.pose.position.x < 2.55 and obj.pose.pose.position.y < 4.9:
+                    filtered_objects.append(obj)
+                else:
+                    print('Filtered object:')
                 print(obj.name)
                 print(obj.pose)
         return filtered_objects

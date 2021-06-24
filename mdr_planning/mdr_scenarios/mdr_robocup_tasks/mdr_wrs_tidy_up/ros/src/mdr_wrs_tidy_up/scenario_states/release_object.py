@@ -14,6 +14,7 @@ from mdr_place_action.msg import PlaceAction, PlaceGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from mdr_wrs_tidy_up.utils import update_object_detection_params
 from mdr_manipulation_msgs.srv import UpdatePlanningScene, UpdatePlanningSceneRequest
+from moveit_commander import PlanningSceneInterface
 
 class ReleasingContext(object):
     CLEAN_UP = 'clean_up'
@@ -42,6 +43,7 @@ class ReleaseObject(ScenarioStateBase):
     planning_scene_update_service_name = ''
     planning_scene_update_proxy = None
     releasing_context = None
+    planning_scene_interface = None
 
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'release_object',
@@ -122,6 +124,7 @@ class ReleaseObject(ScenarioStateBase):
         return 'succeeded'
 
     def reset_planning_scene(self, environment_objects):
+        self.planning_scene_interface.remove_world_object() # Clears the whole planning scene
         object_list = ObjectList()
         object_list.objects = [environment_objects[name] for name in environment_objects]
 
@@ -521,3 +524,4 @@ class ReleaseObject(ScenarioStateBase):
                       self.state_name, self.planning_scene_update_service_name)
 
         self.tf_listener = tf.TransformListener()
+        self.planning_scene_interface = PlanningSceneInterface()

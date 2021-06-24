@@ -92,7 +92,7 @@ state_descriptions:
                 value: 3
             - argument:
                 name: task_context
-                value: go_and_get_it
+                value: clear_obstacles
     - state:
         name: SELECT_OBSTACLE_FOR_PICKING
         state_module_name: mdr_wrs_tidy_up.scenario_states.select_object_for_picking
@@ -260,6 +260,9 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 3
+            - argument:
+                name: task_context
+                value: fetch_object
     - state:
         name: CHANGE_VANTAGE_POINT
         state_module_name: mdr_wrs_tidy_up.scenario_states.change_vantage_point
