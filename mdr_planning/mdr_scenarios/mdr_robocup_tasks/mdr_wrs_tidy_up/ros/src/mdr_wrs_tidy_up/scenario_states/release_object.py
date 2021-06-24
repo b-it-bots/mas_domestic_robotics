@@ -15,6 +15,10 @@ from mas_execution_manager.scenario_state_base import ScenarioStateBase
 from mdr_wrs_tidy_up.utils import update_object_detection_params
 from mdr_manipulation_msgs.srv import UpdatePlanningScene, UpdatePlanningSceneRequest
 
+class ReleasingContext(object):
+    CLEAN_UP = 'clean_up'
+    GO_AND_GET_IT = 'go_and_get_it'
+
 class ReleaseObject(ScenarioStateBase):
     tf_listener = None
     object_detection_timeout_s = None
@@ -37,6 +41,7 @@ class ReleaseObject(ScenarioStateBase):
     planning_scene_map_file = None
     planning_scene_update_service_name = ''
     planning_scene_update_proxy = None
+    releasing_context = None
 
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'release_object',
@@ -66,6 +71,7 @@ class ReleaseObject(ScenarioStateBase):
         self.planning_scene_map_file = kwargs.get('planning_scene_map_file', '')
         self.planning_scene_update_service_name = kwargs.get('planning_scene_update_service_name',
                                                              '/move_arm_action/update_planning_scene')
+        self.releasing_context = kwargs.get('releasing_context', ReleasingContext.CLEAN_UP)
         self.__init_ros_components()
 
     def execute(self, userdata):
@@ -76,15 +82,19 @@ class ReleaseObject(ScenarioStateBase):
         goal = PlaceGoal()
         goal.release_on_impact = False
 
-        storage_location = userdata.storage_location.lower()
-        if storage_location.find('bin') != -1:
-            release_target = userdata.environment_objects[storage_location]
-            goal.pose = self.get_bin_release_pose(release_target, userdata.grasped_object)
-        elif storage_location.find('tray') != -1:
-            goal.pose = self.get_tray_release_pose()
+        storage_location = None
+        if self.releasing_context == ReleasingContext.CLEAN_UP:
+            storage_location = userdata.storage_location.lower()
+            if storage_location.find('bin') != -1:
+                release_target = userdata.environment_objects[storage_location]
+                goal.pose = self.get_bin_release_pose(release_target, userdata.grasped_object)
+            elif storage_location.find('tray') != -1:
+                goal.pose = self.get_tray_release_pose()
+            else:
+                rospy.logerr('Storage location %s unknown', userdata.storage_location)
+                return 'failed_after_retrying'
         else:
-            rospy.logerr('Storage location %s unknown', userdata.storage_location)
-            return 'failed_after_retrying'
+            goal.pose = self.get_floor_release_pose()
 
         client = actionlib.SimpleActionClient(self.action_server_name, PlaceAction)
         client.wait_for_server()
@@ -216,6 +226,24 @@ class ReleaseObject(ScenarioStateBase):
 
         gripper_pose_in_target_frame = self.tf_listener.transformPose('map', gripper_pose)
         candidate_pose.pose.orientation = gripper_pose_in_target_frame.pose.orientation
+        return candidate_pose
+
+    def get_floor_release_pose(self):
+        candidate_pose = PoseStamped()
+        candidate_pose.header.stamp = rospy.Time(0)
+        candidate_pose.header.frame_id = 'base_link'
+
+        candidate_pose.pose.position.x = 0.6
+        candidate_pose.pose.position.y = 0.078
+        candidate_pose.pose.position.z = 0.3
+
+        # use top-down orientation for throwing
+        gripper_quaternion = tf.transformations.quaternion_from_euler(np.pi, 0., 0.)
+        candidate_pose.pose.orientation.x = gripper_quaternion[0]
+        candidate_pose.pose.orientation.y = gripper_quaternion[1]
+        candidate_pose.pose.orientation.z = gripper_quaternion[2]
+        candidate_pose.pose.orientation.w = gripper_quaternion[3]
+
         return candidate_pose
 
     def find_occupied_cells(self, obj_list):
