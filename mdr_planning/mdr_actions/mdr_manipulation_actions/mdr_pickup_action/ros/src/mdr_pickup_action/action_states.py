@@ -154,7 +154,7 @@ class PickupSM(ActionSMBase):
 
             if self.goal.context != PickupGoal.CONTEXT_TABLETOP_MANIPULATION:
                 rospy.loginfo('[pickup] Moving the base back')
-                self.__move_base_along_x(-0.1)
+                self.__move_base_along_x(-0.2)
 
                 rospy.loginfo('[pickup] Moving the arm back')
                 self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)

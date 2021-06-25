@@ -101,7 +101,7 @@ class FindObjects(ScenarioStateBase):
 
         rospy.loginfo('[%s] Resetting cloud obstacle cache and waiting a bit', self.state_name)
         self.obstacle_cache_reset_pub.publish(Bool(data=True))
-        rospy.sleep(0.5)
+        rospy.sleep(1.0)
 
         rospy.loginfo('[%s] Waiting for cloud obstacle detection', self.state_name)
         timeout_reached = False

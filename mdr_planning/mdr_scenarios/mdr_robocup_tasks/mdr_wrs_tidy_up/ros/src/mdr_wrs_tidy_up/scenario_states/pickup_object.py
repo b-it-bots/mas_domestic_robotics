@@ -11,6 +11,7 @@ from mdr_pickup_action.msg import PickupAction, PickupGoal
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
+from moveit_commander import PlanningSceneInterface
 class PickupObject(ScenarioStateBase):
     pickup_server_name = 'pickup_server'
     pickup_goal_pose_topic = '/pickup_server/goal_pose'
@@ -21,6 +22,7 @@ class PickupObject(ScenarioStateBase):
     grasping_height_offset = 0.
     planning_scene_update_service_name = ''
     planning_scene_update_proxy = None
+    planning_scene_interface = None
 
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'pickup_object',
@@ -93,6 +95,7 @@ class PickupObject(ScenarioStateBase):
         return 'failed'
 
     def reset_planning_scene(self, environment_objects):
+        self.planning_scene_interface.remove_world_object() # Clears the whole planning scene
         object_list = ObjectList()
         object_list.objects = [environment_objects[name] for name in environment_objects]
 
@@ -151,16 +154,16 @@ class PickupObject(ScenarioStateBase):
         # this orientation guarantees a sideways grasp and
         # alignment along the longest axis of the object
         if object_to_pick_up.dimensions.vector.z > max(object_to_pick_up.dimensions.vector.x,
-                                                       object_to_pick_up.dimensions.vector.y):
-            desired_gripper_orientation_base_link = (np.pi, -np.pi/2, 0.)
-            grasping_strategy = PickupGoal.SIDEWAYS_GRASP
-        # this orientation guarantees a top-down grasp and
-        # alignment along the longest axis of the object
-        else:
-            object_pose_in_base_link = self.tf_listener.transformPose('base_link', object_to_pick_up.pose)
-            euler_orientation = tf.transformations.euler_from_quaternion([object_pose_in_base_link.pose.orientation.x,
-                                                                          object_pose_in_base_link.pose.orientation.y,
-                                                                          object_pose_in_base_link.pose.orientation.z,
+                                                           object_to_pick_up.dimensions.vector.y):
+                desired_gripper_orientation_base_link = (np.pi, -np.pi/2, 0.)
+                grasping_strategy = PickupGoal.SIDEWAYS_GRASP
+            # this orientation guarantees a top-down grasp and
+            # alignment along the longest axis of the object
+            else:
+                object_pose_in_base_link = self.tf_listener.transformPose('base_link', object_to_pick_up.pose)
+                euler_orientation = tf.transformations.euler_from_quaternion([object_pose_in_base_link.pose.orientation.x,
+                                                                              object_pose_in_base_link.pose.orientation.y,
+                                                                              object_pose_in_base_link.pose.orientation.z,
                                                                           object_pose_in_base_link.pose.orientation.w])
             gripper_orientation_z = euler_orientation[2]
 
@@ -219,3 +222,4 @@ class PickupObject(ScenarioStateBase):
         rospy.loginfo('Publisher for topic %s initialised', self.pickup_goal_pose_topic)
 
         self.tf_listener = tf.TransformListener()
+        self.planning_scene_interface = PlanningSceneInterface()
