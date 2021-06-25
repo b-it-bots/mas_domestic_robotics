@@ -51,8 +51,7 @@ class InitialiseScenario(ScenarioStateBase):
                                    output_keys=['floor_objects_cleared',
                                                 'table_objects_cleared',
                                                 'object_location',
-                                                'environment_objects',
-                                                'operation_start_time'])
+                                                'environment_objects'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'initialise_scenario')
         self.floor_objects_cleared = kwargs.get('floor_objects_cleared', None)
@@ -75,8 +74,6 @@ class InitialiseScenario(ScenarioStateBase):
 
         if self.object_location:
             userdata.object_location = self.object_location
-
-        userdata.operation_start_time = rospy.Time.now().to_sec()
 
         if not self.planning_scene_map_file:
             rospy.loginfo('[%s] Planning scene map file not specified; not initialising KB and scene', self.state_name)

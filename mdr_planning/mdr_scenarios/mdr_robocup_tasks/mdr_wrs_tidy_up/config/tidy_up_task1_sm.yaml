@@ -2,7 +2,7 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_wrs_tidy_up
-states: [INITIALISE_SCENARIO, SELECT_SCANNING_POSE, GO_TO_SCANNING_POSE, FIND_OBJECTS, SELECT_OBJECT_FOR_PICKING, PICKUP_OBJECT, SELECT_STORAGE_LOCATION, MOVE_TO_STORAGE_LOCATION, RELEASE_OBJECT]
+states: [INITIALISE_SCENARIO, START_TIMER, SELECT_SCANNING_POSE, GO_TO_SCANNING_POSE, FIND_OBJECTS, SELECT_OBJECT_FOR_PICKING, PICKUP_OBJECT, SELECT_STORAGE_LOCATION, MOVE_TO_STORAGE_LOCATION, RELEASE_OBJECT]
 outcomes: [DONE, TIMEOUT, FAILED]
 state_descriptions:
     - state:
@@ -12,7 +12,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: SELECT_SCANNING_POSE
+                state: START_TIMER
         arguments:
             - argument:
                 name: floor_objects_cleared
@@ -28,6 +28,14 @@ state_descriptions:
             - argument:
                 name: planning_scene_map_file
                 value: planning_scene_map.yaml
+    - state:
+        name: START_TIMER
+        state_module_name: mdr_wrs_tidy_up.scenario_states.start_timer
+        state_class_name: StartTimer
+        transitions:
+            - transition:
+                name: succeeded
+                state: SELECT_SCANNING_POSE
     - state:
         name: SELECT_SCANNING_POSE
         state_module_name: mdr_wrs_tidy_up.scenario_states.select_scanning_pose
@@ -45,7 +53,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: tidying_timeout_s
-                value: 300.0
+                value: 900.0
             - argument:
                 name: avg_obj_cleanup_duration_s
                 value: 90.0
