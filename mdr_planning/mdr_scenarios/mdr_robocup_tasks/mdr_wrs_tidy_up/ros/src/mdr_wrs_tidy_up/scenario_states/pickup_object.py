@@ -159,12 +159,12 @@ class PickupObject(ScenarioStateBase):
                 grasping_strategy = PickupGoal.SIDEWAYS_GRASP
             # this orientation guarantees a top-down grasp and
             # alignment along the longest axis of the object
-            else:
-                object_pose_in_base_link = self.tf_listener.transformPose('base_link', object_to_pick_up.pose)
-                euler_orientation = tf.transformations.euler_from_quaternion([object_pose_in_base_link.pose.orientation.x,
-                                                                              object_pose_in_base_link.pose.orientation.y,
-                                                                              object_pose_in_base_link.pose.orientation.z,
-                                                                          object_pose_in_base_link.pose.orientation.w])
+        else:
+            object_pose_in_base_link = self.tf_listener.transformPose('base_link', object_to_pick_up.pose)
+            euler_orientation = tf.transformations.euler_from_quaternion([object_pose_in_base_link.pose.orientation.x,
+                                                                          object_pose_in_base_link.pose.orientation.y,
+                                                                          object_pose_in_base_link.pose.orientation.z,
+                                                                      object_pose_in_base_link.pose.orientation.w])
             gripper_orientation_z = euler_orientation[2]
 
             desired_gripper_orientation_base_link = (np.pi, 0, gripper_orientation_z)

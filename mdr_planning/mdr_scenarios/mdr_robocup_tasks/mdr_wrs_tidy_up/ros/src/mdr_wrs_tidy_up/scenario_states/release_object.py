@@ -81,9 +81,9 @@ class ReleaseObject(ScenarioStateBase):
         storage_location = userdata.storage_location.lower()
         if storage_location.find('bin') != -1:
             release_target = userdata.environment_objects[storage_location]
-                goal.pose = self.get_bin_release_pose(release_target, userdata.grasped_object)
-            elif storage_location.find('tray') != -1:
-                goal.pose = self.get_tray_release_pose()
+            goal.pose = self.get_bin_release_pose(release_target, userdata.grasped_object)
+        elif storage_location.find('tray') != -1:
+            goal.pose = self.get_tray_release_pose()
         else:
             rospy.logerr('Storage location %s unknown', userdata.storage_location)
             return 'failed_after_retrying'

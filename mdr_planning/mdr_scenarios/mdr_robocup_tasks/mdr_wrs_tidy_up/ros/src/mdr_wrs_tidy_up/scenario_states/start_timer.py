@@ -1,3 +1,4 @@
+import rospy
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 class StartTimer(ScenarioStateBase):
