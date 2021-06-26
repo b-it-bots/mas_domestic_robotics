@@ -105,21 +105,21 @@ class MoveBaseSM(ActionSMBase):
             result = move_base_client.get_result()
             resulting_state = move_base_client.get_state()
             if result and resulting_state == GoalStatus.SUCCEEDED:
-                desired_orientation = self.pose[2]
-                _, base_link_map_rot = self.get_transform('map', 'base_link', rospy.Time.now())
-                euler_rotation = tf.transformations.euler_from_quaternion(base_link_map_rot)
-                current_rotation = euler_rotation[2]
-                aligned = abs(desired_orientation - current_rotation) < 1e-2
-
-                alignment_direction = np.sign(desired_orientation - current_rotation)
-                twist_msg = Twist()
-                twist_msg.angular.z = alignment_direction * 0.05
-                while not aligned:
-                    self.base_vel_pub.publish(twist_msg)
-                    _, base_link_map_rot = self.get_transform('map', 'base_link', rospy.Time.now())
-                    euler_rotation = tf.transformations.euler_from_quaternion(base_link_map_rot)
-                    current_rotation = euler_rotation[2]
-                    aligned = abs(desired_orientation - current_rotation) < 1e-2
+                # desired_orientation = self.pose[2]
+                # _, base_link_map_rot = self.get_transform('map', 'base_link', rospy.Time.now())
+                # euler_rotation = tf.transformations.euler_from_quaternion(base_link_map_rot)
+                # current_rotation = euler_rotation[2]
+                # aligned = abs(desired_orientation - current_rotation) < 1e-2
+                #
+                # alignment_direction = np.sign(desired_orientation - current_rotation)
+                # twist_msg = Twist()
+                # twist_msg.angular.z = alignment_direction * 0.05
+                # while not aligned:
+                #     self.base_vel_pub.publish(twist_msg)
+                #     _, base_link_map_rot = self.get_transform('map', 'base_link', rospy.Time.now())
+                #     euler_rotation = tf.transformations.euler_from_quaternion(base_link_map_rot)
+                #     current_rotation = euler_rotation[2]
+                #     aligned = abs(desired_orientation - current_rotation) < 1e-2
                 rospy.loginfo('[move_base] Pose reached successfully')
 
                 self.reset_state()
