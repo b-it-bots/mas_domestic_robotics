@@ -36,6 +36,7 @@ class MoveArmSM(ActionSMBase):
         try:
             rospy.loginfo('[move_arm] Initialising group %s', self.arm_name)
             self.arm = moveit_commander.MoveGroupCommander(self.arm_name)
+            self.arm.set_max_velocity_scaling_factor(1.)
             rospy.loginfo('[move_arm] Group %s initialised', self.arm_name)
         except Exception as exc:
             rospy.logerr('[move_arm] %s could not be initialised: %s',
@@ -48,6 +49,7 @@ class MoveArmSM(ActionSMBase):
                 self.whole_body = moveit_commander.MoveGroupCommander(self.whole_body_name)
                 self.whole_body.allow_replanning(True)
                 self.whole_body.set_planning_time(5)
+                self.whole_body.set_max_velocity_scaling_factor(1.)
                 if self.workspace_bounds:
                     self.whole_body.set_workspace(self.workspace_bounds)
                 self.end_effector = self.whole_body.get_end_effector_link()
