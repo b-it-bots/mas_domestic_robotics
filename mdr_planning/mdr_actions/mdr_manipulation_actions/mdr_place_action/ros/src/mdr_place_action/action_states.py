@@ -139,7 +139,7 @@ class PlaceSM(ActionSMBase):
         self.move_arm_joints_client.send_goal(goal)
         self.move_arm_joints_client.wait_for_result()
 
-        self.__move_base_along_x(pose_base_link.pose.position.x-0.45)
+        self.__move_base_along_x(pose_base_link.pose.position.x-0.5)
         self.align_base_with_orientation(orientation_before_alignment)
 
         # the arm is moved down until it makes an impact with the placing surface
