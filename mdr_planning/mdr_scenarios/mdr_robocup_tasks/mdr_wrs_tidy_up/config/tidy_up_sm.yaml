@@ -54,7 +54,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: tidying_timeout_s
-                value: 300.0
+                value: 900.0
             - argument:
                 name: avg_obj_cleanup_duration_s
                 value: 90.0
