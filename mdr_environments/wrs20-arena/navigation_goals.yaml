@@ -6,7 +6,7 @@ table_inspection_area3: [1.350, 0.4, 1.57]
 
 long_table_b: [1.22, 0.85, 1.57]
 tall_table: [0.012, 0.931, 1.57]
-long_table_a_boxes: [1.009, 0.063, -1.57]
+long_table_a_boxes: [1.009, 0.15, -1.57]
 long_table_a_trays: [1.721, 0.187, -1.57]
 # bin_a: [2.400, 0.047, -1.544]
 # bin_b: [2.748, 0.047, -1.544]
