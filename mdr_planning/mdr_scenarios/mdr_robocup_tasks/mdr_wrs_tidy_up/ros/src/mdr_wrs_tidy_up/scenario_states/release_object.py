@@ -90,6 +90,9 @@ class ReleaseObject(ScenarioStateBase):
             if storage_location.find('bin') != -1:
                 release_target = userdata.environment_objects[storage_location]
                 goal.pose = self.get_bin_release_pose(release_target, userdata.grasped_object)
+            elif storage_location.find('container') != -1:
+                release_target = userdata.environment_objects[storage_location]
+                goal.pose = self.get_container_release_pose(release_target, userdata.grasped_object)
             elif storage_location.find('tray') != -1:
                 goal.pose = self.get_tray_release_pose()
             else:
@@ -144,6 +147,32 @@ class ReleaseObject(ScenarioStateBase):
             rospy.logerr('[%s] Response not received', self.state_name)
 
     def get_bin_release_pose(self, release_target, grasped_object):
+        candidate_pose = PoseStamped()
+        candidate_pose.header.stamp = rospy.Time(0)
+        candidate_pose.header.frame_id = release_target.pose.header.frame_id
+
+        candidate_pose.pose.position.x = release_target.pose.pose.position.x
+        candidate_pose.pose.position.y = release_target.pose.pose.position.y
+        candidate_pose.pose.position.z = release_target.pose.pose.position.z + \
+                                         (release_target.dimensions.vector.z / 2)
+        candidate_pose.pose.position.z += 0.3
+
+        # use top-down orientation for throwing
+        gripper_pose = PoseStamped()
+        gripper_pose.header.frame_id = 'base_link'
+        gripper_pose.header.stamp = rospy.Time(0)
+
+        gripper_quaternion = tf.transformations.quaternion_from_euler(np.pi, 0., 0.)
+        gripper_pose.pose.orientation.x = gripper_quaternion[0]
+        gripper_pose.pose.orientation.y = gripper_quaternion[1]
+        gripper_pose.pose.orientation.z = gripper_quaternion[2]
+        gripper_pose.pose.orientation.w = gripper_quaternion[3]
+
+        gripper_pose_in_target_frame = self.tf_listener.transformPose(release_target.pose.header.frame_id, gripper_pose)
+        candidate_pose.pose.orientation = gripper_pose_in_target_frame.pose.orientation
+        return candidate_pose
+
+    def get_container_release_pose(self, release_target, grasped_object):
         candidate_pose = PoseStamped()
         candidate_pose.header.stamp = rospy.Time(0)
         candidate_pose.header.frame_id = release_target.pose.header.frame_id
