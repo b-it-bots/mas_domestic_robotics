@@ -21,6 +21,9 @@ class SelectStorageLocation(ScenarioStateBase):
         self.available_trays = kwargs.get('available_trays', ['tray_1', 'tray_2'])
         self.tray_locations = kwargs.get('tray_locations', {'tray_1': 'long_table_a_trays',
                                                             'tray_2': 'long_table_a_trays'})
+        self.available_containers = kwargs.get('available_containers', ['container_a', 'container_b'])
+        self.container_locations = kwargs.get('container_locations', {'container_a': 'long_table_a_boxes',
+                                                                      'container_b': 'long_table_a_boxes'})
         self.available_bins = kwargs.get('available_bins', ['bin_a', 'bin_b'])
         self.bin_locations = kwargs.get('bin_locations', {'bin_a': 'bin_a',
                                                           'bin_b': 'bin_b'})
@@ -41,6 +44,16 @@ class SelectStorageLocation(ScenarioStateBase):
             storage_location = random.choice(self.available_trays)
             userdata.storage_location = storage_location
             userdata.destination_locations = [self.tray_locations[storage_location]]
+        elif 'container' in storage_location:
+            if storage_location == 'container':
+                storage_location = random.choice(self.available_containers)
+            userdata.storage_location = storage_location
+            userdata.destination_locations = [self.container_locations[storage_location]]
+        elif 'bin' in storage_location:
+            if storage_location == 'bin':
+                storage_location = random.choice(self.available_bins)
+            userdata.storage_location = storage_location
+            userdata.destination_locations = [self.bin_locations[storage_location]]
         else:
             storage_location = random.choice(self.available_bins)
             userdata.storage_location = storage_location

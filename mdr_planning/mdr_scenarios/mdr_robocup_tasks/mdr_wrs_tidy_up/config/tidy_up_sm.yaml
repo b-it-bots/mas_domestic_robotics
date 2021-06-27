@@ -164,6 +164,9 @@ state_descriptions:
                 name: available_trays
                 value: ['tray_1', 'tray_2']
             - argument:
+                name: available_containers
+                value: ['container_a', 'container_b']
+            - argument:
                 name: available_bins
                 value: ['bin_a']
             - argument:
@@ -175,6 +178,11 @@ state_descriptions:
                 name: bin_locations
                 value:
                     bin_a: bin_a
+            - argument:
+                name: container_locations
+                value:
+                    container_a: long_table_a_boxes
+                    container_b: long_table_a_boxes
     - state:
         name: MOVE_TO_STORAGE_LOCATION
         state_module_name: mdr_wrs_tidy_up.scenario_states.move_base
