@@ -12,6 +12,11 @@ from mdr_pickup_action.msg import PickupAction, PickupGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
 from moveit_commander import PlanningSceneInterface
+
+class GraspingContext(object):
+    CLEAN_UP = 'clean_up'
+    GO_AND_GET_IT = 'go_and_get_it'
+
 class PickupObject(ScenarioStateBase):
     pickup_server_name = 'pickup_server'
     pickup_goal_pose_topic = '/pickup_server/goal_pose'
@@ -41,6 +46,7 @@ class PickupObject(ScenarioStateBase):
                                                  '/pickup_server/goal_pose')
         self.grasping_timeout_s = kwargs.get('grasping_timeout_s', 30.)
         self.grasping_height_offset = kwargs.get('grasping_height_offset', 0.05)
+        self.grasping_context = kwargs.get('grasping_context', GraspingContext.CLEAN_UP)
         self.planning_scene_update_service_name = kwargs.get('planning_scene_update_service_name',
                                                              '/move_arm_action/update_planning_scene')
         self.retry_count = 0
@@ -115,6 +121,7 @@ class PickupObject(ScenarioStateBase):
             rospy.logerr('[%s] Response not received', self.state_name)
 
     def update_planning_scene(self, objects, operation):
+        return
         object_list = ObjectList()
         object_list.objects = objects
 
@@ -151,28 +158,32 @@ class PickupObject(ScenarioStateBase):
         pose.position.z = object_to_pick_up.bounding_box.center.z
 
         grasping_strategy = None
-        # this orientation guarantees a sideways grasp and
-        # alignment along the longest axis of the object
-        if object_to_pick_up.dimensions.vector.z > max(object_to_pick_up.dimensions.vector.x,
+        if self.grasping_context == GraspingContext.CLEAN_UP:
+            # this orientation guarantees a sideways grasp and
+            # alignment along the longest axis of the object
+            if object_to_pick_up.dimensions.vector.z > max(object_to_pick_up.dimensions.vector.x,
                                                            object_to_pick_up.dimensions.vector.y):
                 desired_gripper_orientation_base_link = (np.pi, -np.pi/2, 0.)
                 grasping_strategy = PickupGoal.SIDEWAYS_GRASP
             # this orientation guarantees a top-down grasp and
             # alignment along the longest axis of the object
-        else:
-            object_pose_in_base_link = self.tf_listener.transformPose('base_link', object_to_pick_up.pose)
-            euler_orientation = tf.transformations.euler_from_quaternion([object_pose_in_base_link.pose.orientation.x,
-                                                                          object_pose_in_base_link.pose.orientation.y,
-                                                                          object_pose_in_base_link.pose.orientation.z,
-                                                                      object_pose_in_base_link.pose.orientation.w])
-            gripper_orientation_z = euler_orientation[2]
+            else:
+                object_pose_in_base_link = self.tf_listener.transformPose('base_link', object_to_pick_up.pose)
+                euler_orientation = tf.transformations.euler_from_quaternion([object_pose_in_base_link.pose.orientation.x,
+                                                                              object_pose_in_base_link.pose.orientation.y,
+                                                                              object_pose_in_base_link.pose.orientation.z,
+                                                                              object_pose_in_base_link.pose.orientation.w])
+                gripper_orientation_z = euler_orientation[2]
 
-            desired_gripper_orientation_base_link = (np.pi, 0, gripper_orientation_z)
-            grasping_strategy = PickupGoal.TOP_GRASP
+                desired_gripper_orientation_base_link = (np.pi, 0, 0)
+                grasping_strategy = PickupGoal.TOP_GRASP
 
-            # we set the grasping pose along z to be the top of the object to prevent
-            # the robot pushing down the object with the gripper
-            pose.position.z += (object_to_pick_up.dimensions.vector.z / 2) + self.grasping_height_offset
+                # we set the grasping pose along z to be the top of the object to prevent
+                # the robot pushing down the object with the gripper
+                pose.position.z += (object_to_pick_up.dimensions.vector.z / 2) + self.grasping_height_offset
+        elif self.grasping_context == GraspingContext.GO_AND_GET_IT:
+            desired_gripper_orientation_base_link = (np.pi, -np.pi/2, 0.)
+            grasping_strategy = PickupGoal.SIDEWAYS_GRASP
 
         pose.orientation = self.get_gripper_orientation(desired_gripper_orientation_base_link,
                                                         object_to_pick_up.pose.header.frame_id)

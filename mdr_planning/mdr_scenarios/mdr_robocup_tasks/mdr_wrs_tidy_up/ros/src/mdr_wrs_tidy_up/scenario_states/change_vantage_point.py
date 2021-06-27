@@ -49,8 +49,6 @@ class ChangeVantagePoint(ScenarioStateBase):
 
         goal.pose = self.transform_pose(goal.pose)
         goal.pose.pose.position.x += random.gauss(0, 0.1)
-        goal.pose.pose.position.y += random.gauss(0, 0.1)
-        goal.pose.pose.orientation.z += random.gauss(0, 0.05)
 
         self.move_base_client.send_goal(goal)
         self.move_base_client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
@@ -70,7 +68,7 @@ class ChangeVantagePoint(ScenarioStateBase):
         else:
             rospy.logerr('[%s] Could not move within %f seconds; giving up',
                          self.state_name, self.timeout)
-            client.cancel_all_goals()
+            self.move_base_client.cancel_all_goals()
         return 'succeeded'
 
     def pose_callback(self, pose_msg):

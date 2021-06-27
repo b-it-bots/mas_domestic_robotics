@@ -11,6 +11,12 @@ from std_msgs.msg import Bool
 from mas_perception_msgs.msg import ObjectList, DetectObjectsAction, DetectObjectsGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
+class TaskContext(object):
+    CLEAN_UP = 'clean_up'
+    CLEAR_OBSTACLES = 'clear_obstacles'
+    FETCH_OBJECT = 'fetch_object'
+
+
 def get_plane_polygon(center_position, dimensions):
     p1 = (center_position.x - (dimensions.x / 2), center_position.y - (dimensions.y / 2))
     p2 = (center_position.x - (dimensions.x / 2), center_position.y + (dimensions.y / 2))
@@ -66,6 +72,7 @@ class FindObjects(ScenarioStateBase):
         self.object_detection_timeout_s = kwargs.get('object_detection_timeout', 5.)
         self.object_detection_server_name = kwargs.get('object_detection_server_name',
                                                        '/mas_perception/detect_objects')
+        self.task_context = kwargs.get('task_context', TaskContext.CLEAN_UP)
         self.cloud_obstacle_detection_topic = kwargs.get('cloud_obstacle_detection_topic',
                                                          '/mas_perception/cloud_obstacle_detection/obstacle_objects')
         self.cloud_obstacle_cache_reset_topic = kwargs.get('cloud_obstacle_cache_reset_topic',
@@ -132,6 +139,10 @@ class FindObjects(ScenarioStateBase):
             filtered_objects = self.filter_objects_under_tables(filtered_objects,
                                                                 userdata.environment_objects)
             filtered_objects = self.filter_large_objects(filtered_objects)
+
+        if self.task_context == TaskContext.CLEAR_OBSTACLES or self.task_context == TaskContext.FETCH_OBJECT:
+            filtered_objects = self.filter_objects_outside_bounds(filtered_objects)
+
         userdata.detected_objects = self.label_detected_cloud_objects(detected_cam_objects, filtered_objects)
 
         # if no objects are seen in the current view, we register the location as "cleared"
@@ -179,6 +190,38 @@ class FindObjects(ScenarioStateBase):
                             if obj.dimensions.vector.z <= self.max_allowed_obj_height_cm]
         rospy.loginfo('[%s] Keeping %d objects', self.state_name, len(filtered_objects))
         return filtered_objects
+
+    def filter_objects_outside_bounds(self, objects):
+        rospy.loginfo('[%s] Filtering objects that are close to walls in corridor', self.state_name)
+        filtered_objects = []
+        if self.task_context == TaskContext.CLEAR_OBSTACLES:
+            for obj in objects:
+                if obj.pose.pose.position.x > 2.25 and obj.pose.pose.position.x < 2.95:
+                    filtered_objects.append(obj)
+                else:
+                    print('Filtered object:')
+                    print(obj.name)
+                    print(obj.pose)
+        elif self.task_context == TaskContext.FETCH_OBJECT:
+            for obj in objects:
+                if obj.pose.pose.position.x > 1.87 and obj.pose.pose.position.x < 2.55 and obj.pose.pose.position.y < 4.9:
+                    filtered_objects.append(obj)
+                else:
+                    print('Filtered object:')
+                print(obj.name)
+                print(obj.pose)
+        return filtered_objects
+
+    def transform_pose(self, pose_msg):
+        transformed_pose = None
+        while not rospy.is_shutdown():
+            try:
+                transformed_pose = self.tf_listener.transformPose('map', pose_msg)
+                break
+            except:
+                continue
+
+        return transformed_pose
 
     def filter_objects_by_dist_to_table_legs(self, objects, environment_objects):
         rospy.loginfo('[%s] Filtering detected objects using distance to table leg threshold %f',

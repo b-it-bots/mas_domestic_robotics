@@ -8,6 +8,10 @@ from std_msgs.msg import String
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
+class GraspingContext(object):
+    CLEAN_UP = 'clean_up'
+    GO_AND_GET_IT = 'go_and_get_it'
+
 class SelectObjectForPicking(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'select_object_for_picking',
@@ -22,38 +26,53 @@ class SelectObjectForPicking(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'select_object_for_picking')
 
+        self.grasping_context = kwargs.get('grasping_context', GraspingContext.CLEAN_UP)
         self.object_request_string = None
         self.requested_object_category = None
-        self.requesting_person = None
+        self.allowed_requesting_people = ['person_right', 'person_left']
 
         self.__init_ros_components()
 
     def execute(self, userdata):
-        if self.object_request_string is None:
+        if self.grasping_context == GraspingContext.CLEAN_UP:
             rospy.loginfo('[%s] Selecting closest object...', self.state_name)
             selected_object = self.get_closest_object(userdata.detected_objects)
-        else:
-            self.requested_object_category = self.object_request_string.split(' ')[0]
-            person_string = '_'.join(self.object_request_string.split(' ')[-2:])
-            if person_string in ['person_right', 'person_left']:
-                self.requesting_person = person_string
-            else:
-                rospy.logwarn('[%s] Invalid person specification! Picking one at random', self.state_name)
-                self.requesting_person = random.choice(['person_right', 'person_left'])
+        elif self.grasping_context == GraspingContext.GO_AND_GET_IT:
+            requesting_person = None
+            if self.object_request_string:
+                self.requested_object_category = self.object_request_string.split(' ')[0]
+                person_string = '_'.join(self.object_request_string.split(' ')[-2:])
+                if person_string in self.allowed_requesting_people:
+                    requesting_person = person_string
+                else:
+                    rospy.logwarn('[%s] Invalid person specification: %s! Picking one at random',
+                                  self.state_name, person_string)
+                    requesting_person = random.choice(self.allowed_requesting_people)
 
-            rospy.loginfo('[%s] Selecting %s to deliver to %s', self.state_name, self.requested_object_category, self.requesting_person)
-            for obj in userdata.detected_objects:
-                if obj.category == self.requested_object_category:
-                    rospy.loginfo('[%s] Found requested object among detected objects!', self.state_name)
-                    rospy.loginfo('[%s] Selecting requested object: %s', self.state_name, self.requested_object_category)
-                    selected_object = obj
-                    break
+                rospy.loginfo('[%s] Selecting %s to deliver to %s', self.state_name,
+                              self.requested_object_category, requesting_person)
+                for obj in userdata.detected_objects:
+                    if obj.category and obj.category[4:] == self.requested_object_category:
+                        rospy.loginfo('[%s] Found requested object among detected objects!', self.state_name)
+                        rospy.loginfo('[%s] Selecting requested object: %s', self.state_name, self.requested_object_category)
+                        selected_object = obj
+                        break
+                else:
+                    rospy.logwarn('[%s] Could not find requested object among detected objects!', self.state_name)
+                    rospy.loginfo('[%s] Defaulting to selecting closest object...', self.state_name)
+                    selected_object = self.get_closest_object(userdata.detected_objects)
             else:
-                rospy.logwarn('[%s] Could not find requested object among detected objects!', self.state_name)
-                rospy.loginfo('[%s] Defaulting to selecting closest object...', self.state_name)
+                rospy.loginfo('[%s] Request not received; selecting closest object...', self.state_name)
                 selected_object = self.get_closest_object(userdata.detected_objects)
 
-            userdata.destination_locations = [self.requesting_person]
+                rospy.logwarn('[%s] Picking person at random', self.state_name)
+                requesting_person = random.choice(self.allowed_requesting_people)
+
+            userdata.destination_locations = [requesting_person]
+        else:
+            rospy.loginfo('[%s] Unknown grasping context %s; selecting closest object...',
+                          self.grasping_context, self.state_name)
+            selected_object = self.get_closest_object(userdata.detected_objects)
 
         rospy.loginfo('[%s] Selected object at position\n    (%f, %f, %f) \n with size\n    (%f, %f, %f) \n with label\n    "%s"',
                       self.state_name, selected_object.pose.pose.position.x,
@@ -76,9 +95,14 @@ class SelectObjectForPicking(ScenarioStateBase):
                 rospy.logerr('[%s] %s', self.state_name, str(exc))
                 continue
 
-            # we want to grasp the closest object along the xy-plane
-            distance_to_obj = np.linalg.norm(np.array([pose_base_link.pose.position.x,
-                                                       pose_base_link.pose.position.y]))
+            distance_to_obj = 1e10
+            # in the case of a go and get it task, we select the closest object along x
+            if self.grasping_context == GraspingContext.GO_AND_GET_IT:
+                distance_to_obj = np.linalg.norm(np.array([pose_base_link.pose.position.x]))
+            # in general, we want to grasp the closest object along the xy-plane
+            else:
+                distance_to_obj = np.linalg.norm(np.array([pose_base_link.pose.position.x,
+                                                           pose_base_link.pose.position.y]))
 
             if distance_to_obj < closest_obj_distance:
                 closest_obj_index = index
