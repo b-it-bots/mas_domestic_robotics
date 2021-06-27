@@ -121,7 +121,11 @@ class PickupObject(ScenarioStateBase):
             rospy.logerr('[%s] Response not received', self.state_name)
 
     def update_planning_scene(self, objects, operation):
-        return
+        # we don't add dynamic objects to the planning scene for go and get it
+        # because moveit generally fails to find plans when there is too much clutter
+        if self.grasping_context == GraspingContext.GO_AND_GET_IT:
+            return
+
         object_list = ObjectList()
         object_list.objects = objects
 
@@ -175,7 +179,7 @@ class PickupObject(ScenarioStateBase):
                                                                               object_pose_in_base_link.pose.orientation.w])
                 gripper_orientation_z = euler_orientation[2]
 
-                desired_gripper_orientation_base_link = (np.pi, 0, 0)
+                desired_gripper_orientation_base_link = (np.pi, 0, gripper_orientation_z)
                 grasping_strategy = PickupGoal.TOP_GRASP
 
                 # we set the grasping pose along z to be the top of the object to prevent
