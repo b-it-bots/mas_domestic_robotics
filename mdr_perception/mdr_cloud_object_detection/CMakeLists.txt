@@ -1,8 +1,11 @@
-cmake_minimum_required(VERSION 2.8.3)
+if($ENV{ROS_DISTRO} STREQUAL "noetic")
+  cmake_minimum_required(VERSION 3.0.2)
+  add_compile_options(-std=c++14 -Wno-format-security)
+else()
+  cmake_minimum_required(VERSION 2.8.3)
+  add_compile_options(-std=c++11 -Wno-format-security)
+endif()
 project(mdr_cloud_object_detection)
-
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
@@ -17,7 +20,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(PCL 1.7 REQUIRED)
-find_package(Boost REQUIRED COMPONENTS python)
+find_package(Python REQUIRED)
+find_package(Boost REQUIRED COMPONENTS python${Python_VERSION_MAJOR}${Python_VERSION_MINOR})
 
 generate_dynamic_reconfigure_options(
   ros/config/ObjectDetection.cfg
