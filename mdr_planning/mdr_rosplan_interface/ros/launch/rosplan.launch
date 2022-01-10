@@ -2,11 +2,11 @@
 <launch>
     <arg name="knowledge_base_path" default="$(find mdr_knowledge_base)/common/mongoDB" />
     <arg name="planner_path" default="$(find rosplan_planning_system)/common/bin/" />
-    <arg name="data_path" default="" />
+    <arg name="data_path" default="$(find mdr_rosplan_interface)/config/" />
     <arg name="domain_path" default="$(find mdr_rosplan_interface)/config/default_domain.pddl" />
     <arg name="problem_path" default="$(find mdr_rosplan_interface)/config/problem.pddl" />
-    <arg name="strl_file_path" default="$(find mdr_rosplan_interface)/config/plan.pddl" />
-    <arg name="planner_command" default="$(find rosplan_planning_system)/common/bin/fast-downward/fast-downward.py --search-time-limit 10 --alias seq-sat-lama-2011 DOMAIN PROBLEM" />
+    <arg name="strl_file_path" default="$(find mdr_rosplan_interface)/config/plan/sas_plan" />
+    <arg name="planner_command" default="$(find lama_planner)/fast-downward/fast-downward.py --plan-file $(arg strl_file_path) --search-time-limit 10 --alias seq-sat-lama-2011 DOMAIN PROBLEM" />
     <arg name="action_dispatch_topic" default="/kcl_rosplan/action_dispatch" />
     <arg name="action_feedback_topic" default="/kcl_rosplan/action_feedback" />
 
