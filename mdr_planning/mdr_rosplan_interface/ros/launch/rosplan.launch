@@ -11,6 +11,8 @@
     <arg name="action_feedback_topic" default="/kcl_rosplan/action_feedback" />
 
     <param name="/ontology_url" value="file://$(find mas_knowledge_base)/common/ontology/apartment_go_2019.owl" />
+    <param name="/ontology_base_url" value="" />
+    <param name="/ontology_entity_delimiter" value="/" />
     <param name="/ontology_class_prefix" value="apartment" />
 
     <!-- data paths -->
