@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="mdr_find_object_action" type="find_object_action" name="find_object_server" output="screen">
-        <param name="ontology_url" value="file://$(find mas_knowledge_base)/common/ontology/apartment.owl" />
+        <param name="ontology_url" value="file://$(find mas_knowledge_base)/common/ontology/apartment_go_2019.owl" />
+        <param name="ontology_base_url" value="" />
+        <param name="ontology_entity_delimiter" value="/" />
         <param name="ontology_class_prefix" value="apartment" />
         <param name="retry_count_on_failure" value="0" />
         <param name="timeout_s" value="120" />
