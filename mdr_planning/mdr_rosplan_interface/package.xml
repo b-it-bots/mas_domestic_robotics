@@ -15,5 +15,7 @@
 
   <run_depend>rospy</run_depend>
   <run_depend>rosplan_knowledge_msgs</run_depend>
+  <run_depend>rosplan_knowledge_base</run_depend>
+  <run_depend>rosplan_planning_system</run_depend>
   <run_depend>mas_knowledge_base</run_depend>
 </package>

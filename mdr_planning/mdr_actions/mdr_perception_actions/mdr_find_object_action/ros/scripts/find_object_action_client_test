@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 import rospy
 import actionlib
 from mdr_find_object_action.msg import FindObjectAction, FindObjectGoal
