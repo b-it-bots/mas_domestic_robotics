@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Miscellaneous parameters -->
+    <arg name="transform_target_frame" default="base_link" />
+    <arg name="cluster_target_frame" default="map"/>
+    <arg name="occupancy_checker_action_name" default="occupancy_checker"/>
+    <arg name="publish_oriented_bbox" default="true"/>
+    <arg name="object_detection_config_file"
+         default="$(find mdr_cloud_object_detection)/ros/config/object_detection_default_configs.yaml" />
+
+    <!-- Input topic names -->
+    <arg name="cloud_in_topic" default="/hsrb/head_rgbd_sensor/depth_registered/rectified_points"/>
+    <arg name="map_topic" default="/map"/>
+
+    <!-- Output topic names -->
+    <arg name="filtered_cloud_topic" default="filtered_cloud"/>
+    <arg name="object_cloud_topic" default="object_cloud"/>
+    <arg name="objects_bounds_topic" default="object_bounds"/>
+    <arg name="object_list_topic" default="object_list"/>
+
+    <!-- Launch the occupancy_checker -->
+    <include file="$(find mas_navigation_tools)/ros/launch/occupancy_checker.launch">
+        <arg name="action_name" value="$(arg occupancy_checker_action_name)"/>
+        <arg name="map_topic" value="$(arg map_topic)"/>
+    </include>
+
+    <node pkg="mdr_cloud_object_detection" type="cloud_object_detection" name="cloud_object_detection" output="screen"
+          ns="mdr_cloud_object_detection">
+        <rosparam file="$(arg object_detection_config_file)" command="load"/>
+        <param name="cloud_in_topic" type="string" value="$(arg cloud_in_topic)" />
+        <param name="filtered_cloud_topic" type="string" value="$(arg filtered_cloud_topic)" />
+        <param name="object_cloud_topic" type="string" value="$(arg object_cloud_topic)" />
+        <param name="objects_bounds_topic" type="string" value="$(arg objects_bounds_topic)" />
+        <param name="publish_oriented_bbox" type="bool" value="$(arg publish_oriented_bbox)" />
+        <param name="object_list_topic" type="string" value="$(arg object_list_topic)" />
+        <param name="transform_target_frame" type="string" value="$(arg transform_target_frame)" />
+        <param name="cluster_target_frame" type="string" value="$(arg cluster_target_frame)" />
+        <param name="occupancy_checker_action_name" type="string" value="/mas_navigation_tools/$(arg occupancy_checker_action_name)" />
+    </node>
+</launch>

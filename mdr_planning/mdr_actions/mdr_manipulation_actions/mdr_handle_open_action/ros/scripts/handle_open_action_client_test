@@ -16,57 +16,8 @@ if __name__ == '__main__':
     client = actionlib.SimpleActionClient('/handle_open_server', HandleOpenAction)
     client.wait_for_server()
 
-    random = False
-
     goal = HandleOpenGoal()
-
-    goal.handle_pose.header.frame_id = 'base_link'
-    goal.handle_pose.header.stamp = rospy.Time.now()
-
-    if random:
-        # Sampling Random Grasp Positions From a Uniform Distribution:
-
-        z_lim = [0.62, 0.72]
-        x_lim = [0.68, 0.71]
-        y_lim = [0.00, 0.20]
-
-        sample_grasp_pose = [np.random.uniform(low=x_lim[0], high=x_lim[1]),
-                             np.random.uniform(low=y_lim[0], high=y_lim[1]),
-                             np.random.uniform(low=z_lim[0], high=z_lim[1])]
-
-        # Saving the sampled position in a file:
-        # save_samples_to_file('sample_grasp_poses')
-
-    else:
-        # Sampling Grasp Positions From Learned Gaussian Distribution:
-
-        ## TODO: Sample and store positions, and use to continuously update parameters (lifelong learning)
-        # At the moment, use the values learned from the last experiment (13/09/19)
-        posterior_mu_estimate = [0.70064241, 0.10315619, 0.6579796]
-        posterior_sigma_estimate = [4.48271554e-05, 2.67117757e-03, 4.27263449e-04]
-
-        sample_grasp_pose = [np.random.multivariate_normal(np.array([posterior_mu_estimate[0]]),
-                                                           np.array([posterior_sigma_estimate[0]])[np.newaxis])[0],
-                             np.random.multivariate_normal(np.array([posterior_mu_estimate[1]]),
-                                                             np.array([posterior_sigma_estimate[1]])[np.newaxis])[0],
-                             np.random.multivariate_normal(np.array([posterior_mu_estimate[2]]),
-                                                             np.array([posterior_sigma_estimate[2]])[np.newaxis])[0]]
-
-        # Saving the positions sampled from the new distribution in a file:
-        # save_samples_to_file('new_sample_grasp_poses')
-
-    rospy.loginfo('Sampled Grasp Position: ')
-    print(sample_grasp_pose)
-    print()
-
-    goal.handle_pose.pose.position.x = sample_grasp_pose[0]
-    goal.handle_pose.pose.position.y = sample_grasp_pose[1]
-    goal.handle_pose.pose.position.z = sample_grasp_pose[2]
-
-    goal.handle_pose.pose.orientation.x = 0.000
-    goal.handle_pose.pose.orientation.y = 0.000
-    goal.handle_pose.pose.orientation.z = 0.000
-    goal.handle_pose.pose.orientation.w = 1.000
+    goal.handle_type = HandleOpenGoal.UNKNOWN
 
     timeout = 15.0
     rospy.loginfo('Sending action lib goal to handle_open_server')

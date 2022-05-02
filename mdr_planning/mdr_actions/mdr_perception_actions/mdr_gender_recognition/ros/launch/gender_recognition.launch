@@ -1,8 +1,10 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="gender_model_path" default="$(find mdr_gender_recognition)/common/config/simple_CNN.81-0.96.hdf5" />
+    <arg name="image_topic" default="/cam3d/rgb/image_raw"/>
+
     <node pkg="mdr_gender_recognition" type="gender_recognition_action" name="gender_recognition_server" output="screen" ns="mdr_actions">
-        <param name="gender_model_path" value="$(find mdr_gender_recognition)/common/config/simple_CNN.81-0.96.hdf5" />
-        <param name="image_topic" value="/cam3d/rgb/image_raw"/>
+        <param name="gender_model_path" value="$(arg gender_model_path)" />
+        <param name="image_topic" value="$(arg image_topic)"/>
     </node>
 </launch>
-

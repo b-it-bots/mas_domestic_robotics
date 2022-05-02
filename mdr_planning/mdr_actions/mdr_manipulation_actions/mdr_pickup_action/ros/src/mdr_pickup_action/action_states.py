@@ -28,7 +28,7 @@ class PickupSM(ActionSMBase):
                  move_forward_server='move_forward_server',
                  base_elbow_offset=-1.,
                  arm_base_offset=-1.,
-                 grasping_orientation=list(),
+                 grasping_orientation=None,
                  grasping_dmp='',
                  dmp_tau=1.,
                  number_of_retries=0,
@@ -68,22 +68,25 @@ class PickupSM(ActionSMBase):
             self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
             rospy.loginfo('[pickup] Waiting for %s server', self.move_arm_server)
             self.move_arm_client.wait_for_server()
-        except:
-            rospy.logerr('[pickup] %s server does not seem to respond', self.move_arm_server)
+        except Exception as exc:
+            rospy.logerr('[pickup] %s server does not seem to respond: %s',
+                         self.move_arm_server, str(exc))
 
         try:
             self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, MoveBaseAction)
             rospy.loginfo('[pickup] Waiting for %s server', self.move_base_server)
             self.move_base_client.wait_for_server()
-        except:
-            rospy.logerr('[pickup] %s server does not seem to respond', self.move_base_server)
+        except Exception as exc:
+            rospy.logerr('[pickup] %s server does not seem to respond: %s',
+                         self.move_base_server, str(exc))
 
         try:
             self.move_forward_client = actionlib.SimpleActionClient(self.move_forward_server, MoveForwardAction)
             rospy.loginfo('[pickup] Waiting for %s server', self.move_forward_server)
             self.move_forward_client.wait_for_server()
-        except:
-            rospy.logerr('[pickup] %s server does not seem to respond', self.move_forward_server)
+        except Exception as exc:
+            rospy.logerr('[pickup] %s server does not seem to respond: %s',
+                         self.move_forward_server, str(exc))
 
         return FTSMTransitions.INITIALISED
 

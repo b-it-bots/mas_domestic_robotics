@@ -22,6 +22,8 @@ class PlaceServer(object):
     * placing_dmp: Path to a YAML file containing the weights of a dynamic
                    motion primitive used for placing (default: '')
     * dmp_tau: The value of the temporal dynamic motion primitive parameter (default: 1)
+    * downward_placing_vel: Velocity with which the arm moves downwards to detect impact
+                            with the placing surface (default -0.02rad/s)
     * placing_orientation: For more constrained manipulators, it might make sense to use
                            a fixed placing orientation (expressed as an (x, y, z, w) quaternion)
                            to ensure easier reachability; for instance, we might want to keep
@@ -43,6 +45,7 @@ class PlaceServer(object):
         placing_orientation = rospy.get_param('~placing_orientation', list())
         placing_dmp = rospy.get_param('~placing_dmp', '')
         dmp_tau = float(rospy.get_param('~dmp_tau', 1.))
+        downward_placing_vel = float(rospy.get_param('~downward_placing_vel', -0.02))
 
         rospy.loginfo('[place] Initialising state machine')
         self.action_sm = PlaceSM(move_arm_server=move_arm_server,
@@ -53,7 +56,8 @@ class PlaceServer(object):
                                  base_elbow_offset=base_elbow_offset,
                                  placing_orientation=placing_orientation,
                                  placing_dmp=placing_dmp,
-                                 dmp_tau=dmp_tau)
+                                 dmp_tau=dmp_tau,
+                                 downward_placing_vel=downward_placing_vel)
         rospy.loginfo('[place] State machine initialised')
 
         self.action_server = actionlib.SimpleActionServer('place_server',

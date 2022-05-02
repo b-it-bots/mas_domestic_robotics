@@ -3,7 +3,7 @@
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_demo_patrol
 states: [GO_TO]
-outcomes: [DONE, TIMEOUT, FAILED]
+outcomes: [FAILED]
 state_descriptions:
     - state:
         name: GO_TO

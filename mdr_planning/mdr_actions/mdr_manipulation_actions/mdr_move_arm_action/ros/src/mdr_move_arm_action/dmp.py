@@ -5,7 +5,8 @@ from geometry_msgs.msg import PoseStamped, TwistStamped, Vector3Stamped, Twist
 from nav_msgs.msg import Path
 import tf
 from ros_dmp.roll_dmp import RollDmp
-
+import pydmps
+from mas_tools.file_utils import load_yaml_file
 
 class DMPExecutor(object):
     def __init__(self, dmp_name, tau):
@@ -47,62 +48,21 @@ class DMPExecutor(object):
         self.motion_completed = False
         self.motion_cancelled = False
 
-    def move_to(self, goal):
+    def move_to(self, goal_pose):
         '''Moves the end effector to the given goal position (which is expected
         to be given with respect to the base link frame) by following a trajectory
         as encoded by self.dmp_name.
 
         Keyword arguments:
-        goal: np.array -- end effector goal position in the base link frame
+        goal_pose: geometry_msgs.msg.PoseStamped -- end effector goal pose
 
         '''
-        initial_pos = None
-        try:
-            self.tf_listener.waitForTransform(self.base_link_frame_name,
-                                              self.palm_link_name,
-                                              rospy.Time.now(),
-                                              rospy.Duration(30))
-            (trans, _) = self.tf_listener.lookupTransform(self.base_link_frame_name,
-                                                          self.palm_link_name,
-                                                          rospy.Time(0))
-            initial_pos = np.array(trans)
-        except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-            initial_pos = np.zeros(3)
+        (trans, _) = self.get_transform(self.odom_frame_name, self.palm_link_name, rospy.Time.now())
+        initial_pos_odom = np.array(trans)
+        goal_odom = self.transform_pose(goal_pose, self.odom_frame_name)
+        self.follow_path(initial_pos_odom, goal_odom)
 
-        path = self.generate_trajectory(initial_pos, goal)
-        path_odom = np.array([self.transform_pose(position, self.base_link_frame_name, self.odom_frame_name)
-                             for position in path])
-        self.publish_path(path_odom)
-        self.follow_path(path_odom)
-
-    def generate_trajectory(self, initial_pos, goal):
-        '''Returns a 2D numpy array representing a path of [x, y, z] points
-        from "initial_pos" to "goal" that follows the trajectory encoded
-        by self.dmp_name. Each row in the resulting array is a single point
-        on the path.
-
-        Keyword arguments:
-        initial_pos: np.array -- initial position for the motion
-        goal: np.array -- goal position
-
-        '''
-        initial_pose = np.array([initial_pos[0], initial_pos[1], initial_pos[2], 0., 0., 0.])
-        goal_pose = np.array([goal[0], goal[1], goal[2], 0., 0., 0.])
-
-        print('[move_arm/dmp] Querying trajectory')
-        print('[move_arm/dmp] Initial pose: ', initial_pose)
-        print('[move_arm/dmp] Goal pose: ', goal_pose)
-        cartesian_trajectory, _ = self.roll_dmp.get_trajectory_and_path(goal_pose,
-                                                                        initial_pose,
-                                                                        self.tau)
-
-        path = np.array([[state.pose.position.x,
-                          state.pose.position.y,
-                          state.pose.position.z]
-                         for state in cartesian_trajectory.cartesian_state])
-        return path
-
-    def follow_path(self, path):
+    def follow_path(self, initial_pos_odom,  goal_pose_odom):
         '''Moves a manipulator so that it follows the given path. If whole body
         motion is enabled and some points on the path lie outside the reachable
         workspace, the base is moved accordingly as well. The path is followed
@@ -133,22 +93,49 @@ class DMPExecutor(object):
           minimum sigma value (determined experimentally)
 
         Keyword arguments:
-        path: np.array -- a 2D array of points (each row represents a point)
+        initial_pos_odom: numpy.ndarray -- the initial position of the end effector
+                                           in the odometry frame
+        goal_pose_odom: geometry_msgs.msg.PoseStamped -- end effector goal pose
+                                                         in the odometry frame
 
         '''
-        # sanity check - we only consider the path if it contains any points
-        if path is None or path.shape[0] == 0:
-            rospy.logerr('[move_arm/dmp/follow_path] No points in path; aborting execution')
-            return
-
         rospy.loginfo('[move_arm/dmp/follow_path] Executing motion')
         trans, _ = self.get_transform(self.odom_frame_name, self.palm_link_name, rospy.Time(0))
         current_pos = np.array([trans[0], trans[1], trans[2]])
-        distance_to_goal = np.linalg.norm((path[-1] - current_pos))
+        goal = np.array([goal_pose_odom.pose.position.x,
+                         goal_pose_odom.pose.position.y,
+                         goal_pose_odom.pose.position.z])
+
+        distance_to_goal = np.linalg.norm((goal - current_pos))
+
+        initial_pose = np.array([initial_pos_odom[0],
+                                 initial_pos_odom[1],
+                                 initial_pos_odom[2],
+                                 0., 0., 0.])
+        goal_pose = np.array([goal[0], goal[1], goal[2], 0., 0., 0.])
+
+        self.dmp = self.instantiate_dmp(initial_pose, goal_pose)
+        next_pose, _, _ = self.dmp.step(tau=self.tau)
+
+        current_path = initial_pose[:3]
+        next_pos = next_pose[:3]
+        current_path = np.vstack((current_path, next_pos))
 
         self.motion_completed = False
         self.motion_cancelled = False
+
+        # sequence count for the cmd vel header
         cmd_count = 0
+
+        # we want to publish the path only when it changes, which is
+        # why we keep track of the path state during execution
+        path_changed =  True
+
+        # DMP control loop:
+        #     * we unroll the trajectory step-by-step and control the robot towards
+        #       each intermediate goal (using only arm motion whenever possible, but also
+        #       including base motion if the arm joints approach a singularity)
+        #     * the execution is stopped when the end effector reaches the goal position
         while not self.motion_completed and \
               not self.motion_cancelled and \
               not rospy.is_shutdown():
@@ -158,21 +145,21 @@ class DMPExecutor(object):
 
             # if the end effector has reached the goal (within the allowed
             # tolerance threshold), we stop the motion
-            distance_to_goal = np.linalg.norm((path[-1] - current_pos))
+            distance_to_goal = np.linalg.norm((goal - current_pos))
             if distance_to_goal <= self.goal_tolerance:
                 self.motion_completed = True
                 break
 
-            path_point_distances = [np.linalg.norm(p - current_pos) for p in path]
-            min_dist_idx = np.argmin(path_point_distances)
+            # if the end effector has reached the current waypoint,
+            # we unroll the trajectory further
+            distance_to_intermediate_goal = np.linalg.norm((next_pos - current_pos))
+            if distance_to_intermediate_goal <= self.goal_tolerance:
+                next_pose, _, _ = self.dmp.step(tau=self.tau)
+                next_pos = next_pose[:3]
+                current_path = np.vstack((current_path, next_pos))
+                path_changed = True
 
-            next_goal_idx = -1
-            if min_dist_idx == path.shape[0] - 1:
-                next_goal_idx = min_dist_idx
-            else:
-                next_goal_idx = min_dist_idx + 1
-
-            vel = self.feedforward_gain * (path[next_goal_idx] - path[min_dist_idx]) + self.feedback_gain * (path[next_goal_idx] - current_pos)
+            vel = self.feedback_gain * (next_pos - current_pos)
 
             # we limit the speed if it is above the allowed limit
             velocity_norm = np.linalg.norm(vel)
@@ -219,6 +206,10 @@ class DMPExecutor(object):
             self.vel_publisher_arm.publish(twist_arm)
             cmd_count += 1
 
+            if path_changed:
+                self.publish_path(current_path)
+                path_changed = False
+
         # stop arm and base motion after converging
         twist_arm = TwistStamped()
         twist_arm.header.seq = cmd_count
@@ -249,36 +240,28 @@ class DMPExecutor(object):
                 continue
         return (trans, rot)
 
-    def transform_pose(self, position, source_frame, target_frame):
-        '''Transforms a given (x, y, z) position (assuming a (0, 0, 0) rotation)
-        from the source frame to the target frame. Returns a numpy array with the
-        (x, y, z) position represented in the target frame.
+    def transform_pose(self, pose_msg, target_frame):
+        '''Transforms the given pose to the target frame.
 
         Keyword arguments:
-        position: np.array -- (x, y, z) position to be transformed
-        source_frame: str -- name of the transformation source frame
+        pose_msg: geometry_msgs.msg.PoseStamped -- pose to be transformed
         target_frame: str -- name of the transformation target frame
 
         '''
-        pose_msg = PoseStamped()
-        pose_msg.header.frame_id = source_frame
-        pose_msg.pose.position.x = position[0]
-        pose_msg.pose.position.y = position[1]
-        pose_msg.pose.position.z = position[2]
-
+        transformed_pose = pose_msg
         while not rospy.is_shutdown():
             try:
-                pose_ = self.tf_listener.transformPose(target_frame, pose_msg)
+                transformed_pose = self.tf_listener.transformPose(target_frame, pose_msg)
                 break
             except:
                 continue
-        return np.array([pose_.pose.position.x, pose_.pose.position.y, pose_.pose.position.z])
+        return transformed_pose
 
     def publish_path(self, path):
         '''Publishes the given path to the topic specified by self.dmp_executor_path_topic.
 
         Keyword arguments:
-        path: np.array -- a 2D array of points in which each row represents a position
+        path: numpy.ndarray -- a 2D array of points in which each row represents a position
 
         '''
         path_msg = Path()
@@ -301,3 +284,30 @@ class DMPExecutor(object):
 
         '''
         self.min_sigma_value = min(msg.data)
+
+    def instantiate_dmp(self, initial_pose, goal_pose):
+        '''Instantiates a DMP object from learned weights, given
+        the initial and final poses.
+
+        Keyword arguments:
+        initial_pose: numpy.ndarray -- initial pose coordinates of end-effector
+        goal_pose: numpy.ndarray -- target pose coordinates of end-effector
+        '''
+        dmp_weights_dict = load_yaml_file(self.dmp_name)
+        n_dmps, n_bfs = len(dmp_weights_dict), len(dmp_weights_dict['x'])
+
+        dmp_weights = np.zeros((n_dmps, n_bfs))
+        dmp_weights[0, :] = dmp_weights_dict['x']
+        dmp_weights[1, :] = dmp_weights_dict['y']
+        dmp_weights[2, :] = dmp_weights_dict['z']
+        dmp_weights[3, :] = dmp_weights_dict['roll']
+        dmp_weights[4, :] = dmp_weights_dict['pitch']
+        dmp_weights[5, :] = dmp_weights_dict['yaw']
+
+        return pydmps.dmp_discrete.DMPs_discrete(n_dmps=n_dmps,
+                                                 n_bfs=n_bfs,
+                                                 dt=self.time_step,
+                                                 y0=initial_pose,
+                                                 goal=goal_pose,
+                                                 ay=None,
+                                                 w=dmp_weights)

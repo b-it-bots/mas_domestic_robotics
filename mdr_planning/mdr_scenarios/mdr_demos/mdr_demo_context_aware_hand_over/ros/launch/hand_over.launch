@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+
+    <include file="$(find mdr_rosplan_interface)/ros/launch/rosplan.launch">
+        <arg name="data_path" value="$(find mdr_demo_context_aware_hand_over)/config/" />
+        <arg name="problem_path" value="$(find mdr_demo_context_aware_hand_over)/config/problem.pddl" />
+        <arg name="strl_file_path" value="$(find mdr_demo_context_aware_hand_over)/config/plan.strl" />
+    </include>
+
+    <!-- Actions -->
+    <include file="$(find mdr_find_people)/ros/launch/find_people.launch" />
+    <include file="$(find mdr_hand_over_action)/ros/launch/hand_over.launch" />
+
+    <!-- State machine -->
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="context_aware_hand_over" output="screen">
+        <param name="sm_config_file" type="str" value="$(find mdr_demo_context_aware_hand_over)/config/context_aware_hand_over_sm.yaml" />
+    </node>
+</launch>

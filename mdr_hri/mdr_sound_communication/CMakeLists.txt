@@ -17,7 +17,6 @@ generate_dynamic_reconfigure_options(
 catkin_package(
   CATKIN_DEPENDS
     rospy
-    python-rospkg
     std_msgs
     dynamic_reconfigure
 )

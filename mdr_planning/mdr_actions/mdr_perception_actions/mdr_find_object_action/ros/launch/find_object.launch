@@ -1,11 +1,18 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="ontology_url" default="file://$(find mas_knowledge_base)/common/ontology/apartment_go_2019.owl" />
+    <arg name="ontology_base_url" default="" />
+    <arg name="ontology_entity_delimiter" default="/" />
+    <arg name="ontology_class_prefix" default="apartment" />
+    <arg name="retry_count_on_failure" default="0" />
+    <arg name="timeout_s" default="120" />
+
     <node pkg="mdr_find_object_action" type="find_object_action" name="find_object_server" output="screen">
-        <param name="ontology_url" value="file://$(find mas_knowledge_base)/common/ontology/apartment_go_2019.owl" />
-        <param name="ontology_base_url" value="" />
-        <param name="ontology_entity_delimiter" value="/" />
-        <param name="ontology_class_prefix" value="apartment" />
-        <param name="retry_count_on_failure" value="0" />
-        <param name="timeout_s" value="120" />
+        <param name="ontology_url" value="$(arg ontology_url)" />
+        <param name="ontology_base_url" value="$(arg ontology_base_url)" />
+        <param name="ontology_entity_delimiter" value="$(arg ontology_entity_delimiter)" />
+        <param name="ontology_class_prefix" value="$(arg ontology_class_prefix)" />
+        <param name="retry_count_on_failure" value="$(arg retry_count_on_failure)" />
+        <param name="timeout_s" value="$(arg timeout_s)" />
     </node>
 </launch>

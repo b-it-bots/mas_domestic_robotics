@@ -59,7 +59,7 @@
 
 - git:
     local-name: ROSPlan
-    uri: https://github.com/KCL-Planning/ROSPlan.git
+    uri: https://github.com/b-it-bots/ROSPlan.git
     version: master
 
 - git:
@@ -85,4 +85,9 @@
 - git:
     local-name: ros_dmp
     uri: https://github.com/b-it-bots/ros_dmp.git
+    version: master
+
+- git:
+    local-name: mas_tools
+    uri: https://github.com/b-it-bots/mas_tools.git
     version: master

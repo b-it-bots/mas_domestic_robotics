@@ -1,0 +1,208 @@
+# Description: Defines a state machine for a scenario in which a robot monitors people who enter a lab and guides them to a free sitting spot.
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_demo_lab_manager
+states: [GO_TO_MONITORING_POSE, MONITOR_DOOR, VERIFY_PERSON, ASK_NAME, GIVE_DISINFECTION_FOLLOWING_INSTRUCTIONS, TURN_PERSON_AWAY, GO_TO_DISINFECTION_SPOT, PERFORM_DISINFECTION, GIVE_ASSIGNED_SPOT_FOLLOWING_INSTRUCTIONS, GUIDE_TO_EMPTY_SPOT, GIVE_LAB_LEAVE_INSTRUCTIONS]
+outcomes: [FAILED]
+state_descriptions:
+    - state:
+        name: GO_TO_MONITORING_POSE
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: MONITOR_DOOR
+            - transition:
+                name: failed
+                state: GO_TO_MONITORING_POSE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [monitoring_pose]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: MONITOR_DOOR
+        state_module_name: mdr_perception_behaviours.find_people
+        state_class_name: FindPeople
+        transitions:
+            - transition:
+                name: succeeded
+                state: VERIFY_PERSON
+            - transition:
+                name: failed
+                state: MONITOR_DOOR
+            - transition:
+                name: failed_after_retrying
+                state: MONITOR_DOOR
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 0
+    - state:
+        name: VERIFY_PERSON
+        state_module_name: mdr_demo_lab_manager.scenario_states.verify_person
+        state_class_name: VerifyPerson
+        transitions:
+            - transition:
+                name: no_empty_spot
+                state: TURN_PERSON_AWAY
+            - transition:
+                name: new_person
+                state: ASK_NAME
+            - transition:
+                name: already_logged_person
+                state: MONITOR_DOOR
+            - transition:
+                name: known_person
+                state: GIVE_DISINFECTION_FOLLOWING_INSTRUCTIONS
+            - transition:
+                name: face_not_seen
+                state: MONITOR_DOOR
+        arguments:
+            - argument:
+                name: total_locations
+                value: 7
+            - argument:
+                name: person_recognition_threshold
+                value: 1
+            - argument:
+                name: timeout
+                value: 10.
+    - state:
+        name: TURN_PERSON_AWAY
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: MONITOR_DOOR
+        arguments:
+            - argument:
+                name: sentences
+                value: ['The lab is full. Please come back later.']
+    - state:
+        name: ASK_NAME
+        state_module_name: mdr_demo_lab_manager.scenario_states.get_user_data
+        state_class_name: GetUserData
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_DISINFECTION_SPOT
+            - transition:
+                name: failed
+                state: ASK_NAME
+            - transition:
+                name: failed_after_retrying
+                state: GIVE_DISINFECTION_FOLLOWING_INSTRUCTIONS
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: sheet_id
+                value: 1P2awsaugrcFmm2MXKEqznnMDVIS3LUSq6NeT8rJhxKU
+            - argument:
+                name: worksheet_name
+                value: responses
+            - argument:
+                name: loop_rate_s
+                value: 2.0
+    - state:
+        name: GIVE_DISINFECTION_FOLLOWING_INSTRUCTIONS
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_DISINFECTION_SPOT
+        arguments:
+            - argument:
+                name: sentences
+                value: ['Please follow me to the hand sanitiser station.']
+    - state:
+        name: GO_TO_DISINFECTION_SPOT
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERFORM_DISINFECTION
+            - transition:
+                name: failed
+                state: GO_TO_DISINFECTION_SPOT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [disinfection_table]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PERFORM_DISINFECTION
+        state_module_name: mdr_demo_lab_manager.scenario_states.perform_disinfection
+        state_class_name: PerformDisinfection
+        transitions:
+            - transition:
+                name: succeeded
+                state: GIVE_ASSIGNED_SPOT_FOLLOWING_INSTRUCTIONS
+        arguments:
+            - argument:
+                name: disinfection_cmd_topic
+                value: /control_robot/event_in
+            - argument:
+                name: disinfection_duration
+                value: 30.0
+    - state:
+        name: GIVE_ASSIGNED_SPOT_FOLLOWING_INSTRUCTIONS
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: GUIDE_TO_EMPTY_SPOT
+        arguments:
+            - argument:
+                name: sentences
+                value: ['Please follow me to your assigned spot.']
+    - state:
+        name: GUIDE_TO_EMPTY_SPOT
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GIVE_LAB_LEAVE_INSTRUCTIONS
+            - transition:
+                name: failed
+                state: GO_TO_MONITORING_POSE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GIVE_LAB_LEAVE_INSTRUCTIONS
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_MONITORING_POSE
+        arguments:
+            - argument:
+                name: sentences
+                value: ['If you are leaving the lab, please come to me so that I know that your spot is free.']
+            - argument:
+                name: sleep_time
+                value: 5.0

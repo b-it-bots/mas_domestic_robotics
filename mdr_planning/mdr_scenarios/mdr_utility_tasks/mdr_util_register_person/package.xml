@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+  <name>mdr_util_register_person</name>
+  <version>1.0.0</version>
+  <description>
+    A package for a task in which a robot registers a previuosly unknown person
+    by collecting images of them and storing those in the knowledge base.
+  </description>
+  <license>GPLv3</license>
+
+  <author email="aleksandar.mitrevski@h-brs.de">Alex Mitrevski</author>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>rospy</build_depend>
+  <build_depend>mdr_detect_person</build_depend>
+  <build_depend>mas_execution_manager</build_depend>
+  <build_depend>mdr_perception_behaviours</build_depend>
+  <build_depend>mdr_hri_behaviours</build_depend>
+  <build_depend>mas_knowledge_base</build_depend>
+
+  <run_depend>rospy</run_depend>
+  <run_depend>mdr_detect_person</run_depend>
+  <run_depend>mas_execution_manager</run_depend>
+  <run_depend>mdr_perception_behaviours</run_depend>
+  <run_depend>mdr_hri_behaviours</run_depend>
+  <run_depend>mas_knowledge_base</run_depend>
+</package>

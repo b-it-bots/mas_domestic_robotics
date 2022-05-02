@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+
+    <include file="$(find mdr_rosplan_interface)/ros/launch/rosplan.launch" />
+
+    <param name="/move_base/global_costmap/obstacles/base_scan/topic" type="string" value="/mas_perception/merged_scan" />
+    <param name="/move_base/local_costmap/obstacles/base_scan/topic" type="string" value="/mas_perception/merged_scan" />
+
+    <include file="$(find mdr_move_arm_action)/ros/launch/move_arm.launch"/>
+    <include file="$(find mdr_move_arm_joints_action)/ros/launch/move_arm_joints.launch"/>
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base.launch"/>
+    <include file="$(find mdr_move_forward_action)/ros/launch/move_forward.launch"/>
+    <include file="$(find mdr_pickup_action)/ros/launch/pickup_action.launch"/>
+
+    <include file="$(find mdr_cloud_object_detection)/ros/launch/cloud_object_detection.launch"/>
+</launch>

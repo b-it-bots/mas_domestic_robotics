@@ -1,14 +1,18 @@
 <?xml version="1.0"?>
 <launch>
+    <arg name="action_name" default="pickup" />
+    <arg name="server_name" default="/pickup_server" />
+    <arg name="action_timeout" default="120" />
+    <arg name="grasping_pose_frame" default="base_link" />
     <arg name="action_dispatch_topic" default="/kcl_rosplan/action_dispatch"/>
     <arg name="action_feedback_topic" default="/kcl_rosplan/action_feedback"/>
 
     <node pkg="mdr_pickup_action" type="pickup_client" name="pickup_client" output="screen">
-        <param name="action_name" type="str" value="pickup" />
-        <param name="server_name" type="str" value="/pickup_server" />
-        <param name="action_timeout" type="double" value="120" />
+        <param name="action_name" type="str" value="$(arg action_name)" />
+        <param name="server_name" type="str" value="$(arg server_name)" />
+        <param name="action_timeout" type="double" value="$(arg action_timeout)" />
+        <param name="grasping_pose_frame" type="str" value="$(arg grasping_pose_frame)" />
         <remap from="action_dispatch_topic" to="$(arg action_dispatch_topic)" />
         <remap from="action_feedback_topic" to="$(arg action_feedback_topic)" />
-        <param name="grasping_pose_frame" type="str" value="base_link" />
     </node>
 </launch>

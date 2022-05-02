@@ -15,6 +15,7 @@ class HandleOpenServer(object):
     * move_arm_server: Name of the move_arm action server (default: 'move_arm_server')
     * move_base_server: Name of the move_base action server (default: 'move_base_server')
     * move_forward_server: Name of the move_forward action server (default: 'move_forward_server')
+    * detect_handle_server: Name of a detect_handle action server (default: 'detect_handle_server')
     * force_sensor_topic: Name of topic for wrist force sensor measurements
                           (default: 'force_sensor_topic')
     * pregrasp_config_name: Name of the pregrasp configuration (default: 'pregrasp_config_name')
@@ -30,6 +31,7 @@ class HandleOpenServer(object):
         move_arm_server = rospy.get_param('~move_arm_server', 'move_arm_server')
         move_base_server = rospy.get_param('~move_base_server', 'move_base_server')
         move_forward_server = rospy.get_param('~move_forward_server', 'move_forward_server')
+        detect_handle_server = rospy.get_param('~detect_handle_server', 'detect_handle_server')
         force_sensor_topic = rospy.get_param('~force_sensor_topic', 'force_sensor_topic')
         pregrasp_config_name = rospy.get_param('~pregrasp_config_name', 'pregrasp_config_name')
         final_config_name = rospy.get_param('~final_config_name', 'final_config_name')
@@ -42,6 +44,7 @@ class HandleOpenServer(object):
                                       move_base_server=move_base_server,
                                       force_sensor_topic=force_sensor_topic,
                                       move_forward_server=move_forward_server,
+                                      detect_handle_server=detect_handle_server,
                                       pregrasp_config_name=pregrasp_config_name,
                                       final_config_name=final_config_name,
                                       handle_open_dmp=handle_open_dmp,

@@ -27,7 +27,7 @@ class DescribePerson(ScenarioStateBase):
         person_msg = self.kb_interface.get_obj_instance(userdata.person_name, Person)
         person_info_msg = self.kb_interface.get_obj_instance(userdata.person_name, PersonInfo)
         try:
-            cv_image = self.bridge.imgmsg_to_cv2(person_msg.rgb_image, "bgr8")
+            cv_image = self.bridge.imgmsg_to_cv2(person_msg.views[0].image, "bgr8")
         except CvBridgeError as e:
             rospy.logerr(e.msg)
 

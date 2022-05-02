@@ -2,8 +2,8 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_demo_simple_pick_and_place
-states: [GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, PLACE_OBJECT]
-outcomes: [DONE, FAILED, TIMEOUT]
+states: [GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, PLACE_OBJECT]
+outcomes: [FAILED]
 state_descriptions:
     - state:
         name: GO_TO_TABLE
@@ -63,34 +63,13 @@ state_descriptions:
                 state: FAILED
             - transition:
                 name: find_objects_before_picking
-                state: FIND_OBJECTS_BEFORE_PICKING
+                state: PERCEIVE_TABLE
         arguments:
             - argument:
                 name: number_of_retries
                 value: 3
             - argument:
                 name: picking_surface_prefix
-                value: table
-    - state:
-        name: FIND_OBJECTS_BEFORE_PICKING
-        state_module_name: mdr_perception_behaviours.perceive_planes
-        state_class_name: PerceivePlanes
-        transitions:
-            - transition:
-                name: succeeded
-                state: PICK_OBJECT
-            - transition:
-                name: failed
-                state: FIND_OBJECTS_BEFORE_PICKING
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: number_of_retries
-                value: 3
-            - argument:
-                name: plane_prefix
                 value: table
     - state:
         name: PLACE_OBJECT
