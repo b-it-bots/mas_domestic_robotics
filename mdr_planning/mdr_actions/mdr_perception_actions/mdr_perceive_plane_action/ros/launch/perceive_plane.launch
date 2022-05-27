@@ -10,7 +10,7 @@
     <arg name="head_controller_pkg_name" default="mdr_head_controller"/>
 
     <arg name="cloud_topic" default="" />
-    <arg name="object_detection_module" default="mas_perception_libs" />
+    <arg name="object_detection_module" default="mas_perception_libs.image_detector" />
     <arg name="object_detection_class" default="TorchImageDetector" />
     <arg name="object_detection_class_annotations" default="$(find mas_perception_libs)/models/coco_classes.yml" />
     <arg name="object_detection_kwargs_file" default="$(find mdr_perceive_plane_action)/config/object_detection_kwargs.yml" />

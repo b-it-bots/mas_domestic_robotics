@@ -32,6 +32,8 @@
   <run_depend>message_runtime</run_depend>
   <run_depend>mas_perception_msgs</run_depend>
   <run_depend>mdr_object_recognition</run_depend>
+  <run_depend>mas_execution_manager</run_depend>
+  <run_depend>mdr_head_controller</run_depend>
 
   <export></export>
 </package>

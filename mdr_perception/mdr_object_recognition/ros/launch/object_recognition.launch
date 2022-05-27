@@ -4,7 +4,7 @@
     <include file="$(find mas_perception_libs)/ros/launch/image_recognition.launch" >
         <arg name="service_name" value="$(arg service_name)"/>
         <arg name="model_directory" value="$(find mdr_object_recognition)/models"/>
-        <arg name="recognition_module" value="mas_perception_libs"/>
+        <arg name="recognition_module" value="mas_perception_libs.image_classifier"/>
         <arg name="recognition_class" value="KerasImageClassifier"/>
     </include>
 </launch>
