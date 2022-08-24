@@ -6,9 +6,11 @@ import actionlib
 
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 
+SERVER_NAME = 'move_base_server'
+
 if __name__ == '__main__':
     rospy.init_node('mdr_move_base_client_test')
-    client = actionlib.SimpleActionClient('move_base_server', MoveBaseAction)
+    client = actionlib.SimpleActionClient(SERVER_NAME, MoveBaseAction)
     client.wait_for_server()
     goal = MoveBaseGoal()
     if len(sys.argv) == 2:
@@ -16,13 +18,13 @@ if __name__ == '__main__':
             goal.goal_type = MoveBaseGoal.NAMED_TARGET
             goal.destination_location = str(sys.argv[1])
             timeout = 15.0
-            rospy.loginfo('Sending action lib goal to move_base_server, ' +
-                          'destination : ' + goal.destination_location)
+            rospy.loginfo("Sending action lib goal to '{}', destination: {}"
+                          .format(SERVER_NAME, goal.destination_location))
             client.send_goal(goal)
             client.wait_for_result(rospy.Duration.from_sec(int(timeout)))
-            print(client.get_result())
+            rospy.loginfo("Result: {}".format(client.get_result()))
         except Exception as exc:
-            print(str(exc))
+            rospy.logerr("{}: {}".format(type(exc).__name__, exc))
     else:
         rospy.logerr('Arguments were not received in the proper format')
         rospy.loginfo('usage : rosrun mdr_move_base_action move_base_client_test DESTINATION')
