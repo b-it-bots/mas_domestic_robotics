@@ -39,6 +39,6 @@ if __name__ == '__main__':
             rospy.loginfo('Sending action lib goal to move_forward_server, duration: ' + str(goal.movement_duration) + ', speed: ' + str(goal.speed))
             client.send_goal(goal)
             client.wait_for_result()
-            print client.get_result()
+            print(client.get_result())
         except:
             pass
