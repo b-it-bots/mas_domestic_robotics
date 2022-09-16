@@ -23,7 +23,7 @@ class PickupClient(ActionClientBase):
         self.context = None
         self.frame_id = rospy.get_param('~grasping_pose_frame', 'base_link')
         self.tf_listener = tf.TransformListener()
-
+        self.strategy = PickupGoal.SIDEWAYS_GRASP
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
 
