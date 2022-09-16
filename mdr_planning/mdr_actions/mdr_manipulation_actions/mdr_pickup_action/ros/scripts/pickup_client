@@ -68,6 +68,13 @@ class PickupClient(ActionClientBase):
                 self.robot_name = param.value
             elif param.key == 'context':
                 self.context = param.value
+            elif param.key == 'strategy':
+                if param.value == 'sideways_grasp':
+                    self.strategy = PickupGoal.SIDEWAYS_GRASP
+                    rospy.loginfo('[pickup] pickup_client: strategy - SIDEWAYS_GRASP')
+                else:
+                    self.strategy = PickupGoal.TOP_GRASP
+                    rospy.loginfo('[pickup] pickup_client: strategy - TOP_GRASP')
 
         try:
             obj = self.kb_interface.get_obj_instance(self.obj, Object._type)
@@ -80,6 +87,7 @@ class PickupClient(ActionClientBase):
                                                                         object_pose)
             goal.pose = object_pose_in_grasp_frame
             goal.context = self.context
+            goal.strategy = self.strategy
             return goal
         except KBException as exc:
             rospy.logerr('[pickup] %s', str(exc))
