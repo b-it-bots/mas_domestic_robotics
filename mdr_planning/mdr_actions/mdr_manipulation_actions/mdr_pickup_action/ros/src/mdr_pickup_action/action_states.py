@@ -1,11 +1,14 @@
 #!/usr/bin/python
 from importlib import import_module
 import numpy as np
+from std_srvs.srv import Empty
+import pdb
 
 import rospy
 import tf
 import actionlib
 from geometry_msgs.msg import PoseStamped
+from sensor_msgs.msg import JointState
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -59,6 +62,9 @@ class PickupSM(ActionSMBase):
 
         self.tf_listener = tf.TransformListener()
 
+        self.target_pose_pub = rospy.Publisher('target_pose', PoseStamped, queue_size=1)
+        self.joint_states_pub = rospy.Subscriber('/hsrb/joint_states', JointState, self.joint_states_cb)
+
         self.move_arm_client = None
         self.move_base_client = None
         self.move_forward_client = None
@@ -88,12 +94,20 @@ class PickupSM(ActionSMBase):
             rospy.logerr('[pickup] %s server does not seem to respond: %s',
                          self.move_forward_server, str(exc))
 
+        rospy.loginfo('Waiting for clear_octomap service')
+        rospy.wait_for_service('/clear_octomap')
+        rospy.loginfo('Found /clear_octomap service')
+        self.clear_octomap_service = rospy.ServiceProxy('/clear_octomap', Empty)
+
         return FTSMTransitions.INITIALISED
 
     def running(self):
         pose = self.goal.pose
+        self.target_pose_pub.publish(self.goal.pose)
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
+
+        pose_base_link.pose.position.x -= 0.04
 
         if self.base_elbow_offset > 0:
             self.__align_base_with_pose(pose_base_link)
@@ -153,9 +167,22 @@ class PickupSM(ActionSMBase):
 
             rospy.loginfo('[pickup] Closing the gripper')
             self.gripper.close()
+            rospy.loginfo('[pickup] Clearing octomap')
+            self.clear_octomap_service()
 
             if self.goal.context != PickupGoal.CONTEXT_TABLETOP_MANIPULATION:
                 rospy.loginfo('[pickup] Moving the arm back')
+                current_joint_pos = self.joint_states
+                arm_joint_pos_indices = [current_joint_pos.name.index('arm_lift_joint'), current_joint_pos.name.index('arm_flex_joint'),
+                                         current_joint_pos.name.index('arm_roll_joint'), current_joint_pos.name.index('wrist_flex_joint'),
+                                         current_joint_pos.name.index('wrist_roll_joint')]
+                arm_joint_pos = [self.joint_states.position[idx] for idx in arm_joint_pos_indices]
+                arm_joint_pos.append(0.0)
+                # Added an offset to the arm_lift_joint to avoid collision with the table
+                arm_joint_pos[0] += 0.08
+                self.__move_arm(MoveArmGoal.JOINT_VALUES, arm_joint_pos)
+                self.__move_base_along_x(-0.1)
+                self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
                 self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
 
                 if self.goal.strategy == PickupGoal.TOP_GRASP:
@@ -164,10 +191,19 @@ class PickupSM(ActionSMBase):
                         self.__move_base_along_x(-x_align_distance)
 
             rospy.loginfo('[pickup] Verifying the grasp...')
-            grasp_successful = self.gripper.verify_grasp()
+            # Added a condition to check if the object is grasped or not by using hand_motor_joint 'closed' value as the min threshold
+            grasp_successful = (self.joint_states.position[self.joint_states.name.index('hand_motor_joint')]) > -0.83 # NOTE: -0.83 value comes from thinnest object which is toothbrush
+
             if grasp_successful:
                 rospy.loginfo('[pickup] Successfully grasped object')
+                grasp_successful=True
+
+            # check grasping based on force-torque value             
+            elif self.gripper.verify_grasp():
+                rospy.loginfo('[pickup] Grasp F-T verification failed, but gripper has grasped something')
+                grasp_successful=True
             else:
+                rospy.loginfo('[pickup] Grasp F-T verification failed along with "hand_motor_joint" value threshold, but the gripper is still open; retrying')
                 rospy.loginfo('[pickup] Grasp unsuccessful')
                 retry_count += 1
 
@@ -205,7 +241,7 @@ class PickupSM(ActionSMBase):
         self.move_base_client.wait_for_result()
         self.move_base_client.get_result()
 
-    def __move_arm(self, goal_type, goal):
+    def __move_arm(self, goal_type, goal, dmp_flag=True):
         '''Sends a request to the 'move_arm' action server and waits for the
         results of the action execution.
 
@@ -221,8 +257,12 @@ class PickupSM(ActionSMBase):
             move_arm_goal.named_target = goal
         elif goal_type == MoveArmGoal.END_EFFECTOR_POSE:
             move_arm_goal.end_effector_pose = goal
-            move_arm_goal.dmp_name = self.grasping_dmp
-            move_arm_goal.dmp_tau = self.dmp_tau
+            if dmp_flag:
+                move_arm_goal.dmp_name = self.grasping_dmp
+                move_arm_goal.dmp_tau = self.dmp_tau
+        elif goal_type == MoveArmGoal.JOINT_VALUES:
+            move_arm_goal.joint_values = goal
+                
         self.move_arm_client.send_goal(move_arm_goal)
         self.move_arm_client.wait_for_result()
         result = self.move_arm_client.get_result()
@@ -268,3 +308,6 @@ class PickupSM(ActionSMBase):
         result = PickupResult()
         result.success = success
         return result
+
+    def joint_states_cb(self, msg):
+        self.joint_states = msg
