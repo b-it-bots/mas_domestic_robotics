@@ -1,3 +1,4 @@
 detector_module: torchvision.models.detection
 detector_instantiator: fasterrcnn_resnet50_fpn
-detection_threshold: 0.8
+detection_threshold: 0.7
+ensemble: True
