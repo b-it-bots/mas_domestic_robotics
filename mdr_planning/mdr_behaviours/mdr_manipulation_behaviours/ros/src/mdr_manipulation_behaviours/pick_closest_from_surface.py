@@ -72,7 +72,7 @@ class PickClosestFromSurface(ScenarioStateBase):
             return 'failed_after_retrying'
         rospy.loginfo('Retrying to grasp %s' % obj_to_grasp)
         self.retry_count += 1
-        return 'failed'
+        return 'find_objects_before_picking'
 
     def select_object_for_grasping(self, surface_object_poses):
         '''Returns the index of the object whose distance is closest to the robot
