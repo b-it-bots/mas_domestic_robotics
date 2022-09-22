@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<package>
+  <name>heartmet_demo_item_delivery</name>
+  <version>1.0.0</version>
+  <description>State machine and launch files for item delivery task for heartmet competition)</description>
+  <license>GPLv3</license>
+
+  <author email="esharm2s@smail.inf.h-brs.de">Ekansh Sharma</author>
+  <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>mdr_demo_simple_pick_and_place</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>roslint</build_depend>
+  <build_depend>smach</build_depend>
+  <build_depend>smach_ros</build_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>mongodb_store</build_depend>
+  <build_depend>mdr_rosplan_interface</build_depend>
+  <build_depend>mas_execution_manager</build_depend>
+  <build_depend>mas_hsr_move_base_action</build_depend>
+  <build_depend>mas_hsr_move_arm_action</build_depend>
+  <build_depend>mas_hsr_pickup_action</build_depend>
+  <build_depend>mas_hsr_place_action</build_depend>
+  <build_depend>mas_hsr_perceive_plane_action</build_depend>
+
+  <build_depend>mdr_demo_context_aware_hand_over</build_depend>
+  <build_depend>mas_hsr_find_people</build_depend>
+  <build_depend>mas_hsr_hand_over_action</build_depend>
+
+  <run_depend>mdr_demo_simple_pick_and_place</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>roslint</run_depend>
+  <run_depend>smach</run_depend>
+  <run_depend>smach_ros</run_depend>
+  <run_depend>actionlib</run_depend>
+  <run_depend>mongodb_store</run_depend>
+  <run_depend>rosplan_knowledge_base</run_depend>
+  <run_depend>rosplan_planning_system</run_depend>
+  <run_depend>mdr_rosplan_interface</run_depend>
+  <run_depend>mas_execution_manager</run_depend>
+  <run_depend>mas_hsr_move_base_action</run_depend>
+  <run_depend>mas_hsr_move_arm_action</run_depend>
+  <run_depend>mas_hsr_pickup_action</run_depend>
+  <run_depend>mas_hsr_place_action</run_depend>
+  <run_depend>mas_hsr_perceive_plane_action</run_depend>
+  
+  <run_depend>mdr_demo_context_aware_hand_over</run_depend>
+  <run_depend>mas_hsr_find_people</run_depend>
+  <run_depend>mas_hsr_hand_over_action</run_depend>
+
+  <test_depend>roslaunch</test_depend>
+</package>
