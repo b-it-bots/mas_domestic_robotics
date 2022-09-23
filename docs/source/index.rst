@@ -68,6 +68,7 @@ Behaviours are reusable SMACH states that can be used for implementing complex t
    behaviours/manipulation
    behaviours/navigation
    behaviours/perception
+   behaviours/hri
 
 Knowledge Base
 ***********************
