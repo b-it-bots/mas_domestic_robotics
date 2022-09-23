@@ -78,9 +78,10 @@ class HandOverSM(ActionSMBase):
             rospy.logerr('[hand_over] %s', str(exc))
             return FTSMTransitions.INIT_FAILED
 
+        # NOT REQUIRED in init
         # Start with arm in neutral position:
-        rospy.loginfo('[hand_over] Moving arm to neutral position...')
-        self.__move_arm(MoveArmGoal.NAMED_TARGET, self.init_config_name)
+        # rospy.loginfo('[hand_over] Moving arm to neutral position...')
+        # self.__move_arm(MoveArmGoal.NAMED_TARGET, self.init_config_name)
 
         return FTSMTransitions.INITIALISED
 
@@ -140,22 +141,23 @@ class HandOverSM(ActionSMBase):
         self.goal.person_pose = self.tf_listener.transformPose("base_link", self.goal.person_pose)
 
         distance_to_person = np.sqrt(self.goal.person_pose.pose.position.x**2 + self.goal.person_pose.pose.position.y**2)
-        if distance_to_person > self.person_dist_threshold:
-            move_to_person_goal = MoveBaseGoal()
-            move_to_person_goal.goal_type = MoveBaseGoal.POSE
-            move_to_person_goal.pose.header.frame_id = self.goal.person_pose.header.frame_id
-            move_to_person_goal.pose.pose.position.x = self.goal.person_pose.pose.position.x - 0.3
-            move_to_person_goal.pose.pose.position.y = self.goal.person_pose.pose.position.y - 0.3
-            rospy.loginfo('[hand_over] Moving to person...')
+        # Assuming robot is facing a person, and person is at a distance
+        # if distance_to_person > self.person_dist_threshold:
+        #     move_to_person_goal = MoveBaseGoal()
+        #     move_to_person_goal.goal_type = MoveBaseGoal.POSE
+        #     move_to_person_goal.pose.header.frame_id = self.goal.person_pose.header.frame_id
+        #     move_to_person_goal.pose.pose.position.x = self.goal.person_pose.pose.position.x - 0.3
+        #     move_to_person_goal.pose.pose.position.y = self.goal.person_pose.pose.position.y - 0.3
+        #     rospy.loginfo('[hand_over] Moving to person...')
 
-            self.move_base_client.send_goal(move_to_person_goal)
+        #     self.move_base_client.send_goal(move_to_person_goal)
 
-            # we try moving towards the person before handing the object over;
-            # the person should be close by, so we move for a short time
-            # since the robot will either reach the person in that time,
-            # or will stop as close to the person as possible
-            self.move_base_client.wait_for_result(rospy.Duration(10.))
-            self.move_base_client.cancel_goal()
+        #     # we try moving towards the person before handing the object over;
+        #     # the person should be close by, so we move for a short time
+        #     # since the robot will either reach the person in that time,
+        #     # or will stop as close to the person as possible
+        #     self.move_base_client.wait_for_result(rospy.Duration(10.))
+        #     self.move_base_client.cancel_goal()
 
         # Start with arm in neutral position:
         rospy.loginfo('[hand_over] Moving arm to neutral position...')
