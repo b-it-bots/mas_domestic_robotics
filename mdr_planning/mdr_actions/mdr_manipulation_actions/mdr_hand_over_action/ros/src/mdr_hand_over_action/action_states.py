@@ -10,6 +10,9 @@ import actionlib
 from geometry_msgs.msg import PoseStamped
 from geometry_msgs.msg import WrenchStamped
 
+# import string 
+from std_msgs.msg import String
+
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
@@ -60,6 +63,9 @@ class HandOverSM(ActionSMBase):
         self.cumsum_z = 0
         self.force_detection_threshold = 1.
         self.object_reception_detected = False
+        
+        # TODO: try to use the same from execution manager method
+        self.say_pub = rospy.Publisher('/say', String, latch=True, queue_size=1)
 
     def init(self):
         try:
@@ -181,6 +187,9 @@ class HandOverSM(ActionSMBase):
         else:
             # Force sensing object release strategy:
             rospy.sleep(1.)
+
+            self.say('Please take the it')
+
             rospy.loginfo('[hand_over] Waiting for object to be received...')
             rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)
             self.object_reception_detected = False
@@ -259,3 +268,9 @@ class HandOverSM(ActionSMBase):
 
     def force_sensor_cb(self, force_sensor_msg):
         self.latest_force_measurement_z = force_sensor_msg.wrench.force.z
+    
+    # TODO: try to use the same from execution manager method
+    def say(self, sentence):
+        say_msg = String()
+        say_msg.data = sentence
+        self.say_pub.publish(say_msg)
