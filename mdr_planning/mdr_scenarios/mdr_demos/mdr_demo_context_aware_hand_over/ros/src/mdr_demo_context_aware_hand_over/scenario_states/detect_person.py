@@ -1,8 +1,11 @@
 import rospy
 import actionlib
 
+from sensor_msgs.msg import Image
+
 from mdr_find_people.msg import FindPeopleAction, FindPeopleGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
+import pdb
 
 class DetectPerson(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
@@ -17,8 +20,9 @@ class DetectPerson(ScenarioStateBase):
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
         self.client = actionlib.SimpleActionClient(self.action_server, FindPeopleAction)
+        self.person_img_pub = rospy.Publisher('/heartmet/person_detect', Image, queue_size=1)
         self.client.wait_for_server(rospy.Duration(10.))
-
+        
     def execute(self, userdata):
         goal = FindPeopleGoal()
 
@@ -28,9 +32,14 @@ class DetectPerson(ScenarioStateBase):
         self.client.send_goal(goal)
         self.client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
         result = self.client.get_result()
-
+        pdb.set_trace()
         if result and result.person_list.persons:
             rospy.loginfo('[detect_person] Found {0} people'.format(len(result.person_list.persons)))
+            
+            
+            rospy.loginfo('Publishing image and sleeping for 3s')
+            self.person_img_pub.publish(result.person_list.persons[0].views[0].image)
+
             userdata.person_list = result.person_list
             return 'succeeded'
         else:

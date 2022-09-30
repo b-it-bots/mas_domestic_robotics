@@ -2,12 +2,13 @@
 from importlib import import_module
 import numpy as np
 from std_srvs.srv import Empty
-import pdb
+
+from std_msgs.msg import String
 
 import rospy
 import tf
 import actionlib
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, Pose
 from sensor_msgs.msg import JointState
 
 from pyftsm.ftsm import FTSMTransitions
@@ -16,6 +17,8 @@ from mdr_move_forward_action.msg import MoveForwardAction, MoveForwardGoal
 from mdr_move_base_action.msg import MoveBaseAction, MoveBaseGoal
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 from mdr_pickup_action.msg import PickupGoal, PickupResult
+
+import pdb
 
 class PickupSM(ActionSMBase):
     def __init__(self, timeout=120.0,
@@ -69,6 +72,8 @@ class PickupSM(ActionSMBase):
         self.move_base_client = None
         self.move_forward_client = None
 
+        self.say_pub = rospy.Publisher('/say', String, latch=True, queue_size=1)
+
     def init(self):
         try:
             self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
@@ -107,7 +112,7 @@ class PickupSM(ActionSMBase):
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
 
-        pose_base_link.pose.position.x -= 0.04
+        pose_base_link.pose.position.x -= 0.01
 
         if self.base_elbow_offset > 0:
             self.__align_base_with_pose(pose_base_link)
@@ -135,7 +140,8 @@ class PickupSM(ActionSMBase):
             self.gripper.init_grasp_verification()
 
             if self.goal.strategy == PickupGoal.SIDEWAYS_GRASP:
-                rospy.loginfo('[pickup] Preparing sideways graps')
+                self.say('Preparing sideways grasp')
+                rospy.loginfo('[pickup] Preparing sideways grasp')
                 pose_base_link = self.__prepare_sideways_grasp(pose_base_link)
 
                 rospy.loginfo('[pickup] Grasping...')
@@ -147,11 +153,12 @@ class PickupSM(ActionSMBase):
 
                 rospy.loginfo('[pickup] Arm motion successful')
             elif self.goal.strategy == PickupGoal.TOP_GRASP:
+                self.say('Preparing top grasp')
                 rospy.loginfo('[pickup] Preparing top grasp')
                 pose_base_link, x_align_distance = self.__prepare_top_grasp(pose_base_link)
                 self.gripper.orient_z(pose_base_link.pose.orientation)
 
-                pose_base_link, _ = self.__prepare_top_grasp(pose_base_link)
+                # pose_base_link, _ = self.__prepare_top_grasp(pose_base_link)
                 rospy.loginfo('[pickup] Grasping...')
                 arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
                 if not arm_motion_success:
@@ -161,6 +168,7 @@ class PickupSM(ActionSMBase):
 
                 rospy.loginfo('[pickup] Arm motion successful')
             else:
+                self.say('Unknown grasp strategy')
                 rospy.logerr('[pickup] Unknown grasping strategy requested; ignoring request')
                 self.result = self.set_result(False)
                 return FTSMTransitions.DONE
@@ -181,9 +189,14 @@ class PickupSM(ActionSMBase):
                 # Added an offset to the arm_lift_joint to avoid collision with the table
                 arm_joint_pos[0] += 0.08
                 self.__move_arm(MoveArmGoal.JOINT_VALUES, arm_joint_pos)
+                rospy.loginfo('\n[pickup] ***************************************\n')
+                rospy.logwarn('[pickup] Arm moving up after pickup')
                 self.__move_base_along_x(-0.1)
+                rospy.logwarn('[pickup] Base moving back after pickup')
                 self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+                rospy.logwarn('[pickup] Arm moving to pregrasp after pickup')
                 self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
+                rospy.logwarn('[pickup] Arm moving to safe config after pickup')
 
                 if self.goal.strategy == PickupGoal.TOP_GRASP:
                     rospy.loginfo('[pickup] Moving the base back to the original position')
@@ -191,6 +204,7 @@ class PickupSM(ActionSMBase):
                         self.__move_base_along_x(-x_align_distance)
 
             rospy.loginfo('[pickup] Verifying the grasp...')
+            rospy.loginfo('\n[pickup] END***************************************\n')
             # Added a condition to check if the object is grasped or not by using hand_motor_joint 'closed' value as the min threshold
             grasp_successful = (self.joint_states.position[self.joint_states.name.index('hand_motor_joint')]) > -0.83 # NOTE: -0.83 value comes from thinnest object which is toothbrush
 
@@ -251,6 +265,8 @@ class PickupSM(ActionSMBase):
                 a 'geometry_msgs/PoseStamped' if 'goal_type' is 'MoveArmGoal.END_EFFECTOR_POSE'
 
         '''
+        rospy.loginfo('[pickup] I am inside _move_arm')
+        # pdb.set_trace()
         move_arm_goal = MoveArmGoal()
         move_arm_goal.goal_type = goal_type
         if goal_type == MoveArmGoal.NAMED_TARGET:
@@ -311,3 +327,9 @@ class PickupSM(ActionSMBase):
 
     def joint_states_cb(self, msg):
         self.joint_states = msg
+    
+    def say(self, sentence):
+        say_msg = String()
+        say_msg.data = sentence
+        self.say_pub.publish(say_msg)
+

@@ -1,0 +1,239 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+import tf
+
+from mas_perception_msgs.msg import Object
+from mdr_rosplan_interface.action_client_base import ActionClientBase
+from mas_knowledge_base.knowledge_base_interface import KBException
+from mdr_pickup_action.msg import PickupAction, PickupGoal
+
+from mdr_pickup_action.msg import PickupGoal
+from mas_perception_msgs.msg import PlaneList
+
+import tf
+
+from geometry_msgs.msg import Pose, PoseStamped
+from mas_perception_msgs.msg import ObjectList
+
+import numpy as np
+import pdb
+
+class PickupClient(ActionClientBase):
+    '''Defines a client for an object pickup action.
+
+    @author Alex Mitrevski
+    @contact aleksandar.mitrevski@h-brs.de
+
+    '''
+    def __init__(self):
+        super(PickupClient, self).__init__()
+
+        self.obj = None
+        self.obj_plane = None
+        self.context = None
+        self.frame_id = rospy.get_param('~grasping_pose_frame', 'base_link')
+        self.tf_listener = tf.TransformListener()
+        self.strategy = None
+        self.plane_list_obj_dim = None
+        self.plane_list_obj_dim_received = False
+        self._plane_list_obj_dim_sub = rospy.Subscriber('/plane_list_obj_dim', PlaneList, self.plane_list_obj_dim_sub_cb)
+        self.grasping_height_offset = 0.05
+        self.target_grasp_pose = rospy.Publisher('target_grasp_pose', PoseStamped, queue_size=10)
+        while not rospy.is_shutdown():
+            rospy.sleep(0.1)
+
+    def call_action(self, msg):
+        # we only react to calls to this action
+        if self.action_name != msg.name.lower():
+            return
+
+        rospy.loginfo('[PICKUP] Action request received')
+        self.action_id = msg.action_id
+        self.__reset_action_parameters()
+
+        client = actionlib.SimpleActionClient(self.action_server_name, PickupAction)
+        client.wait_for_server()
+        goal = self.get_action_message(msg)
+        if goal:
+            rospy.loginfo('[pickup] Sending goal to action server')
+            while not self.plane_list_obj_dim_received:
+                rospy.loginfo('[pickup] Waiting for plane_list_obj_dim')
+                rospy.sleep(0.1)
+            
+            rospy.loginfo('[pickup] plane_list_obj_dim_received')
+            for plane in self.plane_list_obj_dim.planes:
+                rospy.loginfo('[pickup] in side plane for loop')
+                if self.obj_plane: #ignore
+                    rospy.loginfo('[pickup] plane.name == surface')
+                    for obj in plane.object_list.objects:
+                        # rospy.loginfo('[pickup] obj %s', obj)
+                        # rospy.loginfo('[pickup] obj name %s', obj.name)
+                        if obj.name in self.obj:
+                            rospy.loginfo('[pickup] obj.name == obj_to_grasp')
+                            complete_obj = obj
+                            # rospy.loginfo('[pickup] obj_dimensions: {}'.format(complete_obj))
+                            break
+                            
+                        else:
+                            rospy.loginfo('[pickup] ELSE ELSE obj.name == self.obj')
+                            
+                else:
+                    rospy.loginfo(' [pickup] ELSE ELSE plane.name == self.obj_plane')
+
+            rospy.loginfo('[pickup] I am outside maze')
+            #pdb.set_trace()
+            grasp_pose, grasp_strategy = self.get_grasping_pose_and_strategy(complete_obj)
+            # TODO: remove this; set manually
+            grasp_strategy = PickupGoal.SIDEWAYS_GRASP
+            self.target_grasp_pose.publish(grasp_pose)
+            goal.pose = grasp_pose
+
+            goal.strategy = grasp_strategy
+        
+            # calling the actionlib server and waiting for the execution to end
+            rospy.loginfo('[pickup] Sending actionlib goal to %s' % self.action_server_name)
+            client.send_goal(goal)
+            client.wait_for_result(rospy.Duration.from_sec(int(self.action_timeout)))
+            result = client.get_result()
+
+            if result and result.success:
+                rospy.loginfo('[PICKUP] Updating the knowledge base')
+                self.update_knowledge_base()
+                self.send_action_feedback(True)
+            else:
+                self.send_action_feedback(False)
+        else:
+            rospy.loginfo('[pickup] The action dispatch message could not be created; ignoring request')
+
+    def get_action_message(self, rosplan_action_msg):
+        '''Reads the action parameters and uses them to initialise an actionlib message.
+        '''
+        goal = PickupGoal()
+        rospy.loginfo('[pickup] actual strategy %s' % self.strategy)
+        # rospy.loginfo('[pickup] Parsing action parameters %s',rosplan_action_msg.parameters['strategy'])
+        for param in rosplan_action_msg.parameters:
+            if param.key == 'obj':
+                self.obj = param.value
+            elif param.key == 'plane':
+                self.obj_plane = param.value
+            elif param.key == 'bot':
+                self.robot_name = param.value
+            elif param.key == 'context':
+                self.context = param.value
+            elif param.key == 'strategy':
+                if param.value == 'sideways_grasp':
+                    self.strategy = PickupGoal.SIDEWAYS_GRASP
+                    rospy.loginfo('[pickup] pickup_client: strategy - SIDEWAYS_GRASP')
+                else:
+                    self.strategy = PickupGoal.TOP_GRASP
+                    rospy.loginfo('[pickup] pickup_client: strategy - TOP_GRASP')
+
+        try:
+            obj = self.kb_interface.get_obj_instance(self.obj, Object._type)
+            object_pose = obj.pose
+            object_pose.header.stamp = rospy.Time(0)
+
+            goal.pose.header.frame_id = self.frame_id
+            goal.pose.header.stamp = rospy.Time.now()
+            object_pose_in_grasp_frame = self.tf_listener.transformPose(self.frame_id,
+                                                                        object_pose)
+            goal.pose = object_pose_in_grasp_frame
+            goal.context = self.context
+            goal.strategy = self.strategy
+            return goal
+        except KBException as exc:
+            rospy.logerr('[pickup] %s', str(exc))
+            return None
+
+    def update_knowledge_base(self):
+        '''Updates the knowledge base with the following facts:
+        * the robot is holding the grasped object
+        * the object is not on the plane anymore
+        * the robot's gripper is not empty anymore (if the grasping context
+          is not tabletop manipulation; if it is, the robot is still holding
+          the object)
+        '''
+        facts_to_add = [('holding', [('bot', self.robot_name), ('obj', self.obj)])]
+        facts_to_remove = [('on', [('obj', self.obj), ('plane', self.obj_plane)])]
+        if self.context != PickupGoal.CONTEXT_TABLETOP_MANIPULATION:
+            facts_to_remove.append(('empty_gripper', [('bot', self.robot_name)]))
+        self.kb_interface.update_kb(facts_to_add, facts_to_remove)
+
+    def __reset_action_parameters(self):
+        self.obj = None
+        self.obj_plane = None
+        self.context = None
+
+    def plane_list_obj_dim_sub_cb(self, msg):
+        self.plane_list_obj_dim = msg
+        self.plane_list_obj_dim_received = True
+        return self.plane_list_obj_dim    
+
+    def get_grasping_pose_and_strategy(self, object_to_pick_up):
+        
+        pose = PoseStamped()
+        pose.header = object_to_pick_up.pose.header
+        pose.pose.position.x = object_to_pick_up.bounding_box.center.x
+        pose.pose.position.y = object_to_pick_up.bounding_box.center.y
+        pose.pose.position.z = object_to_pick_up.bounding_box.center.z
+
+        grasping_strategy = None
+        # this orientation guarantees a sideways grasp and
+        # alignment along the longest axis of the object
+        if object_to_pick_up.bounding_box.dimensions.z > max(object_to_pick_up.bounding_box.dimensions.x,
+                                                    object_to_pick_up.bounding_box.dimensions.y):
+            desired_gripper_orientation_base_link = (np.pi, -np.pi/2, 0.)
+            grasping_strategy = PickupGoal.SIDEWAYS_GRASP
+        # this orientation guarantees a top-down grasp and
+        # alignment along the longest axis of the object
+        else:
+            object_pose_in_base_link = self.tf_listener.transformPose('base_link', object_to_pick_up.pose)
+            euler_orientation = tf.transformations.euler_from_quaternion([object_pose_in_base_link.pose.orientation.x,
+                                                                        object_pose_in_base_link.pose.orientation.y,
+                                                                        object_pose_in_base_link.pose.orientation.z,
+                                                                        object_pose_in_base_link.pose.orientation.w])
+            gripper_orientation_z = euler_orientation[2] + np.pi/2
+
+            desired_gripper_orientation_base_link = (np.pi, 0, gripper_orientation_z)
+            grasping_strategy = PickupGoal.TOP_GRASP
+
+            # we set the grasping pose along z to be the top of the object to prevent
+            # the robot pushing down the object with the gripper
+            pose.pose.position.z += (object_to_pick_up.bounding_box.dimensions.z / 2) + self.grasping_height_offset
+
+        pose.pose.orientation = self.get_gripper_orientation(desired_gripper_orientation_base_link,
+                                                        object_to_pick_up.pose.header.frame_id)
+
+        return pose, grasping_strategy
+
+    def get_gripper_orientation(self, orientation, target_frame):
+        '''Returns a geometry_msgs.msg.Quaternion object representing the given
+        orientation, which is represented in "base_link", in the given target frame.
+
+        Keyword arguments:
+        orientation: Tuple[float, float, float] -- desired (roll, pitch, yaw) orientation of
+                                                the gripper in the base_link frame
+        target_frame: str -- frame in which the orientation should be represented
+
+        '''
+        gripper_pose = PoseStamped()
+        gripper_pose.header.frame_id = 'base_link'
+        gripper_pose.header.stamp = rospy.Time(0)
+
+        gripper_quaternion = tf.transformations.quaternion_from_euler(*orientation)
+        gripper_pose.pose.orientation.x = gripper_quaternion[0]
+        gripper_pose.pose.orientation.y = gripper_quaternion[1]
+        gripper_pose.pose.orientation.z = gripper_quaternion[2]
+        gripper_pose.pose.orientation.w = gripper_quaternion[3]
+
+        rospy.loginfo('[%s] Transforming pose from base_link to %s', self.action_name + ' client', target_frame)
+        gripper_pose_in_target_frame = self.tf_listener.transformPose(target_frame, gripper_pose)
+        return gripper_pose_in_target_frame.pose.orientation
+
+if __name__ == '__main__':
+    rospy.init_node('pickup_client')
+    try:
+        PickupClient()
+    except rospy.ROSInterruptException:
+        pass

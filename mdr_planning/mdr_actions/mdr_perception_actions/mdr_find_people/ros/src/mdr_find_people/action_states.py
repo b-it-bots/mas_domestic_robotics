@@ -1,7 +1,7 @@
 from importlib import import_module
 from PIL import Image as PILImage
 import yaml
-
+import os
 import rospy
 import smach
 import torch
@@ -10,7 +10,7 @@ import tf
 from sensor_msgs.msg import PointCloud2, Image
 from mdr_find_people.msg import FindPeopleResult
 from mas_perception_msgs.msg import Person, PersonList, ObjectView
-from mas_perception_libs import ImageDetectionKey
+from mas_perception_libs.image_detector import ImageDetectionKey
 from mas_perception_libs.visualization import crop_image
 from mas_perception_libs.utils import cloud_msg_to_cv_image
 from cv_bridge import CvBridge
@@ -59,11 +59,14 @@ class FindPeopleState(smach.State):
         self.detector.to(self.model_device)
 
         self.face_embedding_model = None
-        if self.face_embedding_model_path:
+        if self.face_embedding_model_path and os.path.exists(self.face_embedding_model_path):
             self.face_embedding_model = SiameseNetwork()
             self.face_embedding_model.load_state_dict(torch.load(self.face_embedding_model_path))
             self.face_embedding_model.eval()
             self.face_embedding_model.to(self.model_device)
+        else:
+            rospy.logwarn('Face embedding model not available')
+
 
         self.cv_bridge = CvBridge()
 
@@ -81,7 +84,7 @@ class FindPeopleState(smach.State):
                                                       self.detection_threshold)
 
         # Get people images
-        cv_image = cloud_msg_to_cv_image(cloud_msg)
+        cv_image = cloud_msg_to_cv_image(cloud_msg).astype('uint8')
         images = []
         face_images = []
         for i, bb2d in enumerate(bb2ds):
@@ -89,7 +92,8 @@ class FindPeopleState(smach.State):
             cropped_img_msg = self.cv_bridge.cv2_to_imgmsg(cropped_cv, encoding="passthrough")
 
             rospy.loginfo('[find_people] Attempting to extract face of person {0}'.format(i+1))
-            cropped_face_img = FindPeople.extract_face_image(cropped_cv)
+            #cropped_face_img = FindPeople.extract_face_image(cropped_cv)
+            cropped_face_img = None
             if cropped_face_img is not None:
                 cropped_face_img_msg = self.cv_bridge.cv2_to_imgmsg(cropped_face_img,
                                                                     encoding='passthrough')

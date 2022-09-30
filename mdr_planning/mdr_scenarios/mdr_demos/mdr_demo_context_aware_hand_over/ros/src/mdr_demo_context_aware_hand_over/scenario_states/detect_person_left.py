@@ -3,6 +3,8 @@ import actionlib
 import moveit_commander
 from mdr_find_people.msg import FindPeopleAction, FindPeopleGoal
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
+from geometry_msgs.msg import Twist
+import math
 
 class DetectPerson(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
@@ -18,13 +20,17 @@ class DetectPerson(ScenarioStateBase):
         self.retry_count = 0
         self.client = actionlib.SimpleActionClient(self.action_server, FindPeopleAction)
         self.client.wait_for_server(rospy.Duration(10.))
-        self.head=moveit_commander.MoveGroupCommander("head")
-        self.pan_angle=0.3
+        self.base_vel_pub = rospy.Publisher ('/hsrb/command_velocity', Twist, queue_size=1)
+        self.twist_msg = Twist()
 
+        
 
     def execute(self, userdata):      
-        self.head.set_joint_value_target("head_pan_joint", self.pan_angle)
-        self.head.go()
+        # Set velocity command values
+        self.twist_msg.linear.x = 0
+        self.twist_msg.linear.y = 0
+        self.twist_msg.angular.z = 60 / 180.0 * math.pi # Convert from "degree" to "radian"
+        self.base_vel_pub.publish (self.twist_msg) # Publish velocity command
 
         goal = FindPeopleGoal()
         # calling the actionlib server and waiting for the execution to end
@@ -46,3 +52,5 @@ class DetectPerson(ScenarioStateBase):
                 return 'failed_after_retrying'
             self.retry_count += 1
             return 'failed'
+
+    

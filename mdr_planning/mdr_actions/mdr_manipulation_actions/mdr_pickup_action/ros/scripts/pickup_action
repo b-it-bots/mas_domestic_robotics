@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import actionlib
-
+from std_msgs.msg import String
 from mdr_pickup_action.msg import PickupAction
 from mdr_pickup_action.action_states import PickupSM
 
@@ -69,8 +69,11 @@ class PickupServer(object):
                                                           PickupAction, self.execute, False)
         self.action_server.start()
         rospy.loginfo('pickup action server ready')
+        self.say_pub = rospy.Publisher('/say', String, latch=True, queue_size=1)
+
 
     def execute(self, goal):
+        self.say('Inside pick up server execute')
         rospy.loginfo('[pickup] Received an action request')
         self.action_sm.goal = goal
         self.action_sm.result = None
@@ -78,6 +81,11 @@ class PickupServer(object):
         while not self.action_sm.result:
             rospy.sleep(0.05)
         self.action_server.set_succeeded(self.action_sm.result)
+    
+    def say(self, sentence):
+        say_msg = String()
+        say_msg.data = sentence
+        self.say_pub.publish(say_msg)
 
 if __name__ == '__main__':
     rospy.init_node('pickup_server')

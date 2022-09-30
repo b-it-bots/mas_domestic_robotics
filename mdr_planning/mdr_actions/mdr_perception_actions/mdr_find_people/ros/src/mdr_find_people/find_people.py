@@ -1,20 +1,23 @@
 #!/usr/bin/env python
 
 import numpy as np
-import pcl
-import face_recognition
+#import pcl
+#import face_recognition
+from sensor_msgs.msg import PointCloud2
 from sklearn.impute import SimpleImputer
 import torch
+import ros_numpy
 
 import rospy
 from std_msgs.msg import Header
 from geometry_msgs.msg import Pose, PoseStamped, Point, Quaternion
 
-from mas_perception_libs import ImageDetectionKey, ImageDetectorBase, TorchImageDetector
-from mas_perception_libs.utils import cloud_msg_to_cv_image, crop_cloud_to_xyz
+from mas_perception_libs.image_detector import ImageDetectionKey, ImageDetectorBase, TorchImageDetector
+from mas_perception_libs.utils import cloud_msg_to_cv_image, crop_cloud_to_xyz, crop_organized_cloud_msg
 from mas_perception_libs.visualization import draw_labeled_boxes
 
 import dataset_interface.object_detection.transforms as T
+import pdb
 
 
 class FindPeople(object):
@@ -23,7 +26,7 @@ class FindPeople(object):
         img = cloud_msg_to_cv_image(cloud_msg)
         transform = T.ToTensor()
         img, _ = transform(img, None)
-
+        img=img.float()/255.0
         rospy.loginfo('Running detector...')
         with torch.no_grad():
             predictions = detector([img.to(detector_device)])
@@ -75,23 +78,33 @@ class FindPeople(object):
             bb2d = bounding_boxes[i]
 
             obj_coords = crop_cloud_to_xyz(cloud_msg, bb2d)
+            obj_coords_pc = PointCloud2()
+            obj_coords_pc = crop_organized_cloud_msg(cloud_msg, bb2d)
+            rospy.loginfo("[find_people] publishing person filtered cloud")
+            rospy.loginfo("[find_people] obj_coord data type: {}".format(type(obj_coords_pc)))
+            init_pub = rospy.Publisher('/filtered_people_point_cloud', PointCloud2, queue_size=10) # publisher to publish filtered point cloud
+            rospy.sleep(3)
+            init_pub.publish(obj_coords_pc)
+            rospy.sleep(1)
             imputer = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
             imputer.fit(obj_coords.reshape(obj_coords.shape[0]*obj_coords.shape[1], obj_coords.shape[2]))
             obj_coords_without_nans = imputer.transform(obj_coords.reshape(obj_coords.shape[0]*obj_coords.shape[1], obj_coords.shape[2]))
-
+            # pdb.set_trace()
             ## PCL Outlier Removal:
-            cloud_without_nans = pcl.PointCloud(obj_coords_without_nans.astype(np.float32))
+            '''
+            # cloud_without_nans = pcl.PointCloud(obj_coords_without_nans.astype(np.float32))
             voxel_grid_filter = cloud_without_nans.make_voxel_grid_filter()
             voxel_grid_filter.set_leaf_size(0.01, 0.01, 0.01)
             cloud_filtered = voxel_grid_filter.filter()
 
             passthrough_filter = cloud_filtered.make_passthrough_filter()
             passthrough_filter.set_filter_field_name("z")
-            passthrough_filter.set_filter_limits(0., 2.5)
+            passthrough_filter.set_filter_limits(0., 3.0)
             cloud_filtered = passthrough_filter.filter()
             cloud_filtered_array = cloud_filtered.to_array()
-
-            mean_coords = np.nanmean(cloud_filtered_array, axis=0)
+            '''
+            mean_coords = np.nanmean(obj_coords_without_nans.astype(np.float32), axis=0)
+            # mean_coords = np.nanmean(cloud_filtered_array, axis=0)
             mean_ps = PoseStamped()
             mean_ps.header = Header(frame_id=cloud_msg.header.frame_id)
             mean_ps.pose = Pose(Point(mean_coords[0], mean_coords[1], mean_coords[2]), Quaternion())

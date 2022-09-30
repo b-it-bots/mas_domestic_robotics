@@ -35,7 +35,7 @@ state_descriptions:
             - argument:
                 name: posture_height_width_ratio_ranges
                 value:
-                    standing: [1.65, 5.0]
+                    standing: [1.65, 6.0]
                     seated: [0.6, 1.65]
                     lying: [0.0, 0.6]
     - state:

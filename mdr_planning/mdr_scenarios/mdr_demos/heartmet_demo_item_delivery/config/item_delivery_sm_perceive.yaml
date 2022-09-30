@@ -1,0 +1,28 @@
+# Description: Defines a state machine for a simple pick and place scenario (picking an object and placing it back on the same surface)
+# Author: Heartmet_Team
+# Email: unknown
+sm_id: heartmet_demo_item_delivery
+states: [PERCEIVE_TABLE]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: PERCEIVE_TABLE
+        state_module_name: mdr_perception_behaviours.perceive_planes
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: plane_prefix
+                value: table
