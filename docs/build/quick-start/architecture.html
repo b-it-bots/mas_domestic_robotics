@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Architecture &mdash; MAS Domestic Robotics 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Capabilities" href="capabilities.html" />
+    <link rel="prev" title="MAS Domestic Robotics" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> MAS Domestic Robotics
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#list-of-contents">List of contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#domestic-software-101">Domestic Software 101</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#skill-based-architecture">Skill-Based Architecture</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#ros-based-and-ros-independent-components">ROS-Based and ROS-Independent Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multi-repository-setup">Multi-Repository Setup</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#robot-independent-and-robot-dependent-functionalities">Robot-Independent and Robot-Dependent Functionalities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#major-robot-independent-components">Major Robot-Independent Components</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#planning-and-knowledge-oriented-development">Planning- and Knowledge-Oriented Development</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#common-interfaces-in-mas-domestic-robotics">Common Interfaces in mas_domestic_robotics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#fault-tolerant-actions">Fault-Tolerant Actions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#skill-implementation-use-case-move-base">Skill Implementation Use Case: Move Base</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#action-ftsm-implementation">Action FTSM Implementation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#action-server">Action Server</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#action-client">Action Client</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#scenario-use-case-simple-pick-and-place">Scenario Use Case: Simple Pick and Place</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#scenario-description">Scenario Description</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#scenario-state-machine-definition">Scenario State Machine Definition</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#example-behaviour-implementation-move-base">Example Behaviour Implementation: Move Base</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#about-this-tutorial">About This Tutorial</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="capabilities.html">Capabilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requirements.html">Requirements</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../setup/development-pc.html">Development PC Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup/connecting-to-hsr.html">Connecting to the HSR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup/startup-components.html">Components Running on Startup</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/creating-and-using-an-occupancy-grid-map.html">Creating and Using an Occupancy Grid Map</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/creating-a-state-machine-based-task.html">Creating a State Machine-Based Task</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/dmp-based-arm-motion.html">Arm Motion Based on Dynamic Motion Primitives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/trajectory-recording.html">Trajectory Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/moving-between-named-locations.html">Moving Between Named Locations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/object-detection-and-pose-estimation.html">Object Detection and Pose Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/object-grasping.html">Object Grasping</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../demo-scenarios/patrol.html">Patrolling Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo-scenarios/simple-pick-and-place.html">Simple Object Pick and Place Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo-scenarios/context-aware-object-hand-over.html">Context-Aware Object Hand Over Demo</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../actions/manipulation.html">Manipulation Actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../actions/navigation.html">Navigation Actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../actions/perception.html">Perception Actions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../behaviours/manipulation.html">Manipulation Behaviours</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../behaviours/navigation.html">Navigation Behaviours</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../behaviours/perception.html">Perception Behaviours</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../knowledge_base/storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../knowledge_base/ontology.html">Ontology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MAS Domestic Robotics</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Architecture</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/quick-start/architecture.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="architecture">
+<h1>Architecture<a class="headerlink" href="#architecture" title="Permalink to this heading"></a></h1>
+<p>The main principles behind the design of the domestic robotics software architecture
+as well as its intended use will be discussed under this section.</p>
+<div class="section" id="list-of-contents">
+<h2>List of contents<a class="headerlink" href="#list-of-contents" title="Permalink to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="#Domestic-Software-101">Domestic Software 101</a></p></li>
+<li><p><a class="reference external" href="#Robot-Independent-and-Robot-Dependent-Functionalities">Robot-Indepenent and Robot-Dependent
+Functionalities</a></p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="#Skill-Based-Architecture">Skill-Based Architecture</a></p></li>
+<li><p><a class="reference external" href="#ROS-Based-and-ROS-Independent-Components">ROS-Based and ROS-Independent
+Components</a></p></li>
+<li><p><a class="reference external" href="#Multi-Repository-Setup">Multi-Repository Setup</a></p></li>
+</ol>
+</li>
+<li><p><a class="reference external" href="#Major-Robot-Independent-Components">Major Robot-Independent
+Components</a></p></li>
+<li><p><a class="reference external" href="#Planning--and-Knowledge-Oriented-Development">Planning and Knowledge-Oriented
+Development</a></p></li>
+<li><p><a class="reference external" href="#Common-Interfaces-in-mas_domestic_robotics">Common Interfaces in
+mas_domestic_robotics</a></p></li>
+<li><p><a class="reference external" href="#Fault-Tolerant-Actions">Fault-Tolerant Actions</a></p></li>
+<li><p><a class="reference external" href="#Skill-Implementation-Use-Case:-Move-Base">Skill Implementation Use Case: Move
+Base</a></p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="#Action-Server">Action Server</a></p></li>
+<li><p><a class="reference external" href="#Action-Execution-Implementation">Action Execution
+Implementation</a></p></li>
+<li><p><a class="reference external" href="#Action-Client">Action Client</a></p></li>
+</ol>
+</li>
+<li><p><a class="reference external" href="#Scenario-Use-Case:-Simple-Pick-and-Place">Scenario Use Case: Simple Pick and
+Place</a></p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="#Scenario-Description">Scenario Description</a></p></li>
+<li><p><a class="reference external" href="#Scenario-State-Machine-Definition">Scenario State Machine
+Definition</a></p></li>
+<li><p><a class="reference external" href="#Example-Behaviour-Implementation:-Move-Base">Example Behaviour Implementation: Move
+Base</a></p></li>
+</ol>
+</li>
+<li><p><a class="reference external" href="#About-This-Tutorial">About This Tutorial</a></p></li>
+</ol>
+</div>
+<div class="section" id="domestic-software-101">
+<h2>Domestic Software 101<a class="headerlink" href="#domestic-software-101" title="Permalink to this heading"></a></h2>
+<div class="section" id="skill-based-architecture">
+<h3>Skill-Based Architecture<a class="headerlink" href="#skill-based-architecture" title="Permalink to this heading"></a></h3>
+<p>Our domestic architecture is based on the concepts of skills and
+behaviours that, when combined together, allow a robot to perform
+complex tasks.</p>
+<p>We distinguish between skills and behaviours as follows: * <strong>skills</strong>
+are “primitive” functionalities that a robot can perform (and are thus
+equivalent to actions in the classical planning sense) * <strong>behaviours</strong>
+change the context in which actions are performed and thus usually
+reparameterise skills in some manner</p>
+<p>It is clearly difficult - if not impossible - to come up with a generic
+level of granularity of skills and behaviours. We have attempted to make
+use of what is generally done in the robotics literature, such that we
+have implementations of skills such as <code class="docutils literal notranslate"><span class="pre">move</span> <span class="pre">base</span></code>, <code class="docutils literal notranslate"><span class="pre">turn</span> <span class="pre">base</span></code>,
+<code class="docutils literal notranslate"><span class="pre">pickup</span></code>, <code class="docutils literal notranslate"><span class="pre">place</span></code>, <code class="docutils literal notranslate"><span class="pre">perceive</span> <span class="pre">plane</span></code>; on the other hand, we have
+behaviours such as <code class="docutils literal notranslate"><span class="pre">pick_closest_from_surface</span></code>,
+<code class="docutils literal notranslate"><span class="pre">place_based_on_category</span></code>, although we also have generic behaviours
+that exactly match the skill names (e.g. <code class="docutils literal notranslate"><span class="pre">move_base</span></code> or <code class="docutils literal notranslate"><span class="pre">place</span></code>),
+which have a default set of assumptions about the actions and their
+context.</p>
+</div>
+<div class="section" id="ros-based-and-ros-independent-components">
+<h3>ROS-Based and ROS-Independent Components<a class="headerlink" href="#ros-based-and-ros-independent-components" title="Permalink to this heading"></a></h3>
+<p>For historical purposes, <strong>our domestic architecture is ROS-based at its
+core</strong>. Since both robots that we are currently working with - the
+Care-O-bot 3 and the Toyota HSR - heavily rely on ROS, having a
+ROS-based architecture simplifies the integration of our functionalities
+with the already existing robot components (for instance sensor drivers
+and navigation components); in addition, ROS makes it possible to
+develop different components in different programming languages, which
+is nice since it allows our developers to use the language they feel
+most comfortable with for achieving a certain purpose.</p>
+<p>While ROS-based architectures have various advantages, <strong>completely
+relying on ROS makes it a bit difficult to use certain best practices in
+software engineering and often introduces an unnecessary overhead in how
+components are used</strong>. This has sometimes lead to difficult-to-maintain
+components in our code base.</p>
+<p>So, while we do rely on ROS as a backbone, our architecture also makes
+use of various home-made ROS-indepenent components that are meant to
+eliminate some of the disadvantages mentioned above. One caveat of this
+is that most of our domestic software is now written in Python (since we
+currently only support ROS kinetic, we still live in the past and use
+Python 2).</p>
+</div>
+<div class="section" id="multi-repository-setup">
+<h3>Multi-Repository Setup<a class="headerlink" href="#multi-repository-setup" title="Permalink to this heading"></a></h3>
+<p>Given all different aspects that need to be taken into account to make
+robots useful (perception, navigation, manipulation, reasoning), robot
+software tends to get quite complex in practice and managing all
+different components can be fairly complicated. In order to simplify
+this management process, <strong>our architecture makes use of a
+multi-repository setup with various major components being hosted in
+separate repositories rather than in a monolithic repository</strong>.</p>
+<p>A multi-repository setup eases the treatment of different
+functionalities and allows developers to focus on different aspects
+without interfering with each other (too much). The downside of this is
+that it becomes difficult to get a development setup up and running
+since the repository dependencies need to be clearly specified. To
+alleviate this problem, we make extensive use of advanced tooling; in
+particular, we:</p>
+<ul class="simple">
+<li><p>specify dependencies of a repository in rosinstall files and use
+<code class="docutils literal notranslate"><span class="pre">wstool</span></code> for acquiring them automatically</p></li>
+<li><p>make use of continuous integration (in particular <code class="docutils literal notranslate"><span class="pre">Travis</span></code>)</p></li>
+</ul>
+</div>
+</div>
+<div class="section" id="robot-independent-and-robot-dependent-functionalities">
+<h2>Robot-Independent and Robot-Dependent Functionalities<a class="headerlink" href="#robot-independent-and-robot-dependent-functionalities" title="Permalink to this heading"></a></h2>
+<p>Unfortunately, robots often get outdated and it sometimes becomes
+necessary to replace a platform with a newer one. To make the
+accommodation of new platforms as painless as possible, our architecture
+distinguishes between <em>robot-independent</em> and <em>robot-dependent</em>
+components:</p>
+<ul class="simple">
+<li><p><strong>Robot-independent components occupy the core of our architecture</strong>
+and are implemented in a way that - hopefully - makes as few
+robot-dependent assumptions as possible, which should simplify the
+process of interfacing with new robots when the need for that arises</p></li>
+<li><p><strong>Robot-dependent components</strong> either <strong>inherit from the
+robot-independent components</strong> or simply make use of the
+robot-independent components by <strong>reparameterising them for a
+specific robot platform</strong>.</p></li>
+</ul>
+<p>To give an example, our robot-independent code base includes
+implementations of various robot actions, such as <code class="docutils literal notranslate"><span class="pre">pick</span></code>, <code class="docutils literal notranslate"><span class="pre">place</span></code>,
+<code class="docutils literal notranslate"><span class="pre">move</span> <span class="pre">base</span></code>, and so forth; these are parameterised as much as possible
+(for example, ROS topic names that are likely to have different names
+for different robots are made parameters) so that using them on a
+different robot is mostly a matter of setting the correct values for
+those parameters (although this is how everything should work in theory,
+in practice we often find that implementations do indeed have various
+robot-dependent assumptions, which requires rethinking of components).</p>
+</div>
+<div class="section" id="major-robot-independent-components">
+<h2>Major Robot-Independent Components<a class="headerlink" href="#major-robot-independent-components" title="Permalink to this heading"></a></h2>
+<p>Our primary repository that contains the core functionalities is
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics">mas_domestic_robotics</a>;
+that is where we have all our skills and behaviours and all the “glue”
+code that combines everything together. This repository is however in
+the center of a multitude of repositories that we use. A diagram
+illustrating the interaction between various repositories of ours is
+shown below.</p>
+<div class="figure align-center">
+<img alt="../_images/architecture.png" src="../_images/architecture.png" />
+</div>
+<p>A brief description of these is given below:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/b-it-bots/mas_common_robotics">mas_common_robotics</a>:
+A set of generic components shared by the <a class="reference external" href="mailto:b-it-bots&#37;&#52;&#48;Home">b-it-bots<span>&#64;</span>Home</a> and &#64;Work
+teams.</p></li>
+<li><p><a class="reference external" href="https://github.com/b-it-bots/mas_perception">mas_perception</a>:
+Contains various libraries dealing with perception-related aspects
+(mostly vision), such as object detection and recognition, point
+cloud processing, and image segmentation.</p></li>
+<li><p><a class="reference external" href="https://github.com/b-it-bots/mas_navigation">mas_navigation</a>:
+This repository is used for configuring navigation-related components
+(although we don’t use these very often).</p></li>
+<li><p><a class="reference external" href="https://github.com/b-it-bots/mas_knowledge_base">mas_knowledge_base</a>:
+Hosts interfaces to an ontology and an online knowledge base in the
+form of predicates and fluents that describe the world.</p></li>
+<li><p><a class="reference external" href="https://github.com/b-it-bots/mas_execution_manager">mas_execution_manager</a>:
+A library for easily configuring state machines (which we use for
+specifying scenario configuration). The library also contains a base
+class interface for implementing actions in a fault-tolerant manner.</p></li>
+<li><p><a class="reference external" href="https://github.com/b-it-bots/action-execution">action-execution</a>:
+The action execution library aims to centralise the process of making
+decision at execution time and includes:</p>
+<ul>
+<li><p>an ontology of actions and action failures</p></li>
+<li><p>implementations of models for executing actions (e.g. for the
+<code class="docutils literal notranslate"><span class="pre">place</span></code> action, one execution model samples poses on a given
+surface regardless of whether they are in free space or not and
+returns a placing candidate pose on the surface, while another one
+samples poses in free space only; for the <code class="docutils literal notranslate"><span class="pre">pickup</span></code> action, an
+execution model samples candidate grasping poses and returns the
+closest feasible grasping pose)</p></li>
+</ul>
+</li>
+<li><p><a class="reference external" href="https://github.com/b-it-bots/ftsm">ftsm</a>: A library exposing an
+interface to a state machine which can be used for implementing
+components in a fault-tolerant manner</p></li>
+</ul>
+</div>
+<div class="section" id="planning-and-knowledge-oriented-development">
+<h2>Planning- and Knowledge-Oriented Development<a class="headerlink" href="#planning-and-knowledge-oriented-development" title="Permalink to this heading"></a></h2>
+<p>Our system embeds skills in a planning-oriented architecture built
+around the <a class="reference external" href="https://github.com/b-it-bots/ROSPlan">ROSPlan</a> system
+(even though we don’t always plan as such), where each skill is
+implemented as a separate action. <strong>The implementation of actions is
+split into two components - an action server and an action client -</strong>
+where the server is the one that takes care of the actual execution
+(e.g. the <code class="docutils literal notranslate"><span class="pre">place</span></code> server performs the necessary robot motions for
+placing an object), while the client is the one that waits for requests
+(coming from a plan/task dispatcher). In order to maintain an updated
+state of the world, actions perform knowledge base updates after
+execution.</p>
+<p>In order to be as flexible and as intelligent as possible, we develop
+our robots so that they behave in a “closed-loop” manner by using both
+<strong>encyclopedic and online knowledge about the world</strong>. The
+functionalities for knowledge management are centralised in the
+<code class="docutils literal notranslate"><span class="pre">mas_knowledge_base</span></code> repository, which exposes interfaces for querying
+the knowledge base and updating its state. This repository also contains
+an interface for interacting with OWL ontologies, since we use an OWL
+ontology (also included there) for encoding encyclopedic knowledge about
+the world.</p>
+<p>A diagram illustrating the interactions between components that occur
+during execution is shown below.</p>
+<div class="figure align-center">
+<img alt="../_images/planning_flowchart.png" src="../_images/planning_flowchart.png" />
+</div>
+</div>
+<div class="section" id="common-interfaces-in-mas-domestic-robotics">
+<h2>Common Interfaces in mas_domestic_robotics<a class="headerlink" href="#common-interfaces-in-mas-domestic-robotics" title="Permalink to this heading"></a></h2>
+<p>To simplify the implementation of robot-dependent functionalities, the
+<code class="docutils literal notranslate"><span class="pre">mas_domestic_robotics</span></code> repository defines various robot-independent
+interfaces that can then be implemented for a specific robot. For
+instance, the <code class="docutils literal notranslate"><span class="pre">mdr_sound_vocalisation</span></code> package defines the following
+base class (defined
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/blob/devel/mdr_hri/mdr_sound_vocalisation/ros/src/mdr_sound_vocalisation/sound_vocaliser_base.py">here</a>)
+for implementing functionalities related to making robot sounds:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">from</span> <span class="nn">std_msgs.msg</span> <span class="k">import</span> <span class="n">String</span>
+
+<span class="k">class</span> <span class="nc">SoundVocaliserBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">speech_request_topic</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;~speech_request_topic&#39;</span><span class="p">,</span> <span class="s1">&#39;/say&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sound_request_topic</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;~sound_request_topic&#39;</span><span class="p">,</span> <span class="s1">&#39;/make_sound&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">speech_topic</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;~speech_topic&#39;</span><span class="p">,</span> <span class="s1">&#39;/sound/say&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sound_topic</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;~sound_topic&#39;</span><span class="p">,</span> <span class="s1">&#39;/sound/make&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">speech_request_sub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">speech_request_topic</span><span class="p">,</span>
+                                                <span class="n">String</span><span class="p">,</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">say</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sound_request_sub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sound_request_topic</span><span class="p">,</span>
+                                                <span class="n">String</span><span class="p">,</span>
+                                                <span class="bp">self</span><span class="o">.</span><span class="n">make_sound</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">say</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[SAY] Ignoring request&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">make_sound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[MAKE_SOUND] Ignoring request&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>A similar interface is provided by the <code class="docutils literal notranslate"><span class="pre">mdr_gripper_controller</span></code>
+package, which defines an interface to an end-effector of a robot
+manipulator (the definition is
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/blob/devel/mdr_manipulation/mdr_gripper_controller/ros/src/mdr_gripper_controller/gripper_controller_base.py">here</a>):</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rospy</span>
+
+<span class="k">class</span> <span class="nc">GripperControllerBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">open</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[OPEN_GRIPPER] Ignoring request&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[CLOSE_GRIPPER] Ignoring request&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">init_grasp_verification</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[INIT_GRASP_VERIFICATION] Ignoring request&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">verify_grasp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[VERIFY_GRASP] Ignoring request&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Another good example is an interface for implementing action clients
+(namely components that wait for action requests, execute an action, and
+update the knowledge base after the execution), which is implemented in
+the <code class="docutils literal notranslate"><span class="pre">mdr_rosplan_interface</span></code> package (in particular
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/blob/devel/mdr_planning/mdr_rosplan_interface/ros/src/mdr_rosplan_interface/action_client_base.py">here</a>):</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">abc</span>
+
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">rosplan_dispatch_msgs.msg</span> <span class="k">as</span> <span class="nn">plan_dispatch_msgs</span>
+<span class="kn">import</span> <span class="nn">diagnostic_msgs.msg</span> <span class="k">as</span> <span class="nn">diag_msgs</span>
+<span class="kn">from</span> <span class="nn">mas_knowledge_base.domestic_kb_interface</span> <span class="k">import</span> <span class="n">DomesticKBInterface</span>
+
+<span class="k">class</span> <span class="nc">ActionClientBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_success_msg</span> <span class="o">=</span> <span class="s1">&#39;action achieved&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_failure_msg</span> <span class="o">=</span> <span class="s1">&#39;action failed&#39;</span>
+
+        <span class="c1"># unique action ID</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_id</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="c1"># name of the robot on which the client is spawned</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># name of the action (converted to lowercase)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_name</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;~action_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="c1"># name of the action server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_server_name</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;~server_name&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="c1"># timeout for action calls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_timeout</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;~action_timeout&#39;</span><span class="p">,</span> <span class="mf">15.</span><span class="p">)</span>
+
+        <span class="c1"># knowledge base interface instance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kb_interface</span> <span class="o">=</span> <span class="n">DomesticKBInterface</span><span class="p">()</span>
+
+        <span class="c1"># subscriber for dispatched actions</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="s1">&#39;action_dispatch_topic&#39;</span><span class="p">,</span>
+                        <span class="n">plan_dispatch_msgs</span><span class="o">.</span><span class="n">ActionDispatch</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">call_action</span><span class="p">)</span>
+
+        <span class="c1"># action feedback publisher</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feedback_pub</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Publisher</span><span class="p">(</span><span class="s1">&#39;action_feedback_topic&#39;</span><span class="p">,</span>
+                                            <span class="n">plan_dispatch_msgs</span><span class="o">.</span><span class="n">ActionFeedback</span><span class="p">,</span>
+                                            <span class="n">queue_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">call_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Abstract callback for the dispatched action subscriber.</span>
+<span class="sd">        Only reacts to request to &quot;self.action_name&quot;; ignores all other requests.</span>
+
+<span class="sd">        Keyword arguments:</span>
+<span class="sd">        msg -- a rosplan_dispatch_msgs.msg.ActionDispatch instance</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">get_action_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rosplan_action_msg</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Abstract method for converting the message to an action request.</span>
+<span class="sd">        Returns an actionlib goal instance for the action.</span>
+
+<span class="sd">        Keyword arguments:</span>
+<span class="sd">        rosplan_action_msg -- a rosplan_dispatch_msgs.msg.ActionDispatch instance</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">update_knowledge_base</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Abstract method for updating the knowledge base after</span>
+<span class="sd">        the successful completion of an action.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">send_action_feedback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Publishes a rosplan_dispatch_msgs.msg.ActionFeedback message</span>
+<span class="sd">        based on the result of the action execution.</span>
+
+<span class="sd">        Keyword arguments:</span>
+<span class="sd">        success -- a Boolean indicating whether the action was successfully executed</span>
+
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">plan_dispatch_msgs</span><span class="o">.</span><span class="n">ActionFeedback</span><span class="p">()</span>
+        <span class="n">msg</span><span class="o">.</span><span class="n">action_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_id</span>
+        <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+            <span class="n">msg</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_success_msg</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_failure_msg</span>
+
+        <span class="n">action_name_kvp</span> <span class="o">=</span> <span class="n">diag_msgs</span><span class="o">.</span><span class="n">KeyValue</span><span class="p">()</span>
+        <span class="n">action_name_kvp</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;action_name&#39;</span>
+        <span class="n">action_name_kvp</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_name</span>
+        <span class="n">msg</span><span class="o">.</span><span class="n">information</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">action_name_kvp</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">feedback_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The above interfaces illustrate a general pattern that we want to follow
+in our architecture, namely we want to <strong>create abstractions</strong> of
+functionalities that can then be extended for a very particular purpose.
+This is simply a good software engineering practice that we try to
+follow in our architecture.</p>
+</div>
+<div class="section" id="fault-tolerant-actions">
+<h2>Fault-Tolerant Actions<a class="headerlink" href="#fault-tolerant-actions" title="Permalink to this heading"></a></h2>
+<p>Robots are unfortunately very error-prone, so this aspect has to be
+taken into account in the development of robot functionalities. As
+mentioned above, the <code class="docutils literal notranslate"><span class="pre">mas_execution_manager</span></code> repositories includes an
+interface for implementing actions in a fault-tolerant manner, which is
+shown below for convenience (the definition of the interface is
+<a class="reference external" href="https://github.com/b-it-bots/mas_execution_manager/blob/master/common/mas_execution/action_sm_base.py">here</a>):</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">abc</span> <span class="k">import</span> <span class="n">abstractmethod</span>
+<span class="kn">from</span> <span class="nn">pyftsm.ftsm</span> <span class="k">import</span> <span class="n">FTSM</span><span class="p">,</span> <span class="n">FTSMTransitions</span>
+
+<span class="k">class</span> <span class="nc">ActionSMBase</span><span class="p">(</span><span class="n">FTSM</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">dependencies</span><span class="p">,</span> <span class="n">max_recovery_attempts</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ActionSMBase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">dependencies</span><span class="p">,</span> <span class="n">max_recovery_attempts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execution_requested</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goal</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">FTSMTransitions</span><span class="o">.</span><span class="n">INITIALISED</span>
+
+    <span class="k">def</span> <span class="nf">configuring</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">FTSMTransitions</span><span class="o">.</span><span class="n">DONE_CONFIGURING</span>
+
+    <span class="k">def</span> <span class="nf">ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">execution_requested</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execution_requested</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">return</span> <span class="n">FTSMTransitions</span><span class="o">.</span><span class="n">RUN</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">result</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">return</span> <span class="n">FTSMTransitions</span><span class="o">.</span><span class="n">WAIT</span>
+
+    <span class="k">def</span> <span class="nf">running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">FTSMTransitions</span><span class="o">.</span><span class="n">DONE</span>
+
+    <span class="k">def</span> <span class="nf">recovering</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">FTSMTransitions</span><span class="o">.</span><span class="n">DONE_RECOVERING</span>
+
+    <span class="nd">@abstractmethod</span>
+    <span class="k">def</span> <span class="nf">set_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="p">):</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+<p>This interface defines a so-called fault-tolerant state machine (FTSM),
+which is illustrated in the diagram below:</p>
+<div class="figure align-center">
+<img alt="../_images/fault_tolerant_state_machine.png" src="../_images/fault_tolerant_state_machine.png" />
+</div>
+<p>This component is a very recent addition to our set of libraries, such
+that almost all our actions are implemented by reusing this abstraction.
+There is clearly a connection between the fault-tolerant implementation
+of actions and the ontology in the <code class="docutils literal notranslate"><span class="pre">action-execution</span></code> library (but the
+integration of the two is ongoing work).</p>
+</div>
+<div class="section" id="skill-implementation-use-case-move-base">
+<h2>Skill Implementation Use Case: Move Base<a class="headerlink" href="#skill-implementation-use-case-move-base" title="Permalink to this heading"></a></h2>
+<p>Implementing skills in our domestic code base is always a three-step
+process:</p>
+<ol class="arabic simple">
+<li><p><strong>The action needs to be implemented as a component inheriting from
+the ``ActionSMBase`` class described above</strong>. Not all states of the
+state machine have to be overriden, but it usually makes sense to
+override <code class="docutils literal notranslate"><span class="pre">init</span></code> for initialising the action (e.g. by waiting for
+its dependencies to become available), <code class="docutils literal notranslate"><span class="pre">running</span></code> for actually
+performing the action, and <code class="docutils literal notranslate"><span class="pre">recovering</span></code> for specifying what needs
+to happen if the action fails.</p></li>
+<li><p><strong>An actionlib server for exposing the action needs to be defined</strong></p></li>
+<li><p><strong>An action client inheriting from the ``ActionClientBase`` shown
+above needs to be exposed</strong>. The action client</p>
+<ol class="arabic simple">
+<li><p>calls the action through the above actionlib server and</p></li>
+<li><p>updates the knowledge base after the execution is complete</p></li>
+</ol>
+</li>
+</ol>
+<p>This process is exemplified below for the <code class="docutils literal notranslate"><span class="pre">move_base</span></code> action, which is
+defined
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/tree/devel/mdr_planning/mdr_actions/mdr_navigation_actions/mdr_move_base_action">here</a>.</p>
+<div class="section" id="action-ftsm-implementation">
+<h3>Action FTSM Implementation<a class="headerlink" href="#action-ftsm-implementation" title="Permalink to this heading"></a></h3>
+<p>Our <code class="docutils literal notranslate"><span class="pre">move_base</span></code> action assumes that a robot with a manipulator is
+used, such that the manipulator is brought to a safe position before the
+robot starts moving. In the <code class="docutils literal notranslate"><span class="pre">init</span></code> method of the state machine, we
+thus wait for the server of the <code class="docutils literal notranslate"><span class="pre">move_arm</span></code> action to become available.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">running</span></code> method of the state machine is where the logic behind
+executing the action is implemented. In our case, we can move to either
+a named target (named targets are expected to be defined in a YAML file
+such as <a class="reference external" href="https://github.com/b-it-bots/mas_common_robotics/blob/kinetic/mcr_environments/mcr_default_env_config/brsu-c069/navigation_goals.yaml">this
+one</a>)
+or an explicitly specified pose. Either way, the arm is moved to a safe
+configuration before the robot starts moving.</p>
+<p>The complete implementation of the action FTSM is included below for
+convenience.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">yaml</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">actionlib</span>
+<span class="kn">import</span> <span class="nn">tf</span>
+<span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="k">import</span> <span class="n">PoseStamped</span><span class="p">,</span> <span class="n">Quaternion</span>
+<span class="kn">import</span> <span class="nn">move_base_msgs.msg</span> <span class="k">as</span> <span class="nn">move_base_msgs</span>
+
+<span class="kn">from</span> <span class="nn">pyftsm.ftsm</span> <span class="k">import</span> <span class="n">FTSMTransitions</span>
+<span class="kn">from</span> <span class="nn">mas_execution.action_sm_base</span> <span class="k">import</span> <span class="n">ActionSMBase</span>
+<span class="kn">from</span> <span class="nn">mdr_move_arm_action.msg</span> <span class="k">import</span> <span class="n">MoveArmAction</span><span class="p">,</span> <span class="n">MoveArmGoal</span>
+<span class="kn">from</span> <span class="nn">mdr_move_base_action.msg</span> <span class="k">import</span> <span class="n">MoveBaseGoal</span><span class="p">,</span> <span class="n">MoveBaseFeedback</span><span class="p">,</span> <span class="n">MoveBaseResult</span>
+
+<span class="k">class</span> <span class="nc">MoveBaseSM</span><span class="p">(</span><span class="n">ActionSMBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">120.</span><span class="p">,</span>
+                <span class="n">safe_arm_joint_config</span><span class="o">=</span><span class="s1">&#39;folded&#39;</span><span class="p">,</span>
+                <span class="n">move_arm_server</span><span class="o">=</span><span class="s1">&#39;move_arm_server&#39;</span><span class="p">,</span>
+                <span class="n">move_base_server</span><span class="o">=</span><span class="s1">&#39;/move_base&#39;</span><span class="p">,</span>
+                <span class="n">pose_description_file</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="n">pose_frame</span><span class="o">=</span><span class="s1">&#39;map&#39;</span><span class="p">,</span>
+                <span class="n">max_recovery_attempts</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MoveBaseSM</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="s1">&#39;MoveBase&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="n">max_recovery_attempts</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pose</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">safe_arm_joint_config</span> <span class="o">=</span> <span class="n">safe_arm_joint_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">move_arm_server</span> <span class="o">=</span> <span class="n">move_arm_server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">move_base_server</span> <span class="o">=</span> <span class="n">move_base_server</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pose_description_file</span> <span class="o">=</span> <span class="n">pose_description_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pose_frame</span> <span class="o">=</span> <span class="n">pose_frame</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">move_arm_client</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">move_arm_client</span> <span class="o">=</span> <span class="n">actionlib</span><span class="o">.</span><span class="n">SimpleActionClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">move_arm_server</span><span class="p">,</span> <span class="n">MoveArmAction</span><span class="p">)</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[move_base] Waiting for </span><span class="si">%s</span><span class="s1"> server&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">move_arm_server</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">move_arm_client</span><span class="o">.</span><span class="n">wait_for_server</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s1">&#39;[move_base] </span><span class="si">%s</span><span class="s1"> server does not seem to respond&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">move_arm_server</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">FTSMTransitions</span><span class="o">.</span><span class="n">INITIALISED</span>
+
+    <span class="k">def</span> <span class="nf">running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[move_base] Moving the arm to a safe configuration...&#39;</span><span class="p">)</span>
+        <span class="n">move_arm_goal</span> <span class="o">=</span> <span class="n">MoveArmGoal</span><span class="p">()</span>
+        <span class="n">move_arm_goal</span><span class="o">.</span><span class="n">goal_type</span> <span class="o">=</span> <span class="n">MoveArmGoal</span><span class="o">.</span><span class="n">NAMED_TARGET</span>
+        <span class="n">move_arm_goal</span><span class="o">.</span><span class="n">named_target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">safe_arm_joint_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">move_arm_client</span><span class="o">.</span><span class="n">send_goal</span><span class="p">(</span><span class="n">move_arm_goal</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">move_arm_client</span><span class="o">.</span><span class="n">wait_for_result</span><span class="p">()</span>
+
+        <span class="n">pose</span> <span class="o">=</span> <span class="n">PoseStamped</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal</span><span class="o">.</span><span class="n">goal_type</span> <span class="o">==</span> <span class="n">MoveBaseGoal</span><span class="o">.</span><span class="n">NAMED_TARGET</span><span class="p">:</span>
+            <span class="n">destination</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal</span><span class="o">.</span><span class="n">destination_location</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[move_base] Moving base to </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">destination</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">pose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_pose_name_to_coordinates</span><span class="p">(</span><span class="n">destination</span><span class="p">)</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">stamp</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">Time</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pose_frame</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pose</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pose</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="n">quat</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">transformations</span><span class="o">.</span><span class="n">quaternion_from_euler</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pose</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="n">pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">orientation</span> <span class="o">=</span> <span class="n">Quaternion</span><span class="p">(</span><span class="o">*</span><span class="n">quat</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal</span><span class="o">.</span><span class="n">goal_type</span> <span class="o">==</span> <span class="n">MoveBaseGoal</span><span class="o">.</span><span class="n">POSE</span><span class="p">:</span>
+            <span class="n">pose</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">goal</span><span class="o">.</span><span class="n">pose</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[move_base] Moving base to </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">pose</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s1">&#39;[move_base] Received an unknown goal type; ignoring request&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">FTSMTransitions</span><span class="o">.</span><span class="n">DONE</span>
+
+        <span class="n">goal</span> <span class="o">=</span> <span class="n">move_base_msgs</span><span class="o">.</span><span class="n">MoveBaseGoal</span><span class="p">()</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">target_pose</span> <span class="o">=</span> <span class="n">pose</span>
+
+        <span class="n">move_base_client</span> <span class="o">=</span> <span class="n">actionlib</span><span class="o">.</span><span class="n">SimpleActionClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">move_base_server</span><span class="p">,</span>
+                                                        <span class="n">move_base_msgs</span><span class="o">.</span><span class="n">MoveBaseAction</span><span class="p">)</span>
+        <span class="n">move_base_client</span><span class="o">.</span><span class="n">wait_for_server</span><span class="p">()</span>
+        <span class="n">move_base_client</span><span class="o">.</span><span class="n">send_goal</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="n">move_base_client</span><span class="o">.</span><span class="n">wait_for_result</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[move_base] Pose reached successfully&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">FTSMTransitions</span><span class="o">.</span><span class="n">DONE</span>
+
+        <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s1">&#39;[move_base] Pose could not be reached&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_result</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">FTSMTransitions</span><span class="o">.</span><span class="n">DONE</span>
+
+    <span class="k">def</span> <span class="nf">convert_pose_name_to_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pose_name</span><span class="p">):</span>
+        <span class="n">stream</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pose_description_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+        <span class="n">poses</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span>
+        <span class="n">stream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">coordinates</span> <span class="o">=</span> <span class="n">poses</span><span class="p">[</span><span class="n">pose_name</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">coordinates</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s1">&#39;Pose name &quot;</span><span class="si">%s</span><span class="s1">&quot; does not exist&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pose_name</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">set_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">success</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">MoveBaseResult</span><span class="p">()</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">success</span> <span class="o">=</span> <span class="n">success</span>
+        <span class="k">return</span> <span class="n">result</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="action-server">
+<h3>Action Server<a class="headerlink" href="#action-server" title="Permalink to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">move_base</span></code> action server, which is shown below, simply reads the
+necessary parameters for the action and then waits for action requests.
+This action server implementation is in fact a template that all our
+action server are following.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">actionlib</span>
+
+<span class="kn">from</span> <span class="nn">mdr_move_base_action.msg</span> <span class="k">import</span> <span class="n">MoveBaseAction</span>
+<span class="kn">from</span> <span class="nn">mdr_move_base_action.action_states</span> <span class="k">import</span> <span class="n">MoveBaseSM</span>
+
+<span class="k">class</span> <span class="nc">MoveBaseServer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;A server exposing a go to action.</span>
+<span class="sd">    The server expects the following parameters to be made available on the ROS parameter server:</span>
+<span class="sd">    * move_base_server: Name of the default move_base server (default: &#39;/move_base&#39;)</span>
+<span class="sd">    * pose_description_file: Name of a yaml file in which named goals are mapped</span>
+<span class="sd">                            to actual coordinates</span>
+<span class="sd">    * pose_frame: Name of the frame in which the poses in pose_description_file</span>
+<span class="sd">                are given (default: &#39;map&#39;)</span>
+<span class="sd">    * safe_arm_joint_config: Name of a configuration specified in which the robot can</span>
+<span class="sd">                            safely move around the environment (default: &#39;folded&#39;)</span>
+<span class="sd">    * move_arm_server: Name of the move_arm action server (default: &#39;move_arm_server&#39;)</span>
+<span class="sd">    @author Alex Mitrevski</span>
+<span class="sd">    @contact aleksandar.mitrevski@h-brs.de</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">safe_arm_joint_config</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;~safe_arm_joint_config&#39;</span><span class="p">,</span> <span class="s1">&#39;folded&#39;</span><span class="p">)</span>
+        <span class="n">move_arm_server</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;~move_arm_server&#39;</span><span class="p">,</span> <span class="s1">&#39;move_arm_server&#39;</span><span class="p">)</span>
+        <span class="n">move_base_server</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;~move_base_server&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">pose_description_file</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;~pose_description_file&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="n">pose_frame</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;~pose_frame&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[move_base] Initialising state machine&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_sm</span> <span class="o">=</span> <span class="n">MoveBaseSM</span><span class="p">(</span><span class="n">safe_arm_joint_config</span><span class="o">=</span><span class="n">safe_arm_joint_config</span><span class="p">,</span>
+                                    <span class="n">move_arm_server</span><span class="o">=</span><span class="n">move_arm_server</span><span class="p">,</span>
+                                    <span class="n">move_base_server</span><span class="o">=</span><span class="n">move_base_server</span><span class="p">,</span>
+                                    <span class="n">pose_description_file</span><span class="o">=</span><span class="n">pose_description_file</span><span class="p">,</span>
+                                    <span class="n">pose_frame</span><span class="o">=</span><span class="n">pose_frame</span><span class="p">)</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[move_base] State machine initialised&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_server</span> <span class="o">=</span> <span class="n">actionlib</span><span class="o">.</span><span class="n">SimpleActionServer</span><span class="p">(</span><span class="s1">&#39;move_base_server&#39;</span><span class="p">,</span>
+                                                        <span class="n">MoveBaseAction</span><span class="p">,</span>
+                                                        <span class="bp">self</span><span class="o">.</span><span class="n">execute</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_server</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;move_base action server ready&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal</span><span class="p">):</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[move_base] Received an action request&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_sm</span><span class="o">.</span><span class="n">goal</span> <span class="o">=</span> <span class="n">goal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_sm</span><span class="o">.</span><span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_sm</span><span class="o">.</span><span class="n">execution_requested</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_sm</span><span class="o">.</span><span class="n">result</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.05</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_server</span><span class="o">.</span><span class="n">set_succeeded</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_sm</span><span class="o">.</span><span class="n">result</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s1">&#39;move_base_server&#39;</span><span class="p">)</span>
+    <span class="n">move_base_server</span> <span class="o">=</span> <span class="n">MoveBaseServer</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">move_base_server</span><span class="o">.</span><span class="n">action_sm</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">move_base_server</span><span class="o">.</span><span class="n">action_sm</span><span class="o">.</span><span class="n">is_running</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">spin</span><span class="p">()</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">KeyboardInterrupt</span><span class="p">,</span> <span class="ne">SystemExit</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> interrupted; exiting...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">move_base_server</span><span class="o">.</span><span class="n">action_sm</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+        <span class="n">move_base_server</span><span class="o">.</span><span class="n">action_sm</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="action-client">
+<h3>Action Client<a class="headerlink" href="#action-client" title="Permalink to this heading"></a></h3>
+<p>Finally, the <code class="docutils literal notranslate"><span class="pre">move_base</span></code> action client simply waits for action
+requests from a plan/task dispatcher, calls the action server, and, if
+the action completes successfully, updates the knowledge base with the
+fact that the robot is now at its destination location rather than at
+its original location. The implementation of the <code class="docutils literal notranslate"><span class="pre">move_base</span></code> action
+client is given below.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">actionlib</span>
+
+<span class="kn">from</span> <span class="nn">mdr_rosplan_interface.action_client_base</span> <span class="k">import</span> <span class="n">ActionClientBase</span>
+<span class="kn">from</span> <span class="nn">mdr_move_base_action.msg</span> <span class="k">import</span> <span class="n">MoveBaseAction</span><span class="p">,</span> <span class="n">MoveBaseGoal</span>
+
+<span class="k">class</span> <span class="nc">MoveBaseClient</span><span class="p">(</span><span class="n">ActionClientBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">MoveBaseClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_location</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">rospy</span><span class="o">.</span><span class="n">is_shutdown</span><span class="p">():</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">call_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="c1"># we only react to calls to this action</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_name</span> <span class="o">!=</span> <span class="n">msg</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+            <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_id</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">action_id</span>
+
+        <span class="n">client</span> <span class="o">=</span> <span class="n">actionlib</span><span class="o">.</span><span class="n">SimpleActionClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_server_name</span><span class="p">,</span> <span class="n">MoveBaseAction</span><span class="p">)</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">wait_for_server</span><span class="p">()</span>
+        <span class="n">goal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_action_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="c1"># calling the actionlib server and waiting for the execution to end</span>
+        <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;Sending action lib goal to move_base_server,&#39;</span> <span class="o">+</span>
+                    <span class="s1">&#39; destination: &#39;</span> <span class="o">+</span> <span class="n">goal</span><span class="o">.</span><span class="n">destination_location</span><span class="p">)</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">send_goal</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
+        <span class="n">client</span><span class="o">.</span><span class="n">wait_for_result</span><span class="p">(</span><span class="n">rospy</span><span class="o">.</span><span class="n">Duration</span><span class="o">.</span><span class="n">from_sec</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_timeout</span><span class="p">)))</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">and</span> <span class="n">result</span><span class="o">.</span><span class="n">success</span><span class="p">:</span>
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;[MOVE_BASE] Updating the knowledge base&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_knowledge_base</span><span class="p">(</span><span class="n">goal</span><span class="o">.</span><span class="n">destination_location</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_action_feedback</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_action_feedback</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">get_action_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rosplan_action_msg</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Reads the action parameters and uses them to initialise an actionlib message.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">goal</span> <span class="o">=</span> <span class="n">MoveBaseGoal</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">rosplan_action_msg</span><span class="o">.</span><span class="n">parameters</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">param</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;from&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">original_location</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">elif</span> <span class="n">param</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;to&#39;</span><span class="p">:</span>
+                <span class="n">goal</span><span class="o">.</span><span class="n">destination_location</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">elif</span> <span class="n">param</span><span class="o">.</span><span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;bot&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">robot_name</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">goal</span><span class="o">.</span><span class="n">goal_type</span> <span class="o">=</span> <span class="n">MoveBaseGoal</span><span class="o">.</span><span class="n">NAMED_TARGET</span>
+        <span class="k">return</span> <span class="n">goal</span>
+
+    <span class="k">def</span> <span class="nf">update_knowledge_base</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destination_location</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Updates the knowledge base with the following facts:</span>
+<span class="sd">        * the robot is not at the original location anymore</span>
+<span class="sd">        * the robot is at the destination location</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">facts_to_add</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;robot_at&#39;</span><span class="p">,</span> <span class="p">[(</span><span class="s1">&#39;bot&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_name</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;wp&#39;</span><span class="p">,</span> <span class="n">destination_location</span><span class="p">)])]</span>
+        <span class="n">facts_to_remove</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;robot_at&#39;</span><span class="p">,</span> <span class="p">[(</span><span class="s1">&#39;bot&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_name</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;wp&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_location</span><span class="p">)])]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kb_interface</span><span class="o">.</span><span class="n">update_kb</span><span class="p">(</span><span class="n">facts_to_add</span><span class="p">,</span> <span class="n">facts_to_remove</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s1">&#39;mdr_move_base_client&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">MoveBaseClient</span><span class="p">()</span>
+    <span class="k">except</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ROSInterruptException</span><span class="p">:</span>
+        <span class="k">pass</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="scenario-use-case-simple-pick-and-place">
+<h2>Scenario Use Case: Simple Pick and Place<a class="headerlink" href="#scenario-use-case-simple-pick-and-place" title="Permalink to this heading"></a></h2>
+<p>One interesting aspect about our architecture is the creation of a
+complex scenario that a robot can execute. Most of the time, we define
+scenarios using state machines, such that we use the components in
+<code class="docutils literal notranslate"><span class="pre">mas_execution_manager</span></code> for defining and executing state machines. A
+description of <code class="docutils literal notranslate"><span class="pre">mas_execution_manager</span></code> is beyond the scope of this
+tutorial; please read the <a class="reference external" href="https://github.com/b-it-bots/mas_execution_manager">package
+documentation</a>
+for that.</p>
+<div class="section" id="scenario-description">
+<h3>Scenario Description<a class="headerlink" href="#scenario-description" title="Permalink to this heading"></a></h3>
+<p>Instead, let’s consider an example to illustrate how we could define a
+state machine for a scenario in which we want a robot to perform a very
+simple perpetual pick-and-place functionality (this is one of our lab
+demos defined
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/tree/devel/mdr_planning/mdr_scenarios/mdr_demos/mdr_demo_simple_pick_and_place">here</a>).
+In particular, let’s assume that we want the robot to:</p>
+<ol class="arabic simple">
+<li><p>go to a table in the lab</p></li>
+<li><p>scan the table for any objects</p></li>
+<li><p>pick the closest object from the table</p></li>
+<li><p>place the object back on the table</p></li>
+<li><p>repeat 2-4 until the execution is manually terminated</p></li>
+</ol>
+<p>We also want to have some recovery in the execution; in particular, we
+want the robot to repeat the execution if it detects a failure in each
+of the states, such that if we have consecutive failures in a given
+state for a predefined number of times, the state machine will be
+interrupted.</p>
+</div>
+<div class="section" id="scenario-state-machine-definition">
+<h3>Scenario State Machine Definition<a class="headerlink" href="#scenario-state-machine-definition" title="Permalink to this heading"></a></h3>
+<p>We can encode this scenario using the YAML-based state machine
+specification described in <code class="docutils literal notranslate"><span class="pre">mas_execution_manager</span></code> as follows:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">sm_id</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mdr_demo_simple_pick_and_place</span>
+<span class="nt">states</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">GO_TO_TABLE</span><span class="p p-Indicator">,</span> <span class="nv">PERCEIVE_TABLE</span><span class="p p-Indicator">,</span> <span class="nv">PICK_OBJECT</span><span class="p p-Indicator">,</span> <span class="nv">PLACE_OBJECT</span><span class="p p-Indicator">]</span>
+<span class="nt">outcomes</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">FAILED</span><span class="p p-Indicator">]</span>
+<span class="nt">state_descriptions</span><span class="p">:</span>
+    <span class="p p-Indicator">-</span> <span class="nt">state</span><span class="p">:</span>
+        <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">GO_TO_TABLE</span>
+        <span class="nt">state_module_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mdr_navigation_behaviours.move_base</span>
+        <span class="nt">state_class_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">MoveBase</span>
+        <span class="nt">transitions</span><span class="p">:</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">succeeded</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PERCEIVE_TABLE</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">failed</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">GO_TO_TABLE</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">failed_after_retrying</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">FAILED</span>
+        <span class="nt">arguments</span><span class="p">:</span>
+            <span class="p p-Indicator">-</span> <span class="nt">argument</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">destination_locations</span>
+                <span class="nt">value</span><span class="p">:</span> <span class="p p-Indicator">[</span><span class="nv">TABLE</span><span class="p p-Indicator">]</span>
+            <span class="p p-Indicator">-</span> <span class="nt">argument</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">number_of_retries</span>
+                <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3</span>
+    <span class="p p-Indicator">-</span> <span class="nt">state</span><span class="p">:</span>
+        <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PERCEIVE_TABLE</span>
+        <span class="nt">state_module_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mdr_perception_behaviours.perceive_planes</span>
+        <span class="nt">state_class_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PerceivePlanes</span>
+        <span class="nt">transitions</span><span class="p">:</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">succeeded</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PICK_OBJECT</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">failed</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PERCEIVE_TABLE</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">failed_after_retrying</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">FAILED</span>
+        <span class="nt">arguments</span><span class="p">:</span>
+            <span class="p p-Indicator">-</span> <span class="nt">argument</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">number_of_retries</span>
+                <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3</span>
+            <span class="p p-Indicator">-</span> <span class="nt">argument</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">plane_prefix</span>
+                <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">table</span>
+    <span class="p p-Indicator">-</span> <span class="nt">state</span><span class="p">:</span>
+        <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PICK_OBJECT</span>
+        <span class="nt">state_module_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mdr_manipulation_behaviours.pick_closest_from_surface</span>
+        <span class="nt">state_class_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PickClosestFromSurface</span>
+        <span class="nt">transitions</span><span class="p">:</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">succeeded</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PLACE_OBJECT</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">failed</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PICK_OBJECT</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">failed_after_retrying</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">FAILED</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">find_objects_before_picking</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PERCEIVE_TABLE</span>
+        <span class="nt">arguments</span><span class="p">:</span>
+            <span class="p p-Indicator">-</span> <span class="nt">argument</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">number_of_retries</span>
+                <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3</span>
+            <span class="p p-Indicator">-</span> <span class="nt">argument</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">picking_surface_prefix</span>
+                <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">table</span>
+    <span class="p p-Indicator">-</span> <span class="nt">state</span><span class="p">:</span>
+        <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PLACE_OBJECT</span>
+        <span class="nt">state_module_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">mdr_manipulation_behaviours.place</span>
+        <span class="nt">state_class_name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">Place</span>
+        <span class="nt">transitions</span><span class="p">:</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">succeeded</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PERCEIVE_TABLE</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">failed</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">PLACE_OBJECT</span>
+            <span class="p p-Indicator">-</span> <span class="nt">transition</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">failed_after_retrying</span>
+                <span class="nt">state</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">FAILED</span>
+        <span class="nt">arguments</span><span class="p">:</span>
+            <span class="p p-Indicator">-</span> <span class="nt">argument</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">number_of_retries</span>
+                <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">3</span>
+            <span class="p p-Indicator">-</span> <span class="nt">argument</span><span class="p">:</span>
+                <span class="nt">name</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">placing_surface_prefix</span>
+                <span class="nt">value</span><span class="p">:</span> <span class="l l-Scalar l-Scalar-Plain">table</span>
+</pre></div>
+</div>
+<p>The resulting state machine from this scenario definition is shown below:</p>
+<div class="figure align-center">
+<img alt="../_images/simple_pick_and_place_sm.png" src="../_images/simple_pick_and_place_sm.png" />
+</div>
+<p>In the state machine definition file, the <code class="docutils literal notranslate"><span class="pre">state_module_name</span></code> and
+<code class="docutils literal notranslate"><span class="pre">state_class_name</span></code> specify the package and class name that define the
+state that will be executed (states are thus dynamically loaded from the
+configuration file rather than hard-coded in a scenario script). In this
+particular case, all states are reused from the <code class="docutils literal notranslate"><span class="pre">mdr_behaviours</span></code>
+metapackage, but they could also be redefined for a specific scenario to
+capture any particular nuances about the scenario.</p>
+</div>
+<div class="section" id="example-behaviour-implementation-move-base">
+<h3>Example Behaviour Implementation: Move Base<a class="headerlink" href="#example-behaviour-implementation-move-base" title="Permalink to this heading"></a></h3>
+<p>Behaviours are implemented as smach states that inherit from a
+<code class="docutils literal notranslate"><span class="pre">ScenarioStateBase</span></code> class defined in <code class="docutils literal notranslate"><span class="pre">mas_execution_manager</span></code>. To
+interact with the skills, the behaviours use the action clients
+described above, i.e. skills are not invoked by creating an actionlib
+action client, but by sending a message to the action client much like a
+plan dispatcher (though there is nothing preventing one from creating an
+explicit client instead).</p>
+<p>An example implementation of the <code class="docutils literal notranslate"><span class="pre">move_base</span></code> behaviour used in the
+above <code class="docutils literal notranslate"><span class="pre">GO_TO_TABLE</span></code> state that illustrates this principle is shown
+below (this behaviour can be found
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/blob/devel/mdr_planning/mdr_behaviours/mdr_navigation_behaviours/ros/src/mdr_navigation_behaviours/move_base.py">here</a>):</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">rospy</span>
+<span class="kn">import</span> <span class="nn">actionlib</span>
+
+<span class="kn">import</span> <span class="nn">rosplan_dispatch_msgs.msg</span> <span class="k">as</span> <span class="nn">plan_dispatch_msgs</span>
+<span class="kn">import</span> <span class="nn">diagnostic_msgs.msg</span> <span class="k">as</span> <span class="nn">diag_msgs</span>
+
+<span class="kn">from</span> <span class="nn">mdr_move_base_action.msg</span> <span class="k">import</span> <span class="n">MoveBaseAction</span>
+<span class="kn">from</span> <span class="nn">mas_execution_manager.scenario_state_base</span> <span class="k">import</span> <span class="n">ScenarioStateBase</span>
+
+<span class="k">class</span> <span class="nc">MoveBase</span><span class="p">(</span><span class="n">ScenarioStateBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_sm_state</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">ScenarioStateBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;move_base&#39;</span><span class="p">,</span>
+                                <span class="n">save_sm_state</span><span class="o">=</span><span class="n">save_sm_state</span><span class="p">,</span>
+                                <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;succeeded&#39;</span><span class="p">,</span> <span class="s1">&#39;failed&#39;</span><span class="p">,</span> <span class="s1">&#39;failed_after_retrying&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sm_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sm_id&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;state_name&#39;</span><span class="p">,</span> <span class="s1">&#39;move_base&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">move_base_server</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;move_base_server&#39;</span><span class="p">,</span> <span class="s1">&#39;move_base_server&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">destination_locations</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;destination_locations&#39;</span><span class="p">,</span> <span class="nb">list</span><span class="p">()))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;timeout&#39;</span><span class="p">,</span> <span class="mf">120.</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_retries</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;number_of_retries&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">retry_count</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>
+        <span class="n">original_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">kb_interface</span><span class="o">.</span><span class="n">get_robot_location</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">destination_location</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">destination_locations</span><span class="p">:</span>
+            <span class="n">dispatch_msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_dispatch_msg</span><span class="p">(</span><span class="n">original_location</span><span class="p">,</span>
+                                                <span class="n">destination_location</span><span class="p">)</span>
+
+            <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;Sending the base to </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">destination_location</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s1">&#39;Going to &#39;</span> <span class="o">+</span> <span class="n">destination_location</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">action_dispatch_pub</span><span class="o">.</span><span class="n">publish</span><span class="p">(</span><span class="n">dispatch_msg</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">executing</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">succeeded</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+            <span class="n">duration</span> <span class="o">=</span> <span class="mf">0.</span>
+            <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">executing</span> <span class="ow">and</span> <span class="n">duration</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+                <span class="n">duration</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">succeeded</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">loginfo</span><span class="p">(</span><span class="s1">&#39;Successfully reached </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">destination_location</span><span class="p">)</span>
+                <span class="n">original_location</span> <span class="o">=</span> <span class="n">destination_location</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">rospy</span><span class="o">.</span><span class="n">logerr</span><span class="p">(</span><span class="s1">&#39;Could not reach </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">destination_location</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s1">&#39;Could not reach &#39;</span> <span class="o">+</span> <span class="n">destination_location</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_count</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_retries</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s1">&#39;Aborting operation&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="s1">&#39;failed_after_retrying&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">retry_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">return</span> <span class="s1">&#39;failed&#39;</span>
+        <span class="k">return</span> <span class="s1">&#39;succeeded&#39;</span>
+
+    <span class="k">def</span> <span class="nf">get_dispatch_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_location</span><span class="p">,</span> <span class="n">destination_location</span><span class="p">):</span>
+        <span class="n">dispatch_msg</span> <span class="o">=</span> <span class="n">plan_dispatch_msgs</span><span class="o">.</span><span class="n">ActionDispatch</span><span class="p">()</span>
+        <span class="n">dispatch_msg</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_name</span>
+
+        <span class="n">arg_msg</span> <span class="o">=</span> <span class="n">diag_msgs</span><span class="o">.</span><span class="n">KeyValue</span><span class="p">()</span>
+        <span class="n">arg_msg</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;bot&#39;</span>
+        <span class="n">arg_msg</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_name</span>
+        <span class="n">dispatch_msg</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg_msg</span><span class="p">)</span>
+
+        <span class="n">arg_msg</span> <span class="o">=</span> <span class="n">diag_msgs</span><span class="o">.</span><span class="n">KeyValue</span><span class="p">()</span>
+        <span class="n">arg_msg</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;from&#39;</span>
+        <span class="n">arg_msg</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">original_location</span>
+        <span class="n">dispatch_msg</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg_msg</span><span class="p">)</span>
+
+        <span class="n">arg_msg</span> <span class="o">=</span> <span class="n">diag_msgs</span><span class="o">.</span><span class="n">KeyValue</span><span class="p">()</span>
+        <span class="n">arg_msg</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;to&#39;</span>
+        <span class="n">arg_msg</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">destination_location</span>
+        <span class="n">dispatch_msg</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg_msg</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dispatch_msg</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="about-this-tutorial">
+<h2>About This Tutorial<a class="headerlink" href="#about-this-tutorial" title="Permalink to this heading"></a></h2>
+<p><strong>Author(s)</strong>: Alex Mitrevski</p>
+<p><strong>Contributors</strong>: Minh Nguyen, Argentina Ortega</p>
+<p><strong>Last update</strong>: 23.02.2019</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="MAS Domestic Robotics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="capabilities.html" class="btn btn-neutral float-right" title="Capabilities" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Robotics@H-BRS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

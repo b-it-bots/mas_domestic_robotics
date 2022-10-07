@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pick Up Object Action &mdash; MAS Domestic Robotics 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Place Object Action" href="place-object.html" />
+    <link rel="prev" title="Move Arm Action" href="move-arm.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../../index.html" class="icon icon-home"> MAS Domestic Robotics
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../quick-start/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick-start/capabilities.html">Capabilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quick-start/requirements.html">Requirements</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../setup/development-pc.html">Development PC Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup/connecting-to-hsr.html">Connecting to the HSR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../setup/startup-components.html">Components Running on Startup</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/creating-and-using-an-occupancy-grid-map.html">Creating and Using an Occupancy Grid Map</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/creating-a-state-machine-based-task.html">Creating a State Machine-Based Task</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/dmp-based-arm-motion.html">Arm Motion Based on Dynamic Motion Primitives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/trajectory-recording.html">Trajectory Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/moving-between-named-locations.html">Moving Between Named Locations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/object-detection-and-pose-estimation.html">Object Detection and Pose Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../tutorials/object-grasping.html">Object Grasping</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../demo-scenarios/patrol.html">Patrolling Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../demo-scenarios/simple-pick-and-place.html">Simple Object Pick and Place Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../demo-scenarios/context-aware-object-hand-over.html">Context-Aware Object Hand Over Demo</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../manipulation.html">Manipulation Actions</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="move-arm.html">Move Arm Action</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Pick Up Object Action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="place-object.html">Place Object Action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="object-hand-over.html">Object Hand Over Action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="receive-object.html">Receive Object Action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="handle-open.html">Handle Open Action</a></li>
+<li class="toctree-l2"><a class="reference internal" href="push-pull-object.html">Push or Pull Object Action</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../navigation.html">Navigation Actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../perception.html">Perception Actions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../behaviours/manipulation.html">Manipulation Behaviours</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../behaviours/navigation.html">Navigation Behaviours</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../behaviours/perception.html">Perception Behaviours</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../behaviours/hri.html">HRI Behaviours</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../knowledge_base/storage.html">Storage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../knowledge_base/ontology.html">Ontology</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">MAS Domestic Robotics</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="../manipulation.html">Manipulation Actions</a> &raquo;</li>
+      <li>Pick Up Object Action</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/actions/manipulation/pick-up-object.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="pick-up-object-action">
+<h1>Pick Up Object Action<a class="headerlink" href="#pick-up-object-action" title="Permalink to this heading"></a></h1>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="move-arm.html" class="btn btn-neutral float-left" title="Move Arm Action" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="place-object.html" class="btn btn-neutral float-right" title="Place Object Action" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Robotics@H-BRS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
