@@ -134,43 +134,43 @@ as well as its intended use will be discussed under this section.</p>
 <div class="section" id="list-of-contents">
 <h2>List of contents<a class="headerlink" href="#list-of-contents" title="Permalink to this heading"></a></h2>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="#Domestic-Software-101">Domestic Software 101</a></p></li>
-<li><p><a class="reference external" href="#Robot-Independent-and-Robot-Dependent-Functionalities">Robot-Indepenent and Robot-Dependent
+<li><p><a class="reference external" href="#domestic-software-101">Domestic Software 101</a></p></li>
+<li><p><a class="reference external" href="#robot-independent-and-robot-dependent-functionalities">Robot-Indepenent and Robot-Dependent
 Functionalities</a></p>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="#Skill-Based-Architecture">Skill-Based Architecture</a></p></li>
-<li><p><a class="reference external" href="#ROS-Based-and-ROS-Independent-Components">ROS-Based and ROS-Independent
+<li><p><a class="reference external" href="#skill-based-architecture">Skill-Based Architecture</a></p></li>
+<li><p><a class="reference external" href="#ros-based-and-ros-independent-components">ROS-Based and ROS-Independent
 Components</a></p></li>
-<li><p><a class="reference external" href="#Multi-Repository-Setup">Multi-Repository Setup</a></p></li>
+<li><p><a class="reference external" href="#multi-repository-setup">Multi-Repository Setup</a></p></li>
 </ol>
 </li>
-<li><p><a class="reference external" href="#Major-Robot-Independent-Components">Major Robot-Independent
+<li><p><a class="reference external" href="#major-robot-independent-components">Major Robot-Independent
 Components</a></p></li>
-<li><p><a class="reference external" href="#Planning--and-Knowledge-Oriented-Development">Planning and Knowledge-Oriented
+<li><p><a class="reference external" href="#planning-and-knowledge-oriented-development">Planning and Knowledge-Oriented
 Development</a></p></li>
-<li><p><a class="reference external" href="#Common-Interfaces-in-mas_domestic_robotics">Common Interfaces in
+<li><p><a class="reference external" href="#common-interfaces-in-mas-domestic-robotics">Common Interfaces in
 mas_domestic_robotics</a></p></li>
-<li><p><a class="reference external" href="#Fault-Tolerant-Actions">Fault-Tolerant Actions</a></p></li>
-<li><p><a class="reference external" href="#Skill-Implementation-Use-Case:-Move-Base">Skill Implementation Use Case: Move
+<li><p><a class="reference external" href="#fault-tolerant-actions">Fault-Tolerant Actions</a></p></li>
+<li><p><a class="reference external" href="#skill-implementation-use-case-move-base">Skill Implementation Use Case: Move
 Base</a></p>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="#Action-Server">Action Server</a></p></li>
-<li><p><a class="reference external" href="#Action-Execution-Implementation">Action Execution
+<li><p><a class="reference external" href="#action-ftsm-implementation">Action Execution
 Implementation</a></p></li>
-<li><p><a class="reference external" href="#Action-Client">Action Client</a></p></li>
+<li><p><a class="reference external" href="#action-server">Action Server</a></p></li>
+<li><p><a class="reference external" href="#action-client">Action Client</a></p></li>
 </ol>
 </li>
-<li><p><a class="reference external" href="#Scenario-Use-Case:-Simple-Pick-and-Place">Scenario Use Case: Simple Pick and
+<li><p><a class="reference external" href="#scenario-use-case-simple-pick-and-place">Scenario Use Case: Simple Pick and
 Place</a></p>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="#Scenario-Description">Scenario Description</a></p></li>
-<li><p><a class="reference external" href="#Scenario-State-Machine-Definition">Scenario State Machine
+<li><p><a class="reference external" href="#scenario-description">Scenario Description</a></p></li>
+<li><p><a class="reference external" href="#scenario-state-machine-definition">Scenario State Machine
 Definition</a></p></li>
-<li><p><a class="reference external" href="#Example-Behaviour-Implementation:-Move-Base">Example Behaviour Implementation: Move
+<li><p><a class="reference external" href="#example-behaviour-implementation-move-base">Example Behaviour Implementation: Move
 Base</a></p></li>
 </ol>
 </li>
-<li><p><a class="reference external" href="#About-This-Tutorial">About This Tutorial</a></p></li>
+<li><p><a class="reference external" href="#about-this-tutorial">About This Tutorial</a></p></li>
 </ol>
 </div>
 <div class="section" id="domestic-software-101">
@@ -180,11 +180,11 @@ Base</a></p></li>
 <p>Our domestic architecture is based on the concepts of skills and
 behaviours that, when combined together, allow a robot to perform
 complex tasks.</p>
-<p>We distinguish between skills and behaviours as follows: * <strong>skills</strong>
-are “primitive” functionalities that a robot can perform (and are thus
-equivalent to actions in the classical planning sense) * <strong>behaviours</strong>
-change the context in which actions are performed and thus usually
-reparameterise skills in some manner</p>
+<p>We distinguish between skills and behaviours as follows:</p>
+<ul class="simple">
+<li><p><strong>skills</strong> are “primitive” functionalities that a robot can perform (and are thus equivalent to actions in the classical planning sense)</p></li>
+<li><p><strong>behaviours</strong> change the context in which actions are performed and thus usually reparameterise skills in some manner</p></li>
+</ul>
 <p>It is clearly difficult - if not impossible - to come up with a generic
 level of granularity of skills and behaviours. We have attempted to make
 use of what is generally done in the robotics literature, such that we

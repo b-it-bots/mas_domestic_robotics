@@ -6,40 +6,40 @@ as well as its intended use will be discussed under this section.
 List of contents
 ----------------
 
-1. `Domestic Software 101 <#Domestic-Software-101>`__
+1. `Domestic Software 101 <#domestic-software-101>`__
 2. `Robot-Indepenent and Robot-Dependent
-   Functionalities <#Robot-Independent-and-Robot-Dependent-Functionalities>`__
+   Functionalities <#robot-independent-and-robot-dependent-functionalities>`__
 
-   1. `Skill-Based Architecture <#Skill-Based-Architecture>`__
+   1. `Skill-Based Architecture <#skill-based-architecture>`__
    2. `ROS-Based and ROS-Independent
-      Components <#ROS-Based-and-ROS-Independent-Components>`__
-   3. `Multi-Repository Setup <#Multi-Repository-Setup>`__
+      Components <#ros-based-and-ros-independent-components>`__
+   3. `Multi-Repository Setup <#multi-repository-setup>`__
 
 3. `Major Robot-Independent
-   Components <#Major-Robot-Independent-Components>`__
+   Components <#major-robot-independent-components>`__
 4. `Planning and Knowledge-Oriented
-   Development <#Planning--and-Knowledge-Oriented-Development>`__
+   Development <#planning-and-knowledge-oriented-development>`__
 5. `Common Interfaces in
-   mas_domestic_robotics <#Common-Interfaces-in-mas_domestic_robotics>`__
-6. `Fault-Tolerant Actions <#Fault-Tolerant-Actions>`__
+   mas_domestic_robotics <#common-interfaces-in-mas-domestic-robotics>`__
+6. `Fault-Tolerant Actions <#fault-tolerant-actions>`__
 7. `Skill Implementation Use Case: Move
-   Base <#Skill-Implementation-Use-Case:-Move-Base>`__
+   Base <#skill-implementation-use-case-move-base>`__
 
-   1. `Action Server <#Action-Server>`__
-   2. `Action Execution
-      Implementation <#Action-Execution-Implementation>`__
-   3. `Action Client <#Action-Client>`__
+   1. `Action Execution
+      Implementation <#action-ftsm-implementation>`__
+   2. `Action Server <#action-server>`__
+   3. `Action Client <#action-client>`__
 
 8. `Scenario Use Case: Simple Pick and
-   Place <#Scenario-Use-Case:-Simple-Pick-and-Place>`__
+   Place <#scenario-use-case-simple-pick-and-place>`__
 
-   1. `Scenario Description <#Scenario-Description>`__
+   1. `Scenario Description <#scenario-description>`__
    2. `Scenario State Machine
-      Definition <#Scenario-State-Machine-Definition>`__
+      Definition <#scenario-state-machine-definition>`__
    3. `Example Behaviour Implementation: Move
-      Base <#Example-Behaviour-Implementation:-Move-Base>`__
+      Base <#example-behaviour-implementation-move-base>`__
 
-9. `About This Tutorial <#About-This-Tutorial>`__
+9. `About This Tutorial <#about-this-tutorial>`__
     
 
 Domestic Software 101
@@ -52,11 +52,10 @@ Our domestic architecture is based on the concepts of skills and
 behaviours that, when combined together, allow a robot to perform
 complex tasks.
 
-We distinguish between skills and behaviours as follows: \* **skills**
-are “primitive” functionalities that a robot can perform (and are thus
-equivalent to actions in the classical planning sense) \* **behaviours**
-change the context in which actions are performed and thus usually
-reparameterise skills in some manner
+We distinguish between skills and behaviours as follows: 
+
+- **skills** are “primitive” functionalities that a robot can perform (and are thus equivalent to actions in the classical planning sense)
+- **behaviours** change the context in which actions are performed and thus usually reparameterise skills in some manner
 
 It is clearly difficult - if not impossible - to come up with a generic
 level of granularity of skills and behaviours. We have attempted to make
