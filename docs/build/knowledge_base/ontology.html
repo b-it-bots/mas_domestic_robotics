@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ontology &mdash; MAS Domestic Robotics 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Storage" href="storage.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="../index.html" class="icon icon-home"> MAS Domestic Robotics
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start/architecture.html">Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start/capabilities.html">Capabilities</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick-start/requirements.html">Requirements</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../setup/development-pc.html">Development PC Setup</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup/connecting-to-hsr.html">Connecting to the HSR</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../setup/startup-components.html">Components Running on Startup</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/creating-and-using-an-occupancy-grid-map.html">Creating and Using an Occupancy Grid Map</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/creating-a-state-machine-based-task.html">Creating a State Machine-Based Task</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/dmp-based-arm-motion.html">Arm Motion Based on Dynamic Motion Primitives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/trajectory-recording.html">Trajectory Recording</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/moving-between-named-locations.html">Moving Between Named Locations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/object-detection-and-pose-estimation.html">Object Detection and Pose Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/object-grasping.html">Object Grasping</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../demo-scenarios/patrol.html">Patrolling Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo-scenarios/simple-pick-and-place.html">Simple Object Pick and Place Demo</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../demo-scenarios/context-aware-object-hand-over.html">Context-Aware Object Hand Over Demo</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../actions/manipulation.html">Manipulation Actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../actions/navigation.html">Navigation Actions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../actions/perception.html">Perception Actions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../behaviours/manipulation.html">Manipulation Behaviours</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../behaviours/navigation.html">Navigation Behaviours</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../behaviours/perception.html">Perception Behaviours</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="storage.html">Storage</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Ontology</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#list-of-contents">List of contents</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#knowledge-base-introduction">Knowledge Base Introduction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#domestic-ontology">Domestic Ontology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#symbolic-knowledge-base">Symbolic Knowledge Base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#weak-world-model">Weak World Model</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#the-mas-knowledge-base-package">The mas_knowledge_base Package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ontology-and-kb-interaction-examples">Ontology and KB Interaction Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#interaction-with-the-ontology">Interaction with the Ontology</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#interaction-with-the-symbolic-knowledge-base">Interaction with the Symbolic Knowledge Base</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#world-model-interaction">World Model Interaction</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#kb-embedding-into-our-domestic-architecture">KB Embedding Into Our Domestic Architecture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#about-this-tutorial">About This Tutorial</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">MAS Domestic Robotics</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Ontology</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/knowledge_base/ontology.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="ontology">
+<h1>Ontology<a class="headerlink" href="#ontology" title="Permalink to this heading"></a></h1>
+<p>In this tutorial, we will look into:</p>
+<ol class="arabic simple">
+<li><p>The building blocks of our domestic knowledge base</p></li>
+<li><p>The <code class="docutils literal notranslate"><span class="pre">mas_knowledge_base</span></code> library, which provides interfaces for
+interacting with the knowledge base</p></li>
+<li><p>Various examples of how to use the knowledge base</p></li>
+<li><p>How the knowledge base is embedded into our domestic architecture in
+order to allow our robots to make informed decisions</p></li>
+</ol>
+<div class="section" id="list-of-contents">
+<h2>List of contents<a class="headerlink" href="#list-of-contents" title="Permalink to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="#knowledge-base-introduction">Knowledge Base Introduction</a></p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="#domestic-ontology">Domestic Ontology</a></p></li>
+<li><p><a class="reference external" href="#symbolic-knowledge-base">Symbolic Knowledge Base</a></p></li>
+<li><p><a class="reference external" href="#weak-world-model">Weak World Model</a></p></li>
+</ol>
+</li>
+<li><p><a class="reference external" href="#the-mas-knowledge-base-package">The mas_knowledge_base Package</a></p></li>
+<li><p><a class="reference external" href="#ontology-and-kb-interaction-examples">KB Interaction Examples</a></p>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="#interaction-with-the-ontology">Interaction with the Ontology</a></p></li>
+<li><p><a class="reference external" href="#interaction-with-the-symbolic-knowledge-base">Interaction with the Symbolic Knowledge
+Base</a></p></li>
+<li><p><a class="reference external" href="#world-model-interaction">World Model Interaction</a></p></li>
+</ol>
+</li>
+<li><p><a class="reference external" href="#kb-embedding-into-our-domestic-architecture">KB Embedding Into Our Domestic
+Architecture</a></p></li>
+<li><p><a class="reference external" href="#summary">Summary</a></p></li>
+<li><p><a class="reference external" href="#about-this-tutorial">About This Tutorial</a></p></li>
+</ol>
+</div>
+<div class="section" id="knowledge-base-introduction">
+<h2>Knowledge Base Introduction<a class="headerlink" href="#knowledge-base-introduction" title="Permalink to this heading"></a></h2>
+<p>In order to make informed decisions, a robot needs to possess as much
+knowledge about the world as possible; this includes background
+knowledge (which we call encyclopedic knowledge throughout this
+tutorial) as well as any knowledge that is acquired during online
+operation.</p>
+<p>To equip our robots with such knowledge, we build our system around a
+rich knowledge base. For practical purpose, our knowledge base is split
+into three segments:</p>
+<ol class="arabic simple">
+<li><p>An <em>ontology</em> for encyclopedic knowledge</p></li>
+<li><p>A <em>symbolic knowledge base</em> that facilitates planning and</p></li>
+<li><p>A <em>(weak) world model</em> for grounding symbolic knowledge to the real
+world</p></li>
+</ol>
+<p>As described in the <a class="reference external" href="../quick-start/architecture.html">architecture tutorial</a>, we
+make use of <a class="reference external" href="https://github.com/KCL-Planning/ROSPlan">ROSPlan</a> [1] in
+our domestic architecture, so ROSPlan’s built-in knowledge base
+represents our symbolic knowledge base. Similarly, as in ROSPlan, we use
+<a class="reference external" href="https://github.com/strands-project/mongodb_store">mongodb_store</a>
+as a world model representation. Our ontology, on the other hand, is
+heavily based on the <a class="reference external" href="http://www.knowrob.org">KnowRob ontology</a> [2].</p>
+<hr class="docutils" />
+<p>[1] M. Cashmore, M. Fox, D. Long, D. Magazzeni, B. Ridder, A. Carrera,
+N. Palomeras, N. Hurtos, and M. Carreras, “ROSPlan: Planning in the
+Robot Operating System,” <em>25th Int. Conf. Automated Planning and
+Scheduling</em>, 2015.</p>
+<p>[2] M. Beetz, D. Beßler, A. Haidu, M. Pomarlan, A. K. Bozcuoglu, and G.
+Bartels, “Know Rob 2.0 - A 2nd Generation Knowledge Processing Framework
+for Cognition-Enabled Robotic Agents” <em>IEEE Int. Conf. Robotics and
+Automation (ICRA)</em>, pp. 512-519, May 2018.</p>
+<div class="section" id="domestic-ontology">
+<h3>Domestic Ontology<a class="headerlink" href="#domestic-ontology" title="Permalink to this heading"></a></h3>
+<p>Just as the KnowRob ontology, our domestic ontology is encoded in the
+<a class="reference external" href="https://www.w3.org/TR/owl-ref/">Web Ontology Language (OWL)</a> (using
+the RDF syntax). We call our ontology <a class="reference external" href="https://github.com/b-it-bots/mas_knowledge_base/blob/master/common/ontology/apartment.owl">the apartment
+ontology</a>
+since it’s focused on representing knowledge about concepts that a robot
+encounters in an apartment.</p>
+<p>A formal treatment of ontologies and description logic is beyond the
+scope of this tutorial; for that, we direct the reader to [3]. We will
+instead consider a simple example to give an idea of what kind of
+knowledge we encode with the ontology. In particular, let us assume that
+we want to encode the following knowledge about a certain
+(unrealistically small) apartment:</p>
+<ul class="simple">
+<li><p>There is one room in the apartment - a home office</p></li>
+<li><p>The home office has a desk whose height is <span class="math notranslate nohighlight">\(0.7m\)</span></p></li>
+<li><p>By default, my coffee mug is stored on the desk</p></li>
+</ul>
+<p>In an ontology, knowledge is encoded in two segments:</p>
+<ul class="simple">
+<li><p>The <em>TBox</em>, which defines classes and properties that are of interest in a particular domain</p></li>
+<li><p>The <em>ABox</em>, which contains class and property assertions</p></li>
+</ul>
+<p>To represent the knowledge from our example, we thus first need to
+define our TBox and then populate the ABox of the ontology.</p>
+<p>Let us first encode the classes of interest in our domain. In
+particular, we will define:</p>
+<ul class="simple">
+<li><p>two top level classes, namely <code class="docutils literal notranslate"><span class="pre">Object</span></code> and <code class="docutils literal notranslate"><span class="pre">Room</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Furniture</span></code> and <code class="docutils literal notranslate"><span class="pre">Drinkware</span></code> classes, both of which are children of <code class="docutils literal notranslate"><span class="pre">Object</span></code></p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">Table</span></code> class that is a child of <code class="docutils literal notranslate"><span class="pre">Furniture</span></code> and a <code class="docutils literal notranslate"><span class="pre">WorkTable</span></code> class that is a child of <code class="docutils literal notranslate"><span class="pre">Table</span></code></p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">Mug</span></code> class that is a child of <code class="docutils literal notranslate"><span class="pre">Drinkware</span></code></p></li>
+</ul>
+<p>We can define these classes in OWL as follows:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:Object&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:Room&quot;</span><span class="nt">/&gt;</span>
+
+<span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:Furniture&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:Table&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:WorkTable&quot;</span><span class="nt">/&gt;</span>
+
+<span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:Drinkware&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:Mug&quot;</span><span class="nt">/&gt;</span>
+</pre></div>
+</div>
+<p>Note that we prefix all class names with the <code class="docutils literal notranslate"><span class="pre">apartment</span></code> prefix; this
+assigns a namespace to our classes. In the case of imported ontologies,
+namespaces can serve to avoid clashes with classes that would otherwise
+have the same name.</p>
+<p>At this moment, the classes are only defined, but we haven’t encoded the
+parent-child relations that we mentioned before. We can do that as shown
+below:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:Room&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;rdfs:subClassOf</span> <span class="na">rdf:resource=</span><span class="s">&quot;apartment:Location&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/owl:Class&gt;</span>
+<span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:Furniture&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;rdfs:subClassOf</span> <span class="na">rdf:resource=</span><span class="s">&quot;apartment:Object&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/owl:Class&gt;</span>
+
+<span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:Table&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;rdfs:subClassOf</span> <span class="na">rdf:resource=</span><span class="s">&quot;apartment:Furniture&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/owl:Class&gt;</span>
+<span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:WorkTable&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;rdfs:subClassOf</span> <span class="na">rdf:resource=</span><span class="s">&quot;apartment:Table&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/owl:Class&gt;</span>
+
+<span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:Drinkware&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;rdfs:subClassOf</span> <span class="na">rdf:resource=</span><span class="s">&quot;apartment:Object&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/owl:Class&gt;</span>
+<span class="nt">&lt;owl:Class</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:Mug&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;rdfs:subClassOf</span> <span class="na">rdf:resource=</span><span class="s">&quot;apartment:Drinkware&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/owl:Class&gt;</span>
+</pre></div>
+</div>
+<p>Let us now define the properties that are of interest in our example; in
+particular, we will define properties for encoding:</p>
+<ul class="simple">
+<li><p>the room in which an object is</p></li>
+<li><p>the default storing location of an object (in terms of furniture items) and</p></li>
+<li><p>the height of an object</p></li>
+</ul>
+<p>These properties can be encoded in OWL as follows:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;owl:ObjectProperty</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:locatedAt&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;rdf:type</span> <span class="na">rdf:resource=</span><span class="s">&quot;&amp;owl;FunctionalProperty&quot;</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;rdfs:domain</span> <span class="na">rdf:resource=</span><span class="s">&quot;apartment:Object&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;rdfs:range</span> <span class="na">rdf:resource=</span><span class="s">&quot;apartment:Room&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/owl:ObjectProperty&gt;</span>
+
+<span class="nt">&lt;owl:ObjectProperty</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:defaultStoringLocation&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;rdf:type</span> <span class="na">rdf:resource=</span><span class="s">&quot;&amp;owl;FunctionalProperty&quot;</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;rdfs:domain</span> <span class="na">rdf:resource=</span><span class="s">&quot;apartment:Object&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;rdfs:range</span> <span class="na">rdf:resource=</span><span class="s">&quot;apartment:Furniture&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/owl:ObjectProperty&gt;</span>
+
+<span class="nt">&lt;owl:ObjectProperty</span> <span class="na">rdf:about=</span><span class="s">&quot;apartment:heightOf&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;rdfs:domain</span> <span class="na">rdf:resource=</span><span class="s">&quot;apartment:Object&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;rdfs:range</span> <span class="na">rdf:resource=</span><span class="s">&quot;xsd:float&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/owl:ObjectProperty&gt;</span>
+</pre></div>
+</div>
+<p>We are now ready to assert knowledge about our apartment. We will first
+add some class assertions:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;apartment:Room</span> <span class="na">rdf:about=</span><span class="s">&quot;MyHomeOffice&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;apartment:WorkTable</span> <span class="na">rdf:about=</span><span class="s">&quot;MyDesk&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;apartment:Mug</span> <span class="na">rdf:about=</span><span class="s">&quot;MyCoffeeMug&quot;</span><span class="nt">/&gt;</span>
+</pre></div>
+</div>
+<p>We can now add property asserttion to encode the facts from our example:</p>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;rdf:Description</span> <span class="na">rdf:about=</span><span class="s">&quot;MyDesk&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;apartment:locatedAt</span> <span class="na">rdf:resource=</span><span class="s">&quot;MyHomeOffice&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/rdf:Description&gt;</span>
+<span class="nt">&lt;rdf:Description</span> <span class="na">rdf:about=</span><span class="s">&quot;MyCoffeeMug&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;apartment:defaultStoringLocation</span> <span class="na">rdf:resource=</span><span class="s">&quot;MyDesk&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/rdf:Description&gt;</span>
+<span class="nt">&lt;rdf:Description</span> <span class="na">rdf:about=</span><span class="s">&quot;MyDesk&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;apartment:heightOf</span> <span class="na">rdf:resource=</span><span class="s">&quot;0.7&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/rdf:Description&gt;</span>
+</pre></div>
+</div>
+<p>This was a very simple example of how we would model knowledge in OWL,
+but should serve as a primer for more complex modelling tasks.</p>
+<p><strong>Note</strong>: In the above example, we assumed that a text editor was used
+for encoding knowledge in the ontology; this is because we also wanted
+to illustrate the OWL syntax. In practice, it makes more sense to use a
+dedicated ontology editor, such as
+<a class="reference external" href="https://protege.stanford.edu">Protege</a>.</p>
+<hr class="docutils" />
+<p>[3] <em>Handbook of Knowldge Representation.</em> Elsevier, 1st ed., 2008.</p>
+</div>
+<div class="section" id="symbolic-knowledge-base">
+<h3>Symbolic Knowledge Base<a class="headerlink" href="#symbolic-knowledge-base" title="Permalink to this heading"></a></h3>
+<p>The symbolic knowledge base is a collection of predicate assertions that
+describe the state of the world. For instance,
+<code class="docutils literal notranslate"><span class="pre">on(MyCoffeeMug,</span> <span class="pre">MyDesk)</span></code> asserts that the object with name
+<code class="docutils literal notranslate"><span class="pre">MyCoffeeMug</span></code> is on the table with name <code class="docutils literal notranslate"><span class="pre">MyDesk</span></code>. Such symbolic
+descriptions can be used for making informed decisions in general and
+planning in particular.</p>
+<p>The predicates we use for describing the world are defined in our
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/blob/kinetic/mdr_planning/mdr_rosplan_interface/config/default_domain.pddl">default PDDL
+domain</a>;
+a subset of those is included here for illustrative purposes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(robot_name ?bot - robot)
+(robot_at ?bot - robot ?wp - waypoint)
+(object_at ?obj - object ?wp - waypoint)
+(belongs_to ?plane - plane ?obj - object)
+(explored ?plane - plane)
+(on ?obj - object ?plane - plane)
+(in ?obj - object ?source - object)
+(holding ?bot - robot ?obj - object)
+(empty_gripper ?bot - robot)
+(known ?person - person)
+</pre></div>
+</div>
+<p>The above list is clearly tailored towards domestic applications and
+contains predicates for describing:</p>
+<ul class="simple">
+<li><p>the locations of robots and objects</p></li>
+<li><p>whether a plane (such as a table) has been examined by a robot</p></li>
+<li><p>whether the robot is holding an object, and</p></li>
+<li><p>whether a person observed by a robot is known.</p></li>
+</ul>
+</div>
+<div class="section" id="weak-world-model">
+<h3>Weak World Model<a class="headerlink" href="#weak-world-model" title="Permalink to this heading"></a></h3>
+<p>While symbolic knowledge is useful for abstract reasoning, robot
+decisions eventually have to be grounded to the real world. For example,
+if a robot needs to pick up <code class="docutils literal notranslate"><span class="pre">MyCoffeeMug</span></code>, knowing that
+<code class="docutils literal notranslate"><span class="pre">MyCoffeeMug</span></code> is on <code class="docutils literal notranslate"><span class="pre">MyDesk</span></code> is sufficient for creating a plan that
+involves going to <code class="docutils literal notranslate"><span class="pre">MyDesk</span></code> and then picking up <code class="docutils literal notranslate"><span class="pre">MyCoffeeMug</span></code> from
+it; however, in order to actually go to <code class="docutils literal notranslate"><span class="pre">MyDesk</span></code>, the robot needs to
+know where the desk actually is, and similarly, in order to pick up the
+mug from the table, it needs to know where the mug is actually
+positioned on the table.</p>
+<p>Since we make use of ROSPlan in our architecture, we utilise
+<code class="docutils literal notranslate"><span class="pre">mongodb_store</span></code><span class="math notranslate nohighlight">\(^{1}\)</span> for storing such knowledge.
+<code class="docutils literal notranslate"><span class="pre">mongodb_store</span></code> is a ROS package that allows saving ROS messages into
+a MongoDB database and retrieving those back. Under the hood, ROS
+messages are converted into dictionaries that are then stored as MongoDB
+documents; documents can then be converted back into ROS messages upon
+retrieval. For our purposes, this means that we can for instance store
+our custom
+<a class="reference external" href="https://github.com/b-it-bots/mas_perception_msgs/blob/kinetic/msg/Object.msg">object</a>,
+<a class="reference external" href="https://github.com/b-it-bots/mas_perception_msgs/blob/kinetic/msg/Person.msg">person</a>,
+or
+<a class="reference external" href="https://github.com/b-it-bots/mas_perception_msgs/blob/kinetic/msg/Plane.msg">plane</a>
+messages and retrieve them back whenever they are needed during
+execution. This can thus be thought of as our weak world model that,
+together with the previously encyclopedic knowledge and the symbolic
+knowledge base, allows us to program our robots so that they make
+decisions based on all available knowledge.</p>
+<p><strong>Note</strong>: We relate the items stored in the world model, the symbolic
+knowledge base, and the ontology through their names, namely objects are
+always given unique names that need to be the same across all three
+knowledge modalities.</p>
+<hr class="docutils" />
+<p><span class="math notranslate nohighlight">\(^1\)</span> We use a slightly modified version of <code class="docutils literal notranslate"><span class="pre">mongodb_store</span></code> that
+allows deleting objects and makes the package Python 3-compatible:
+<a class="reference external" href="https://github.com/b-it-bots/mongodb_store/commits/kinetic-devel">https://github.com/b-it-bots/mongodb_store/commits/kinetic-devel</a></p>
+</div>
+</div>
+<div class="section" id="the-mas-knowledge-base-package">
+<h2>The mas_knowledge_base Package<a class="headerlink" href="#the-mas-knowledge-base-package" title="Permalink to this heading"></a></h2>
+<p>To simplify the use of the ontology and the knowledge base, we use our
+ROS-based <a class="reference external" href="https://github.com/b-it-bots/mas_knowledge_base">mas_knowledge_base
+library</a> which
+includes:</p>
+<ol class="arabic simple">
+<li><p>Our apartment ontology and some variations thereof (which are for example used at RoboCup competitions)</p></li>
+<li><p>A Python interface based on the <a class="reference external" href="https://rdflib.readthedocs.io/en/stable/">rdflib library</a> that can be used for querying an OWL ontology</p></li>
+<li><p>A Python interface for querying knowledge, adding knowledge to, and removing knowledge from the knowledge base and the world model.</p></li>
+</ol>
+<p>This library exposes two Python packages:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">mas_knowledge_utils</span></code>: A ROS-independent package in which the ontology interface is defined</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mas_knowledge_base</span></code>: A ROS-dependent package that interacts with the ROSPlan knowledge base and with mongodb_store. The package is basically a wrapper around ROSPlan’s service-based KB management and mongodb_store.</p></li>
+</ul>
+<p>In each package, there is one base class that exposes generic
+functionalities for interacting with the ontology and the knowledge base
+respectively, and a child class that is tailored to domestic
+applications (namely exposes functions with queries that are common for
+domestic applications, such as for instance checking whether a table is
+free of objects). This design ensures that the packages are generic
+enough and can be used for other applications as well, but are also
+specific enough for our domestic use cases.</p>
+<p>A minimal class diagram illustrating the architecture of the
+<code class="docutils literal notranslate"><span class="pre">mas_knowledge_base</span></code> library is given below.</p>
+<div class="figure align-center">
+<img alt="../_images/mas_knowledge_base_diagram.png" src="../_images/mas_knowledge_base_diagram.png" />
+</div>
+</div>
+<div class="section" id="ontology-and-kb-interaction-examples">
+<h2>Ontology and KB Interaction Examples<a class="headerlink" href="#ontology-and-kb-interaction-examples" title="Permalink to this heading"></a></h2>
+<p>In this section, we will look at various examples of interacting with
+our domestic ontology and knowledge base. The examples provided here are
+not exhaustive; a complete description of the interfaces to the ontology
+and the knowledge base is provided in the
+<a class="reference external" href="https://github.com/b-it-bots/mas_knowledge_base">mas_knowledge_base</a>
+documentation, while actual examples of using the packages can be found
+throughout
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics">mas_domestic_robotics</a>.</p>
+<p>The examples in this section assume that the <code class="docutils literal notranslate"><span class="pre">mas_knowledge_base</span></code> is
+appropriately set up in a catkin workspace and the path to it is in the
+<code class="docutils literal notranslate"><span class="pre">ROS_PACKAGE_PATH</span></code> environment variable. Under that assumption, we can
+import the ontology and knowledge base interfaces (for the examples
+below, we will also use the
+<a class="reference external" href="https://github.com/b-it-bots/mas_tools">mas_tools</a> package since
+it provides a convenient utility for obtaining the path of a ROS package
+at runtime).</p>
+<p>Before we start with the examples, we will import the necessary
+functions and classes.</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mas_tools.ros_utils</span> <span class="k">import</span> <span class="n">get_package_path</span>
+<span class="kn">from</span> <span class="nn">mas_knowledge_utils.domestic_ontology_interface</span> <span class="k">import</span> <span class="n">DomesticOntologyInterface</span>
+<span class="kn">from</span> <span class="nn">mas_knowledge_base.domestic_kb_interface</span> <span class="k">import</span> <span class="n">DomesticKBInterface</span>
+</pre></div>
+</div>
+<div class="section" id="interaction-with-the-ontology">
+<h3>Interaction with the Ontology<a class="headerlink" href="#interaction-with-the-ontology" title="Permalink to this heading"></a></h3>
+<p>To query the ontology, we first have to create an instance of the
+<code class="docutils literal notranslate"><span class="pre">DomesticOntologyInterface</span></code> class, such that we have to pass</p>
+<ol class="arabic simple">
+<li><p>the absolute path of the ontology OWL file (in the form of a URL -
+when the ontology is read from a local file, the absolute path to it
+should be prefixed by <code class="docutils literal notranslate"><span class="pre">file://</span></code>) and</p></li>
+<li><p>the namespace of the ontology items (in the example above, that was
+<code class="docutils literal notranslate"><span class="pre">apartment</span></code>)</p></li>
+</ol>
+<p>For the examples, we will use a version of the apartment ontology that
+was created during the RoboCup German Open 2019 (which was compiled from
+the environment description provided at
+<a class="reference external" href="https://github.com/RoboCupAtHome/GermanOpen2019">https://github.com/RoboCupAtHome/GermanOpen2019</a>).</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">ontology_file_path</span> <span class="o">=</span> <span class="n">get_package_path</span><span class="p">(</span><span class="s1">&#39;mas_knowledge_base&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;common&#39;</span><span class="p">,</span> <span class="s1">&#39;ontology&#39;</span><span class="p">,</span>
+                                    <span class="s1">&#39;apartment_go_2019.owl&#39;</span><span class="p">)</span>
+<span class="n">ontology_class_prefix</span> <span class="o">=</span> <span class="s1">&#39;apartment&#39;</span>
+<span class="n">ontology_interface</span> <span class="o">=</span> <span class="n">DomesticOntologyInterface</span><span class="p">(</span><span class="s1">&#39;file://&#39;</span> <span class="o">+</span> <span class="n">ontology_file_path</span><span class="p">,</span>
+                                            <span class="n">ontology_class_prefix</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can now retrieve knowledge from the ontology. For instance, there is
+a <code class="docutils literal notranslate"><span class="pre">KitchenStuff</span></code> class there, so we can ask for all the subclasses of
+this class:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ontology_interface</span><span class="o">.</span><span class="n">get_subclasses_of</span><span class="p">(</span><span class="s1">&#39;KitchenStuff&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">['KitchenStuff',</span> <span class="pre">'Knife',</span> <span class="pre">'Plate',</span> <span class="pre">'Cup',</span> <span class="pre">'Bowl',</span> <span class="pre">'Fork',</span> <span class="pre">'Spoon']</span></code></p>
+<p>It should be noted that a class is a subclass of itself.</p>
+<p>We can also query for the parents of the class <code class="docutils literal notranslate"><span class="pre">Spoon</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ontology_interface</span><span class="o">.</span><span class="n">get_parent_classes_of</span><span class="p">(</span><span class="s1">&#39;Spoon&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">['Spoon',</span> <span class="pre">'KitchenStuff',</span> <span class="pre">'Object']</span></code></p>
+<p>As above, a class is a parent class of itself.</p>
+<p>The above queries were performed on the class level, but we can also
+query asserted knowledge. For instance, we would retreive all instance
+of the class <code class="docutils literal notranslate"><span class="pre">Chair</span></code> as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ontology_interface</span><span class="o">.</span><span class="n">get_instances_of</span><span class="p">(</span><span class="s1">&#39;Chair&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">['KitchenTableChair2',</span> <span class="pre">'HighTableChair',</span> <span class="pre">'KitchenTableChair1',</span>
+<span class="pre">'RightArmChair',</span> <span class="pre">'BarTableChair',</span> <span class="pre">'DeskChair',</span> <span class="pre">'LeftArmChair']</span></code></p>
+<p>It should be noted that all of these items are <strong>specific</strong> chairs in
+the environment; their names are thus unique.</p>
+<p>We can also query for some property assertions. For instance, we can
+retrieve all items that are connected to the <code class="docutils literal notranslate"><span class="pre">Hallway</span></code> (in the
+modelled environment, the hallway is connected to the living room, bar,
+and bedroom):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ontology_interface</span><span class="o">.</span><span class="n">get_subjects_of</span><span class="p">(</span><span class="s1">&#39;connectedTo&#39;</span><span class="p">,</span> <span class="s1">&#39;Hallway&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">['Bedroom',</span> <span class="pre">'Bar',</span> <span class="pre">'LivingRoom']</span></code></p>
+<p>As another query example, we can obtain all furniture items that are
+located in the <code class="docutils literal notranslate"><span class="pre">Bedroom</span></code> (in the environment, there is a bed, a desk,
+and a side table):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ontology_interface</span><span class="o">.</span><span class="n">get_subjects_of</span><span class="p">(</span><span class="s1">&#39;locatedAt&#39;</span><span class="p">,</span> <span class="s1">&#39;Bedroom&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">['Bed',</span> <span class="pre">'Desk',</span> <span class="pre">'SideTable']</span></code></p>
+<p>The above queries were performed using functions defined in the base
+ontology interface. Our final example will retrieve the location of the
+<code class="docutils literal notranslate"><span class="pre">SideTable</span></code> using a function defined in the domestic ontology
+interface:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ontology_interface</span><span class="o">.</span><span class="n">get_obj_location</span><span class="p">(</span><span class="s1">&#39;SideTable&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">'Bedroom'</span></code></p>
+</div>
+<div class="section" id="interaction-with-the-symbolic-knowledge-base">
+<h3>Interaction with the Symbolic Knowledge Base<a class="headerlink" href="#interaction-with-the-symbolic-knowledge-base" title="Permalink to this heading"></a></h3>
+<p>As mentioned before, our knowledge base interface is wrapped around
+ROSPlan’s knowledge base and mongodb_store; hence, it requires both of
+these to be running before it can be used. An example of how to start
+the knowledge base and the store database is provided in <a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/blob/kinetic/mdr_planning/mdr_rosplan_interface/ros/launch/rosplan.launch">our mdr_rosplan_interface
+package</a>.</p>
+<p>Once the knowledge base and the store are initialised, we can create an
+instance of <code class="docutils literal notranslate"><span class="pre">DomesticKBInterface</span></code>:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">kb_interface</span> <span class="o">=</span> <span class="n">DomesticKBInterface</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>To start, let us first retrieve the names of all predicates in our
+domain:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">kb_interface</span><span class="o">.</span><span class="n">get_predicate_names</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">['robotname',</span> <span class="pre">'objectcategory',</span> <span class="pre">'robotat',</span> <span class="pre">'doorat',</span> <span class="pre">'objectat',</span>
+<span class="pre">'planeat',</span> <span class="pre">'dooropen',</span> <span class="pre">'belongsto',</span> <span class="pre">'unexplored',</span> <span class="pre">'explored',</span> <span class="pre">'on',</span>
+<span class="pre">'in',</span> <span class="pre">'holding',</span> <span class="pre">'emptygripper',</span> <span class="pre">'known',</span> <span class="pre">'unknown',</span> <span class="pre">'hasdoor',</span>
+<span class="pre">'defaultstoringlocation']</span></code></p>
+<p>This is an extended version of the predicates in the <a class="reference external" href="#symbolic-knowledge-base">Symbolic Knowledge
+Base</a> section.</p>
+<p>Let us now assume that our robot <code class="docutils literal notranslate"><span class="pre">lucy</span></code> is in the <code class="docutils literal notranslate"><span class="pre">kitchen</span></code> and that
+there is an object <code class="docutils literal notranslate"><span class="pre">waterBottle</span></code> on the <code class="docutils literal notranslate"><span class="pre">desk</span></code>. We can assert this
+knowledge as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">facts_to_insert</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;robot_at&#39;</span><span class="p">,</span> <span class="p">[(</span><span class="s1">&#39;bot&#39;</span><span class="p">,</span> <span class="s1">&#39;lucy&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;wp&#39;</span><span class="p">,</span> <span class="s1">&#39;kitchen&#39;</span><span class="p">)]),</span>
+    <span class="p">(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="p">[(</span><span class="s1">&#39;obj&#39;</span><span class="p">,</span> <span class="s1">&#39;waterBottle&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;plane&#39;</span><span class="p">,</span> <span class="s1">&#39;desk&#39;</span><span class="p">)])]</span>
+<span class="n">kb_interface</span><span class="o">.</span><span class="n">insert_facts</span><span class="p">(</span><span class="n">facts_to_insert</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">insert_facts</span></code> function accepts a list of predicates and their
+named parameter values. These are passed as tuples, namely each entry in
+the input is a tuple of the form</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">(</span><span class="n">predicate_name</span><span class="p">,</span> <span class="n">predicate_parameter_values</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">predicate_parameter_values</span></code> is a list of
+<code class="docutils literal notranslate"><span class="pre">(parameter_name,</span> <span class="pre">parameter_value)</span></code> tuples. Using the built-in lists
+and tuples is a deliberate minimalistic design decision that reuses the
+core functionalities of the language without creating any additional
+overhead. <em>All functions in the knowledge base interface use this
+representation of predicates and their values</em>.</p>
+<p>Now that we have asserted the location of the robot <code class="docutils literal notranslate"><span class="pre">lucy</span></code>, we can
+also retrieve the robot’s location using the <code class="docutils literal notranslate"><span class="pre">get_robot_location</span></code>
+function, which accepts the name of a robot as an argument:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kb_interface</span><span class="o">.</span><span class="n">get_robot_location</span><span class="p">(</span><span class="s1">&#39;lucy&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">'kitchen'</span></code></p>
+<p>Let us now assume that <code class="docutils literal notranslate"><span class="pre">lucy</span></code> has moved and is not in the kitchen
+anymore. We thus need to remove the fact that the robot is in the
+kitchen:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">facts_to_remove</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;robot_at&#39;</span><span class="p">,</span> <span class="p">[(</span><span class="s1">&#39;bot&#39;</span><span class="p">,</span> <span class="s1">&#39;lucy&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;wp&#39;</span><span class="p">,</span> <span class="s1">&#39;kitchen&#39;</span><span class="p">)])]</span>
+<span class="n">kb_interface</span><span class="o">.</span><span class="n">remove_facts</span><span class="p">(</span><span class="n">facts_to_remove</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>At this moment, we don’t have any asserted knowledge about the location
+of the robot in the knowledge base, but we can verify that this is
+really the case:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kb_interface</span><span class="o">.</span><span class="n">get_robot_location</span><span class="p">(</span><span class="s1">&#39;lucy&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">'</span> <span class="pre">'</span></code></p>
+<p>Another useful query for domestic scenarios is whether a given surface
+(e.g. a table) is empty; this is for instance useful in scenarios where
+a robot needs to remove all objects from a surface. This can be checked
+using the <code class="docutils literal notranslate"><span class="pre">is_surface_empty</span></code> function, which takes the name of a
+surface as its single argument. To illustrate the use, let us verify
+that the <code class="docutils literal notranslate"><span class="pre">desk</span></code> is not empty (above, we asserted the fact that the
+<code class="docutils literal notranslate"><span class="pre">waterBottle</span></code> is on the <code class="docutils literal notranslate"><span class="pre">desk</span></code>, so the surface should not be empty):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kb_interface</span><span class="o">.</span><span class="n">is_surface_empty</span><span class="p">(</span><span class="s1">&#39;desk&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+<p>Let us now assume that the bottle has been moved from the desk. If that
+is the case, the previous location of the bottle needs to be removed
+from the knowledge base:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">facts_to_remove</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;on&#39;</span><span class="p">,</span> <span class="p">[(</span><span class="s1">&#39;obj&#39;</span><span class="p">,</span> <span class="s1">&#39;waterBottle&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;plane&#39;</span><span class="p">,</span> <span class="s1">&#39;desk&#39;</span><span class="p">)])]</span>
+<span class="n">kb_interface</span><span class="o">.</span><span class="n">remove_facts</span><span class="p">(</span><span class="n">facts_to_remove</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Since we have not asserted the presence of any other objects on the
+<code class="docutils literal notranslate"><span class="pre">desk</span></code>, the surface should be empty now. Let us verify that this is
+indeed the case:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kb_interface</span><span class="o">.</span><span class="n">is_surface_empty</span><span class="p">(</span><span class="s1">&#39;desk&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">True</span></code></p>
+</div>
+<div class="section" id="world-model-interaction">
+<h3>World Model Interaction<a class="headerlink" href="#world-model-interaction" title="Permalink to this heading"></a></h3>
+<p>Our final example is very brief and simply illustrates how to use the
+mongodb_store-based world model.</p>
+<p>Let us assume that the 3D position of <code class="docutils literal notranslate"><span class="pre">MyCoffeeMug</span></code> is
+<span class="math notranslate nohighlight">\((x, y, z) = (0.5, 0.3, 0.0)\)</span> with respect to a <code class="docutils literal notranslate"><span class="pre">MyDesk</span></code> frame.
+We can represent this using a ROS <code class="docutils literal notranslate"><span class="pre">PoseStamped</span></code> message:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">geometry_msgs.msg</span> <span class="k">import</span> <span class="n">PoseStamped</span>
+<span class="n">mug_pose</span> <span class="o">=</span> <span class="n">PoseStamped</span><span class="p">()</span>
+<span class="n">mug_pose</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">frame_id</span> <span class="o">=</span> <span class="s1">&#39;MyDesk&#39;</span>
+<span class="n">mug_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="n">mug_pose</span><span class="o">.</span><span class="n">pose</span><span class="o">.</span><span class="n">position</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">0.3</span>
+</pre></div>
+</div>
+<p>We can store this information in the world model using the
+<code class="docutils literal notranslate"><span class="pre">insert_obj_instance</span></code> function, where the first argument is the name
+of the stored object and the second is the object we want to store:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">kb_interface</span><span class="o">.</span><span class="n">insert_obj_instance</span><span class="p">(</span><span class="s1">&#39;MyCoffeeMug_pose&#39;</span><span class="p">,</span> <span class="n">mug_pose</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If we want to retrieve the pose of the mug at some later point (e.g. for
+grasping), we need to use the <code class="docutils literal notranslate"><span class="pre">get_obj_instance</span></code> function, which takes
+the name of the stored object as the first argument and the type of the
+object as the second argument (ROS messages have a <code class="docutils literal notranslate"><span class="pre">_type</span></code> field,
+which we use here):</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">mug_pose</span> <span class="o">=</span> <span class="n">kb_interface</span><span class="o">.</span><span class="n">get_obj_instance</span><span class="p">(</span><span class="s1">&#39;MyCoffeeMug_pose&#39;</span><span class="p">,</span> <span class="n">PoseStamped</span><span class="o">.</span><span class="n">_type</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Passing both the name and the type of the stored object is required by
+mongodb_store and allows retrieving objects that might have the same
+name, but are of different types.</p>
+<p>If at some point we want to clean up a stored object from the world
+model (for instance, <code class="docutils literal notranslate"><span class="pre">MyCoffeeMug</span></code> might be broken, so we don’t need
+to keep track of its pose anymore), we can use the
+<code class="docutils literal notranslate"><span class="pre">remove_obj_instance</span></code> function, which takes the same arguments as
+<code class="docutils literal notranslate"><span class="pre">get_obj_instance</span></code>:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="n">kb_interface</span><span class="o">.</span><span class="n">remove_obj_instance</span><span class="p">(</span><span class="s1">&#39;MyCoffeeMug_pose&#39;</span><span class="p">,</span> <span class="n">PoseStamped</span><span class="o">.</span><span class="n">_type</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="kb-embedding-into-our-domestic-architecture">
+<h2>KB Embedding Into Our Domestic Architecture<a class="headerlink" href="#kb-embedding-into-our-domestic-architecture" title="Permalink to this heading"></a></h2>
+<p>The primary purpose of having a rich knowledge base is to allow our
+robots to update their knowledge about the environment as they operate
+(thereby acting in a closed-loop). As described in the <a class="reference external" href="https://github.com/b-it-bots/mas_tutorials/blob/master/domestic_robotics/architecture.ipynb">architecture
+tutorial</a>,
+our architecture is centred around the knowledge base and the ontology.
+In particular:</p>
+<ol class="arabic simple">
+<li><p>The <a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/blob/kinetic/mdr_planning/mdr_rosplan_interface/ros/src/mdr_rosplan_interface/action_client_base.py">base class for implementing action
+clients</a>
+includes a knowledge base instance. In addition, all action clients
+need to implement the <code class="docutils literal notranslate"><span class="pre">update_knowledge_base</span></code> function so that each
+action can update the knowledge base according to the results of
+their execution. This is in accordance with classical planning, where
+actions change the state of the world and their effects describe the
+resulting state.</p></li>
+<li><p>The states that inherit from
+<a class="reference external" href="https://github.com/b-it-bots/mas_execution_manager/blob/master/ros/src/mas_execution_manager/scenario_state_base.py">ScenarioStateBase</a>
+include instances of both the ontology and the knowledge base
+interface; the behaviours in
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/tree/kinetic/mdr_planning/mdr_behaviours">mdr_behaviours</a>
+are thus all able to interact with the ontology and the knowledge
+base.</p></li>
+</ol>
+<p>To illustrate how <em>action clients</em> interact with the knowledge base, let
+us consider the <a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/blob/kinetic/mdr_planning/mdr_actions/mdr_navigation_actions/mdr_move_base_action/ros/scripts/move_base_client">move_base
+client</a>
+and its implementation of <code class="docutils literal notranslate"><span class="pre">update_knowledge_base</span></code>:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mdr_rosplan_interface.action_client_base</span> <span class="k">import</span> <span class="n">ActionClientBase</span>
+
+<span class="k">class</span> <span class="nc">MoveBaseClient</span><span class="p">(</span><span class="n">ActionClientBase</span><span class="p">):</span>
+    <span class="c1"># the rest of the class implementation is not included</span>
+    <span class="c1"># since it is not relevant for the example</span>
+
+    <span class="k">def</span> <span class="nf">update_knowledge_base</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">destination_location</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Updates the knowledge base with the following facts:</span>
+<span class="sd">        * the robot is not at the original location anymore</span>
+<span class="sd">        * the robot is at the destination location</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">facts_to_add</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;robot_at&#39;</span><span class="p">,</span> <span class="p">[(</span><span class="s1">&#39;bot&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_name</span><span class="p">),</span>
+                                    <span class="p">(</span><span class="s1">&#39;wp&#39;</span><span class="p">,</span> <span class="n">destination_location</span><span class="p">)])]</span>
+        <span class="n">facts_to_remove</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;robot_at&#39;</span><span class="p">,</span> <span class="p">[(</span><span class="s1">&#39;bot&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">robot_name</span><span class="p">),</span>
+                                        <span class="p">(</span><span class="s1">&#39;wp&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_location</span><span class="p">)])]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kb_interface</span><span class="o">.</span><span class="n">update_kb</span><span class="p">(</span><span class="n">facts_to_add</span><span class="p">,</span> <span class="n">facts_to_remove</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The knowledge update in this case is rather simple: we add the
+destination location of the navigation action as the robot’s current
+location (and we remove the location of the robot before starting the
+navigation since we don’t want the robot to think that it’s in two
+places at once).</p>
+<p><strong>Note</strong>: This update should obviously only be performed if the action
+is successfully performed.</p>
+<p>As an illustration of how <em>states</em> can use the knowledge base, let us
+consider the simple
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/blob/kinetic/mdr_planning/mdr_behaviours/mdr_knowledge_behaviours/ros/src/mdr_knowledge_behaviours/check_empty_surface.py">CheckEmptySurface</a>
+state, which calls the <code class="docutils literal notranslate"><span class="pre">is_surface_empty</span></code> function that we looked at
+before and returns an appropriate state transition based on the result.
+The implementation of this state is included below for convenience:</p>
+<div class="highlight-python3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">mas_execution_manager.scenario_state_base</span> <span class="k">import</span> <span class="n">ScenarioStateBase</span>
+
+<span class="k">class</span> <span class="nc">CheckEmptySurface</span><span class="p">(</span><span class="n">ScenarioStateBase</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_sm_state</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">ScenarioStateBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;check_empty_surface&#39;</span><span class="p">,</span>
+                                <span class="n">save_sm_state</span><span class="o">=</span><span class="n">save_sm_state</span><span class="p">,</span>
+                                <span class="n">outcomes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;empty&#39;</span><span class="p">,</span> <span class="s1">&#39;not_empty&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sm_id</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sm_id&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_name</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;state_name&#39;</span><span class="p">,</span> <span class="s1">&#39;check_empty_surface&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">surface_prefix</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;surface_prefix&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">userdata</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kb_interface</span><span class="o">.</span><span class="n">is_surface_empty</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surface_prefix</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">say</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> is empty&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">surface_prefix</span><span class="p">))</span>
+            <span class="k">return</span> <span class="s1">&#39;empty&#39;</span>
+        <span class="k">return</span> <span class="s1">&#39;not_empty&#39;</span>
+</pre></div>
+</div>
+<p>An example of a state that interacts with the ontology instead of the
+online knowledge base is given in the implementation addressing the
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/blob/kinetic/mdr_planning/mdr_scenarios/mdr_robocup_tasks/mdr_where_is_this/ros/src/mdr_where_is_this/scenario_states/describe_location.py">RoboCup&#64;Home where is this
+task</a>;
+there, we query the ontology for the location of objects since we need
+to explain (in natural language) where a certain item (e.g. the couch)
+can be found in the environment.</p>
+</div>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this heading"></a></h2>
+<p>This short tutorial briefly discussed why a domestic robot needs to
+possess as much knowledge as possible, how we deal with the problem of
+knowledge modelling and representation, what kind of tools we have
+developed for interacting with our knowledge base, as well as how those
+tools are used throughout our domestic code base.</p>
+<p>The most important highlights are as follows:</p>
+<ul class="simple">
+<li><p>Our knowledge base is split into three segments (encyclopedic knowledge represented in an OWL ontology, symbolic knowledge base using ROSPlan, and a simple world model using mongodb_store)</p></li>
+<li><p>Our <code class="docutils literal notranslate"><span class="pre">mas_knowledge_base</span></code> package defines utilities for interacting with the three elements of the knowledge base</p></li>
+<li><p>Both action clients and states from which behaviours are composed are able to interact with and update the knowledge base</p></li>
+</ul>
+<p>More advanced examples of how we use the knowledge base can be found
+throughout the <code class="docutils literal notranslate"><span class="pre">mas_domestic_robotics</span></code> repository, particularly in the
+<a class="reference external" href="https://github.com/b-it-bots/mas_domestic_robotics/tree/kinetic/mdr_planning">mdr_planning</a>
+metapackage.</p>
+</div>
+<div class="section" id="about-this-tutorial">
+<h2>About This Tutorial<a class="headerlink" href="#about-this-tutorial" title="Permalink to this heading"></a></h2>
+<p><strong>Author(s)</strong>: Alex Mitrevski</p>
+<p><strong>Last update</strong>: 19.03.2020</p>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="storage.html" class="btn btn-neutral float-left" title="Storage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Robotics@H-BRS.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
