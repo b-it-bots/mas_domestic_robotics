@@ -11,6 +11,7 @@ Quick Start Guide
    quick-start/architecture
    quick-start/capabilities
    quick-start/requirements
+   quick-start/sample 
 
 Setup
 ***********************
@@ -68,6 +69,7 @@ Behaviours are reusable SMACH states that can be used for implementing complex t
    behaviours/manipulation
    behaviours/navigation
    behaviours/perception
+   behaviours/hri
 
 Knowledge Base
 ***********************
@@ -77,3 +79,11 @@ Knowledge Base
 
    knowledge_base/storage
    knowledge_base/ontology
+
+Perception
+***********************
+.. toctree::
+   :maxdepth: 1
+
+   perception/overview
+  
