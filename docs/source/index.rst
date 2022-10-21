@@ -41,6 +41,7 @@ Implemented Demo Scenarios
 .. toctree::
    :maxdepth: 1
 
+   demo-scenarios/introduction-to-scenarios
    demo-scenarios/patrol
    demo-scenarios/simple-pick-and-place
    demo-scenarios/context-aware-object-hand-over
