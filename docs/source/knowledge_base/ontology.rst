@@ -1,3 +1,707 @@
+Ontology
+========
+
+In this tutorial, we will look into:
+
+1. The building blocks of our domestic knowledge base
+2. The ``mas_knowledge_base`` library, which provides interfaces for
+   interacting with the knowledge base
+3. Various examples of how to use the knowledge base
+4. How the knowledge base is embedded into our domestic architecture in
+   order to allow our robots to make informed decisions
+
+List of contents
+----------------
+
+1. `Knowledge Base Introduction <#knowledge-base-introduction>`__
+
+   1. `Domestic Ontology <#domestic-ontology>`__
+   2. `Symbolic Knowledge Base <#symbolic-knowledge-base>`__
+   3. `Weak World Model <#weak-world-model>`__
+
+2. `The mas_knowledge_base Package <#the-mas-knowledge-base-package>`__
+3. `KB Interaction Examples <#ontology-and-kb-interaction-examples>`__
+
+   1. `Interaction with the Ontology <#interaction-with-the-ontology>`__
+   2. `Interaction with the Symbolic Knowledge
+      Base <#interaction-with-the-symbolic-knowledge-base>`__
+   3. `World Model Interaction <#world-model-interaction>`__
+
+4. `KB Embedding Into Our Domestic
+   Architecture <#kb-embedding-into-our-domestic-architecture>`__
+5. `Summary <#summary>`__
+6. `About This Tutorial <#about-this-tutorial>`__
+
+Knowledge Base Introduction
+---------------------------
+
+In order to make informed decisions, a robot needs to possess as much
+knowledge about the world as possible; this includes background
+knowledge (which we call encyclopedic knowledge throughout this
+tutorial) as well as any knowledge that is acquired during online
+operation.
+
+To equip our robots with such knowledge, we build our system around a
+rich knowledge base. For practical purpose, our knowledge base is split
+into three segments:
+
+1. An *ontology* for encyclopedic knowledge
+2. A *symbolic knowledge base* that facilitates planning and
+3. A *(weak) world model* for grounding symbolic knowledge to the real
+   world
+
+As described in the `architecture tutorial <../quick-start/architecture.html>`__, we
+make use of `ROSPlan <https://github.com/KCL-Planning/ROSPlan>`__ [1] in
+our domestic architecture, so ROSPlan's built-in knowledge base
+represents our symbolic knowledge base. Similarly, as in ROSPlan, we use
+`mongodb_store <https://github.com/strands-project/mongodb_store>`__
+as a world model representation. Our ontology, on the other hand, is
+heavily based on the `KnowRob ontology <http://www.knowrob.org>`__ [2].
+
+--------------
+
+[1] M. Cashmore, M. Fox, D. Long, D. Magazzeni, B. Ridder, A. Carrera,
+N. Palomeras, N. Hurtos, and M. Carreras, “ROSPlan: Planning in the
+Robot Operating System,” *25th Int. Conf. Automated Planning and
+Scheduling*, 2015.
+
+[2] M. Beetz, D. Beßler, A. Haidu, M. Pomarlan, A. K. Bozcuoglu, and G.
+Bartels, “Know Rob 2.0 - A 2nd Generation Knowledge Processing Framework
+for Cognition-Enabled Robotic Agents” *IEEE Int. Conf. Robotics and
+Automation (ICRA)*, pp. 512-519, May 2018.
+
+Domestic Ontology
+~~~~~~~~~~~~~~~~~
+
+Just as the KnowRob ontology, our domestic ontology is encoded in the
+`Web Ontology Language (OWL) <https://www.w3.org/TR/owl-ref/>`__ (using
+the RDF syntax). We call our ontology `the apartment
+ontology <https://github.com/b-it-bots/mas_knowledge_base/blob/master/common/ontology/apartment.owl>`__
+since it's focused on representing knowledge about concepts that a robot
+encounters in an apartment.
+
+A formal treatment of ontologies and description logic is beyond the
+scope of this tutorial; for that, we direct the reader to [3]. We will
+instead consider a simple example to give an idea of what kind of
+knowledge we encode with the ontology. In particular, let us assume that
+we want to encode the following knowledge about a certain
+(unrealistically small) apartment:
+
+-  There is one room in the apartment - a home office
+-  The home office has a desk whose height is :math:`0.7m`
+-  By default, my coffee mug is stored on the desk
+
+In an ontology, knowledge is encoded in two segments:
+
+- The *TBox*, which defines classes and properties that are of interest in a particular domain
+- The *ABox*, which contains class and property assertions
+
+To represent the knowledge from our example, we thus first need to
+define our TBox and then populate the ABox of the ontology.
+
+Let us first encode the classes of interest in our domain. In
+particular, we will define:
+
+- two top level classes, namely ``Object`` and ``Room``
+- ``Furniture`` and ``Drinkware`` classes, both of which are children of ``Object``
+- a ``Table`` class that is a child of ``Furniture`` and a ``WorkTable`` class that is a child of ``Table``
+- a ``Mug`` class that is a child of ``Drinkware``
+
+We can define these classes in OWL as follows:
+
+..  code-block:: xml
+
+   <owl:Class rdf:about="apartment:Object"/>
+   <owl:Class rdf:about="apartment:Room"/>
+
+   <owl:Class rdf:about="apartment:Furniture"/>
+   <owl:Class rdf:about="apartment:Table"/>
+   <owl:Class rdf:about="apartment:WorkTable"/>
+
+   <owl:Class rdf:about="apartment:Drinkware"/>
+   <owl:Class rdf:about="apartment:Mug"/>
+
+Note that we prefix all class names with the ``apartment`` prefix; this
+assigns a namespace to our classes. In the case of imported ontologies,
+namespaces can serve to avoid clashes with classes that would otherwise
+have the same name.
+
+At this moment, the classes are only defined, but we haven't encoded the
+parent-child relations that we mentioned before. We can do that as shown
+below:
+
+..  code-block:: xml
+
+   <owl:Class rdf:about="apartment:Room">
+       <rdfs:subClassOf rdf:resource="apartment:Location"/>
+   </owl:Class>
+   <owl:Class rdf:about="apartment:Furniture">
+       <rdfs:subClassOf rdf:resource="apartment:Object"/>
+   </owl:Class>
+
+   <owl:Class rdf:about="apartment:Table">
+       <rdfs:subClassOf rdf:resource="apartment:Furniture"/>
+   </owl:Class>
+   <owl:Class rdf:about="apartment:WorkTable">
+     <rdfs:subClassOf rdf:resource="apartment:Table"/>
+   </owl:Class>
+
+   <owl:Class rdf:about="apartment:Drinkware">
+     <rdfs:subClassOf rdf:resource="apartment:Object"/>
+   </owl:Class>
+   <owl:Class rdf:about="apartment:Mug">
+     <rdfs:subClassOf rdf:resource="apartment:Drinkware"/>
+   </owl:Class>
+
+Let us now define the properties that are of interest in our example; in
+particular, we will define properties for encoding:
+
+- the room in which an object is
+- the default storing location of an object (in terms of furniture items) and
+- the height of an object
+
+These properties can be encoded in OWL as follows:
+
+..  code-block:: xml
+
+   <owl:ObjectProperty rdf:about="apartment:locatedAt">
+       <rdf:type rdf:resource="&owl;FunctionalProperty" />
+       <rdfs:domain rdf:resource="apartment:Object"/>
+       <rdfs:range rdf:resource="apartment:Room"/>
+   </owl:ObjectProperty>
+
+   <owl:ObjectProperty rdf:about="apartment:defaultStoringLocation">
+       <rdf:type rdf:resource="&owl;FunctionalProperty" />
+       <rdfs:domain rdf:resource="apartment:Object"/>
+       <rdfs:range rdf:resource="apartment:Furniture"/>
+   </owl:ObjectProperty>
+
+   <owl:ObjectProperty rdf:about="apartment:heightOf">
+       <rdfs:domain rdf:resource="apartment:Object"/>
+       <rdfs:range rdf:resource="xsd:float"/>
+   </owl:ObjectProperty>
+
+We are now ready to assert knowledge about our apartment. We will first
+add some class assertions:
+
+..  code-block:: xml
+
+   <apartment:Room rdf:about="MyHomeOffice"/>
+   <apartment:WorkTable rdf:about="MyDesk"/>
+   <apartment:Mug rdf:about="MyCoffeeMug"/>
+
+We can now add property asserttion to encode the facts from our example:
+
+..  code-block:: xml
+
+   <rdf:Description rdf:about="MyDesk">
+       <apartment:locatedAt rdf:resource="MyHomeOffice"/>
+   </rdf:Description>
+   <rdf:Description rdf:about="MyCoffeeMug">
+       <apartment:defaultStoringLocation rdf:resource="MyDesk"/>
+   </rdf:Description>
+   <rdf:Description rdf:about="MyDesk">
+       <apartment:heightOf rdf:resource="0.7"/>
+   </rdf:Description>
+
+This was a very simple example of how we would model knowledge in OWL,
+but should serve as a primer for more complex modelling tasks.
+
+**Note**: In the above example, we assumed that a text editor was used
+for encoding knowledge in the ontology; this is because we also wanted
+to illustrate the OWL syntax. In practice, it makes more sense to use a
+dedicated ontology editor, such as
+`Protege <https://protege.stanford.edu>`__.
+
+--------------
+
+[3] *Handbook of Knowldge Representation.* Elsevier, 1st ed., 2008.
+
+Symbolic Knowledge Base
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The symbolic knowledge base is a collection of predicate assertions that
+describe the state of the world. For instance,
+``on(MyCoffeeMug, MyDesk)`` asserts that the object with name
+``MyCoffeeMug`` is on the table with name ``MyDesk``. Such symbolic
+descriptions can be used for making informed decisions in general and
+planning in particular.
+
+The predicates we use for describing the world are defined in our
+`default PDDL
+domain <https://github.com/b-it-bots/mas_domestic_robotics/blob/kinetic/mdr_planning/mdr_rosplan_interface/config/default_domain.pddl>`__;
+a subset of those is included here for illustrative purposes:
+
+::
+
+   (robot_name ?bot - robot)
+   (robot_at ?bot - robot ?wp - waypoint)
+   (object_at ?obj - object ?wp - waypoint)
+   (belongs_to ?plane - plane ?obj - object)
+   (explored ?plane - plane)
+   (on ?obj - object ?plane - plane)
+   (in ?obj - object ?source - object)
+   (holding ?bot - robot ?obj - object)
+   (empty_gripper ?bot - robot)
+   (known ?person - person)
+
+The above list is clearly tailored towards domestic applications and
+contains predicates for describing:
+
+- the locations of robots and objects
+- whether a plane (such as a table) has been examined by a robot
+- whether the robot is holding an object, and
+- whether a person observed by a robot is known.
+
+Weak World Model
+~~~~~~~~~~~~~~~~
+
+While symbolic knowledge is useful for abstract reasoning, robot
+decisions eventually have to be grounded to the real world. For example,
+if a robot needs to pick up ``MyCoffeeMug``, knowing that
+``MyCoffeeMug`` is on ``MyDesk`` is sufficient for creating a plan that
+involves going to ``MyDesk`` and then picking up ``MyCoffeeMug`` from
+it; however, in order to actually go to ``MyDesk``, the robot needs to
+know where the desk actually is, and similarly, in order to pick up the
+mug from the table, it needs to know where the mug is actually
+positioned on the table.
+
+Since we make use of ROSPlan in our architecture, we utilise
+``mongodb_store``\ :math:`^{1}` for storing such knowledge.
+``mongodb_store`` is a ROS package that allows saving ROS messages into
+a MongoDB database and retrieving those back. Under the hood, ROS
+messages are converted into dictionaries that are then stored as MongoDB
+documents; documents can then be converted back into ROS messages upon
+retrieval. For our purposes, this means that we can for instance store
+our custom
+`object <https://github.com/b-it-bots/mas_perception_msgs/blob/kinetic/msg/Object.msg>`__,
+`person <https://github.com/b-it-bots/mas_perception_msgs/blob/kinetic/msg/Person.msg>`__,
+or
+`plane <https://github.com/b-it-bots/mas_perception_msgs/blob/kinetic/msg/Plane.msg>`__
+messages and retrieve them back whenever they are needed during
+execution. This can thus be thought of as our weak world model that,
+together with the previously encyclopedic knowledge and the symbolic
+knowledge base, allows us to program our robots so that they make
+decisions based on all available knowledge.
+
+**Note**: We relate the items stored in the world model, the symbolic
+knowledge base, and the ontology through their names, namely objects are
+always given unique names that need to be the same across all three
+knowledge modalities.
+
+--------------
+
+:math:`^1` We use a slightly modified version of ``mongodb_store`` that
+allows deleting objects and makes the package Python 3-compatible:
+https://github.com/b-it-bots/mongodb_store/commits/kinetic-devel
+
+The mas_knowledge_base Package
+------------------------------
+
+To simplify the use of the ontology and the knowledge base, we use our
+ROS-based `mas_knowledge_base
+library <https://github.com/b-it-bots/mas_knowledge_base>`__ which
+includes:
+
+1. Our apartment ontology and some variations thereof (which are for example used at RoboCup competitions)
+   
+2. A Python interface based on the `rdflib library <https://rdflib.readthedocs.io/en/stable/>`__ that can be used for querying an OWL ontology
+
+3. A Python interface for querying knowledge, adding knowledge to, and removing knowledge from the knowledge base and the world model.
+
+This library exposes two Python packages:
+
+- ``mas_knowledge_utils``: A ROS-independent package in which the ontology interface is defined
+- ``mas_knowledge_base``: A ROS-dependent package that interacts with the ROSPlan knowledge base and with mongodb_store. The package is basically a wrapper around ROSPlan's service-based KB management and mongodb_store.
+  
+
+In each package, there is one base class that exposes generic
+functionalities for interacting with the ontology and the knowledge base
+respectively, and a child class that is tailored to domestic
+applications (namely exposes functions with queries that are common for
+domestic applications, such as for instance checking whether a table is
+free of objects). This design ensures that the packages are generic
+enough and can be used for other applications as well, but are also
+specific enough for our domestic use cases.
+
+A minimal class diagram illustrating the architecture of the
+``mas_knowledge_base`` library is given below.
+
+.. figure:: ../../images/mas_knowledge_base_diagram.png
+    :align: center
+
+Ontology and KB Interaction Examples
+------------------------------------
+
+In this section, we will look at various examples of interacting with
+our domestic ontology and knowledge base. The examples provided here are
+not exhaustive; a complete description of the interfaces to the ontology
+and the knowledge base is provided in the
+`mas_knowledge_base <https://github.com/b-it-bots/mas_knowledge_base>`__
+documentation, while actual examples of using the packages can be found
+throughout
+`mas_domestic_robotics <https://github.com/b-it-bots/mas_domestic_robotics>`__.
+
+The examples in this section assume that the ``mas_knowledge_base`` is
+appropriately set up in a catkin workspace and the path to it is in the
+``ROS_PACKAGE_PATH`` environment variable. Under that assumption, we can
+import the ontology and knowledge base interfaces (for the examples
+below, we will also use the
+`mas_tools <https://github.com/b-it-bots/mas_tools>`__ package since
+it provides a convenient utility for obtaining the path of a ROS package
+at runtime).
+
+Before we start with the examples, we will import the necessary
+functions and classes.
+
+..  code-block:: python3
+
+    from mas_tools.ros_utils import get_package_path
+    from mas_knowledge_utils.domestic_ontology_interface import DomesticOntologyInterface
+    from mas_knowledge_base.domestic_kb_interface import DomesticKBInterface
+
+Interaction with the Ontology
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To query the ontology, we first have to create an instance of the
+``DomesticOntologyInterface`` class, such that we have to pass
+
+1. the absolute path of the ontology OWL file (in the form of a URL -
+   when the ontology is read from a local file, the absolute path to it
+   should be prefixed by ``file://``) and
+2. the namespace of the ontology items (in the example above, that was
+   ``apartment``)
+
+For the examples, we will use a version of the apartment ontology that
+was created during the RoboCup German Open 2019 (which was compiled from
+the environment description provided at
+https://github.com/RoboCupAtHome/GermanOpen2019).
+
+..  code-block:: python3
+
+    ontology_file_path = get_package_path('mas_knowledge_base',
+                                        'common', 'ontology',
+                                        'apartment_go_2019.owl')
+    ontology_class_prefix = 'apartment'
+    ontology_interface = DomesticOntologyInterface('file://' + ontology_file_path,
+                                                ontology_class_prefix)
+
+We can now retrieve knowledge from the ontology. For instance, there is
+a ``KitchenStuff`` class there, so we can ask for all the subclasses of
+this class:
+
+::
+    
+    ontology_interface.get_subclasses_of('KitchenStuff')
+
+``['KitchenStuff', 'Knife', 'Plate', 'Cup', 'Bowl', 'Fork', 'Spoon']``
+
+It should be noted that a class is a subclass of itself.
+
+We can also query for the parents of the class ``Spoon``:
+
+::
+
+    ontology_interface.get_parent_classes_of('Spoon')
+
+``['Spoon', 'KitchenStuff', 'Object']``
+
+As above, a class is a parent class of itself.
+
+The above queries were performed on the class level, but we can also
+query asserted knowledge. For instance, we would retreive all instance
+of the class ``Chair`` as follows:
+
+::
+
+    ontology_interface.get_instances_of('Chair')
+
+``['KitchenTableChair2', 'HighTableChair', 'KitchenTableChair1',
+'RightArmChair', 'BarTableChair', 'DeskChair', 'LeftArmChair']``
+
+It should be noted that all of these items are **specific** chairs in
+the environment; their names are thus unique.
+
+We can also query for some property assertions. For instance, we can
+retrieve all items that are connected to the ``Hallway`` (in the
+modelled environment, the hallway is connected to the living room, bar,
+and bedroom):
+
+::
+
+    ontology_interface.get_subjects_of('connectedTo', 'Hallway')
+
+``['Bedroom', 'Bar', 'LivingRoom']``
+
+As another query example, we can obtain all furniture items that are
+located in the ``Bedroom`` (in the environment, there is a bed, a desk,
+and a side table):
+
+::
+
+    ontology_interface.get_subjects_of('locatedAt', 'Bedroom')
+
+``['Bed', 'Desk', 'SideTable']``
+
+The above queries were performed using functions defined in the base
+ontology interface. Our final example will retrieve the location of the
+``SideTable`` using a function defined in the domestic ontology
+interface:
+
+::
+
+    ontology_interface.get_obj_location('SideTable')
+
+``'Bedroom'``
+
+Interaction with the Symbolic Knowledge Base
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As mentioned before, our knowledge base interface is wrapped around
+ROSPlan's knowledge base and mongodb_store; hence, it requires both of
+these to be running before it can be used. An example of how to start
+the knowledge base and the store database is provided in `our mdr_rosplan_interface
+package <https://github.com/b-it-bots/mas_domestic_robotics/blob/kinetic/mdr_planning/mdr_rosplan_interface/ros/launch/rosplan.launch>`__.
+
+Once the knowledge base and the store are initialised, we can create an
+instance of ``DomesticKBInterface``:
+
+..  code-block:: python3
+
+    kb_interface = DomesticKBInterface()
+
+To start, let us first retrieve the names of all predicates in our
+domain:
+
+..  code-block:: python3
+
+    kb_interface.get_predicate_names()
+
+``['robotname', 'objectcategory', 'robotat', 'doorat', 'objectat',
+'planeat', 'dooropen', 'belongsto', 'unexplored', 'explored', 'on',
+'in', 'holding', 'emptygripper', 'known', 'unknown', 'hasdoor',
+'defaultstoringlocation']``
+
+This is an extended version of the predicates in the `Symbolic Knowledge
+Base <#symbolic-knowledge-base>`__ section.
+
+Let us now assume that our robot ``lucy`` is in the ``kitchen`` and that
+there is an object ``waterBottle`` on the ``desk``. We can assert this
+knowledge as follows:
+
+::
+
+    facts_to_insert = [('robot_at', [('bot', 'lucy'), ('wp', 'kitchen')]),
+        ('on', [('obj', 'waterBottle'), ('plane', 'desk')])]
+    kb_interface.insert_facts(facts_to_insert)
+
+The ``insert_facts`` function accepts a list of predicates and their
+named parameter values. These are passed as tuples, namely each entry in
+the input is a tuple of the form
+
+::
+
+   (predicate_name, predicate_parameter_values)
+
+where ``predicate_parameter_values`` is a list of
+``(parameter_name, parameter_value)`` tuples. Using the built-in lists
+and tuples is a deliberate minimalistic design decision that reuses the
+core functionalities of the language without creating any additional
+overhead. *All functions in the knowledge base interface use this
+representation of predicates and their values*.
+
+Now that we have asserted the location of the robot ``lucy``, we can
+also retrieve the robot's location using the ``get_robot_location``
+function, which accepts the name of a robot as an argument:
+
+::
+
+    kb_interface.get_robot_location('lucy')
+
+``'kitchen'``
+
+Let us now assume that ``lucy`` has moved and is not in the kitchen
+anymore. We thus need to remove the fact that the robot is in the
+kitchen:
+
+::
+
+    facts_to_remove = [('robot_at', [('bot', 'lucy'), ('wp', 'kitchen')])]
+    kb_interface.remove_facts(facts_to_remove)
+
+At this moment, we don't have any asserted knowledge about the location
+of the robot in the knowledge base, but we can verify that this is
+really the case:
+
+::
+
+    kb_interface.get_robot_location('lucy')
+
+``' '``
+
+Another useful query for domestic scenarios is whether a given surface
+(e.g. a table) is empty; this is for instance useful in scenarios where
+a robot needs to remove all objects from a surface. This can be checked
+using the ``is_surface_empty`` function, which takes the name of a
+surface as its single argument. To illustrate the use, let us verify
+that the ``desk`` is not empty (above, we asserted the fact that the
+``waterBottle`` is on the ``desk``, so the surface should not be empty):
+
+::
+
+    kb_interface.is_surface_empty('desk')
+
+``False``
+
+Let us now assume that the bottle has been moved from the desk. If that
+is the case, the previous location of the bottle needs to be removed
+from the knowledge base:
+
+::
+
+    facts_to_remove = [('on', [('obj', 'waterBottle'), ('plane', 'desk')])]
+    kb_interface.remove_facts(facts_to_remove)
+
+Since we have not asserted the presence of any other objects on the
+``desk``, the surface should be empty now. Let us verify that this is
+indeed the case:
+
+::
+
+    kb_interface.is_surface_empty('desk')
+
+``True``
+
+World Model Interaction
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Our final example is very brief and simply illustrates how to use the
+mongodb_store-based world model.
+
+Let us assume that the 3D position of ``MyCoffeeMug`` is
+:math:`(x, y, z) = (0.5, 0.3, 0.0)` with respect to a ``MyDesk`` frame.
+We can represent this using a ROS ``PoseStamped`` message:
+
+..  code-block:: python3
+
+    from geometry_msgs.msg import PoseStamped
+    mug_pose = PoseStamped()
+    mug_pose.header.frame_id = 'MyDesk'
+    mug_pose.pose.position.x = 0.5
+    mug_pose.pose.position.y = 0.3
+
+We can store this information in the world model using the
+``insert_obj_instance`` function, where the first argument is the name
+of the stored object and the second is the object we want to store:
+
+..  code-block:: python3
+
+    kb_interface.insert_obj_instance('MyCoffeeMug_pose', mug_pose)
+
+If we want to retrieve the pose of the mug at some later point (e.g. for
+grasping), we need to use the ``get_obj_instance`` function, which takes
+the name of the stored object as the first argument and the type of the
+object as the second argument (ROS messages have a ``_type`` field,
+which we use here):
+
+..  code-block:: python3
+
+    mug_pose = kb_interface.get_obj_instance('MyCoffeeMug_pose', PoseStamped._type)
+
+Passing both the name and the type of the stored object is required by
+mongodb_store and allows retrieving objects that might have the same
+name, but are of different types.
+
+If at some point we want to clean up a stored object from the world
+model (for instance, ``MyCoffeeMug`` might be broken, so we don't need
+to keep track of its pose anymore), we can use the
+``remove_obj_instance`` function, which takes the same arguments as
+``get_obj_instance``:
+
+..  code-block:: python3
+
+    kb_interface.remove_obj_instance('MyCoffeeMug_pose', PoseStamped._type)
+
+KB Embedding Into Our Domestic Architecture
+-------------------------------------------
+
+The primary purpose of having a rich knowledge base is to allow our
+robots to update their knowledge about the environment as they operate
+(thereby acting in a closed-loop). As described in the `architecture
+tutorial <https://github.com/b-it-bots/mas_tutorials/blob/master/domestic_robotics/architecture.ipynb>`__,
+our architecture is centred around the knowledge base and the ontology.
+In particular:
+
+1. The `base class for implementing action
+   clients <https://github.com/b-it-bots/mas_domestic_robotics/blob/kinetic/mdr_planning/mdr_rosplan_interface/ros/src/mdr_rosplan_interface/action_client_base.py>`__
+   includes a knowledge base instance. In addition, all action clients
+   need to implement the ``update_knowledge_base`` function so that each
+   action can update the knowledge base according to the results of
+   their execution. This is in accordance with classical planning, where
+   actions change the state of the world and their effects describe the
+   resulting state.
+2. The states that inherit from
+   `ScenarioStateBase <https://github.com/b-it-bots/mas_execution_manager/blob/master/ros/src/mas_execution_manager/scenario_state_base.py>`__
+   include instances of both the ontology and the knowledge base
+   interface; the behaviours in
+   `mdr_behaviours <https://github.com/b-it-bots/mas_domestic_robotics/tree/kinetic/mdr_planning/mdr_behaviours>`__
+   are thus all able to interact with the ontology and the knowledge
+   base.
+
+To illustrate how *action clients* interact with the knowledge base, let
+us consider the `move_base
+client <https://github.com/b-it-bots/mas_domestic_robotics/blob/kinetic/mdr_planning/mdr_actions/mdr_navigation_actions/mdr_move_base_action/ros/scripts/move_base_client>`__
+and its implementation of ``update_knowledge_base``:
+
+..  code-block:: python3
+
+    from mdr_rosplan_interface.action_client_base import ActionClientBase
+
+    class MoveBaseClient(ActionClientBase):
+        # the rest of the class implementation is not included
+        # since it is not relevant for the example
+
+        def update_knowledge_base(self, destination_location):
+            '''Updates the knowledge base with the following facts:
+            * the robot is not at the original location anymore
+            * the robot is at the destination location
+            '''
+            facts_to_add = [('robot_at', [('bot', self.robot_name),
+                                        ('wp', destination_location)])]
+            facts_to_remove = [('robot_at', [('bot', self.robot_name),
+                                            ('wp', self.original_location)])]
+            self.kb_interface.update_kb(facts_to_add, facts_to_remove)
+       
+       
+
+The knowledge update in this case is rather simple: we add the
+destination location of the navigation action as the robot's current
+location (and we remove the location of the robot before starting the
+navigation since we don't want the robot to think that it's in two
+places at once).
+
+**Note**: This update should obviously only be performed if the action
+is successfully performed.
+
+As an illustration of how *states* can use the knowledge base, let us
+consider the simple
+`CheckEmptySurface <https://github.com/b-it-bots/mas_domestic_robotics/blob/kinetic/mdr_planning/mdr_behaviours/mdr_knowledge_behaviours/ros/src/mdr_knowledge_behaviours/check_empty_surface.py>`__
+state, which calls the ``is_surface_empty`` function that we looked at
+before and returns an appropriate state transition based on the result.
+The implementation of this state is included below for convenience:
+
+..  code-block:: python3
+
+    from mas_execution_manager.scenario_state_base import ScenarioStateBase
+
+    class CheckEmptySurface(ScenarioStateBase):
+        def __init__(self, save_sm_state=False, **kwargs):
+            ScenarioStateBase.__init__(self, 'check_empty_surface',
+                                    save_sm_state=save_sm_state,
+                                    outcomes=['empty', 'not_empty'])
+            self.sm_id = kwargs.get('sm_id', '')
+            self.state_name = kwargs.get('state_name', 'check_empty_surface')
+            self.surface_prefix = kwargs.get('surface_prefix', '')
 
         def execute(self, userdata):
             if self.kb_interface.is_surface_empty(self.surface_prefix):
@@ -12,7 +716,7 @@ online knowledge base is given in the implementation addressing the
 `RoboCup@Home where is this
 task <https://github.com/b-it-bots/mas_domestic_robotics/blob/kinetic/mdr_planning/mdr_scenarios/mdr_robocup_tasks/mdr_where_is_this/ros/src/mdr_where_is_this/scenario_states/describe_location.py>`__;
 there, we query the ontology for the location of objects since we need
-to explain (in natural language) where a certain item (e.g. the couch)
+to explain (in natural language) where a certain item (e.g. the couch)
 can be found in the environment.
 
 Summary
