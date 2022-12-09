@@ -32,7 +32,6 @@ class DetectPerson(ScenarioStateBase):
         self.client.send_goal(goal)
         self.client.wait_for_result(rospy.Duration.from_sec(int(self.timeout)))
         result = self.client.get_result()
-        pdb.set_trace()
         if result and result.person_list.persons:
             rospy.loginfo('[detect_person] Found {0} people'.format(len(result.person_list.persons)))
             
