@@ -9,7 +9,7 @@
     </include>
 
     <!-- Actions -->
-    <include file="$(find mdr_move_arm_action)/ros/launch/move_arm.launch" />
+    <!--include file="$(find mdr_move_arm_action)/ros/launch/move_arm.launch" />
 
     <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" />
     <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
@@ -21,10 +21,10 @@
     <include file="$(find mdr_pickup_action)/ros/launch/pickup_client.launch" />
 
     <include file="$(find mdr_place_action)/ros/launch/place_action.launch" />
-    <include file="$(find mdr_place_action)/ros/launch/place_client.launch" />
+    <include file="$(find mdr_place_action)/ros/launch/place_client.launch" /-->
 
     <!-- State machine -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="pick_and_place" output="screen">
-        <param name="sm_config_file" type="str" value="$(find mdr_demo_simple_pick_and_place)/config/pick_and_place_sm.yaml" />
+        <param name="sm_config_file" type="str" value="$(find mdr_demo_simple_pick_and_place)/config/perceive_pick_sm.yaml" />
     </node>
 </launch>
