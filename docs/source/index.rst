@@ -11,7 +11,7 @@ Quick Start Guide
    quick-start/architecture
    quick-start/capabilities
    quick-start/requirements
-   quick-start/sample 
+   
 
 Setup
 ***********************
