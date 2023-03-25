@@ -15,9 +15,6 @@ class ActionClientBase(object):
 
     '''
     def __init__(self):
-        self.action_success_msg = 'action achieved'
-        self.action_failure_msg = 'action failed'
-
         # unique action ID
         self.action_id = -1
 
@@ -87,9 +84,9 @@ class ActionClientBase(object):
         msg = plan_dispatch_msgs.ActionFeedback()
         msg.action_id = self.action_id
         if success:
-            msg.status = self.action_success_msg
+            msg.status = plan_dispatch_msgs.ActionFeedback.ACTION_SUCCEEDED_TO_GOAL_STATE
         else:
-            msg.status = self.action_failure_msg
+            msg.status = plan_dispatch_msgs.ActionFeedback.ACTION_FAILED
 
         action_name_kvp = diag_msgs.KeyValue()
         action_name_kvp.key = 'action_name'

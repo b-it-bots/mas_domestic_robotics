@@ -21,6 +21,8 @@ class FindObjectServer(object):
     '''
     def __init__(self):
         ontology_url = rospy.get_param('~ontology_url', '')
+        ontology_base_url = rospy.get_param('~ontology_base_url', '')
+        ontology_entity_delimiter = rospy.get_param('~ontology_entity_delimiter', '')
         ontology_class_prefix = rospy.get_param('~ontology_class_prefix', '')
         retry_count_on_failure = int(rospy.get_param('~retry_count_on_failure', 0))
         timeout_s = float(rospy.get_param('~timeout_s', 120.))
@@ -32,6 +34,8 @@ class FindObjectServer(object):
 
         rospy.loginfo('[find_object] Initialising state machine')
         self.action_sm = FindObjectSM(ontology_url=ontology_url,
+                                      ontology_base_url=ontology_base_url,
+                                      ontology_entity_delimiter=ontology_entity_delimiter,
                                       ontology_class_prefix=ontology_class_prefix,
                                       number_of_retries=retry_count_on_failure,
                                       timeout=timeout_s)
