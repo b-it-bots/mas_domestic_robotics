@@ -8,6 +8,7 @@ import roslib
 import actionlib
 from geometry_msgs.msg import PoseStamped
 
+from mas_tools.ros_utils import get_package_path
 from mdr_move_arm_action.msg import MoveArmAction, MoveArmGoal
 
 def print_usage_info():
@@ -54,7 +55,9 @@ if __name__ == '__main__':
                 pose.pose.orientation.w = params[7]
 
                 goal.end_effector_pose = pose
-                goal.dmp_name = ''
+                goal.dmp_name = get_package_path('mdr_pickup_action', 'config',
+                                                 'trajectory_weights', 'weights_table_grasp.yaml')
+                goal.dmp_tau = 30.
             elif goal.goal_type == MoveArmGoal.JOINT_VALUES:
                 params = ast.literal_eval(sys.argv[2])
                 goal.joint_values = params
