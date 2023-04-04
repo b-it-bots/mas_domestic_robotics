@@ -47,6 +47,7 @@
   <run_depend>mdr_rosplan_interface</run_depend>
   <run_depend>mdr_move_arm_action</run_depend>
   <run_depend>mdr_move_base_action</run_depend>
+  <run_depend>mdr_move_forward_action</run_depend>
 
   <export></export>
 </package>
