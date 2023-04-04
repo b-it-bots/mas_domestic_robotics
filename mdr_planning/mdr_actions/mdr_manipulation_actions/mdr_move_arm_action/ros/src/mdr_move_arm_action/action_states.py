@@ -74,9 +74,13 @@ class MoveArmSM(ActionSMBase):
 
         success = False
         if self.goal.goal_type == MoveArmGoal.NAMED_TARGET:
-            self.arm.set_named_target(self.goal.named_target)
-            rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
-            success = self.arm.go(wait=True)
+            try:
+                self.arm.set_named_target(self.goal.named_target)
+                rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
+                success = self.arm.go(wait=True)
+            except moveit_commander.MoveItCommanderException as e:
+                rospy.logerr(e)
+                success = False
         elif self.goal.goal_type == MoveArmGoal.END_EFFECTOR_POSE:
             goal = self.goal.end_effector_pose
             dmp_name = self.goal.dmp_name

@@ -8,12 +8,16 @@ from mdr_find_object_action.msg import FindObjectGoal, FindObjectResult
 
 class FindObjectSM(ActionSMBase):
     def __init__(self, ontology_url,
+                 ontology_base_url,
+                 ontology_entity_delimiter,
                  ontology_class_prefix,
                  number_of_retries=0,
                  timeout=120.,
                  max_recovery_attempts=1):
         super(FindObjectSM, self).__init__('FindObject', [], max_recovery_attempts)
         self.ontology_url = ontology_url
+        self.ontology_base_url = ontology_base_url
+        self.ontology_entity_delimiter = ontology_entity_delimiter
         self.ontology_class_prefix = ontology_class_prefix
         self.number_of_retries = number_of_retries
         self.timeout = timeout
@@ -23,8 +27,10 @@ class FindObjectSM(ActionSMBase):
     def init(self):
         try:
             rospy.loginfo('[find_object] Creating an interface client for ontology %s', self.ontology_url)
-            self.ontology_interface = DomesticOntologyInterface(self.ontology_url,
-                                                                self.ontology_class_prefix)
+            self.ontology_interface = DomesticOntologyInterface(ontology_file=self.ontology_url,
+                                                                base_url=self.ontology_base_url,
+                                                                entity_delimiter=self.ontology_entity_delimiter,
+                                                                class_prefix=self.ontology_class_prefix)
         except Exception as exc:
             rospy.logerr('[find_object] Could not create an ontology interface client: %s', exc)
 

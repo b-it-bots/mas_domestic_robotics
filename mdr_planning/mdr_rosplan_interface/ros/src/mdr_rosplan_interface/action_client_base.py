@@ -15,9 +15,6 @@ class ActionClientBase(object):
 
     '''
     def __init__(self):
-        self.action_success_msg = 'action achieved'
-        self.action_failure_msg = 'action failed'
-
         # unique action ID
         self.action_id = -1
 

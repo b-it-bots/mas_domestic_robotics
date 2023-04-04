@@ -1,12 +1,12 @@
 - git:
     local-name: mas_common_robotics
     uri: https://github.com/b-it-bots/mas_common_robotics.git
-    version: kinetic
+    version: noetic
 
 - git:
     local-name: mas_domestic_robotics
     uri: https://github.com/b-it-bots/mas_domestic_robotics.git
-    version: kinetic
+    version: noetic
 
 - git:
     local-name: mas_navigation_tools
@@ -16,12 +16,12 @@
 - git:
     local-name: mas_perception_libs
     uri: https://github.com/b-it-bots/mas_perception_libs.git
-    version: kinetic
+    version: noetic
 
 - git:
     local-name: mas_perception_msgs
     uri: https://github.com/b-it-bots/mas_perception_msgs.git
-    version: kinetic
+    version: noetic
 
 - git:
     local-name: mas_execution_manager
@@ -65,7 +65,7 @@
 - git:
     local-name: mongodb_store
     uri: https://github.com/b-it-bots/mongodb_store.git
-    version: kinetic-devel
+    version: noetic-devel
 
 - git:
     local-name: occupancy_grid_utils
@@ -80,7 +80,7 @@
 - git:
     local-name: kdl_parser
     uri: https://github.com/ros/kdl_parser.git
-    version: kinetic-devel
+    version: noetic-devel
 
 - git:
     local-name: ros_dmp

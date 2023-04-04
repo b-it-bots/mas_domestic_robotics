@@ -32,6 +32,7 @@
   <run_depend>geometry_msgs</run_depend>
   <run_depend>moveit_commander</run_depend>
   <run_depend>ros_dmp</run_depend>
+  <run_depend>mdr_manipulation_msgs</run_depend>
 
   <export></export>
 </package>
