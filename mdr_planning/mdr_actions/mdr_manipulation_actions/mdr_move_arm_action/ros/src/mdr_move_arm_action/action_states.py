@@ -105,6 +105,8 @@ class MoveArmSM(ActionSMBase):
                     rospy.loginfo('[move_arm] Cancelled arm motion')
                     self.result = self.set_result(False)
                     return FTSMTransitions.DONE
+
+                success = True
             else:
                 if self.whole_body:
                     rospy.loginfo('[move_arm] Planning whole body motion...')
