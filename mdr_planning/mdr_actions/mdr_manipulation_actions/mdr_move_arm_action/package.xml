@@ -33,6 +33,8 @@
   <run_depend>moveit_commander</run_depend>
   <run_depend>ros_dmp</run_depend>
   <run_depend>mdr_manipulation_msgs</run_depend>
+  <run_depend>mas_execution_manager</run_depend>
+  <run_depend>mas_tools</run_depend>
 
   <export></export>
 </package>
