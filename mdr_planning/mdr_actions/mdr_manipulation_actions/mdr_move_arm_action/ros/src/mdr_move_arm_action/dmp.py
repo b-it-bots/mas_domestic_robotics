@@ -174,7 +174,7 @@ class DMPExecutor(object):
             # the velocity command between the arm and the base
             if self.use_whole_body_control and \
                self.min_sigma_value is not None and \
-               self.min_sigma_value < self.sigma_threshold_lower:
+               self.min_sigma_value < self.sigma_threshold_upper:
 
                 # we set the arm and base velocity based on the value of the
                 # so-called capability coefficient, which is calculated as
