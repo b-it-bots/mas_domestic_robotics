@@ -1,5 +1,5 @@
 import numpy as np
-
+import time
 import rospy
 import actionlib
 import tf
@@ -32,6 +32,11 @@ class MoveBaseSM(ActionSMBase):
         self.pose_frame = pose_frame
         self.timeout = timeout
         self.move_arm_client = None
+        self.move_base_client = None
+        self.move_base_goal = move_base_msgs.MoveBaseGoal()
+        self._move_base_result_state = None
+        self._move_base_result = None
+        self._move_base_fb = None
         self.move_base_goal_pub = None
 
         self.is_recovering = False
@@ -39,12 +44,18 @@ class MoveBaseSM(ActionSMBase):
         self.recovery_position_m_std = recovery_position_m_std
 
     def init(self):
-        try:
-            self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
-            rospy.loginfo('[move_base] Waiting for %s server', self.move_arm_server)
-            self.move_arm_client.wait_for_server()
-        except:
-            rospy.logerr('[move_base] %s server does not seem to respond', self.move_arm_server)
+        self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
+        rospy.loginfo('[move_base] Waiting for %s server', self.move_arm_server)
+        wait_ok = self.move_arm_client.wait_for_server(timeout=rospy.Duration(self.timeout))
+        if not wait_ok:
+            raise ValueError("[move_base] failed to wait for '{}' action server after '{}' seconds"
+                             .format(self.move_arm_server, self.timeout))
+
+        self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, move_base_msgs.MoveBaseAction)
+        wait_ok = self.move_base_client.wait_for_server(timeout=rospy.Duration(self.timeout))
+        if not wait_ok:
+            raise ValueError("[move_base] failed to wait for '{}' action server after '{}' seconds"
+                             .format(self.move_base_server, self.timeout))
 
         # we also create a goal pose publisher for debugging purposes
         goal_pose_topic = self.move_base_server + '_goal'
@@ -52,6 +63,18 @@ class MoveBaseSM(ActionSMBase):
         self.move_base_goal_pub = rospy.Publisher(goal_pose_topic, PoseStamped, queue_size=1)
 
         return FTSMTransitions.INITIALISED
+
+    def _move_base_active_cb(self):
+        rospy.loginfo("[move_base] '{}' is processing new goal".format(self.move_base_server))
+
+    def _move_base_feedback_cb(self, feedback):
+        self._move_base_fb = feedback
+
+    def _move_base_done_cb(self, state, result):
+        rospy.loginfo("[move_base] '{}' finished processing goal: state={}, result={}"
+                      .format(self.move_base_server, state, result))
+        self._move_base_result = result
+        self._move_base_result_state = state
 
     def running(self):
         rospy.loginfo('[move_base] Moving the arm to a safe configuration...')
@@ -88,37 +111,45 @@ class MoveBaseSM(ActionSMBase):
             pose.pose.position.x += np.random.normal(0., self.recovery_position_m_std)
             pose.pose.position.y += np.random.normal(0., self.recovery_position_m_std)
 
-        goal = move_base_msgs.MoveBaseGoal()
-        goal.target_pose = pose
+        self.move_base_goal.target_pose = pose
         self.move_base_goal_pub.publish(pose)
 
-        move_base_client = actionlib.SimpleActionClient(self.move_base_server,
-                                                        move_base_msgs.MoveBaseAction)
-        move_base_client.wait_for_server()
-        move_base_client.send_goal(goal)
+        self._move_base_fb = None
+        self._move_base_result = None
+        self._move_base_result_state = None
+        self.move_base_client.cancel_all_goals()
+        self.move_base_client.send_goal(self.move_base_goal, active_cb=self._move_base_active_cb,
+                                        feedback_cb=self._move_base_feedback_cb, done_cb=self._move_base_done_cb)
 
-        if move_base_client.wait_for_result(rospy.Duration.from_sec(self.timeout)):
-            result = move_base_client.get_result()
-            resulting_state = move_base_client.get_state()
-            if result and resulting_state == GoalStatus.SUCCEEDED:
-                rospy.loginfo('[move_base] Pose reached successfully')
-                self.reset_state()
-                self.result = self.set_result(True)
-                return FTSMTransitions.DONE
-            else:
-                rospy.logerr('[move_base] Pose could not be reached')
-                if self.recovery_count < self.max_recovery_attempts:
-                    self.recovery_count += 1
-                    rospy.logwarn('[move_base] Attempting recovery')
-                    return FTSMTransitions.RECOVER
-        else:
-            rospy.logerr('[move_base] Pose could not be reached within %f seconds', self.timeout)
-            if self.recovery_count < self.max_recovery_attempts:
-                self.recovery_count += 1
-                rospy.logerr('[move_base] Attempting recovery')
-                return FTSMTransitions.RECOVER
+        timeout_point = time.time() + self.timeout
+        timed_out = False
+        while self._move_base_result_state is None:
+            if time.time() > timeout_point:
+                rospy.logerr("[move_base] no result from '{}' after '{}' seconds"
+                             .format(self.move_base_server, self.timeout))
+                self.move_base_client.cancel_goal()
+                timed_out = True
+                break
 
-        rospy.logerr('[move_base] Pose could not be reached; giving up')
+        if self._move_base_result_state == GoalStatus.SUCCEEDED:
+            rospy.loginfo('[move_base] Pose reached successfully')
+            self.reset_state()
+            self.result = self.set_result(True)
+            return FTSMTransitions.DONE
+
+        if self._move_base_result_state == GoalStatus.PREEMPTED:
+            rospy.logwarn("[move_base] '{}' preempted".format(self.move_base_server))
+            self.reset_state()
+            self.result = self.set_result(False)
+            return FTSMTransitions.DONE
+
+        rospy.logerr('[move_base] Pose could not be reached within %f seconds', self.timeout)
+        if self.recovery_count < self.max_recovery_attempts:
+            self.recovery_count += 1
+            rospy.logerr('[move_base] Attempting recovery')
+            return FTSMTransitions.RECOVER
+
+        rospy.logerr("[move_base] giving up after '{}' attempts".format(self.max_recovery_attempts))
         self.reset_state()
         self.result = self.set_result(False)
         return FTSMTransitions.DONE
