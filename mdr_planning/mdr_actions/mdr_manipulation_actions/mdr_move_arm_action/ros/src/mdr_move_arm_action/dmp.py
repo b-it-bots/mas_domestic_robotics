@@ -180,6 +180,9 @@ class DMPExecutor(object):
                 # so-called capability coefficient, which is calculated as
                 #     (\sigma_{min} - \sigma_{low}) / (\sigma{high} - \sigma_{low})
                 c = (self.min_sigma_value - self.sigma_threshold_lower) / (self.sigma_threshold_upper - self.sigma_threshold_lower)
+                if c < 0:
+                    # negative c should be set to 0 to avoid unexpected behaviour
+                    c = 0
                 vel_arm[0:2] = vel[0:2] * c
                 vel_base[0:2] = vel[0:2] * (1 - c)
 
