@@ -8,6 +8,7 @@ import move_base_msgs.msg as move_base_msgs
 from actionlib_msgs.msg import GoalStatus
 
 from mas_tools.file_utils import load_yaml_file
+from mas_tools.ros_utils import ACTIONLIB_STATUS_NAMES
 
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
@@ -71,8 +72,11 @@ class MoveBaseSM(ActionSMBase):
         self._move_base_fb = feedback
 
     def _move_base_done_cb(self, state, result):
-        rospy.loginfo("[move_base] '{}' finished processing goal: state={}, result={}"
-                      .format(self.move_base_server, state, result))
+        if state not in ACTIONLIB_STATUS_NAMES:
+            rospy.logerr("[move_base] got unrecognized action goal state: {}".format(state))
+        else:
+            rospy.loginfo("[move_base] '{}' finished processing goal: state={}, result={}"
+                          .format(self.move_base_server, ACTIONLIB_STATUS_NAMES[state], result))
         self._move_base_result = result
         self._move_base_result_state = state
 
@@ -139,9 +143,6 @@ class MoveBaseSM(ActionSMBase):
 
         if self._move_base_result_state == GoalStatus.PREEMPTED:
             rospy.logwarn("[move_base] '{}' preempted".format(self.move_base_server))
-            self.reset_state()
-            self.result = self.set_result(False)
-            return FTSMTransitions.DONE
 
         rospy.logerr('[move_base] Pose could not be reached within %f seconds', self.timeout)
         if self.recovery_count < self.max_recovery_attempts:
