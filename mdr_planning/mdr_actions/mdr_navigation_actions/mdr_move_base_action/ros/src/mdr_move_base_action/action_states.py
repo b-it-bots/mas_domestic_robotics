@@ -103,6 +103,11 @@ class MoveBaseSM(ActionSMBase):
             rospy.loginfo('[move_base] Moving base to %s', destination)
 
             self.pose = self.convert_pose_name_to_coordinates(destination)
+            if self.pose is None:
+                rospy.logerr(f"[move_base] unknown named goal: {destination}")
+                self.result = self.set_result(False)
+                return FTSMTransitions.DONE
+
             pose.header.stamp = rospy.Time.now()
             pose.header.frame_id = self.pose_frame
             pose.pose.position.x = self.pose[0]
