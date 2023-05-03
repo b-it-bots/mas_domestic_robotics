@@ -175,7 +175,6 @@ class MoveBaseSM(ActionSMBase):
 
     def convert_pose_name_to_coordinates(self, pose_name):
         if pose_name not in self._named_poses:
-            rospy.logerr(f"[move_base] unrecognized pose name: '{pose_name}'")
             return None
         return self._named_poses[pose_name]
 
