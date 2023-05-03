@@ -1,5 +1,5 @@
-import numpy as np
 import time
+import numpy as np
 import rospy
 import actionlib
 import tf
@@ -25,6 +25,7 @@ class MoveBaseSM(ActionSMBase):
                  recovery_position_m_std=0.2,
                  max_recovery_attempts=1):
         super(MoveBaseSM, self).__init__('MoveBase', [], max_recovery_attempts)
+        self.result = None
         self.pose = None
         self.safe_arm_joint_config = safe_arm_joint_config
         self.move_arm_server = move_arm_server
@@ -49,10 +50,11 @@ class MoveBaseSM(ActionSMBase):
         rospy.loginfo('[move_base] Waiting for %s server', self.move_arm_server)
         wait_ok = self.move_arm_client.wait_for_server(timeout=rospy.Duration(self.timeout))
         if not wait_ok:
-            raise ValueError("[move_base] failed to wait for '{}' action server after '{}' seconds"
-                             .format(self.move_arm_server, self.timeout))
+            raise ValueError(f"[move_base] failed to wait for '{self.move_arm_server}' action server"
+                             f" after '{self.timeout}' seconds")
 
-        self.move_base_client = actionlib.SimpleActionClient(self.move_base_server, move_base_msgs.MoveBaseAction)
+        self.move_base_client = actionlib.SimpleActionClient(self.move_base_server,
+                                                             move_base_msgs.MoveBaseAction)
         wait_ok = self.move_base_client.wait_for_server(timeout=rospy.Duration(self.timeout))
         if not wait_ok:
             raise ValueError("[move_base] failed to wait for '{}' action server after '{}' seconds"
@@ -66,17 +68,17 @@ class MoveBaseSM(ActionSMBase):
         return FTSMTransitions.INITIALISED
 
     def _move_base_active_cb(self):
-        rospy.loginfo("[move_base] '{}' is processing new goal".format(self.move_base_server))
+        rospy.loginfo(f"[move_base] '{self.move_base_server}' is processing new goal")
 
     def _move_base_feedback_cb(self, feedback):
         self._move_base_fb = feedback
 
     def _move_base_done_cb(self, state, result):
         if state not in ACTIONLIB_STATUS_NAMES:
-            rospy.logerr("[move_base] got unrecognized action goal state: {}".format(state))
+            rospy.logerr(f"[move_base] got unrecognized action goal state: {state}")
         else:
-            rospy.loginfo("[move_base] '{}' finished processing goal: state={}, result={}"
-                          .format(self.move_base_server, ACTIONLIB_STATUS_NAMES[state], result))
+            rospy.loginfo(f"[move_base] '{self.move_base_server}' finished processing goal:"
+                          f" state={ACTIONLIB_STATUS_NAMES[state]}, result={result}")
         self._move_base_result = result
         self._move_base_result_state = state
 
@@ -122,17 +124,17 @@ class MoveBaseSM(ActionSMBase):
         self._move_base_result = None
         self._move_base_result_state = None
         self.move_base_client.cancel_all_goals()
-        self.move_base_client.send_goal(self.move_base_goal, active_cb=self._move_base_active_cb,
-                                        feedback_cb=self._move_base_feedback_cb, done_cb=self._move_base_done_cb)
+        self.move_base_client.send_goal(self.move_base_goal,
+                                        active_cb=self._move_base_active_cb,
+                                        feedback_cb=self._move_base_feedback_cb,
+                                        done_cb=self._move_base_done_cb)
 
         timeout_point = time.time() + self.timeout
-        timed_out = False
         while self._move_base_result_state is None:
             if time.time() > timeout_point:
-                rospy.logerr("[move_base] no result from '{}' after '{}' seconds"
-                             .format(self.move_base_server, self.timeout))
+                rospy.logerr(f"[move_base] no result from '{self.move_base_server}'"
+                             f" after '{self.timeout}' seconds")
                 self.move_base_client.cancel_goal()
-                timed_out = True
                 break
 
         if self._move_base_result_state == GoalStatus.SUCCEEDED:
@@ -142,15 +144,15 @@ class MoveBaseSM(ActionSMBase):
             return FTSMTransitions.DONE
 
         if self._move_base_result_state == GoalStatus.PREEMPTED:
-            rospy.logwarn("[move_base] '{}' preempted".format(self.move_base_server))
+            rospy.logwarn(f"[move_base] '{self.move_base_server}' preempted")
 
-        rospy.logerr('[move_base] Pose could not be reached within %f seconds', self.timeout)
+        rospy.logerr(f"[move_base] Pose could not be reached within '{self.timeout}' seconds")
         if self.recovery_count < self.max_recovery_attempts:
             self.recovery_count += 1
             rospy.logerr('[move_base] Attempting recovery')
             return FTSMTransitions.RECOVER
 
-        rospy.logerr("[move_base] giving up after '{}' attempts".format(self.max_recovery_attempts))
+        rospy.logerr(f"[move_base] giving up after '{self.max_recovery_attempts}' attempts")
         self.reset_state()
         self.result = self.set_result(False)
         return FTSMTransitions.DONE
