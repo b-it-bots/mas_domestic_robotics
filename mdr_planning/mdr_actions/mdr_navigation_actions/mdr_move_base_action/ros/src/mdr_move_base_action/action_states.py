@@ -1,3 +1,6 @@
+"""
+Contain FTSM state machine for interact with a move_base action server
+"""
 import time
 import numpy as np
 import rospy
@@ -36,6 +39,7 @@ class MoveBaseSM(ActionSMBase):
         self.move_arm_client = None
         self.move_base_client = None
         self.move_base_goal = move_base_msgs.MoveBaseGoal()
+        self._named_poses = None
         self._move_base_result_state = None
         self._move_base_result = None
         self._move_base_fb = None
@@ -46,19 +50,22 @@ class MoveBaseSM(ActionSMBase):
         self.recovery_position_m_std = recovery_position_m_std
 
     def init(self):
+        rospy.loginfo(f"[move_base] loading navigation goals from: {self.pose_description_file}")
+        self._named_poses = load_yaml_file(self.pose_description_file)
+
         self.move_arm_client = actionlib.SimpleActionClient(self.move_arm_server, MoveArmAction)
         rospy.loginfo('[move_base] Waiting for %s server', self.move_arm_server)
         wait_ok = self.move_arm_client.wait_for_server(timeout=rospy.Duration(self.timeout))
         if not wait_ok:
-            raise ValueError(f"[move_base] failed to wait for '{self.move_arm_server}' action server"
-                             f" after '{self.timeout}' seconds")
+            raise ValueError(f"[move_base] failed to wait for '{self.move_arm_server}'"
+                             f" action server after '{self.timeout}' seconds")
 
         self.move_base_client = actionlib.SimpleActionClient(self.move_base_server,
                                                              move_base_msgs.MoveBaseAction)
         wait_ok = self.move_base_client.wait_for_server(timeout=rospy.Duration(self.timeout))
         if not wait_ok:
-            raise ValueError("[move_base] failed to wait for '{}' action server after '{}' seconds"
-                             .format(self.move_base_server, self.timeout))
+            raise ValueError(f"[move_base] failed to wait for '{self.move_base_server}'"
+                             f" action server after '{self.timeout}' seconds")
 
         # we also create a goal pose publisher for debugging purposes
         goal_pose_topic = self.move_base_server + '_goal'
@@ -162,13 +169,10 @@ class MoveBaseSM(ActionSMBase):
         return FTSMTransitions.DONE_RECOVERING
 
     def convert_pose_name_to_coordinates(self, pose_name):
-        poses = load_yaml_file(self.pose_description_file)
-        try:
-            coordinates = poses[pose_name]
-            return coordinates
-        except:
-            rospy.logerr('Pose name "%s" does not exist', pose_name)
+        if pose_name not in self._named_poses:
+            rospy.logerr(f"[move_base] unrecognized pose name: '{pose_name}'")
             return None
+        return self._named_poses[pose_name]
 
     def set_result(self, success):
         result = MoveBaseResult()
