@@ -18,8 +18,10 @@ class DetectPerson(ScenarioStateBase):
 
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
+        self.twist_msg = Twist()
+        self.base_vel_pub = rospy.Publisher ('/hsrb/command_velocity', Twist, queue_size=1)
         self.client = actionlib.SimpleActionClient(self.action_server, FindPeopleAction)
-
+        self.client.wait_for_server(rospy.Duration(10.))
         
 
     def execute(self, userdata):      

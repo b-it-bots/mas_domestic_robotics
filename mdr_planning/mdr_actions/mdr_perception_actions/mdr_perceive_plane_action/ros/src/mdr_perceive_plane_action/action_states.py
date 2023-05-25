@@ -40,11 +40,14 @@ class PerceivePlaneSM(ActionSMBase):
 
     def recovering(self):
         self._recovery_counter += 1
+        print("########################   HEAD   ###############33")
+        print(self._head.actions)
         action = random.choice(self._head.actions)
         getattr(self._head, action)()
         return FTSMTransitions.DONE_RECOVERING
 
     def running(self):
+        self._head.tilt(-0.1)
         detected_planes = None
         self._detecting_done = False
         self._detector.start_detect_objects(self.goal.plane_frame_prefix,

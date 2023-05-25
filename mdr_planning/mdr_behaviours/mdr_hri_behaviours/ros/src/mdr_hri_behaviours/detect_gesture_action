@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_detect_gesture.msg import DetectGestureAction
+from mdr_detect_gesture.action_states import DetectGestureSM
+
+class DetectGestureServer(object):
+    '''A server exposing an action for detecting gestures in an image.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * gesture_topic: Name of the gesture data topic (default /heartmet/gesture)
+    * detection_model_path: Absolute path of a gesture detection model (default '')
+
+    @author Manish Saini, Melvin Paul Jacob
+    @contact manishsaini0901@gmail.com
+
+    '''
+    def __init__(self):
+        gesture_topic = rospy.get_param('~gesture_topic', '')
+        detection_model_path = rospy.get_param('~model_file', '')
+
+        rospy.loginfo('[detect_gesture] Initialising state machine')
+        self.action_sm = DetectGestureSM(gesture_topic=gesture_topic,
+                                        detection_model_path=detection_model_path)
+        rospy.loginfo('[detect_gesture] State machine initialised')
+
+        self.action_server = actionlib.SimpleActionServer('detect_gesture_server',
+                                                          DetectGestureAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('detect_gesture action server ready')
+    
+    def execute(self, goal):
+        rospy.loginfo('[detect_gesture] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.result = None
+        self.action_sm.execution_requested = True
+        while not self.action_sm.result:
+            rospy.sleep(0.05)
+        self.action_server.set_succeeded(self.action_sm.result)
+
+if __name__ == '__main__':
+    rospy.init_node('detect_gesture_server')
+    detect_gesture_server = DetectGestureServer()
+    try:
+        detect_gesture_server.action_sm.run()
+        while detect_gesture_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(detect_gesture_server.action_sm.name))
+        detect_gesture_server.action_sm.stop()

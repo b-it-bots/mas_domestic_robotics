@@ -50,6 +50,7 @@ std_msgs
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
+  BodyBoundingBox.msg
   FaceBoundingBox.msg
   PersonInfo.msg
   ObjectInfo.msg

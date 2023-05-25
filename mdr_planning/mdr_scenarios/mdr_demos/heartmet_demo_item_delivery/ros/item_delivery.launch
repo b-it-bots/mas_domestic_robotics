@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+    <arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)" />
     
     <!-- problem generation -->
     <include file="$(find mdr_rosplan_interface)/ros/launch/rosplan.launch">
@@ -42,6 +43,6 @@
 
     <!-- State machine -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
-        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/item_delivery_sm_perceive_pick.yaml" />
+        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/item_delivery_sm.yaml" />
     </node>
 </launch>

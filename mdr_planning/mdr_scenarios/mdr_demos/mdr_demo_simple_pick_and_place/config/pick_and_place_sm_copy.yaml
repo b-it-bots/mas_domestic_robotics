@@ -1,0 +1,247 @@
+# Description: Defines a state machine for a simple pick and place scenario (picking an object and placing it back on the same surface)
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_demo_simple_pick_and_place
+states: [GO_TO_LOCATION_A, GO_TO_LOCATION_B, GO_TO_LOCATION_C, PERCEIVE_SCENE, PICK_OBJECT, PLACE_OBJECT, INTERRUPT_CONVERSATION, GESTURE_INPUT, ANNOUNCE_TASK, HANDOVER, STOP]
+outcomes: [FAILED]
+state_descriptions:
+    - state:
+        name: GO_TO_LOCATION_A
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: INTERRUPT_CONVERSATION #PERCEIVE_TABLE
+            - transition:
+                name: failed
+                state: GO_TO_LOCATION_A
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [location_A]
+            - argument:
+                name: number_of_retries
+                value: 3
+    
+    - state:
+        name: INTERRUPT_CONVERSATION
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: GESTURE_INPUT
+        arguments:
+            - argument:
+                name: sentences
+                value: ['let me interrupt you']
+            - argument:
+                name: sleep_time
+                value: 0.5
+    - state:
+        name: GESTURE_INPUT
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: ANNOUNCE_TASK
+        arguments:
+            - argument:
+                name: sentences
+                value: ['give me input and do not piss me off']
+            - argument:
+                name: sleep_time
+                value: 0.5
+    - state:
+        name: ANNOUNCE_TASK
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_LOCATION_B
+        arguments:
+            - argument:
+                name: sentences
+                value: ['let me announce task']
+            - argument:
+                name: sleep_time
+                value: 0.5
+    - state:
+        name: GO_TO_LOCATION_B
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_SCENE #PERCEIVE_TABLE
+            - transition:
+                name: failed
+                state: GO_TO_LOCATION_B
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [location_B]
+            - argument:
+                name: number_of_retries
+                value: 3
+    
+    - state:
+        name: PERCEIVE_SCENE
+        state_module_name: mdr_perception_behaviours.perceive_planes
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICK_OBJECT
+            - transition:
+                name: failed
+                state: PERCEIVE_SCENE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: plane_prefix
+                value: table
+    - state:
+        name: PICK_OBJECT
+        state_module_name: mdr_manipulation_behaviours.pick_closest_from_surface
+        state_class_name: PickClosestFromSurface
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_LOCATION_C
+            - transition:
+                name: failed
+                state: PICK_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+            - transition:
+                name: find_objects_before_picking
+                state: PERCEIVE_SCENE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: picking_surface_prefix
+                value: table
+    - state:
+        name: GO_TO_LOCATION_C
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: INTERRUPT_CONVERSATION #PERCEIVE_TABLE
+            - transition:
+                name: failed
+                state: GO_TO_LOCATION_C
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [location_A]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: INTERRUPT_CONVERSATION
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: ANNOUNCE_TASK
+        arguments:
+            - argument:
+                name: sentences
+                value: ['let me interrupt you ']
+            - argument:
+                name: sleep_time
+                value: 0.5
+    
+    - state:
+        name: ANNOUNCE_TASK
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: HANDOVER
+        arguments:
+            - argument:
+                name: sentences
+                value: ['let me announce the task']
+            - argument:
+                name: sleep_time
+                value: 0.5
+
+    - state:
+        name: HANDOVER
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: STOP
+        arguments:
+            - argument:
+                name: sentences
+                value: ['please take or I will drop it']
+            - argument:
+                name: sleep_time
+                value: 0.5
+    
+    - state:
+        name: STOP
+        state_module_name: mdr_hri_behaviours.say_sentence
+        state_class_name: SaySentence
+        transitions:
+            - transition:
+                name: succeeded
+                state: STOP
+        arguments:
+            - argument:
+                name: sentences
+                value: ['this shit is done']
+            - argument:
+                name: sleep_time
+                value: 0.5
+
+    # - state:
+    #     name: PLACE_OBJECT
+    #     state_module_name: mdr_manipulation_behaviours.place
+    #     state_class_name: Place
+    #     transitions:
+    #         - transition:
+    #             name: succeeded
+    #             state: PERCEIVE_TABLE
+    #         - transition:
+    #             name: failed
+    #             state: PLACE_OBJECT
+    #         - transition:
+    #             name: failed_after_retrying
+    #             state: FAILED
+    #     arguments:
+    #         - argument:
+    #             name: number_of_retries
+    #             value: 3
+    #         - argument:
+    #             name: placing_surface_prefix
+    #             value: table

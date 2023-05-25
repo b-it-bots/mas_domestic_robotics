@@ -90,7 +90,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [person1]
+                value: [living_room]
             - argument:
                 name: number_of_retries
                 value: 3

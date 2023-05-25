@@ -1,8 +1,9 @@
 <?xml version="1.0"?>
 <launch>
     <node pkg="mdr_speech_recognition" type="speech_recognition_node" name="speech_recognition_node" output="screen">
-        <param name="model_directory" type="str" value="$(find kaldi_speech_models)/common/config/en-US" />
-        <param name="use_kaldi"       value="true"/>
+        <param name="vosk_model_directory" type="str" value="$(find mdr_speech_recognition)/vosk_model" />
+        <param name="spacy_model_directory" type="str" value="$(find mdr_speech_recognition)/ros/src/mdr_speech_recognition/my-model" />
+        <param name="use_vosk"       value="true"/>
     </node>
 
 </launch>

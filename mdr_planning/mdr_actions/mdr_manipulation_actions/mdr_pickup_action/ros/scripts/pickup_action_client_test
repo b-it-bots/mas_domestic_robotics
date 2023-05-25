@@ -3,95 +3,33 @@ import rospy
 import actionlib
 
 from mdr_pickup_action.msg import PickupAction, PickupGoal
-import tf
-import numpy as np
-from geometry_msgs.msg import Pose, PoseStamped
-import pdb
-
-# $ rostopic echo /target_pose
-# header: 
-#   seq: 1
-#   stamp: 
-#     secs: 0
-#     nsecs:         0
-#   frame_id: "base_link"
-# pose: 
-#   position: 
-#     x: 0.5870198249456428
-#     y: 0.06225548515405379
-#     z: 0.7213680149476445
-#   orientation: 
-#     x: 0.0
-#     y: 0.0
-#     z: 0.0
-#     w: 1.0
-
-def get_grasping_pose_and_strategy(object_to_pick_up):
-
-    grasping_strategy = PickupGoal.TOP_GRASP
-    
-    euler_orientation = tf.transformations.euler_from_quaternion([object_to_pick_up.pose.pose.orientation.x,
-                                                                    object_to_pick_up.pose.pose.orientation.y,
-                                                                    object_to_pick_up.pose.pose.orientation.z,
-                                                                    object_to_pick_up.pose.pose.orientation.w])
-    gripper_orientation_z = euler_orientation[2] + np.pi/2
-
-    desired_gripper_orientation_base_link = (np.pi, 0, gripper_orientation_z)
-
-    grasping_strategy = PickupGoal.TOP_GRASP
-
-    object_to_pick_up.pose.pose.orientation = get_gripper_orientation(desired_gripper_orientation_base_link,
-                                                    object_to_pick_up.pose.header.frame_id)
-
-    return object_to_pick_up, grasping_strategy
-
-def get_gripper_orientation(orientation, target_frame):
-    '''Returns a geometry_msgs.msg.Quaternion object representing the given
-    orientation, which is represented in "base_link", in the given target frame.
-
-    Keyword arguments:
-    orientation: Tuple[float, float, float] -- desired (roll, pitch, yaw) orientation of
-                                                the gripper in the base_link frame
-    target_frame: str -- frame in which the orientation should be represented
-
-    '''
-    tf_listener = tf.TransformListener()
-
-    gripper_pose = PoseStamped()
-    gripper_pose.header.frame_id = 'base_link'
-    gripper_pose.header.stamp = rospy.Time(0)
-
-    gripper_quaternion = tf.transformations.quaternion_from_euler(*orientation)
-    gripper_pose.pose.orientation.x = gripper_quaternion[0]
-    gripper_pose.pose.orientation.y = gripper_quaternion[1]
-    gripper_pose.pose.orientation.z = gripper_quaternion[2]
-    gripper_pose.pose.orientation.w = gripper_quaternion[3]
-
-
-    gripper_pose_in_target_frame = tf_listener.transformPose(target_frame, gripper_pose)
-    return gripper_pose_in_target_frame.pose.orientation
-
 
 if __name__ == '__main__':
     rospy.init_node('pickup_action_client_test')
 
     client = actionlib.SimpleActionClient('pickup_server', PickupAction)
+    rospy.loginfo('waiting for server')
     client.wait_for_server()
+    rospy.loginfo('Done waiting for server')
 
     goal = PickupGoal()
+    #goal.strategy = PickupGoal.TOP_GRASP
+    #goal.context = PickupGoal.CONTEXT_MOVING
     goal.pose.header.frame_id = 'base_link'
     goal.pose.header.stamp = rospy.Time.now()
 
     goal.pose.pose.position.x = 0.418
     goal.pose.pose.position.y = 0.078
+    goal.pose.pose.position.y = 0.5
     goal.pose.pose.position.z = 0.842
 
     goal.pose.pose.orientation.x = 0.758
     goal.pose.pose.orientation.y = 0.000
     goal.pose.pose.orientation.z = 0.652
     goal.pose.pose.orientation.w = 0.000
-
+    rospy.loginfo('sending goal')
     client.send_goal(goal)
     client.wait_for_result()
-
+    rospy.loginfo('got result')
+    
     rospy.loginfo(client.get_result())

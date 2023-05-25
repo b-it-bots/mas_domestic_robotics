@@ -5,6 +5,7 @@
   <description>A package for common HRI-related robot behaviours</description>
 
   <author email="patrick.nagel@h-brs.de">Patrick Nagel</author>
+  <author email="manishsaini0901@gmail.com">Manish Saini</author>
   <maintainer email="robotics@inf.h-brs.de">MAS robotics</maintainer>
 
   <license>GPLv3</license>

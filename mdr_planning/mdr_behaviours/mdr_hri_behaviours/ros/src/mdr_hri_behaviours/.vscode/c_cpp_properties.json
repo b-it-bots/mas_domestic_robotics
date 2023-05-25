@@ -1,0 +1,29 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/zany/catkin_hsr_ws/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/zany/catkin_hsr_ws/src/dmp/include/**",
+        "/home/zany/catkin_hsr_ws/src/hsrb_kinematics/hsrb_analytic_ik/include/**",
+        "/home/zany/catkin_hsr_ws/src/kdl_parser/kdl_parser/include/**",
+        "/home/zany/catkin_hsr_ws/src/occupancy_grid_utils/include/**",
+        "/home/zany/catkin_hsr_ws/src/ROSPlan/rosplan_knowledge_base/include/**",
+        "/home/zany/catkin_hsr_ws/src/ROSPlan/rosplan_planning_system/include/**",
+        "/home/zany/catkin_hsr_ws/src/hsrb_kinematics/tmc_manipulation_types/include/**",
+        "/home/zany/catkin_hsr_ws/src/hsrb_kinematics/tmc_robot_kinematics_model/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_pickup_action.msg import PickupAction, PickupGoal
+
+if __name__ == '__main__':
+    rospy.init_node('pickup_action_client_test')
+
+    client = actionlib.SimpleActionClient('pickup_server', PickupAction)
+    client.wait_for_server()
+
+    goal = PickupGoal()
+    goal.pose.header.frame_id = 'base_link'
+    goal.pose.header.stamp = rospy.Time.now()
+
+    goal.pose.pose.position.x = 0.818
+    goal.pose.pose.position.y = 0.0
+    goal.pose.pose.position.z = 1.542
+
+    goal.pose.pose.orientation.x = 0.0
+    goal.pose.pose.orientation.y = 0.000
+    goal.pose.pose.orientation.z = 0.0
+    goal.pose.pose.orientation.w = 0.000
+
+    client.send_goal(goal)
+    client.wait_for_result()
+
+    rospy.loginfo(client.get_result())

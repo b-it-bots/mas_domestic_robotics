@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <launch>
     <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+    <arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)" />
     <arg name="move_arm_server" default="move_arm_server" />
     <arg name="move_base_server" default="/move_base" />
     <arg name="pose_frame" default="map" />
@@ -17,6 +18,6 @@
         <param name="timeout" value="$(arg timeout)" />
         <param name="recovery_position_m_std" value="$(arg recovery_position_m_std)" />
         <param name="max_recovery_attempts" value="$(arg max_recovery_attempts)" />
-        <param name="pose_description_file" value="$(find mdr_environments)/$(arg robot_env)/navigation_goals.yaml" />
+        <param name="pose_description_file" value="$(find mas_environments)/$(arg robot)/$(arg robot_env)/navigation_goals.yaml" />
     </node>
 </launch>

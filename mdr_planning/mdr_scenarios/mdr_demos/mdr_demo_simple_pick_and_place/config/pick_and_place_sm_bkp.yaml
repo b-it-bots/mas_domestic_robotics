@@ -1,0 +1,94 @@
+# Description: Defines a state machine for a simple pick and place scenario (picking an object and placing it back on the same surface)
+# Author: Alex Mitrevski
+# Email: aleksandar.mitrevski@h-brs.de
+sm_id: mdr_demo_simple_pick_and_place
+states: [GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, PLACE_OBJECT]
+outcomes: [FAILED]
+state_descriptions:
+    - state:
+        name: GO_TO_TABLE
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed
+                state: GO_TO_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [table]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PERCEIVE_TABLE
+        state_module_name: mdr_perception_behaviours.perceive_planes
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICK_OBJECT
+            - transition:
+                name: failed
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: plane_prefix
+                value: table
+    - state:
+        name: PICK_OBJECT
+        state_module_name: mdr_manipulation_behaviours.pick_closest_from_surface
+        state_class_name: PickClosestFromSurface
+        transitions:
+            - transition:
+                name: succeeded
+                state: PLACE_OBJECT
+            - transition:
+                name: failed
+                state: PICK_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+            - transition:
+                name: find_objects_before_picking
+                state: PERCEIVE_TABLE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: picking_surface_prefix
+                value: table
+    - state:
+        name: PLACE_OBJECT
+        state_module_name: mdr_manipulation_behaviours.place
+        state_class_name: Place
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed
+                state: PLACE_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: placing_surface_prefix
+                value: table

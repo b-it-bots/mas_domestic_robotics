@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+    <arg name="robot" default="$(optenv ROBOT !!NO_ROBOT_SET!!)" />
+    <!-- problem generation -->
+    <include file="$(find mdr_rosplan_interface)/ros/launch/rosplan.launch">
+        <arg name="data_path" value="$(find heartmet_demo_item_delivery)/config/" />
+        <arg name="domain_path" value="$(find heartmet_demo_item_delivery)/config/domain.pddl" />
+    </include>
+
+    <!-- Actions -->
+
+    <!-- Voice commands -->
+    <include file="$(find mas_hsr_sound_vocalisation)/ros/launch/sound_vocalisation.launch" />
+
+    <!-- Move Arm Action -->
+    <include file="$(find mas_hsr_move_arm_action)/ros/launch/move_arm.launch" /> 
+    
+    <!-- Move Arm Joints Action-->
+        <include file="$(find mas_hsr_move_arm_joints_action)/ros/launch/move_arm_joints.launch" />
+    
+    <!-- Move Base Action -->
+    <include file="$(find mas_hsr_move_base_action)/ros/launch/move_base.launch" />
+    
+    <!-- Move Forward Action -->
+    <include file="$(find mas_hsr_move_forward_action)/ros/launch/move_forward.launch" />
+    
+    <!-- Perceive Plane Action -->
+    <include file="$(find mas_hsr_perceive_plane_action)/ros/launch/perceive_plane.launch" />
+    
+    <!-- Pickup Action -->
+    <include file="$(find mas_hsr_pickup_action)/ros/launch/pickup_action.launch" />
+    
+    <!-- Find People Action -->
+    <include file="$(find mas_hsr_find_people)/ros/launch/find_people.launch" />
+
+    <!-- Gesture Action -->
+    <include file="$(find find mdr_detect_gesture)/ros/launch/find_people.launch" />
+    
+    <!--TODO: Add required action server to this launch file -->
+    <include file="$(find mas_hsr_hand_over_action)/ros/launch/hand_over.launch" />
+
+</launch>

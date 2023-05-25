@@ -15,13 +15,13 @@ class DetectPerson(ScenarioStateBase):
         self.sm_id = kwargs.get('sm_id', 'mdr_demo_context_aware_hand_over')
         self.action_server = kwargs.get('action_server', 'find_people_server')
         self.timeout = kwargs.get('timeout', 120.)
-
+        self.twist_msg = Twist()
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
         self.client = actionlib.SimpleActionClient(self.action_server, FindPeopleAction)
         self.client.wait_for_server(rospy.Duration(10.))
         self.base_vel_pub = rospy.Publisher ('/hsrb/command_velocity', Twist, queue_size=1)
-        self.twist_msg = Twist()
+        
 
         
 

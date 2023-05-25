@@ -206,7 +206,7 @@ class PickupSM(ActionSMBase):
             rospy.loginfo('[pickup] Verifying the grasp...')
             rospy.loginfo('\n[pickup] END***************************************\n')
             # Added a condition to check if the object is grasped or not by using hand_motor_joint 'closed' value as the min threshold
-            grasp_successful = (self.joint_states.position[self.joint_states.name.index('hand_motor_joint')]) > -0.83 # NOTE: -0.83 value comes from thinnest object which is toothbrush
+            grasp_successful = (self.joint_states.position[self.joint_states.name.index('hand_motor_joint')]) > -0.73 # NOTE: -0.83 value comes from thinnest object which is toothbrush
 
             if grasp_successful:
                 rospy.loginfo('[pickup] Successfully grasped object')
