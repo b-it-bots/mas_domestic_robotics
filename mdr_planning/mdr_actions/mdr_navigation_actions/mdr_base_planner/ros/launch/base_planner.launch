@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- <arg name="model_file" default="$(find mdr_base/planner)/model/mobilenetv2_ssd_256_uint8.tflite"/> -->
+    <arg name="image_topic" default="/hsrb/head_rgbd_sensor/rgb/image_raw"/>
+    <arg name="cloud_topic" default="" />
+
+    <node pkg="mdr_base_planner" type="base_planner_action" name="base_planner_server" output="screen" ns="mdr_actions" >
+        <param name="cloud_topic" value="$(arg cloud_topic)"/>
+        <param name="image_topic" value="$(arg image_topic)"/>
+    </node>
+
+</launch>

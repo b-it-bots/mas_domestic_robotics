@@ -1,0 +1,19 @@
+sm_id: heartmet_base_plan
+states: [PLAN]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: PLAN
+        state_module_name: mdr_navigation_behaviours.base_planner
+        state_class_name: BasePlannerClient
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3

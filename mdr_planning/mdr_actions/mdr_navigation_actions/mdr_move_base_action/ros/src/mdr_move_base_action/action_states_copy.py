@@ -116,12 +116,14 @@ class MoveBaseSM(ActionSMBase):
                 rospy.logerr('[move_base] Pose could not be reached')
                 if self.recovery_count < self.max_recovery_attempts:
                     self.recovery_count += 1
+                    self.is_recovering = True
                     rospy.logwarn('[move_base] Attempting recovery')
                     return FTSMTransitions.RECOVER
         else:
             rospy.logerr('[move_base] Pose could not be reached within %f seconds', self.timeout)
             if self.recovery_count < self.max_recovery_attempts:
                 self.recovery_count += 1
+                self.is_recovering = True
                 rospy.logerr('[move_base] Attempting recovery')
                 return FTSMTransitions.RECOVER
 

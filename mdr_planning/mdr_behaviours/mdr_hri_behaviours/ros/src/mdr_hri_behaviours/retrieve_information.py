@@ -43,7 +43,7 @@ class InteractionClient(ScenarioStateBase):
         # Define a list of possible error responses from the robot
         self.error_responses = ["I'm sorry, I didn't understand that. Please try again.", "I didn't quite catch that. Can you repeat it?", "Sorry, I'm having trouble understanding you. Please speak more clearly."]
         self.r.pause_threshold = 1.5  # Adjust the value as needed
-        self.objects_list = {"1":"Pringles","2":"Soup Can","3":"Windex Bottle","4":"T-shirt","5":"Spatula"}
+        self.objects_list = {"1":"pringles","2":"soup","3":"windex_bottle","4":"shirt","5":"spatula"}
         self.loc_list = {"1":"living_room_shelf","2":"dining_table_far_view","3":"living_room","4":"dining_table","5":"kitchen"}
         self.props = {"1":"object","2":"location","3":"both"}
         self.client = actionlib.SimpleActionClient('mdr_actions/detect_gesture_server', DetectGestureAction)
@@ -69,8 +69,8 @@ class InteractionClient(ScenarioStateBase):
         self.gesture_result = self.client.get_result()
 
     def list_items(self,item_dict):
-        self.say("I will be looking for locations via hand gestures")
-        rospy.sleep(1)
+        # self.say("I will be looking for object via hand gestures")
+        # rospy.sleep(1)
         for locs in list(item_dict.items()):
             self.say("For "+locs[1]+" show me "+ locs[0])
             rospy.sleep(1)
@@ -308,7 +308,8 @@ class InteractionClient(ScenarioStateBase):
                         break
                 if not locations:
                     self.say_this("I'm sorry, but I didn't get any location to fetch from. I try to find the object from the environment.")
-                    self.locations = set(["any_location"])
+                    # self.locations = set(["any_location"])
+                    self.locations = None
         return objects, locations
     
     def get_props(self, prop=None):
@@ -341,7 +342,7 @@ class InteractionClient(ScenarioStateBase):
             objects, locations = None, None
             for i in range(retries):
                 objects, locations = self.get_info(objects, locations)
-                if objects:
+                if objects and locations:
                     self.say_this(f"Just to confirm, You want me to bring {', '.join(objects)} from {', '.join(locations)}. Is that correct?")
                     confirmed = self.comfirm_loop()
                     if not confirmed:

@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+import rospy
+import actionlib
+
+from mdr_base_planner.msg import BasePlannerAction
+from mdr_base_planner.action_states import BasePlannerSM
+
+class BasePlannerServer(object):
+    '''A server exposing an action for base pose planning.
+
+    The server expects the following parameters to be made available on the ROS parameter server:
+    * rgb data topic (default '')
+    * cloud_topic: cloud topic (default '')
+
+    @author Manish Saini, Melvin Paul Jacob
+    @contact manish.saini@smail.inf.h-brs.de
+
+    '''
+    def __init__(self):
+        cloud_topic = rospy.get_param('~cloud_topic', '')
+
+        rospy.loginfo('[pose_planner] Initialising state machine')
+        self.action_sm = BasePlannerSM(cloud_topic=cloud_topic)
+        rospy.loginfo('[pose_planner] State machine initialised')
+
+        self.action_server = actionlib.SimpleActionServer('base_planner_server',
+                                                          BasePlannerAction,
+                                                          self.execute, False)
+        self.action_server.start()
+        rospy.loginfo('base_planner action server ready')
+    
+    def execute(self, goal):
+        rospy.loginfo('[base_planner] Received an action request')
+        self.action_sm.goal = goal
+        self.action_sm.result = None
+        print("goal",goal.start)
+        if goal.start == True:
+            print("Setting execution request True")
+            self.action_sm.execution_requested = True
+            while not self.action_sm.result:
+                rospy.sleep(0.05)
+            self.action_server.set_succeeded(self.action_sm.result)
+        else:
+            print("Setting execution request False")
+            self.action_sm.execution_requested = False
+            while not self.action_sm.result:
+                rospy.sleep(0.05)
+            self.action_server.set_succeeded(self.action_sm.result)
+            
+
+if __name__ == '__main__':
+    rospy.init_node('base_planner_server')
+    base_planner_server = BasePlannerServer()
+    try:
+        base_planner_server.action_sm.run()
+        while base_planner_server.action_sm.is_running and not rospy.is_shutdown():
+            rospy.spin()
+    except (KeyboardInterrupt, SystemExit):
+        print('{0} interrupted; exiting...'.format(base_planner_server.action_sm.name))
+        base_planner_server.action_sm.stop()

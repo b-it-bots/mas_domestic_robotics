@@ -7,7 +7,7 @@ outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
         name: ORDER
-        state_module_name: mdr_hri_behaviours.order_taking
+        state_module_name: mdr_hri_behaviours.order_taking_saad_gesture
         state_class_name: OrderTaking
         transitions:
             - transition:

@@ -1,0 +1,15 @@
+# goal definition
+bool start
+#mdr_perception_msgs/BodyBoundingBox bounding_box
+
+---
+# result definition
+
+geometry_msgs/PoseStamped pose
+geometry_msgs/PoseArray posearray
+bool success
+
+---
+# feedback
+string current_state
+string text
