@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="model_file" default="$(find mdr_detect_gesture)/model/action10_9_np3"/>
+    <arg name="image_topic" default="/hsrb/head_rgbd_sensor/rgb/image_raw"/>
+
+    <node pkg="mdr_detect_gesture" type="detect_gesture_action" name="detect_gesture_server" output="screen" ns="mdr_actions" >
+        <param name="model_path" value="$(arg model_file)"/>
+        <param name="image_topic" value="$(arg image_topic)"/>
+    </node>
+
+</launch>

@@ -1,0 +1,17 @@
+# goal definition
+bool start
+
+---
+# result definition
+
+string gesture
+string gesture_selection
+float64 confidence
+int64 id 
+mdr_perception_msgs/BodyBoundingBox bounding_box
+bool success
+
+---
+# feedback
+string current_state
+string text
