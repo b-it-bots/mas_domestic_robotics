@@ -35,7 +35,7 @@
     <include file="$(find mas_hsr_find_people)/ros/launch/find_people.launch" />
 
     <!-- Gesture Action -->
-    <include file="$(find find mdr_detect_gesture)/ros/launch/find_people.launch" />
+    <include file="$(find mdr_detect_gesture)/ros/launch/detect_gesture.launch" />
     
     <!--TODO: Add required action server to this launch file -->
     <include file="$(find mas_hsr_hand_over_action)/ros/launch/hand_over.launch" />
