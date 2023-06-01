@@ -113,6 +113,11 @@ class PickupSM(ActionSMBase):
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
 
         pose_base_link.pose.position.x -= 0.01
+        
+        if pose_base_link.pose.position.z < 0.63:
+            pose_base_link.pose.position.z = 0.63
+        if pose_base_link.pose.position.z > 0.95:
+            pose_base_link.pose.position.z = 1.00
 
         if self.base_elbow_offset > 0:
             self.__align_base_with_pose(pose_base_link)
