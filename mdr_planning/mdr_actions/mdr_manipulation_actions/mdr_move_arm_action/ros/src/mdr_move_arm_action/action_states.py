@@ -83,7 +83,7 @@ class MoveArmSM(ActionSMBase):
                 success = False
         elif self.goal.goal_type == MoveArmGoal.END_EFFECTOR_POSE:
             goal = self.goal.end_effector_pose
-            dmp_name = self.goal.dmp_name
+            dmp_name =q self.goal.dmp_name
             tau = self.goal.dmp_tau
             rospy.loginfo('[move_arm] Planning motion and trying to move arm...')
 
