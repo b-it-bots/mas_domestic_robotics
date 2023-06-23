@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import rospy
 import actionlib
 import moveit_commander
@@ -12,7 +13,7 @@ class DetectPerson(ScenarioStateBase):
         ScenarioStateBase.__init__(self, 'detect_person_right',
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'],
-                                   output_keys=['person_list','person_location'],
+                                   output_keys=['person_list'],
                                    input_keys=['person_location'])
         self.sm_id = kwargs.get('sm_id', 'mdr_demo_context_aware_hand_over')
         self.action_server = kwargs.get('action_server', 'find_people_server')
@@ -39,8 +40,8 @@ class DetectPerson(ScenarioStateBase):
         
         # self.twist_msg.angular.z = -150 / 180.0 * math.pi # Convert from "degree" to "radian"
         # self.twist_msg.angular.z =ang
-        self.twist_msg.angular.z=-0.3
-        for i in range(73):
+        self.twist_msg.angular.z=0.1
+        for i in range(10):
             self.base_vel_pub.publish (self.twist_msg) # Publish velocity command
             rospy.sleep(0.1)
 
@@ -67,4 +68,25 @@ class DetectPerson(ScenarioStateBase):
                 self.say('Aborting operation')
                 return 'failed_after_retrying'
             self.retry_count += 1
+
+
             return 'failed'
+
+def main():
+        rospy.init_node('test')
+        base_vel_pub = rospy.Publisher ('/hsrb/command_velocity', Twist, queue_size=1)
+        twist_msg = Twist()
+        twist_msg.linear.x = 0
+        twist_msg.linear.y = 0
+        ang=np.deg2rad(-250)
+        
+        # self.twist_msg.angular.z = -150 / 180.0 * math.pi # Convert from "degree" to "radian"
+        # self.twist_msg.angular.z =ang
+        twist_msg.angular.z=-0.3
+        for i in range(70):
+            base_vel_pub.publish (twist_msg) # Publish velocity command
+            rospy.sleep(0.1)
+
+
+if __name__ == "__main__":
+    main()

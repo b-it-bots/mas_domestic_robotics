@@ -1,0 +1,405 @@
+# Description: Defines a state machine for moving robot to all navigation goal points for testing 
+# Author: Heartmet_Team
+sm_id: heartmet_brsu_c069_tour
+states: [LOC1,LOC2,LOC3,LOC4,LOC5,LOC6,LOC7,LOC8,LOC9,LOC10,LOC11,LOC12,LOC13,LOC14,LOC15,LOC16,LOC17,LOC18,LOC19]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: LOC1
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC2
+            - transition:
+                name: failed
+                state: LOC1
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [dining_table_far_view]
+            - argument:
+                name: number_of_retries
+                value: 3   
+    - state:
+        name: LOC2
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC3
+            - transition:
+                name: failed
+                state: LOC2
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [dining_table]
+            - argument:
+                name: number_of_retries
+                value: 3    
+    - state:
+        name: LOC3
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC4
+            - transition:
+                name: failed
+                state: LOC3
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [living_room_shelf]
+            - argument:
+                name: number_of_retries
+                value: 3 
+    - state:
+        name: LOC4
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC5
+            - transition:
+                name: failed
+                state: LOC4
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [living_room]
+            - argument:
+                name: number_of_retries
+                value: 3  
+    - state:
+        name: LOC5
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC6
+            - transition:
+                name: failed
+                state: LOC5
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [sofa]
+            - argument:
+                name: number_of_retries
+                value: 3 
+    - state:
+        name: LOC6
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC7
+            - transition:
+                name: failed
+                state: LOC6
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [living_room_cabinet]
+            - argument:
+                name: number_of_retries
+                value: 3 
+    - state:
+        name: LOC7
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC8
+            - transition:
+                name: failed
+                state: LOC7
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [hall_way]
+            - argument:
+                name: number_of_retries
+                value: 3 
+    - state:
+        name: LOC8
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC9
+            - transition:
+                name: failed
+                state: LOC8
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [hall_shelf]
+            - argument:
+                name: number_of_retries
+                value: 3 
+    - state:
+        name: LOC9
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC10
+            - transition:
+                name: failed
+                state: LOC9
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [hall_cabinet]
+            - argument:
+                name: number_of_retries
+                value: 3 
+    - state:
+        name: LOC10
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC11
+            - transition:
+                name: failed
+                state: LOC10
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [kitchen_shelf]
+            - argument:
+                name: number_of_retries
+                value: 3 
+    - state:
+        name: LOC11
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC12
+            - transition:
+                name: failed
+                state: LOC11
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [trash_can]
+            - argument:
+                name: number_of_retries
+                value: 3 
+    - state:
+        name: LOC12
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC13
+            - transition:
+                name: failed
+                state: LOC12
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [kitchen]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: LOC13
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC14
+            - transition:
+                name: failed
+                state: LOC13
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [kitchen]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: LOC14
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC15
+            - transition:
+                name: failed
+                state: LOC14
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [sink]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: LOC15
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC16
+            - transition:
+                name: failed
+                state: LOC15
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [dishwasher]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: LOC16
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC17
+            - transition:
+                name: failed
+                state: LOC16
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [stove]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: LOC17
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC18
+            - transition:
+                name: failed
+                state: LOC17
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [kitchen_counter]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: LOC18
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC19
+            - transition:
+                name: failed
+                state: LOC18
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [microwave]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: LOC19
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: LOC1
+            - transition:
+                name: failed
+                state: LOC19
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [refrigerator]
+            - argument:
+                name: number_of_retries
+                value: 3

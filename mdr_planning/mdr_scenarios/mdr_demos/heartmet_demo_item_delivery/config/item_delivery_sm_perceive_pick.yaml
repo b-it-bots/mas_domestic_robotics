@@ -26,6 +26,9 @@ state_descriptions:
             - argument:
                 name: plane_prefix
                 value: table
+            - argument:
+                name: object_tilt
+                value: -0.7
     - state:
         name: PICK_OBJECT
         state_module_name: mdr_manipulation_behaviours.pick_closest_from_surface

@@ -16,14 +16,16 @@ class PickClosestFromSurface(ScenarioStateBase):
                                    output_keys=['grasped_object'],
                                    outcomes=['succeeded', 'failed',
                                              'failed_after_retrying',
-                                             'find_objects_before_picking'])
+                                             'find_objects_before_picking'],
+                                             input_keys=['person_location'])
+                                   
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'pick')
         self.timeout = kwargs.get('timeout', 120.)
         self.picking_surface_prefix = kwargs.get('picking_surface_prefix', 120.)
         self.grasping_context = kwargs.get('grasping_context', '')
         self.tf_listener = TransformListener()
-
+        self.person_location=kwargs.get('person_location', None)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
 
@@ -64,6 +66,7 @@ class PickClosestFromSurface(ScenarioStateBase):
             rospy.loginfo('%s grasped successfully' % obj_to_grasp)
             self.say('Successfully grasped ' + obj_to_grasp)
             userdata.grasped_object = obj_to_grasp
+            userdata.destination_locations=[self.person_location]
             return 'succeeded'
 
         rospy.loginfo('Could not grasp %s' % obj_to_grasp)

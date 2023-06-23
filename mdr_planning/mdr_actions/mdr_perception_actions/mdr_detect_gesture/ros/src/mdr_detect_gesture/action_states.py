@@ -68,7 +68,7 @@ class DetectGestureSM(ActionSMBase):
             self.frames.append(bgr_image)
             if len(self.frames) == 10:
                 image, gestures = self.model.multi_per_gesture(bgr_image,sort="area",viz=False)
-                # print(gestures)
+                print(gestures)
                 avggestures = self.model.avg_per_gesture()
                 # print("gestures", avggestures)
                 for gest in avggestures:
@@ -94,6 +94,7 @@ class DetectGestureSM(ActionSMBase):
         # looprate = rospy.Rate(10)
         
         while self.result == None:
+            rospy.sleep(0.07)
             self.image_process()
             # print("while I am in running and result is none")
         #     #looprate.sleep()

@@ -12,7 +12,13 @@
     <include file="$(find mdr_pickup_action)/ros/launch/pickup_client.launch" />
     
     <!-- State machine -->
+    <!-- <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
+        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/heartmet_task_first.yaml" />
+    </node> -->
+    <!-- <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
+        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/all_locations.yaml" />
+    </node> -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
-        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/item_delivery_sm.yaml" />
+        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/brsu_c069_tour.yaml" />
     </node>
 </launch>

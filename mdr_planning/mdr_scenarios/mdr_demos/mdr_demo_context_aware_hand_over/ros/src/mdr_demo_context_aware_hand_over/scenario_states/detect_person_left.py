@@ -11,11 +11,13 @@ class DetectPerson(ScenarioStateBase):
         ScenarioStateBase.__init__(self, 'detect_person_left',
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'],
-                                   output_keys=['person_list'])
+                                   output_keys=['person_list','person_location'],
+                                   input_keys=['person_location'])
         self.sm_id = kwargs.get('sm_id', 'mdr_demo_context_aware_hand_over')
         self.action_server = kwargs.get('action_server', 'find_people_server')
         self.timeout = kwargs.get('timeout', 120.)
         self.twist_msg = Twist()
+        self.person_location = kwargs.get('person_location', None)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
         self.client = actionlib.SimpleActionClient(self.action_server, FindPeopleAction)
@@ -23,14 +25,17 @@ class DetectPerson(ScenarioStateBase):
         self.base_vel_pub = rospy.Publisher ('/hsrb/command_velocity', Twist, queue_size=1)
         
 
-        
-
     def execute(self, userdata):      
         # Set velocity command values
         self.twist_msg.linear.x = 0
         self.twist_msg.linear.y = 0
-        self.twist_msg.angular.z = 60 / 180.0 * math.pi # Convert from "degree" to "radian"
-        self.base_vel_pub.publish (self.twist_msg) # Publish velocity command
+        #self.twist_msg.angular.z = 100 / 180.0 * math.pi # Convert from "degree" to "radian"
+        #self.base_vel_pub.publish (self.twist_msg) # Publish velocity command
+
+        self.twist_msg.angular.z=0.3
+        for i in range(110):
+            self.base_vel_pub.publish (self.twist_msg) # Publish velocity command
+            rospy.sleep(0.1)
 
         goal = FindPeopleGoal()
         # calling the actionlib server and waiting for the execution to end
@@ -43,6 +48,7 @@ class DetectPerson(ScenarioStateBase):
         if result and result.person_list.persons:
             rospy.loginfo('[detect_person] Found {0} people'.format(len(result.person_list.persons)))
             userdata.person_list = result.person_list
+            userdata.person_location=self.person_location
             return 'succeeded'
         else:
             rospy.logerr('Could not detect a person')

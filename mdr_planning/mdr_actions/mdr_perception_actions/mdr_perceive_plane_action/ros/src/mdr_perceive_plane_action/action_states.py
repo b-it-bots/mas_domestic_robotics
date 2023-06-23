@@ -47,7 +47,8 @@ class PerceivePlaneSM(ActionSMBase):
         return FTSMTransitions.DONE_RECOVERING
 
     def running(self):
-        #self._head.tilt(-0.1)
+        self._head.tilt(-0.1)
+        rospy.sleep(1)
         detected_planes = None
         self._detecting_done = False
         self._detector.start_detect_objects(self.goal.plane_frame_prefix,

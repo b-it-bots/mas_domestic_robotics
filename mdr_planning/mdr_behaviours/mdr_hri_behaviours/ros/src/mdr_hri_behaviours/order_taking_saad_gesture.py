@@ -26,7 +26,7 @@ class OrderTaking(ScenarioStateBase):
         # Load spacy NER model
         
         self.objects_list = {"1":"Pringles","2":"Soup Can","3":"Windex Bottle","4":"T-shirt","5":"Spatula"}
-        self.loc_list = {"1":"living_room_shelf","2":"dining_table_far_view","3":"living_room","4":"dining_table","5":"kitchen"}
+        self.loc_list = {"1":"living_room","2":"hall","3":"reading_room","4":"dining"}
         # Define a list of possible friendly responses from the robot
         self.friendly_responses = ["Sure, I can do that.", "No problem.", "Okay, I'm on it.", "Consider it done."]
         self.gesture_try=0
@@ -37,15 +37,17 @@ class OrderTaking(ScenarioStateBase):
         self.goal = DetectGestureGoal()
         self.pub_obj = rospy.Publisher('heartmet/target_object', String, queue_size=1)
         self.object_map = {"windex_bottle" : ["windex bottle","windex", "cleaner", "sprayer", "bottle of windex"],
-                           "pringles" : ["pringles can", "pringles", "prings"],
-                           "soup" : ["campbell soup","soup", "can of soup", "soup can"],
-                           "shirt" : ["t-shirt", "shirt", "t shirt", "black t-shirt", "black shirt", "black t shirt"],
+                           "pringles" : ["pringles can", "pringles", "prings", "pringle", "pringle can"],
+                           "soup" : ["campbell soup","soup", "can of soup", "soup can", "tomato soup", "campbell"],
+                           "shirt" : ["t-shirt", "shirt", "t shirt", "black t-shirt", "black shirt", "black t shirt", "tshirt"],
                            "spatula" : ["spatula", "spoon", "ladel"]}
-        self.location_map = {"living_room" : ["living room", "livingroom"], 
-                             "dining_table" : ["dining table", "dining room", "table", "diningtable", "diningroom", "dining"],
+        self.location_map = {"shelf" : ["living room", "livingroom", "living"], 
+                             "dining" : ["dining table", "dining room", "table", "diningtable", "diningroom", "dining"],
                              "kitchen" : ["kitchen"],
                              "bathroom" : ["bathroom","restroom", "bath room", "rest room"],
-                             "bedroom": ["bedroom", "bed room"]}
+                             "bedroom": ["bedroom", "bed room"],
+                             "hall": ["hall"],
+                             "reading_room" : ["readingroom","reading room", "reading"]}
             
         # Define a function to generate a friendly response from the robot
     def generate_friendly_response(self):

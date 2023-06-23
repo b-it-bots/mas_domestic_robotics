@@ -71,6 +71,7 @@ class PickupSM(ActionSMBase):
         self.move_arm_client = None
         self.move_base_client = None
         self.move_forward_client = None
+        self.base_object_offset = 0.55
 
         self.say_pub = rospy.Publisher('/say', String, latch=True, queue_size=1)
 
@@ -125,6 +126,9 @@ class PickupSM(ActionSMBase):
             # the base is now correctly aligned with the pose, so we set the
             # y position of the goal pose to the elbow offset
             pose_base_link.pose.position.y = self.base_elbow_offset
+            if pose_base_link.pose.position.z == 0.63:
+                rospy.loginfo('[pickup] Grasping with hardcoded arm position...')
+                self.__align_base_with_pose_x(pose_base_link)
 
         if self.grasping_orientation:
             pose_base_link.pose.orientation.x = self.grasping_orientation[0]
@@ -149,14 +153,34 @@ class PickupSM(ActionSMBase):
                 rospy.loginfo('[pickup] Preparing sideways grasp')
                 pose_base_link = self.__prepare_sideways_grasp(pose_base_link)
 
-                rospy.loginfo('[pickup] Grasping...')
-                arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-                if not arm_motion_success:
-                    rospy.logerr('[pickup] Arm motion unsuccessful')
-                    self.result = self.set_result(False)
-                    return FTSMTransitions.DONE
+                if pose_base_link.pose.position.z == 0.63:
+                    rospy.loginfo('[pickup] Grasping with hardcoded arm position...')
+                    current_joint_pos = self.joint_states
+                    arm_joint_pos_indices = [current_joint_pos.name.index('arm_lift_joint'), current_joint_pos.name.index('arm_flex_joint'),
+                                             current_joint_pos.name.index('arm_roll_joint'), current_joint_pos.name.index('wrist_flex_joint'),
+                                             current_joint_pos.name.index('wrist_roll_joint')]
+                    arm_joint_pos = [self.joint_states.position[idx] for idx in arm_joint_pos_indices]
+                    arm_joint_pos[0] = 0.01
+                    arm_joint_pos[1] = -0.85
+                    #arm_joint_pos[2] = 0.001
+                    arm_joint_pos[3] = -1.0
+                    #arm_joint_pos[4] = 0.001
+                    arm_joint_pos.append(0.0)
+                    arm_motion_success = self.__move_arm(MoveArmGoal.JOINT_VALUES, arm_joint_pos)
+                    if not arm_motion_success:
+                        rospy.logerr('[pickup] Arm motion unsuccessful')
+                        self.result = self.set_result(False)
+                        return FTSMTransitions.DONE
+                    rospy.loginfo('[pickup] Arm motion successful')
+                else:
+                    rospy.loginfo('[pickup] Grasping...')
+                    arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+                    if not arm_motion_success:
+                        rospy.logerr('[pickup] Arm motion unsuccessful')
+                        self.result = self.set_result(False)
+                        return FTSMTransitions.DONE
 
-                rospy.loginfo('[pickup] Arm motion successful')
+                    rospy.loginfo('[pickup] Arm motion successful')
             elif self.goal.strategy == PickupGoal.TOP_GRASP:
                 self.say('Preparing top grasp')
                 rospy.loginfo('[pickup] Preparing top grasp')
@@ -247,6 +271,32 @@ class PickupSM(ActionSMBase):
         aligned_base_pose.header.stamp = rospy.Time.now()
         aligned_base_pose.pose.position.x = 0.
         aligned_base_pose.pose.position.y = pose_base_link.pose.position.y - self.base_elbow_offset
+        aligned_base_pose.pose.position.z = 0.
+        aligned_base_pose.pose.orientation.x = 0.
+        aligned_base_pose.pose.orientation.y = 0.
+        aligned_base_pose.pose.orientation.z = 0.
+        aligned_base_pose.pose.orientation.w = 1.
+
+        move_base_goal = MoveBaseGoal()
+        move_base_goal.goal_type = MoveBaseGoal.POSE
+        move_base_goal.pose = aligned_base_pose
+        self.move_base_client.send_goal(move_base_goal)
+        self.move_base_client.wait_for_result()
+
+ 
+    def __align_base_with_pose_x(self, pose_base_link):
+        '''Moves the base so that the elbow is aligned with the goal pose.
+
+        Keyword arguments:
+        pose_base_link -- a 'geometry_msgs/PoseStamped' message representing
+                          the goal pose in the base link frame
+
+        '''
+        aligned_base_pose = PoseStamped()
+        aligned_base_pose.header.frame_id = 'base_link'
+        aligned_base_pose.header.stamp = rospy.Time.now()
+        aligned_base_pose.pose.position.x = pose_base_link.pose.position.x - self.base_object_offset
+        aligned_base_pose.pose.position.y = 0.
         aligned_base_pose.pose.position.z = 0.
         aligned_base_pose.pose.orientation.x = 0.
         aligned_base_pose.pose.orientation.y = 0.

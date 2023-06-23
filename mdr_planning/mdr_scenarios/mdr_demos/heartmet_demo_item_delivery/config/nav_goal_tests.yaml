@@ -1,0 +1,157 @@
+# Description: Defines a state machine for moving robot to all navigation goal points for testing 
+# Author: Heartmet_Team
+# Email: zainey4@gmail.com
+sm_id: heartmet_nav_goals_test
+states: [GO_TO_READING, GO_TO_HALL, GO_TO_DINING_FRONT, GO_TO_DINING_BACK, GO_TO_LIVING, GO_TO_SHELF,GO_TO_INITIAL]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: GO_TO_READING
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_HALL
+            - transition:
+                name: failed
+                state: GO_TO_READING
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [reading_room]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_HALL
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_DINING_FRONT
+            - transition:
+                name: failed
+                state: GO_TO_HALL
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [hall]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_DINING_FRONT
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_DINING_BACK
+            - transition:
+                name: failed
+                state: GO_TO_DINING_FRONT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [dining]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_DINING_BACK
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_LIVING
+            - transition:
+                name: failed
+                state: GO_TO_DINING_BACK
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [dining_back]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_LIVING
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_SHELF
+            - transition:
+                name: failed
+                state: GO_TO_LIVING
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [living_room]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_SHELF
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_INITIAL
+            - transition:
+                name: failed
+                state: GO_TO_SHELF
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [shelf]
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    - state:
+        name: GO_TO_INITIAL
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_READING
+            - transition:
+                name: failed
+                state: GO_TO_SHELF
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [initial]
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    

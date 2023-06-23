@@ -1,25 +1,41 @@
 import time
 import rospy
-
+import moveit_commander
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 import diagnostic_msgs.msg as diag_msgs
 
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
 
+
 class PerceivePlanes(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'perceive_plane',
                                    save_sm_state=save_sm_state,
-                                   outcomes=['succeeded', 'failed', 'failed_after_retrying'])
+                                   outcomes=['succeeded', 'failed',
+                                             'failed_after_retrying'],
+                                   input_keys=['object_tilt'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'perceive_planes')
         self.timeout = kwargs.get('timeout', 120.)
         self.plane_prefix = kwargs.get('plane_prefix', 0)
-
+        # self.tilt_angle = kwargs.get('object_tilt', -0.1)
+        self.tilt_angle=kwargs.get('object_tilt', -0.1)
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
+        rospy.logerr('Initialising moveit group')
+        self.head = moveit_commander.MoveGroupCommander("head")
+        rospy.logerr('Initialised moveit group')
+        
 
     def execute(self, userdata):
+        # if userdata.object_tilt:
+        #     self.tilt_angle = userdata.object_tilt
+        # else:
+        #     userdata.object_tilt=self.tilt_angle
+        # self.tilt_angle = -0.7
+        self.head.set_joint_value_target("head_tilt_joint", self.tilt_angle)
+        self.head.go()
+
         if self.save_sm_state:
             self.save_current_state()
 

@@ -32,7 +32,7 @@
 
     <!-- State machine -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
-        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/heartmet_person.yaml" />
+        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/order_taking.yaml" />
     </node>
 
 

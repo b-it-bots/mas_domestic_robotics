@@ -44,7 +44,7 @@ class InteractionClient(ScenarioStateBase):
         self.error_responses = ["I'm sorry, I didn't understand that. Please try again.", "I didn't quite catch that. Can you repeat it?", "Sorry, I'm having trouble understanding you. Please speak more clearly."]
         self.r.pause_threshold = 1.5  # Adjust the value as needed
         self.objects_list = {"1":"Pringles","2":"Soup Can","3":"Windex Bottle","4":"T-shirt","5":"Spatula"}
-        self.loc_list = {"1":"living_room_shelf","2":"dining_table_far_view","3":"living_room","4":"dining_table","5":"kitchen"}
+        self.loc_list = {"1":"living_room","2":"hall","3":"reading_room","4":"dining"}
         self.props = {"1":"object","2":"location","3":"both"}
         self.client = actionlib.SimpleActionClient('mdr_actions/detect_gesture_server', DetectGestureAction)
         self.client.wait_for_server()
@@ -52,15 +52,17 @@ class InteractionClient(ScenarioStateBase):
         self.interface_flag=0   # 0 for speech and  1 for gesture   
         self.pub_obj = rospy.Publisher('heartmet/target_object', String, queue_size=1)
         self.object_map = {"windex_bottle" : ["windex bottle","windex", "cleaner", "sprayer", "bottle of windex"],
-                           "pringles" : ["pringles can", "pringles", "prings"],
-                           "soup" : ["campbell soup","soup", "can of soup", "soup can"],
-                           "shirt" : ["t-shirt", "shirt", "t shirt", "black t-shirt", "black shirt", "black t shirt"],
+                           "pringles" : ["pringles can", "pringles", "prings", "pringle", "pringle can"],
+                           "soup" : ["campbell soup","soup", "can of soup", "soup can", "tomato soup", "campbell"],
+                           "shirt" : ["t-shirt", "shirt", "t shirt", "black t-shirt", "black shirt", "black t shirt", "tshirt"],
                            "spatula" : ["spatula", "spoon", "ladel"]}
-        self.location_map = {"living_room" : ["living room", "livingroom"], 
-                             "dining_table" : ["dining table", "dining room", "table", "diningtable", "diningroom", "dining"],
+        self.location_map = {"shelf" : ["living room", "livingroom", "living"], 
+                             "dining" : ["dining table", "dining room", "table", "diningtable", "diningroom", "dining"],
                              "kitchen" : ["kitchen"],
                              "bathroom" : ["bathroom","restroom", "bath room", "rest room"],
-                             "bedroom": ["bedroom", "bed room"]}
+                             "bedroom": ["bedroom", "bed room"],
+                             "hall": ["hall"],
+                             "reading_room" : ["readingroom","reading room", "reading"]}
     
     def gesture_call(self, state):
         self.goal.start = state
@@ -115,10 +117,12 @@ class InteractionClient(ScenarioStateBase):
                 #audio = self.r.record(source,duration=5)
                 try:
                     user_input = self.r.recognize_google(audio)
+                    user_input = user_input.lower()
                     print("You said:", user_input)
                     return user_input
                 except:
                     user_input = self.r.recognize_sphinx(audio)
+                    user_input = user_input.lower()
                     print("You said:", user_input)
                     return user_input
         except sr.UnknownValueError:
@@ -144,7 +148,7 @@ class InteractionClient(ScenarioStateBase):
             #print(i)
             for word in i[1]:
                 if sentence:
-                    if word in sentence:
+                    if word.lower() in sentence:
                         return set([i[0]])
         return None
 
@@ -169,31 +173,34 @@ class InteractionClient(ScenarioStateBase):
             locations = []
             for ent in entities.ents:
                 if ent.label_ == 'OBJ':
-                    objects.append(ent.text)
+                    objects.append(str(ent.text))
+                    print(str(ent.text))
                 elif ent.label_ == 'LOC':
-                    loc = ent.text
-                    print(loc)
+                    #loc = str(ent.text)
+                    locations.append(str(ent.text))
+                    print(str(ent.text))
+                    '''print(loc)
                     try:
                         loc = str(ent.text)
-                        loc_l = loc.split()
-                        print(loc_l)
-                        loc1 = "_".join(loc_l)
-                        print(loc1)
+                        #loc_l = loc.split()
+                        #print(loc_l)
+                        #loc1 = "_".join(loc_l)
+                        #print(loc1)
                     except Exception as e:
                         print(e)
-                        loc1 = ent.text
-                    locations.append(loc1)
+                        loc1 = ent.text'''
+                    #locations.append(loc)
             objects, locations = set(objects), set(locations)
-            if not objects and user_input:
-                objects = self.detect_word(objects,self.object_map)
-            if not locations and user_input:
-                locations = self.detect_word(locations,self.location_map)
-            objects, locations = self.get_map(objects,locations)
             if not objects and user_input:
                 objects = self.detect_word(user_input,self.object_map)
             if not locations and user_input:
                 locations = self.detect_word(user_input,self.location_map)
             objects, locations = self.get_map(objects,locations)
+            '''if not objects and user_input:
+                objects = self.detect_word(user_input,self.object_map)
+            if not locations and user_input:
+                locations = self.detect_word(user_input,self.location_map)
+            objects, locations = self.get_map(objects,locations)'''
             #return set(objects), set(locations)
             #print("outs:",objects, locations)
             return objects, locations
@@ -236,7 +243,7 @@ class InteractionClient(ScenarioStateBase):
             self.say_this("Sorry, I didn't catch that. Can you please repeat?")
             return None
             
-    def say_this(self, text, time_out=2):
+    def say_this(self, text, time_out=3):
         rospy.loginfo('Saying: %s' % text)
         self.say(text)
         rospy.sleep(time_out)
@@ -267,7 +274,7 @@ class InteractionClient(ScenarioStateBase):
         self.say_this("Sorry I could not confirm your response.")
         return None
 
- def gesture_confirm_loop(self):
+    def gesture_confirm_loop(self):
         statement_retries = 2
 
         self.say_this("I will be looking for confirmation via hand gestures")
@@ -284,10 +291,10 @@ class InteractionClient(ScenarioStateBase):
     
     def get_info(self, objects=None, locations=None):
         audio_retries = 2
-        if self.interface_flag==0
-        #self.say_this("What can I fetch for you and from which location?")
-        #objects, locations = self.process_user_input()
-        #print(objects, locations)
+        if self.interface_flag==0:
+            #self.say_this("What can I fetch for you and from which location?")
+            #objects, locations = self.process_user_input()
+            #print(objects, locations)
             for tryi in range(audio_retries):
                 if not objects and not locations:
                     if tryi>=audio_retries-1:
