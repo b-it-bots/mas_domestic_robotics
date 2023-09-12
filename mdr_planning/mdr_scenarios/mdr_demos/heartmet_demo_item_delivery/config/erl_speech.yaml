@@ -1,0 +1,19 @@
+sm_id: heartmet_base_plan
+states: [ORDER]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: ORDER
+        state_module_name: mdr_hri_behaviours.retrieve_information
+        state_class_name: InteractionClient
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: ORDER
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3

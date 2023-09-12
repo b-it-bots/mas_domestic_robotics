@@ -1,0 +1,25 @@
+.autotools
+.cproject
+.project
+.pydevproject
+*.pyc
+.idea/
+*.*~
+*.swp
+
+# Generated rasa models
+/mdr_speech/mdr_rasa/models/*/generated/
+
+# MongoDB
+prealloc.*
+mongod.lock
+local.0
+local.ns
+message_store.*
+
+# Kaldi models
+/mdr_speech/mdr_speech_recognition/config/models/*
+
+
+/mdr_composite_behaviours/ros/src/mdr_composite_behaviours/composite_behaviours.py
+/mdr_composite_behaviours/ros/config

@@ -1,0 +1,22 @@
+# Description: Defines a state machine for moving robot to all navigation goal points for testing 
+# Author: Heartmet_Team
+sm_id: heartmet_brsu
+states: [TALK]
+outcomes: [DONE, FAILED]
+state_descriptions:
+
+    - state:
+        name: TALK
+        state_module_name: mdr_hri_behaviours.retrieve_information
+        state_class_name: InteractionClient
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: TALK
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3

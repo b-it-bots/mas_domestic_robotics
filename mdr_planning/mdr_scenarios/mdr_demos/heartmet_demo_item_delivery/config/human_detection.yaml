@@ -1,0 +1,30 @@
+# Description: Defines a state machine for moving robot to all navigation goal points for testing 
+# Author: Heartmet_Team
+sm_id: heartmet_brsu
+states: []
+outcomes: [DONE, FAILED]
+state_descriptions:
+
+    - state:
+        name: DETECT_PERSON_READING
+        state_module_name: mdr_demo_context_aware_hand_over.scenario_states.detect_person_front
+        state_class_name: DetectPerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: FAILED
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+  
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 1
+            - argument:
+                name: head_tilt
+                value: 0.0      
+ 

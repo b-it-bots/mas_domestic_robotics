@@ -1,0 +1,100 @@
+# Description: Defines a state machine for door opening scenario 
+# Author: ERL_Team_2023
+# Email: unknown
+sm_id: erl_through_the_door
+states: [DETECT_NEAREST_DOOR]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: DETECT_NEAREST_DOOR
+        state_module_name: mdr_composite_behaviours.composite_behaviours
+        state_class_name: CompositeBehaviours
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: DETECT_NEAREST_DOOR
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    # - state:
+    #     name: GO_TO_DOOR
+    #     state_module_name: mdr_navigation_behaviours.move_base
+    #     state_class_name: MoveBase
+    #     transitions:
+    #         - transition:
+    #             name: succeeded
+    #             state: GRIP_HANDLE
+    #         - transition:
+    #             name: failed
+    #             state: GO_TO_DOOR
+    #         - transition:
+    #             name: failed_after_retrying
+    #             state: FAILED
+    #     arguments:
+    #         - argument:
+    #             name: number_of_retries
+    #             value: 3   
+    # - state:
+    #     name: GRIP_HANDLE
+    #     state_module_name: mdr_composite_behaviours.grip_handle
+    #     state_class_name: GripHandle
+    #     transitions:
+    #         - transition:
+    #             name: succeeded
+    #             state: OPEN_DOOR
+    #         - transition:
+    #             name: failed
+    #             state: GRIP_HANDLE
+    #     arguments:
+    #         - argument:
+    #             name: number_of_retries
+    #             value: 3
+    # - state:
+    #     name: OPEN_DOOR
+    #     state_module_name: mdr_composite_behaviours.open_door
+    #     state_class_name: OpenDoor
+    #     transitions:
+    #         - transition:
+    #             name: succeeded
+    #             state: PASS_THROUGH_DOOR
+    #         - transition:
+    #             name: failed
+    #             state: OPEN_DOOR
+    #     arguments:
+    #         - argument:
+    #             name: number_of_retries
+    #             value: 3
+    # - state:
+    #     name: PASS_THROUGH_DOOR
+    #     state_module_name: mdr_composite_behaviours.pass_through_door
+    #     state_class_name: PassThroughDoor
+    #     transitions:
+    #         - transition:
+    #             name: succeeded
+    #             state: CLOSE_DOOR
+    #         - transition:
+    #             name: failed
+    #             state: PASS_THROUGH_DOOR
+    #     arguments:
+    #         - argument:
+    #             name: number_of_retries
+    #             value: 3
+    # - state:
+    #     name: CLOSE_DOOR
+    #     state_module_name: mdr_composite_behaviours.close_door
+    #     state_class_name: CloseDoor
+    #     transitions:
+    #         - transition:
+    #             name: succeeded
+    #             state: DONE
+    #         - transition:
+    #             name: failed
+    #             state: CLOSE_DOOR
+    #     arguments:
+    #         - argument:
+    #             name: number_of_retries
+    #             value: 3
