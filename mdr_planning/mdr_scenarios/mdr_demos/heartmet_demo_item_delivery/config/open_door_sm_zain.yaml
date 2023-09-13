@@ -2,20 +2,21 @@
 # Author: ERL_Team_2023
 # Email: unknown
 sm_id: erl_through_the_door
-states: [DETECT_NEAREST_DOOR]
+states: [DETECT_LEVER,GRIP_HANDLE,OPEN_DOOR]
+# states: [DETECT_NEAREST_DOOR, GO_TO_DOOR, GRIP_HANDLE, OPEN_DOOR, PASS_THROUGH_DOOR, CLOSE_DOOR, DETECT_LEVER]
 outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
-        name: DETECT_NEAREST_DOOR
-        state_module_name: mdr_composite_behaviours.goto_pose
-        state_class_name: GotoPose
+        name: DETECT_LEVER
+        state_module_name: mdr_composite_behaviours.detect_lever
+        state_class_name: DetectDoor
         transitions:
             - transition:
                 name: succeeded
-                state: DONE
+                state: GRIP_HANDLE
             - transition:
                 name: failed
-                state: DETECT_NEAREST_DOOR
+                state: DETECT_LEVER
         arguments:
             - argument:
                 name: number_of_retries
@@ -38,36 +39,36 @@ state_descriptions:
     #         - argument:
     #             name: number_of_retries
     #             value: 3   
-    # - state:
-    #     name: GRIP_HANDLE
-    #     state_module_name: mdr_composite_behaviours.grip_handle
-    #     state_class_name: GripHandle
-    #     transitions:
-    #         - transition:
-    #             name: succeeded
-    #             state: OPEN_DOOR
-    #         - transition:
-    #             name: failed
-    #             state: GRIP_HANDLE
-    #     arguments:
-    #         - argument:
-    #             name: number_of_retries
-    #             value: 3
-    # - state:
-    #     name: OPEN_DOOR
-    #     state_module_name: mdr_composite_behaviours.open_door
-    #     state_class_name: OpenDoor
-    #     transitions:
-    #         - transition:
-    #             name: succeeded
-    #             state: PASS_THROUGH_DOOR
-    #         - transition:
-    #             name: failed
-    #             state: OPEN_DOOR
-    #     arguments:
-    #         - argument:
-    #             name: number_of_retries
-    #             value: 3
+    - state:
+        name: GRIP_HANDLE
+        state_module_name: mdr_composite_behaviours.open_door_whole
+        state_class_name: OpenDoor
+        transitions:
+            - transition:
+                name: succeeded
+                state: OPEN_DOOR
+            - transition:
+                name: failed
+                state: GRIP_HANDLE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: OPEN_DOOR
+        state_module_name: mdr_composite_behaviours.opening_stage
+        state_class_name: DetectDoor
+        transitions:
+            - transition:
+                name: succeeded
+                state: PASS_THROUGH_DOOR
+            - transition:
+                name: failed
+                state: OPEN_DOOR
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
     # - state:
     #     name: PASS_THROUGH_DOOR
     #     state_module_name: mdr_composite_behaviours.pass_through_door

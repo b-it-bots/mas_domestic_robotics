@@ -329,27 +329,29 @@ def one_func(self):
         self.say('Trying to open the door') 
         # pick_pour= pickAndPour()
         self.one_func()
+        userdata.wrist_direction =self.wrist_direction
+        
         rospy.loginfo('[open_door] one func finished')
 
 
-        self.forceCapture=ForceSensorCapture()
-        force_capture_thread = threading.Thread(target=self.forceCapture.calculate_force)
-        force_capture_thread.start()
+        # self.forceCapture=ForceSensorCapture()
+        # force_capture_thread = threading.Thread(target=self.forceCapture.calculate_force)
+        # force_capture_thread.start()
         # rospy.loginfo('[open_door] ForceSensorCapture instantiated')
         # self.forceCapture.calculate_force()
         # rospy.loginfo("Done until force calculated")
-        self.node = ForceToVelocityNode()
-        # rospy.loginfo("[open_door]ForceToVelocityNode object instantiated")
-        # self.node.run()
-        # rospy.loginfo("[open_door] run complete")
+        # self.node = ForceToVelocityNode()
+        # # rospy.loginfo("[open_door]ForceToVelocityNode object instantiated")
+        # # self.node.run()
+        # # rospy.loginfo("[open_door] run complete")
          
-            # Create a thread for forceCapture.calculate_force()
+        #     # Create a thread for forceCapture.calculate_force()
       
         
 
-        # Create another thread for node.run()
-        node_run_thread = threading.Thread(target=self.node.run)
-        node_run_thread.start()
+        # # Create another thread for node.run()
+        # node_run_thread = threading.Thread(target=self.node.run)
+        # node_run_thread.start()
 
 
         # Optionally, you can wait for those threads to finish if needed

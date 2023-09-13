@@ -32,7 +32,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: ORDER
+                state: PERCEIVE_TABLE
             - transition:
                 name: failed
                 state: DETECT_PERSON_READING
@@ -75,7 +75,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: ORDER
+                state: PERCEIVE_TABLE
             - transition:
                 name: failed
                 state: DETECT_PERSON_DINING
@@ -115,7 +115,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: ORDER
+                state: PERCEIVE_TABLE
             - transition:
                 name: failed
                 state: DETECT_PERSON_DINING_FAR
@@ -126,21 +126,21 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 2
-    - state:
-        name: ORDER
-        state_module_name: mdr_hri_behaviours.retrieve_information
-        state_class_name: InteractionClient
-        transitions:
-            - transition:
-                name: succeeded
-                state: GO_TO_LOCATION
-            - transition:
-                name: failed
-                state: ORDER
-        arguments:
-            - argument:
-                name: number_of_retries
-                value: 5
+    # - state:
+    #     name: ORDER
+    #     state_module_name: mdr_hri_behaviours.retrieve_information
+    #     state_class_name: InteractionClient
+    #     transitions:
+    #         - transition:
+    #             name: succeeded
+    #             state: GO_TO_LOCATION
+    #         - transition:
+    #             name: failed
+    #             state: ORDER
+    #     arguments:
+    #         - argument:
+    #             name: number_of_retries
+    #             value: 3
     - state:
         name: GO_TO_LOCATION
         state_module_name: mdr_navigation_behaviours.move_base

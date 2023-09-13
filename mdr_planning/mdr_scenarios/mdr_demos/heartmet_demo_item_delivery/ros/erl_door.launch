@@ -18,6 +18,7 @@
     <!-- <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
         <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/all_locations.yaml" />
     </node> -->
+    <node pkg="mdr_composite_behaviour" type="hsrb_get_force" name="force_publisher" />
     <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
         <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/door_zain.yaml" />
     </node>

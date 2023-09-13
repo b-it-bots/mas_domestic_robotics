@@ -20,7 +20,7 @@ class DetectDoor(ScenarioStateBase):
         ScenarioStateBase.__init__(self, 'detect_lever',
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed'],
-                                   input_keys=['door_direction'])
+                                   input_keys==['wrist_direction'])
         
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'detect_lever')
@@ -32,7 +32,7 @@ class DetectDoor(ScenarioStateBase):
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/hsrb/head_rgbd_sensor/rgb/image_raw", Image, self.callback)
         self.forceVel=None
-        self.door_direction = list(kwargs.get('door_direction', list()))
+        self.wrist_direction = list(kwargs.get('wrist_direction', list()))
         
 
     def execute(self, userdata):
@@ -40,7 +40,7 @@ class DetectDoor(ScenarioStateBase):
 
                 
         if len(self.lever_pose) == 0:
-            self.door_direction = userdata.door_direction
+            self.wrist_direction = userdata.wrist_direction
             rospy.loginfo("Using userdata's door_direction {0}".format(self.door_direction))
 
         self.say('In state door opening')

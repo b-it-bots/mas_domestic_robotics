@@ -11,6 +11,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, PointCloud2
 import pandas as pd
 from mdr_composite_behaviours.Nav_Man import Mover
+from geometry_msgs.msg import PoseStamped, PoseArray
 
 
 
@@ -18,7 +19,8 @@ class DetectDoor(ScenarioStateBase):
     def __init__(self, save_sm_state=False, **kwargs):
         ScenarioStateBase.__init__(self, 'detect_lever',
                                    save_sm_state=save_sm_state,
-                                   outcomes=['succeeded', 'failed'])
+                                   outcomes=['succeeded', 'failed'],
+                                   output_keys=['lever_pose'])
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'detect_lever')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
@@ -53,10 +55,22 @@ class DetectDoor(ScenarioStateBase):
         whole, obj_clus = self.td23D.get_box_voxel(box, cloud)
         obj_pose = self.td23D.get_3D_cords(obj_clus)
         print(obj_pose)
+        
 
         real_object_head = self.mover.transform_3D2head([obj_pose])[0]
         real_object_pose = self.mover.transform_head2map([real_object_head])[0]
-    
+        # pose_ = PoseStamped()
+        # real_object_pose
+        # x = pose_.pose.position.x
+        # y = pose_.pose.position.y
+        # z = pose_.pose.position.z
+        # ox = pose_.pose.orientation.x
+        # oy = pose_.pose.orientation.y
+        # oz = pose_.pose.orientation.z
+        # ow = pose_.pose.orientation.w
+        lever_pose=[real_object_pose.pose.position.x, real_object_pose.pose.position.y, real_object_pose.pose.position.z, real_object_pose.pose.orientation.x,real_object_pose.pose.orientation.y,real_object_pose.pose.orientation.z,real_object_pose.pose.orientation.w]          
+        # lever_pose={'x':real_object_pose.pose.position.x; 'y':real_object_pose.pose.position.y; 'z':real_object_pose.pose.position.z;  'ox':real_object_pose.pose.orientation.x; 'oy':real_object_pose.pose.orientation.y; 'oz':real_object_pose.pose.orientation.z ; 'ow': real_object_pose.pose.orientation.w }
+        userdata.lever_pose=lever_pose
         print(real_object_head)
         print(real_object_pose)
 

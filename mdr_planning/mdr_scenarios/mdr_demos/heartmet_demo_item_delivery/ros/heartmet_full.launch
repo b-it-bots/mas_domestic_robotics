@@ -19,6 +19,6 @@
         <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/all_locations.yaml" />
     </node> -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
-        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/brsu_c069_tour.yaml" />
+        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/open_door_sm.yaml" />
     </node>
 </launch>
