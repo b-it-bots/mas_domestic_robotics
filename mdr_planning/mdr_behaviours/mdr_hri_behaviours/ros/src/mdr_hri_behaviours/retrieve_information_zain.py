@@ -116,14 +116,23 @@ class InteractionClient(ScenarioStateBase):
                 print("Say something!")
                 audio = self.r.listen(source)
                 #audio = self.r.record(source,duration=5)
+                # recognize speech using whisper
                 try:
-                    user_input = self.r.recognize_google(audio)
-                    print("You said:", user_input)
+                    user_input = self.r.recognize_whisper(audio, language="english")
+                    print("Whisper thinks you said " + user_input)
                     return user_input
-                except:
-                    user_input = self.r.recognize_sphinx(audio)
-                    print("You said:", user_input)
-                    return user_input
+                except sr.UnknownValueError:
+                    print("Whisper could not understand audio")
+                except sr.RequestError as e:
+                    print("Could not request results from Whisper")
+                # try:
+                #     user_input = self.r.recognize_google(audio)
+                #     print("You said:", user_input)
+                #     return user_input
+                # except:
+                #     user_input = self.r.recognize_sphinx(audio)
+                #     print("You said:", user_input)
+                #     return user_input
         except sr.UnknownValueError:
             print(self.generate_error_response())
             return None

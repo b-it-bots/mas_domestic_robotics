@@ -27,24 +27,21 @@ class DetectGestureSM(ActionSMBase):
        
         self.model = None
         self.gesture_detection = None
-        self.num_person = 1
+        self.num_person = 2
         self.rp = Person_Detector()
         #self.image = Image()
         self.input_image = np.zeros((480,640, 3),dtype=np.uint8)
         self.gest_sub = rospy.Subscriber("/hsrb/head_rgbd_sensor/rgb/image_raw", Image, self.image_callback)
-        self.d = deque(maxlen=60)
-        self.seq_len=10
-        self.keys = deque(maxlen=self.seq_len)
-        self.avg_len = 10
-        self.frames = deque(maxlen=self.avg_len)
-
-
 
 
     def init(self):
+        model_path = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_perception_actions/mdr_detect_gesture/model/"
         try:
             rospy.loginfo('[detect_person] Loading detection model %s', self.detection_model_path)
-            self.model = MultiPerDetector(self.rp, num_person = self.num_person, hand_model='/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_perception_actions/mdr_detect_gesture/model/action8_hand2d.tflite', head_model = '/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_perception_actions/mdr_detect_gesture/model/action3_head2d_rot.tflite')
+            self.model = MultiPerDetector(self.rp, num_person = self.num_person, 
+                                          hand_model=model_path+'action8_hand2d_10f_2.h5', 
+                                          head_model=model_path+'action3_head2d_rot_10fabs.h5',
+                                          fing_model=model_path+"gest_num_classifier.h5")
         except Exception as exc:
             rospy.logerr('[detect_gesture] Model %s could not be loaded: %s',
                          self.detection_model_path, str(exc))
@@ -65,26 +62,38 @@ class DetectGestureSM(ActionSMBase):
             #print("image", bgr_image)
             # for i in range(self.num_person):
                 # self.model.globals()["per"+str(i)].keys= deque(maxlen=10)
-            self.frames.append(bgr_image)
-            if len(self.frames) == 10:
-                image, gestures = self.model.multi_per_gesture(bgr_image,sort="area",viz=False)
-                print(gestures)
-                avggestures = self.model.avg_per_gesture()
+            image, gestures = self.model.multi_per_gesture(bgr_image,viz=True)
+            #cv2.imshow("hdhd",image)
+            #cv2.waitKey(1)
+            # rospy.loginfo("         ")
+            # rospy.loginfo("         ")
+            # rospy.loginfo("         ")
+            # rospy.loginfo(gestures)
+            # rospy.loginfo("         ")
+            # rospy.loginfo("         ")
+            # rospy.loginfo("         ")
+            found = False
+            for i in range(self.num_person):
+                if gestures[i]!=[]:
+                    found = True
+            if found:
+                # rospy.loginfo("         ")
+                # rospy.loginfo("         ")
+                # rospy.loginfo("         ")
+                # rospy.loginfo("--------------------gesture found----------------------")
+                # rospy.loginfo("         ")
+                # rospy.loginfo("         ")
+                # rospy.loginfo("         ")
+                comb_gesture = self.model.combine_multi_per_gest(gestures)
                 # print("gestures", avggestures)
-                for gest in avggestures:
-
-                    gesture_msg = DetectGestureResult()
-                    gesture_msg.gesture = gest[0]
-                    gesture_msg.gesture_selection = gest[4]
-                    gesture_msg.confidence = gest[1]
-                    gesture_msg.id = gest[2]
-                    gesture_msg.bounding_box.bounding_box_coordinates = gest[3]
-    
-                    self.result = gesture_msg
-
-                    self.frames = deque(maxlen=self.avg_len)
-
-
+                gesture_msg = DetectGestureResult()
+                gesture_msg.gesture = comb_gesture[0]
+                gesture_msg.gesture_selection = comb_gesture[4]
+                gesture_msg.confidence = comb_gesture[1]
+                gesture_msg.id = comb_gesture[2]
+                gesture_msg.bounding_box.bounding_box_coordinates = comb_gesture[3]
+                print(gesture_msg)
+                self.result = gesture_msg
         except Exception as e:
             detection_successful = False
             print(e)
@@ -94,8 +103,8 @@ class DetectGestureSM(ActionSMBase):
         # looprate = rospy.Rate(10)
         
         while self.result == None:
-            rospy.sleep(0.07)
             self.image_process()
+        #cv2.destroyAllWindows
             # print("while I am in running and result is none")
         #     #looprate.sleep()
         #self.gest_sub.unregister()

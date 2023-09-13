@@ -35,7 +35,7 @@ class PickClosestFromSurface(ScenarioStateBase):
 
         surface_objects = self.kb_interface.get_surface_object_map(self.picking_surface_prefix)
         object_poses = self.kb_interface.get_surface_object_pose_map(surface_objects, Object._type)
-        rospy.loginfo("This is in pick up thingy")
+        
         print(object_poses)
         surface, obj_to_grasp = self.select_object_for_grasping(object_poses)
         if not obj_to_grasp:

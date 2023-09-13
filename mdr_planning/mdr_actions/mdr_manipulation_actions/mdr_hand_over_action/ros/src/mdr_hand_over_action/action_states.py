@@ -188,7 +188,7 @@ class HandOverSM(ActionSMBase):
             # Force sensing object release strategy:
             rospy.sleep(1.)
 
-            self.say('Please take the it')
+            self.say('Please take it')
 
             rospy.loginfo('[hand_over] Waiting for object to be received...')
             rospy.Subscriber(self.force_sensor_topic, WrenchStamped, self.force_sensor_cb)

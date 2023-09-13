@@ -20,7 +20,7 @@ class DetectDoor(ScenarioStateBase):
         ScenarioStateBase.__init__(self, 'detect_lever',
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed'],
-                                   input_keys==['wrist_direction'])
+                                   input_keys=['wrist_direction'])
         
         self.sm_id = kwargs.get('sm_id', '')
         self.state_name = kwargs.get('state_name', 'detect_lever')
@@ -30,9 +30,12 @@ class DetectDoor(ScenarioStateBase):
         self.timeout = 120.
         self.head= HeadController()
         self.bridge = CvBridge()
-        self.image_sub = rospy.Subscriber("/hsrb/head_rgbd_sensor/rgb/image_raw", Image, self.callback)
+       
         self.forceVel=None
-        self.wrist_direction = list(kwargs.get('wrist_direction', list()))
+        # self.wrist_direction = userdata.wrist_direction
+        # self.wrist_direction = list(kwargs.get('wrist_direction', list()))
+        # self.forceVel=ForceToVelocityNode(self.door_direction)
+        # self.image_sub = rospy.Subscriber("/hsrb/head_rgbd_sensor/rgb/image_raw", Image, self.callback)
         
 
     def execute(self, userdata):

@@ -6,7 +6,7 @@ import rospy
 import moveit_commander
 import moveit_msgs.msg
 import geometry_msgs.msg
-
+from std_msgs.msg import Bool
 
 def main():
     # # Initialize moveit_commander and rospy
@@ -90,6 +90,24 @@ def main():
 
 
 if __name__ == '__main__':
+    def callback(data):
+    # Set the target pose for the arm
+        pose_goal = geometry_msgs.msg.Pose()
+        pose_goal.position.x = 0.418000 # changing from 1.2
+        pose_goal.position.y = 0.078000
+        pose_goal.position.z = 0.742000
+        pose_goal.orientation.x = 0.758000
+        pose_goal.orientation.y = 0.000000
+        pose_goal.orientation.z = 0.652000
+        pose_goal.orientation.w = 1.000000
+
+        move_group.set_pose_target(pose_goal)
+
+        # Plan and execute the trajectory
+        plan = move_group.go(wait=True)
+
+        # Exit the script
+        moveit_commander.roscpp_shutdown()
     try:
         rospy.init_node('custom_object_picker')
             # Initialize moveit_commander and rospy
@@ -123,7 +141,23 @@ if __name__ == '__main__':
  
         # Set the reference frame for the arm
         move_group.set_pose_reference_frame('odom')
-        rospy.Subscriber("/pose/pose_soup", Bool, callback)
+        pose_goal = geometry_msgs.msg.Pose()
+        pose_goal.position.x = 0.418000 # changing from 1.2
+        pose_goal.position.y = 0.078000
+        pose_goal.position.z = 0.742000
+        pose_goal.orientation.x = 0.758000
+        pose_goal.orientation.y = 0.000000
+        pose_goal.orientation.z = 0.652000
+        pose_goal.orientation.w = 1.000000
+
+        move_group.set_pose_target(pose_goal)
+
+        # Plan and execute the trajectory
+        plan = move_group.go(wait=True)
+
+        # Exit the script
+        moveit_commander.roscpp_shutdown()
+        # rospy.Subscriber("/pose/pose_soup", Bool, callback)
         # pub = rospy.Publisher('object_info', String, queue_size=10)
         rospy.loginfo("waiting for object pose....")
         rospy.spin()

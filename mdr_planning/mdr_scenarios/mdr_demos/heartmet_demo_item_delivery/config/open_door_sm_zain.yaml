@@ -61,7 +61,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: PASS_THROUGH_DOOR
+                state: DONE
             - transition:
                 name: failed
                 state: OPEN_DOOR

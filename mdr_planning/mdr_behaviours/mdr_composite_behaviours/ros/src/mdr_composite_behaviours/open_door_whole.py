@@ -186,7 +186,7 @@ class OpenDoor(ScenarioStateBase):
             #Clockwise wrist rotation
             self.wrist_direction='cw'
         
-        userdata.wrist_direction=wrist_direction
+        
         self.say(str(self.wrist_direction))
     def say(self, sentence):
         say_msg = String()
@@ -202,8 +202,9 @@ class OpenDoor(ScenarioStateBase):
         rospy.loginfo("Back to neutral position")
         rospy.sleep(5)
         
-def one_func(self):
+    def one_func(self):
         self.speak=1
+        userdata.wrist_direction=self.wrist_direction
         # open gripper by default
         self.say("Through the door")
         self.gripper_controller.open()
@@ -314,9 +315,7 @@ def one_func(self):
     #         #print(force_difference)
     #         rospy.sleep(0.1)
     
-    def create_force_direction_node(self):
-            node = ForceToVelocityNode()
-            node.run()
+  
        
 
 

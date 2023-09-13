@@ -7,12 +7,12 @@ outcomes: [DONE, FAILED]
 state_descriptions:
     - state:
         name: ORDER
-        state_module_name: mdr_hri_behaviours.retrieve_information
+        state_module_name: mdr_hri_behaviours.erl_zain
         state_class_name: InteractionClient
         transitions:
             - transition:
                 name: succeeded
-                state: GO_TO_LOCATION
+                state: DONE
             - transition:
                 name: failed
                 state: ORDER

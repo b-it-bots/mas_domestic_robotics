@@ -7,6 +7,7 @@ from mas_hsr_head_controller.head_controller import HeadController
 from mdr_composite_behaviours.coordetector import t2d2t3d
 import torch
 import cv2
+import numpy as np
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image, PointCloud2
 import pandas as pd
@@ -45,11 +46,15 @@ class DetectDoor(ScenarioStateBase):
         result = self.model(self.cv_image, size=416)
         print(result.pandas().xyxy[0])
         df = result.pandas().xyxy[0]
+        detected = False
         #result = df[df['class'] == 2][['xmin', 'ymin', 'xmax', 'ymax']]
         for index, row in df.iterrows():
             if row['class'] == 2:
+                  detected= True
                   box = [[int(row['xmin']),int(row['ymin'])],[int(row['xmax']),int(row['ymax'])]]
         #print(f"Row {index}: xmin={xmin}, ymin={ymin}, xmax={xmax}, ymax={ymax}")
+        if not detected:
+            return 'failed'
         print("Detection DONE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         cloud = self.cloud_data
         whole, obj_clus = self.td23D.get_box_voxel(box, cloud)
@@ -95,8 +100,8 @@ class DetectDoor(ScenarioStateBase):
 
     def callback(self,data):
         try:
-            im = self.bridge.imgmsg_to_cv2(data)
-            self.cv_image = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
+            self.cv_image = self.bridge.imgmsg_to_cv2(data)
+            #self.cv_image = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
         except CvBridgeError as e:
             self.cv_image = np.zeros((480, 640, 3), dtype=np.uint8)
             print(e)

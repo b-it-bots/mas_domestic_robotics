@@ -21,7 +21,7 @@ class DetectPerson(ScenarioStateBase):
         self.object_tilt = kwargs.get('object_tilt', -0.1)
 
         self.number_of_retries = kwargs.get('number_of_retries', 0)
-        self.tilt_angle = kwargs.get('head_tilt', -0.1)
+        self.tilt_angle = kwargs.get('head_tilt', 0.0)
         self.retry_count = 0
         self.client = actionlib.SimpleActionClient(
             self.action_server, FindPeopleAction)

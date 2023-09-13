@@ -13,6 +13,9 @@
     <!-- Voice commands -->
     <include file="$(find mas_hsr_sound_vocalisation)/ros/launch/sound_vocalisation.launch" />
 
+    <!-- Head control -->
+    <include file="$(find mas_hsr_head_controller)/ros/launch/head_controller.launch" />
+
     <!-- Move Arm Action -->
     <include file="$(find mas_hsr_move_arm_action)/ros/launch/move_arm.launch" /> 
     
