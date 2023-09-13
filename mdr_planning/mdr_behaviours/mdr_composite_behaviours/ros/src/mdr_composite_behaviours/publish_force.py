@@ -143,7 +143,7 @@ def calculate_force():
         # Computing difference from initial and new force sensor readings
         force_difference = compute_difference(pre_force_list, post_force_list,pre_angle,post_angle)
         # pub_force.publish(force_difference)
-        if force_difference > 45:
+        if force_difference > 45:   ## threshold for push or pull.
             pub.publish(True)
         else:
             pub.publish(False)

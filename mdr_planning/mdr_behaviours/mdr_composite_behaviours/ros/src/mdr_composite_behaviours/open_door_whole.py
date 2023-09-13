@@ -95,9 +95,8 @@ class OpenDoor(ScenarioStateBase):
             control_msgs.msg.FollowJointTrajectoryAction)
         # wait for the action server to establish connection
         self.action_cli.wait_for_server()
-        rospy.loginfo("Connected to server for executing pouring")
+        rospy.loginfo("Connected to server for executing door opening")
         self.speak=1
-        self.direction_multiplier = 1
         self.wrist_direction = None
         self.say_pub = rospy.Publisher('/say', String, latch=True, queue_size=1)
         self.pub  = rospy.Publisher('Handle_unlatched', Bool, queue_size=10)
@@ -106,61 +105,28 @@ class OpenDoor(ScenarioStateBase):
         self.traj.joint_names = ["arm_lift_joint", "arm_flex_joint", "arm_roll_joint", "wrist_flex_joint", "wrist_roll_joint"]
         self.p = trajectory_msgs.msg.JointTrajectoryPoint()
         #receive torques
-        self.torque_sub = rospy.Subscriber('/hsrb/wrist_wrench/compensated', Bool, self.save_torque)
+        self.torque_sub = rospy.Subscriber('/hsrb/wrist_wrench/compensated', Bool, self.save_torque) ## subscriber in plot juggler (for both force and torque threshold feedback)
         self.torque_val = 0
         self.force_feedback_sub = rospy.Subscriber('force_threshold', Bool, self.get_force_feedback)
         self.pub_cmd_vel = rospy.Publisher('/hsrb/command_velocity', Twist, queue_size=10)
         #initialising the client for moving arm to neutral position
+        #initialising the client for moving arm to neutral position
         try:
             self.move_arm_client = actionlib.SimpleActionClient("move_arm_server", MoveArmAction)
-            rospy.loginfo('[pickup] Waiting for %s server', "move_arm_server")
+            rospy.loginfo('[door_open] Waiting for %s server', "move_arm_server")
             self.move_arm_client.wait_for_server()
         except Exception as exc:
-            rospy.logerr('[pickup] %s server does not seem to respond: %s',
+            rospy.logerr('[door_open] %s server does not seem to respond: %s',
                         "move_arm_server", str(exc))
         print("All good!!")
         ##===========================================================================
         
 
-
-          #initialising the action client for moving sideways
-        try:
-            self.move_base_client = actionlib.SimpleActionClient("move_base_server", MoveBaseAction)
-            rospy.loginfo('[pickup] Waiting for %s server', "move_base_server")
-            self.move_base_client.wait_for_server()
-        except Exception as exc:
-            rospy.logerr('[pickup] %s server does not seem to respond: %s',
-                         "move_base_server", str(exc))     
-
-        # initialising the action client for pouring
-        self.action_cli = actionlib.SimpleActionClient(
-            '/hsrb/arm_trajectory_controller/follow_joint_trajectory',
-            control_msgs.msg.FollowJointTrajectoryAction)
-        # wait for the action server to establish connection
-        self.action_cli.wait_for_server()
-        rospy.loginfo("Connected to server for executing pouring")
-
-        
-        self.speak=1
-        self.direction_multiplier = 1
-        self.say_pub = rospy.Publisher('/say', String, latch=True, queue_size=1)
-        self.pub  = rospy.Publisher('Handle_unlatched', Bool, queue_size=10)
-        #initialising the client for moving arm to neutral position
-        try:
-            self.move_arm_client = actionlib.SimpleActionClient("move_arm_server", MoveArmAction)
-            rospy.loginfo('[pickup] Waiting for %s server', "move_arm_server")
-            self.move_arm_client.wait_for_server()
-        except Exception as exc:
-            rospy.logerr('[pickup] %s server does not seem to respond: %s',
-                        "move_arm_server", str(exc))
-        
-
     def get_force_feedback(self, msg):
         if msg.data and self.speak:
-            self.direction_multiplier = 1
-            rospy.logerr('[door-open]Cannot pull. Force feedback exceeds threshold. Trying other direction...')
+            rospy.loginfo('[door_open]Cannot pull. Force feedback exceeds threshold. Trying to push...')
             self.speak=0
-            self.say("Cannot pull. Force feedback exceeds threshold.")
+            self.say("Cannot pull. Trying to push.")
     def save_torque(self,msg):
         self.torque_val=msg.wrench.torque.x
     def get_door_handle_allignment(self):
@@ -173,7 +139,7 @@ class OpenDoor(ScenarioStateBase):
         self.action_cli.send_goal(self.goal)
         self.action_cli.wait_for_result()
         time.sleep(1)
-        if self.torque_val>0.5:
+        if self.torque_val>0.5:   
             self.p.positions= [0.35, -0.42, 0.0, -1.00, np.round(np.deg2rad(-135), 2)]
             self.p.time_from_start = rospy.Duration(1)
             self.traj.points = [self.p]
@@ -185,8 +151,6 @@ class OpenDoor(ScenarioStateBase):
         else:
             #Clockwise wrist rotation
             self.wrist_direction='cw'
-        
-        
         self.say(str(self.wrist_direction))
     def say(self, sentence):
         say_msg = String()
@@ -201,10 +165,9 @@ class OpenDoor(ScenarioStateBase):
         self.move_arm_client.get_result()
         rospy.loginfo("Back to neutral position")
         rospy.sleep(5)
-        
+
     def one_func(self):
         self.speak=1
-        userdata.wrist_direction=self.wrist_direction
         # open gripper by default
         self.say("Through the door")
         self.gripper_controller.open()
@@ -212,6 +175,7 @@ class OpenDoor(ScenarioStateBase):
         traj = trajectory_msgs.msg.JointTrajectory()
         traj.joint_names = ["arm_lift_joint", "arm_flex_joint", "arm_roll_joint", "wrist_flex_joint", "wrist_roll_joint"]
         p = trajectory_msgs.msg.JointTrajectoryPoint()
+        # Move to initial grabbing position
         angles= list(range(0, -100, -15))
         inRadians= np.deg2rad(angles)
         wrist_roll_angles= np.round(inRadians, 2)
@@ -255,66 +219,17 @@ class OpenDoor(ScenarioStateBase):
         time.sleep(0.5)
         cmd_vel_msg.linear.x = 0.0
         self.pub_cmd_vel.publish(cmd_vel_msg)
+
+        # p.positions= [0.35, -0.42, 0.0, -1.00, np.round(np.deg2rad(-90), 2)]
+        # p.velocities = [0, 0, 0, 0, 0]
+        # p.time_from_start = rospy.Duration(1)
+        # traj.points = [p]
+        # goal.trajectory = traj
+        # self.action_cli.send_goal(goal)
+        # self.action_cli.wait_for_result()
         # now move back a bit
         #self.movebackwards()
         #rospy.loginfo('Moved back a bit')
-
-    # def calculate_force(self):
-
-    #     pub = rospy.Publisher('force',Bool, queue_size = 10)
-    #     pub_force = rospy.Publisher('force_values',Float32, queue_size = 10)
-    #     pub_max_force = rospy.Publisher('max_force',Float32, queue_size = 10)
-    #     # Start force sensor capture
-    #     force_sensor_capture = ForceSensorCapture()
-
-    #     # Get initial data of force sensor
-    #     pre_force_list = force_sensor_capture.get_current_force()
-        
-    #     pre_angle=force_sensor_capture.get_current_angle()
-
-
-    #     # Wait until force sensor data become stable
-    #     rospy.sleep(1.0)
-        
-    #     # Getting current force
-    #     post_force_list = force_sensor_capture.get_current_force()
-    #     post_angle=force_sensor_capture.get_current_angle()
-
-
-
-    #     force_difference = compute_difference(pre_force_list, post_force_list,pre_angle,post_angle)
-    
-
-    #     rospy.Rate(10)
-    #     median_angles_list=[]
-    #     while not rospy.is_shutdown():
-    #         # Getting new force sensor reading
-    #         for i in range(5):
-    #             post_force_list = force_sensor_capture.get_current_force()
-            
-    #         # Getting current angle
-    #             post_angle=force_sensor_capture.get_current_angle()
-
-    #         #print(post_force_list[0][0],post_force_list[1][0],post_force_list[2][0])
-    #             max_force = get_max_directional_force(post_force_list[0][0],post_force_list[1][0],post_force_list[2][0])
-    #             median_angles_list.append(max_force)
-    #         med = statistics.median(median_angles_list)
-    #         print(med)
-    #         pub_max_force.publish(med)
-    #         median_angles_list=[]
-
-
-    #         # Computing difference from initial and new force sensor readings
-
-    #         force_difference = compute_difference(pre_force_list, post_force_list,pre_angle,post_angle)
-    #         pub_force.publish(force_difference)
-    #         if force_difference > 45:
-    #             pub.publish(True)
-    #         else:
-    #             pub.publish(False)
-    #         #print(force_difference)
-    #         rospy.sleep(0.1)
-    
   
        
 
@@ -327,6 +242,7 @@ class OpenDoor(ScenarioStateBase):
         self.say('Im using whole file')
         self.say('Trying to open the door') 
         # pick_pour= pickAndPour()
+        
         self.one_func()
         userdata.wrist_direction =self.wrist_direction
         
@@ -358,3 +274,10 @@ class OpenDoor(ScenarioStateBase):
         # node_run_thread.join()
               
         return 'succeeded'
+
+# def main():
+#     door_open= OpenDoor()
+#     door_open.one_func()
+#     rospy.spin()
+# if __name__== "__main__" :
+#     main()

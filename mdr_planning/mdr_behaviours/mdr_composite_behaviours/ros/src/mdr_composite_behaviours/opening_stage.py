@@ -41,13 +41,14 @@ class DetectDoor(ScenarioStateBase):
     def execute(self, userdata):
         rospy.loginfo('[detect_lever] Trying to detect nearest lever')
 
-                
-        if len(self.lever_pose) == 0:
-            self.wrist_direction = userdata.wrist_direction
-            rospy.loginfo("Using userdata's door_direction {0}".format(self.door_direction))
-
+        # self.lever_pose=userdata.lever_pose  
+        # if len(self.lever_pose) == 0:
+        #     self.wrist_direction = userdata.wrist_direction
+        #     rospy.loginfo("Using userdata's door_direction {0}".format(self.door_direction))
+        
+        self.wrist_direction = userdata.wrist_direction
         self.say('In state door opening')
         self.say('Trying to detect nearest lever')  
         
-        self.forceVel=ForceToVelocityNode(self.door_direction)
+        self.forceVel=ForceToVelocityNode(self.wrist_direction)
         self.forceVel.run()
