@@ -2,7 +2,7 @@
 # Author: ERL_Team_2023
 # Email: unknown
 sm_id: erl_through_the_door
-states: [DETECT_LEVER,GRIP_HANDLE,OPEN_DOOR]
+states: [DETECT_LEVER,ARM_TO_DOOR,GRIP_HANDLE,OPEN_DOOR]
 # states: [DETECT_NEAREST_DOOR, GO_TO_DOOR, GRIP_HANDLE, OPEN_DOOR, PASS_THROUGH_DOOR, CLOSE_DOOR, DETECT_LEVER]
 outcomes: [DONE, FAILED]
 state_descriptions:
@@ -21,6 +21,21 @@ state_descriptions:
             - argument:
                 name: number_of_retries
                 value: 3
+    - state:
+        name: ARM_TO_DOOR
+        state_module_name: mdr_composite_behaviours.goto_pose
+        state_class_name: GotoPose
+        transitions:
+            - transition:
+                name: succeeded
+                state: GRIP_HANDLE
+            - transition:
+                name: failed
+                state: ARM_TO_DOOR
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3   
     # - state:
     #     name: GO_TO_DOOR
     #     state_module_name: mdr_navigation_behaviours.move_base

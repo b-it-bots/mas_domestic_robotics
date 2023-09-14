@@ -13,7 +13,6 @@ from sensor_msgs.msg import Image, PointCloud2
 import pandas as pd
 from mdr_composite_behaviours.Nav_Man import Mover
 from geometry_msgs.msg import PoseStamped, PoseArray
-from mdr_perception_msgs.msg import BodyBoundingBox
 
 
 
@@ -33,7 +32,6 @@ class DetectDoor(ScenarioStateBase):
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/hsrb/head_rgbd_sensor/rgb/image_raw", Image, self.callback)
         self.cloud_sub = rospy.Subscriber("/hsrb/head_rgbd_sensor/depth_registered/rectified_points", PointCloud2, self.callback1)
-        self.lever_bbox_sub = rospy.Subscriber("/heartmet/detection_bbox_door", BodyBoundingBox, self.lever_bbox_callback)
         
         self.mover = Mover()
         self.model = torch.hub.load('ultralytics/yolov5', 'custom', path='/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_composite_behaviours/ros/models/erl_door.pt')
@@ -92,13 +90,6 @@ class DetectDoor(ScenarioStateBase):
 
 
         return 'succeeded'
-
-    def lever_bbox_callback(self, data):
-        try:
-            self.lever_box_data = data
-        except Value as e:
-            print(e)
-        
 
     def callback1(self,data):
         #print('callback')

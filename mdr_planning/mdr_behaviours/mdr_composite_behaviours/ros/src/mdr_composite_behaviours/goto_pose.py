@@ -59,6 +59,7 @@ class GotoPose(ScenarioStateBase):
         # self.control_head("head_pan_joint",0)
         # self.control_head("head_pan_joint",-1.57)
         # rospy.sleep(1)
+        self.lever_pose = userdata.lever_pose
 
         self.say("Going to a pose")
 
@@ -86,7 +87,7 @@ class GotoPose(ScenarioStateBase):
         eef_link = self.arm.get_end_effector_link()
         print("============ End effector link: %s" % eef_link)
 
-        self.lever_pose=userdata.lever_pose
+        # self.lever_pose=userdata.lever_pose
         # Set the target pose for the arm
         pose_goal = geometry_msgs.msg.Pose()
         pose_goal.position.x = self.lever_pose[0] # changing from 1.2
@@ -124,7 +125,7 @@ class GotoPose(ScenarioStateBase):
         rospy.loginfo(roll)
         rospy.loginfo(pitch)
         rospy.loginfo(yaw)
-        self.lever_pose = userdata.lever_pose
+        
         # p = PoseStamped()        
         # p.header.frame_id = "hand_palm_link"        
         # p.pose.position.x = x

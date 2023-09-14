@@ -27,6 +27,7 @@ class MoveBase(ScenarioStateBase):
         self.move_base_client = actionlib.SimpleActionClient(self.move_base_server,
                                                              MoveBaseAction)
         self.move_base_client.wait_for_server()
+        
 
     def execute(self, userdata):
         original_location = self.kb_interface.get_robot_location(self.robot_name)

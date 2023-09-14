@@ -2,25 +2,47 @@
 # Author: ERL_Team_2023
 # Email: unknown
 sm_id: erl_through_the_door
-states: [DETECT_LEVER]
+states: [PERCEIVE_TABLE, ORDER]
 # states: [DETECT_NEAREST_DOOR, GO_TO_DOOR, GRIP_HANDLE, OPEN_DOOR, PASS_THROUGH_DOOR, CLOSE_DOOR, DETECT_LEVER]
 outcomes: [DONE, FAILED]
-state_descriptions:
+state_descriptions: 
     - state:
-        name: DETECT_LEVER
-        state_module_name: mdr_composite_behaviours.detect_lever
-        state_class_name: DetectDoor
+        name: ORDER
+        state_module_name: mdr_hri_behaviours.retrieve_information
+        state_class_name: InteractionClient
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed
+                state: ORDER
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PERCEIVE_TABLE
+        state_module_name: mdr_perception_behaviours.perceive_planes
+        state_class_name: PerceivePlanes
         transitions:
             - transition:
                 name: succeeded
                 state: DONE
             - transition:
                 name: failed
-                state: DETECT_LEVER
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
         arguments:
             - argument:
                 name: number_of_retries
                 value: 3
+            - argument:
+                name: plane_prefix
+                value: table
+   
     # - state:
     #     name: GO_TO_DOOR
     #     state_module_name: mdr_navigation_behaviours.move_base

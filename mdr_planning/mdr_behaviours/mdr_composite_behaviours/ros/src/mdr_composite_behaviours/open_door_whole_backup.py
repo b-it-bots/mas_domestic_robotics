@@ -27,12 +27,7 @@ from mas_execution_manager.scenario_state_base import ScenarioStateBase
 import rospy
 from sensor_msgs.msg import JointState
 import threading
-import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
-import diagnostic_msgs.msg as diag_msgs
-from mas_execution_manager.scenario_state_base import ScenarioStateBase
-import moveit_commander
-import geometry_msgs.msg
-from tf.transformations import quaternion_from_euler
+
 
 
 def compute_difference(pre_data_list, post_data_list,initial,post):
@@ -110,7 +105,7 @@ class OpenDoor(ScenarioStateBase):
         self.traj.joint_names = ["arm_lift_joint", "arm_flex_joint", "arm_roll_joint", "wrist_flex_joint", "wrist_roll_joint"]
         self.p = trajectory_msgs.msg.JointTrajectoryPoint()
         #receive torques
-        self.torque_sub = rospy.Subscriber('/hsrb/wrist_wrench/compensated', Bool, self.save_torque) ## subscriber in plot juggler (for both force and torque threshold feedback)
+        self.torque_sub = rospy.Subscriber('/hsrb/wrist_wrench/compensated', Bool, self.save_torque)
         self.torque_val = 0
         self.force_feedback_sub = rospy.Subscriber('force_threshold', Bool, self.get_force_feedback)
         self.pub_cmd_vel = rospy.Publisher('/hsrb/command_velocity', Twist, queue_size=10)
@@ -126,25 +121,6 @@ class OpenDoor(ScenarioStateBase):
         print("All good!!")
         ##===========================================================================
         
-        ## initialization for moveit arm
-
-                #self.reference_frame = "odom"
-        self.arm = moveit_commander.MoveGroupCommander("arm",
-                                                  wait_for_servers=0.0)
-        self.base = moveit_commander.MoveGroupCommander("base",
-                                                   wait_for_servers=0.0)
-        self.gripper = moveit_commander.MoveGroupCommander("gripper",
-                                                      wait_for_servers=0.0)
-        self.head = moveit_commander.MoveGroupCommander("head",
-                                                   wait_for_servers=0.0)
-        self.whole_body \
-            = moveit_commander.MoveGroupCommander("whole_body_light",
-                                                  wait_for_servers=0.0)
-        self.whole_body.allow_replanning(True)
-        self.lever_pose = list(kwargs.get('lever_pose', dict()))
-        self.whole_body.set_planning_time(5)
-        self.whole_body.set_workspace([-3.0, -3.0, 3.0, 3.0])
-        self.arm.set_pose_reference_frame('base_link')
 
     def get_force_feedback(self, msg):
         if msg.data and self.speak:
@@ -163,7 +139,7 @@ class OpenDoor(ScenarioStateBase):
         self.action_cli.send_goal(self.goal)
         self.action_cli.wait_for_result()
         time.sleep(1)
-        if self.torque_val>0.5:   
+        if self.torque_val>0.5:
             self.p.positions= [0.35, -0.42, 0.0, -1.00, np.round(np.deg2rad(-135), 2)]
             self.p.time_from_start = rospy.Duration(1)
             self.traj.points = [self.p]
@@ -180,40 +156,6 @@ class OpenDoor(ScenarioStateBase):
         say_msg = String()
         say_msg.data = sentence
         self.say_pub.publish(say_msg)
-
-    def arm_to_pose(self):
-        
-
-        planning_frame = self.arm.get_planning_frame()
-        print("============ Planning frame: %s" % planning_frame)
-
-        # We can also print the name of the end-effector link for this group:
-        eef_link = self.arm.get_end_effector_link()
-        print("============ End effector link: %s" % eef_link)
-
-        # self.lever_pose=userdata.lever_pose
-        # Set the target pose for the arm
-        pose_goal = geometry_msgs.msg.Pose()
-        pose_goal.position.x = self.lever_pose[0] # changing from 1.2
-        pose_goal.position.y = self.lever_pose[1]
-        pose_goal.position.z = self.lever_pose[2]
-        pose_goal.orientation.x = self.lever_pose[3]
-        pose_goal.orientation.y = self.lever_pose[4]
-        pose_goal.orientation.z = self.lever_pose[5]
-        pose_goal.orientation.w = self.lever_pose[6]
-
-        # pose_goal = geometry_msgs.msg.Pose()
-        # pose_goal.position.x = 0.418000 # changing from 1.2
-        # pose_goal.position.y = 0.078000
-        # pose_goal.position.z = 0.742000
-        # pose_goal.orientation.x = 0.758000
-        # pose_goal.orientation.y = 0.000000
-        # pose_goal.orientation.z = 0.652000
-        # pose_goal.orientation.w = 1.000000
-        self.arm.set_pose_target(pose_goal)
-        # Plan and execute the trajectory
-        self.arm.go(wait=True)
-   
     def moveToNeutral(self):
         move_arm_goal = MoveArmGoal()
         move_arm_goal.goal_type = MoveArmGoal.NAMED_TARGET
@@ -234,26 +176,18 @@ class OpenDoor(ScenarioStateBase):
         traj.joint_names = ["arm_lift_joint", "arm_flex_joint", "arm_roll_joint", "wrist_flex_joint", "wrist_roll_joint"]
         p = trajectory_msgs.msg.JointTrajectoryPoint()
         # Move to initial grabbing position
-        # angles= list(range(0, -100, -15))
-        # inRadians= np.deg2rad(angles)
-        # wrist_roll_angles= np.round(inRadians, 2)
-        # for i in wrist_roll_angles:
-        #     p.positions= [0.35, -0.42, 0.0, -1.00, i]
-        #     p.velocities = [0, 0, 0, 0, 0]
-        #     p.time_from_start = rospy.Duration(1)
-        #     traj.points = [p]
-        #     goal.trajectory = traj
-        #     self.action_cli.send_goal(goal)
-        #     self.action_cli.wait_for_result()
+        angles= list(range(0, -100, -15))
+        inRadians= np.deg2rad(angles)
+        wrist_roll_angles= np.round(inRadians, 2)
+        for i in wrist_roll_angles:
+            p.positions= [0.35, -0.42, 0.0, -1.00, i]
+            p.velocities = [0, 0, 0, 0, 0]
+            p.time_from_start = rospy.Duration(1)
+            traj.points = [p]
+            goal.trajectory = traj
+            self.action_cli.send_goal(goal)
+            self.action_cli.wait_for_result()
         # close gripper arm
-
-        self.arm_to_pose()
-
-        return 'succeeded'
-
-        rospy.loginfo("=======================================")
-        rospy.loginfo("arm pose function finished")
-
         self.gripper_controller.close()
         rospy.loginfo('Door Handle Grasped')
         handle = self.get_door_handle_allignment()
@@ -308,9 +242,7 @@ class OpenDoor(ScenarioStateBase):
         self.say('Im using whole file')
         self.say('Trying to open the door') 
         # pick_pour= pickAndPour()
-        self.lever_pose=userdata.lever_pose
-        rospy.loginfo("User data lever pose: ")
-        rospy.loginfo(userdata.lever_pose)
+        
         self.one_func()
         userdata.wrist_direction =self.wrist_direction
         

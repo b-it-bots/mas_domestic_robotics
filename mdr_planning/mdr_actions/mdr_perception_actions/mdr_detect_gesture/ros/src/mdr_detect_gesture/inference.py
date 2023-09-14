@@ -350,6 +350,8 @@ class MultiPerDetector():
         bboxs = self.rp.detect_person(frame.copy())
         filtered = []
         padd = 20
+        if len(bboxs)==0:
+            return {}
         for rect in bboxs:
             x1,y1 = max(0,rect[0]-padd), max(0,rect[1]-padd)
             x2,y2 = min(w,rect[2]+padd), min(h,rect[3]+padd)
@@ -367,30 +369,31 @@ class MultiPerDetector():
             gestures[i] = []
         objects_bbs_ids = self.det_per(image)
         #print(objects_bbs_ids)
-        for idn in objects_bbs_ids:
-            bbox = objects_bbs_ids[idn]
-            if objects_bbs_ids[idn]!=[]:
-                person = image[bbox[1]:bbox[3],bbox[0]:bbox[2]]
-                results1, results2 = self.pd.mediapipe_detection(person)
-                face_rot, lh, rh, rot = self.pd.data2array(results1, results2)
-                key = np.concatenate([face_rot.flatten(),lh.flatten(),rh.flatten()])
-                if viz:
-                    per = self.pd.draw_landmarks(person, results1, results2)
-                    image[bbox[1]:bbox[3],bbox[0]:bbox[2]] = per
-                    cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (255,255,255), thickness=2)
-                    cv2.putText(image, str(idn), (bbox[0], int(bbox[1] - 5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
-            else:
-                key = np.zeros(86)
-                rot = np.zeros((4,3))
-            if self.frame_num%2==0:
-                self.keys[idn].append(key)
-                self.fingers_rot[idn].append(rot)
-            if len(self.keys[idn])==self.seq_len*self.avg_len: #i%10==0 and 
-                gest, prob = self.pd.classify(self.keys[idn], self.fingers_rot[idn])
-                finger_count, fing_prob = self.pd.fingersUp(self.keys[idn])
-                gestures[idn] = [gest, prob, idn, bbox, str(finger_count),fing_prob] #gest, prob, id, bbox, finger_count
-                self.keys[idn] = deque(maxlen=self.seq_len*self.avg_len)
-                self.fingers_rot[idn] = deque(maxlen=self.seq_len*self.avg_len)
+        if len(objects_bbs_ids)>0:
+            for idn in objects_bbs_ids:
+                bbox = objects_bbs_ids[idn]
+                if objects_bbs_ids[idn]!=[]:
+                    person = image[bbox[1]:bbox[3],bbox[0]:bbox[2]]
+                    results1, results2 = self.pd.mediapipe_detection(person)
+                    face_rot, lh, rh, rot = self.pd.data2array(results1, results2)
+                    key = np.concatenate([face_rot.flatten(),lh.flatten(),rh.flatten()])
+                    if viz:
+                        per = self.pd.draw_landmarks(person, results1, results2)
+                        image[bbox[1]:bbox[3],bbox[0]:bbox[2]] = per
+                        cv2.rectangle(image, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (255,255,255), thickness=2)
+                        cv2.putText(image, str(idn), (bbox[0], int(bbox[1] - 5)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255,255,255), 2)
+                else:
+                    key = np.zeros(86)
+                    rot = np.zeros((4,3))
+                if self.frame_num%2==0:
+                    self.keys[idn].append(key)
+                    self.fingers_rot[idn].append(rot)
+                if len(self.keys[idn])==self.seq_len*self.avg_len: #i%10==0 and 
+                    gest, prob = self.pd.classify(self.keys[idn], self.fingers_rot[idn])
+                    finger_count, fing_prob = self.pd.fingersUp(self.keys[idn])
+                    gestures[idn] = [gest, prob, idn, bbox, str(finger_count),fing_prob] #gest, prob, id, bbox, finger_count
+                    self.keys[idn] = deque(maxlen=self.seq_len*self.avg_len)
+                    self.fingers_rot[idn] = deque(maxlen=self.seq_len*self.avg_len)
         self.frame_num = self.frame_num+1
         return image, gestures
     

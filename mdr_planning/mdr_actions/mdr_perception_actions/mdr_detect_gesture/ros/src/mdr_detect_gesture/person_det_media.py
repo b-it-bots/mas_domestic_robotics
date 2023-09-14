@@ -6,7 +6,8 @@ import cv2
 class Person_Detector():
     def __init__(self):
         #Timestamp = timestamp.Timestamp
-        model_path = 'mobilenetv2_ssd_256_uint8.tflite'
+        model_path_dir = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_actions/mdr_perception_actions/mdr_detect_gesture/model/"
+        model_path = model_path_dir+'mobilenetv2_ssd_256_uint8.tflite'
         BaseOptions = mp.tasks.BaseOptions
         ObjectDetector = mp.tasks.vision.ObjectDetector
         ObjectDetectorOptions = mp.tasks.vision.ObjectDetectorOptions
