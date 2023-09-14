@@ -60,12 +60,15 @@ class GotoPose(ScenarioStateBase):
         # self.control_head("head_pan_joint",-1.57)
         # rospy.sleep(1)
         self.lever_pose = userdata.lever_pose
+        self.arm.set_named_target("erl_handle_pregrasp")
+        # Plan and execute the trajectory
+        self.arm.go(wait=True)
 
-        self.say("Going to a pose")
+        self.say("in execute of goto pose file")
 
         
 
-        self.arm_to_pose()
+        # self.arm_to_pose()
         
         rospy.sleep(2)
 
@@ -106,7 +109,9 @@ class GotoPose(ScenarioStateBase):
         # pose_goal.orientation.y = 0.000000
         # pose_goal.orientation.z = 0.652000
         # pose_goal.orientation.w = 1.000000
-        self.arm.set_pose_target(pose_goal)
+        # self.arm.set_pose_target(pose_goal)
+
+        self.arm.set_named_target("erl_handle_pregrasp")
         # Plan and execute the trajectory
         self.arm.go(wait=True)
         

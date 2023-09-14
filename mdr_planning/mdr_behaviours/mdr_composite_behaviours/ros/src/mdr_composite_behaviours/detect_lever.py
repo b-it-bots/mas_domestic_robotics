@@ -14,7 +14,7 @@ import pandas as pd
 from mdr_composite_behaviours.Nav_Man import Mover
 from geometry_msgs.msg import PoseStamped, PoseArray
 from mdr_perception_msgs.msg import BodyBoundingBox
-
+#from mdr_percieve_plane_actions.action_states import PerceivePlaneSM
 
 
 class DetectDoor(ScenarioStateBase):
@@ -37,7 +37,9 @@ class DetectDoor(ScenarioStateBase):
         
         self.mover = Mover()
         self.model = torch.hub.load('ultralytics/yolov5', 'custom', path='/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_composite_behaviours/ros/models/erl_door.pt')
-        self.td23D = t2d2t3d()
+        #self.td23D = t2d2t3d()
+        #ppsm = PerceivePlaneSM()
+        #self.model = ppsm.model
 
     def execute(self, userdata):
         rospy.loginfo('[detect_lever] Trying to detect nearest lever')
@@ -96,7 +98,7 @@ class DetectDoor(ScenarioStateBase):
     def lever_bbox_callback(self, data):
         try:
             self.lever_box_data = data
-        except Value as e:
+        except ValueError as e:
             print(e)
         
 

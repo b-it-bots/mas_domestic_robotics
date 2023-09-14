@@ -181,39 +181,7 @@ class OpenDoor(ScenarioStateBase):
         say_msg.data = sentence
         self.say_pub.publish(say_msg)
 
-    def arm_to_pose(self):
-        
-
-        planning_frame = self.arm.get_planning_frame()
-        print("============ Planning frame: %s" % planning_frame)
-
-        # We can also print the name of the end-effector link for this group:
-        eef_link = self.arm.get_end_effector_link()
-        print("============ End effector link: %s" % eef_link)
-
-        # self.lever_pose=userdata.lever_pose
-        # Set the target pose for the arm
-        pose_goal = geometry_msgs.msg.Pose()
-        pose_goal.position.x = self.lever_pose[0] # changing from 1.2
-        pose_goal.position.y = self.lever_pose[1]
-        pose_goal.position.z = self.lever_pose[2]
-        pose_goal.orientation.x = self.lever_pose[3]
-        pose_goal.orientation.y = self.lever_pose[4]
-        pose_goal.orientation.z = self.lever_pose[5]
-        pose_goal.orientation.w = self.lever_pose[6]
-
-        # pose_goal = geometry_msgs.msg.Pose()
-        # pose_goal.position.x = 0.418000 # changing from 1.2
-        # pose_goal.position.y = 0.078000
-        # pose_goal.position.z = 0.742000
-        # pose_goal.orientation.x = 0.758000
-        # pose_goal.orientation.y = 0.000000
-        # pose_goal.orientation.z = 0.652000
-        # pose_goal.orientation.w = 1.000000
-        self.arm.set_pose_target(pose_goal)
-        # Plan and execute the trajectory
-        self.arm.go(wait=True)
-   
+    
     def moveToNeutral(self):
         move_arm_goal = MoveArmGoal()
         move_arm_goal.goal_type = MoveArmGoal.NAMED_TARGET
@@ -247,7 +215,7 @@ class OpenDoor(ScenarioStateBase):
         #     self.action_cli.wait_for_result()
         # close gripper arm
 
-        self.arm_to_pose()
+       
 
         return 'succeeded'
 

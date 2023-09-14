@@ -13,7 +13,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: GRIP_HANDLE
+                state: ARM_TO_DOOR
             - transition:
                 name: failed
                 state: DETECT_LEVER
