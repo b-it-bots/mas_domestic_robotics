@@ -1,11 +1,16 @@
 #!/usr/bin/env python
 import rospy
 
-from mdr_head_controller.head_controller_base import HeadControllerBase
+from mdr_head_controller.head_controller import HeadController
 
 if __name__ == '__main__':
     rospy.init_node('mdr_head_controller')
     try:
-        HeadControllerBase()
+        head = HeadController()
+        head.look_up()
+        head.look_down()
+        head.tilt(30)
+        head.pan(30)
+        head.reset()
     except rospy.ROSInterruptException:
         pass
