@@ -5,32 +5,39 @@ from mdr_head_controller.head_controller_base import HeadControllerBase
 class HeadController(HeadControllerBase):
     def __init__(self):
         self.error_message = "this is only a dummy class, please use robot-specific package to control the head"
-        rospy.logerr(self.error_message)
+        rospy.logwarn(self.error_message)
 
     def look_up(self):
-        rospy.logerr(self.error_message)
+        rospy.logwarn(self.error_message)
         rospy.loginfo("(DUMMY) look up")
+        return True
 
     def look_down(self):
-        rospy.logerr(self.error_message)
+        rospy.logwarn(self.error_message)
         rospy.loginfo("(DUMMY) look down")
+        return True
 
     def turn_left(self):
-        rospy.logerr(self.error_message)
+        rospy.logwarn(self.error_message)
         rospy.loginfo("(DUMMY) turn left")
+        return True
 
     def turn_right(self):
-        rospy.logerr(self.error_message)
+        rospy.logwarn(self.error_message)
         rospy.loginfo("(DUMMY) turn right")
+        return True
 
     def reset(self):
-        rospy.logerr(self.error_message)
-        rospy.loginfo(f"(DUMMY) reset head")
+        rospy.logwarn(self.error_message)
+        rospy.loginfo("(DUMMY) reset head")
+        return True
 
     def tilt(self, angle: float):
-        rospy.logerr(self.error_message)
+        rospy.logwarn(self.error_message)
         rospy.loginfo(f"(DUMMY) tilt head by '{angle}'")
+        return True
 
     def pan(self, angle: float):
-        rospy.logerr(self.error_message)
+        rospy.logwarn(self.error_message)
         rospy.loginfo(f"(DUMMY) pan head by '{angle}'")
+        return True
