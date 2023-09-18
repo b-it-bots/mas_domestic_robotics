@@ -13,3 +13,7 @@ class HeadControllerBase(object):
 
     def turn_right(self):
         raise NotImplementedError('turn_right not implemented')
+
+    def tilt(self, angle):
+        raise NotImplementedError('tilt not implemented')
+

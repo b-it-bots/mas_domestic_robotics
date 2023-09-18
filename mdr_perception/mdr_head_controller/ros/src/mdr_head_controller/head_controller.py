@@ -22,3 +22,8 @@ class HeadController(HeadControllerBase):
     def turn_right(self):
         rospy.logerr(self.error_message)
         rospy.loginfo("(DUMMY) turn right")
+
+    def tilt(self, angle):
+        rospy.logerr(self.error_message)
+        rospy.loginfo(f"(DUMMY) tilt '{angle}' degrees")
+
