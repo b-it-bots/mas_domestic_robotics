@@ -13,9 +13,9 @@ The base class defines the following methods for controlling a head:
 * `look_down`: Moves the robot's head down. Returns a Boolean indicating whether the operation was successful.
 * `turn_left`: Turns the robot's head to the left. Returns a Boolean indicating whether the operation was successful.
 * `turn_right`: Turns the robot's head to the right. Returns a Boolean indicating whether the operation was successful.
-* `tilt`: tilt the head (vertically) by a specific angle.
-* `pan`: pan the head (horizontally) by a specific angle.
-* `reset`: reset the head to an initial position
+* `tilt`: tilt the head (vertically) by a specific angle. Returns a Boolean indicating whether the operation was successful.
+* `pan`: pan the head (horizontally) by a specific angle. Returns a Boolean indicating whether the operation was successful.
+* `reset`: reset the head to an initial position. Returns a Boolean indicating whether the operation was successful.
 
 Robot-specific implementations need to override all methods.
 
