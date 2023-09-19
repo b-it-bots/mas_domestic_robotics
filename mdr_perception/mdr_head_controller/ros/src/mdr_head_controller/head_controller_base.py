@@ -18,7 +18,9 @@ class HeadControllerBase(object):
         raise NotImplementedError('reset not implemented')
 
     def tilt(self, angle):
+        """Tilt head by a specific angle in radians"""
         raise NotImplementedError('tilt not implemented')
 
     def pan(self, angle):
+        """Pan head by a specific angle in radians"""
         raise NotImplementedError('pan not implemented')
