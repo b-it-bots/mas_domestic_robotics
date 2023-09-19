@@ -34,10 +34,10 @@ class HeadController(HeadControllerBase):
 
     def tilt(self, angle: float):
         rospy.logwarn(self.error_message)
-        rospy.loginfo(f"(DUMMY) tilt head by '{angle}'")
+        rospy.loginfo(f"(DUMMY) tilt head by '{angle}' radians")
         return True
 
     def pan(self, angle: float):
         rospy.logwarn(self.error_message)
-        rospy.loginfo(f"(DUMMY) pan head by '{angle}'")
+        rospy.loginfo(f"(DUMMY) pan head by '{angle}' radians")
         return True

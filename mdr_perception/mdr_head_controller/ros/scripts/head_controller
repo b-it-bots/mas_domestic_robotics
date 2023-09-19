@@ -9,8 +9,8 @@ if __name__ == '__main__':
         head = HeadController()
         head.look_up()
         head.look_down()
-        head.tilt(30)
-        head.pan(30)
+        head.tilt(0.5)
+        head.pan(0.5)
         head.reset()
     except rospy.ROSInterruptException:
         pass
