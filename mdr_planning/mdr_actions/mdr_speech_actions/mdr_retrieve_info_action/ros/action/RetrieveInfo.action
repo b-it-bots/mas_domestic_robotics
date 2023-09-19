@@ -1,0 +1,12 @@
+---
+# result
+string object
+string location
+string confirmation
+bool success
+---
+# feedback
+string status_initialization
+string status_wait_for_user_input
+string status_process_input
+bool error_detected

@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="use_whisper" default="true"/>
+
+    <node pkg="mdr_retrieve_info_action" type="retrievespeech" name="retrieve_info_server" output="screen">
+        <param name="use_whisper" value="$(arg use_whisper)"/>
+    </node>
+</launch>
