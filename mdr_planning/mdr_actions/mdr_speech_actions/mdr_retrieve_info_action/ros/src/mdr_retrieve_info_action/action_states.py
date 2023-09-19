@@ -4,11 +4,11 @@ import re
 import requests
 from pyftsm.ftsm import FTSMTransitions
 from mas_execution.action_sm_base import ActionSMBase
-from mdr_retrieve_info_action.msg import RetrieveInfo
+from mdr_retrieve_info_action.msg import RetrieveInfoResult
 
-class RetrieveSpeechSM(ActionSMBase):
+class RetrieveInfoSM(ActionSMBase):
     def __init__(self,timeout=120., use_whisper=True,max_recover_attempts=1):
-        super(RetrieveSpeechSM, self).__init__("RetrieveSpeech", [], max_recover_attempts)
+        super(RetrieveInfoSM, self).__init__("RetrieveSpeech", [], max_recover_attempts)
         self.time_out = timeout
         self.use_whisper = use_whisper
 
@@ -59,7 +59,7 @@ class RetrieveSpeechSM(ActionSMBase):
 
         user_utterances = 10 # max times the user can say before moving on to gesture 
         RASA_SERVER_URL = "http://localhost:5005/webhooks/rest/webhook"
-        self.result = RetrieveInfo()
+        self.result = RetrieveInfoResult()
         
         response = requests.post(RASA_SERVER_URL, json={"message": "scenario 1"})
         init_message = response.json()[0]["custom"]['data']['response']

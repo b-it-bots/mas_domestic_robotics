@@ -2,7 +2,7 @@
 <launch>
     <arg name="use_whisper" default="true"/>
 
-    <node pkg="mdr_retrieve_info_action" type="retrievespeech" name="retrieve_info_server" output="screen">
+    <node pkg="mdr_retrieve_info_action" type="retrieveinfo" name="retrieve_info_server" output="screen">
         <param name="use_whisper" value="$(arg use_whisper)"/>
     </node>
 </launch>
