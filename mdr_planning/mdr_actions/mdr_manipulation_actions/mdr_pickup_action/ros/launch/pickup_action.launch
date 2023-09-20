@@ -4,6 +4,9 @@
     <arg name="move_base_server" default="move_base_server" />
     <arg name="gripper_controller_pkg_name" default="mdr_gripper_controller" />
     <arg name="pregrasp_config_name" default="pregrasp" />
+    <arg name="pregrasp_low_config_name" default="pregrasp_low" />
+    <arg name="pregrasp_top_config_name" default="pregrasp_top" />
+    <arg name="pregrasp_height_threshold" default="0.65" />
     <arg name="intermediate_grasp_offset" default="0.1" />
     <arg name="safe_arm_joint_config" default="folded" />
     <arg name="base_elbow_offset" default="-1." />
@@ -17,6 +20,9 @@
         <param name="move_base_server" value="$(arg move_base_server)" />
         <param name="gripper_controller_pkg_name" value="$(arg gripper_controller_pkg_name)" />
         <param name="pregrasp_config_name" value="$(arg pregrasp_config_name)" />
+        <param name="pregrasp_low_config_name" value="$(arg pregrasp_low_config_name)" />
+        <param name="pregrasp_top_config_name" value="$(arg pregrasp_top_config_name)" />
+        <param name="pregrasp_height_threshold" value="$(arg pregrasp_height_threshold)" />
         <param name="intermediate_grasp_offset" value="$(arg intermediate_grasp_offset)" />
         <param name="safe_arm_joint_config" value="$(arg safe_arm_joint_config)" />
         <param name="base_elbow_offset" value="$(arg base_elbow_offset)" />

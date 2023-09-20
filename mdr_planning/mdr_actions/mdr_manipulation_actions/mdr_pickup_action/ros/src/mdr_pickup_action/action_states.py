@@ -20,7 +20,7 @@ class PickupSM(ActionSMBase):
                  pregrasp_config_name='pregrasp',
                  pregrasp_top_config_name='pregrasp_top',
                  pregrasp_low_config_name='pregrasp_low',
-                 pregrasp_height_threshold=0.5,
+                 pregrasp_height_threshold=0.65,
                  intermediate_grasp_offset=-1,
                  safe_arm_joint_config='folded',
                  move_arm_server='move_arm_server',
