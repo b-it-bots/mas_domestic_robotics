@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="openpose_models_dir" value="/home/afaisal/.models/openpose_models/" />
+    <arg name="cloud_topic" default="/mdr_perception/rectified_points" />
+	<arg name="object_detection_server" default="/object_detection_server"/>
+    <arg name="target_frame" default="/base_link" />
+    <arg name="class_annotations" default="$(find mas_perception_libs)/models/coco_classes.yml" />
+    <arg name="kwargs_file" default="$(find mdr_recognize_gesture_action)/config/object_detection_kwargs.yml" />
+    <arg name="detection_module" default="mas_perception_libs" />
+    <arg name="detection_class" default="TorchImageDetector" />
+
+    <node pkg="mas_perception_libs" type="object_detection_action_server" name="object_detection_server" output="screen">
+        <param name="action_name" type="string" value="$(arg object_detection_server)" />
+        <param name="cloud_topic" type="string" value="$(arg cloud_topic)" />
+        <param name="target_frame" type="string" value="$(arg target_frame)" />
+        <param name="class_annotations" type="string" value="$(arg class_annotations)" />
+        <param name="kwargs_file" type="string" value="$(arg kwargs_file)" />
+        <param name="detection_module" type="string" value="$(arg detection_module)" />
+        <param name="detection_class" type="string" value="$(arg detection_class)" />
+    </node>
+    <node pkg="mdr_recognize_gesture_action" type="recognize_gesture_action" name="mdr_recognize_gesture_server" output="screen">
+        <param name="gesture_type" value="pointing" />
+        <param name="openpose_models_dir" type="str" value="$(arg openpose_models_dir)" />
+        <param name="pointcloud_topic" type="str" value="$(arg cloud_topic)" />
+        <param name="object_detection_server" type="str" value="$(arg object_detection_server)" />
+    </node>
+
+</launch>

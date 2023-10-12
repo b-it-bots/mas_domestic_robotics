@@ -1,0 +1,10 @@
+# optional gesture type for bypassing
+# gesture classification step
+string gesture_type
+---
+# result
+bool success
+---
+# feedback
+string current_state
+string message
