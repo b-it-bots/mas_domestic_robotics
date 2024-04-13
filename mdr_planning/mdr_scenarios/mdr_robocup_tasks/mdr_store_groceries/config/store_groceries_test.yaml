@@ -22,7 +22,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [table_new]
+                value: [dining_table]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -109,7 +109,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [shelf_new]
+                value: [living_room_shelf]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -172,7 +172,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [table_new]
+                value: [dining_table]
             - argument:
                 name: number_of_retries
                 value: 3

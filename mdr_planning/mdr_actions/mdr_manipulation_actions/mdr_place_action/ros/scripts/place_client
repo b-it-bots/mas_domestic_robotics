@@ -75,7 +75,9 @@ class PlaceClient(ActionClientBase):
                 self.robot_name = param.value
 
         goal.pose = self.get_placing_pose()
-
+        # rospy.loginfo(f'Placing pose: ')
+        # rospy.loginfo(goal.pose)
+        
         # we want to place the object by detecting impact with the placing surface
         goal.release_on_impact = True
 
@@ -150,6 +152,7 @@ class PlaceClient(ActionClientBase):
         candidate_pose_idx = np.argmax(model_results['success_probabilities'])
         candidate_pose = model_results['candidate_poses'][candidate_pose_idx]
         candidate_pose = ConverterFactory.convert_to_ros_msg(candidate_pose)
+        candidate_pose.pose.position.z += 0.1
         return candidate_pose
 
     def update_knowledge_base(self, new_object_pose):
@@ -167,7 +170,9 @@ class PlaceClient(ActionClientBase):
         placed_object = self.kb_interface.get_obj_instance(self.obj, Object._type)
         new_object_pose.header.stamp = rospy.Time.now()
         placed_object.pose = new_object_pose
-        self.kb_interface.update_obj_instance(self.obj, placed_object)
+        # self.kb_interface.update_obj_instance(self.obj, placed_object)
+        self.kb_interface.remove_obj_instance(self.obj, Object._type)
+        self.kb_interface.insert_obj_instance(self.obj, placed_object)
 
 if __name__ == '__main__':
     rospy.init_node('place_client')

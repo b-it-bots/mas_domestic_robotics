@@ -7,6 +7,7 @@
     <arg name="intermediate_grasp_offset" default="0.1" />
     <arg name="safe_arm_joint_config" default="folded" />
     <arg name="base_elbow_offset" default="-1." />
+    <arg name="arm_base_offset" default="-1." />
     <arg name="grasping_dmp" default="$(find mdr_pickup_action)/config/trajectory_weights/weights_table_grasp.yaml" />
     <arg name="dmp_tau" default="30" />
     <arg name="number_of_retries" default="0" />
@@ -20,6 +21,7 @@
         <param name="intermediate_grasp_offset" value="$(arg intermediate_grasp_offset)" />
         <param name="safe_arm_joint_config" value="$(arg safe_arm_joint_config)" />
         <param name="base_elbow_offset" value="$(arg base_elbow_offset)" />
+        <param name="arm_base_offset" value="$(arg arm_base_offset)" />
         <param name="grasping_dmp" value="$(arg grasping_dmp)" />
         <param name="dmp_tau" value="$(arg dmp_tau)" />
         <param name="number_of_retries" value="$(arg number_of_retries)" />

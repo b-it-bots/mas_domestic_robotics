@@ -1,0 +1,173 @@
+# Description: Defines a state machine for a simple pick and place scenario (picking an object and placing it back on the same surface)
+# Author: Heartmet_Team
+# Email: unknown
+sm_id: heartmet_demo_item_delivery
+# states: [PERCEIVE_TABLE, PICK_OBJECT,GO_TO_TABLE,GO_TO_TABLE2,PLACE_OBJECT]
+states: [PERCEIVE_TABLE, PICK_OBJECT,GO_TO_TABLE,GO_TO_SHELF,PLACE_OBJECT,PERCEIVE_SHELF]
+outcomes: [DONE, FAILED]
+state_descriptions:
+
+    - state:
+        name: GO_TO_TABLE
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed
+                state: GO_TO_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [dining_table_far]
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: PERCEIVE_TABLE
+        state_module_name: mdr_perception_behaviours.perceive_planes_zain
+        
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: PICK_OBJECT
+            - transition:
+                name: failed
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: plane_prefix
+                value: table
+            # - argument:
+            #     name: object_tilt
+            #     value: -0.1
+    - state:
+        name: PICK_OBJECT
+        state_module_name: mdr_manipulation_behaviours.pick_closest_from_surface
+        state_class_name: PickClosestFromSurface
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_SHELF
+            
+            # redundant state
+            - transition:
+                name: failed
+                state: GO_TO_TABLE
+            
+            - transition:
+                name: failed_after_retrying
+                state: DONE
+            - transition:
+                name: find_objects_before_picking
+                state: PERCEIVE_TABLE
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: picking_surface_prefix
+                value: table
+    
+    - state:
+        name: GO_TO_SHELF
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: PERCEIVE_SHELF
+            - transition:
+                name: failed
+                state: GO_TO_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: destination_locations
+                value: [living_room_shelf]
+            - argument:
+                name: number_of_retries
+                value: 3
+
+    - state:
+        name: PERCEIVE_SHELF
+        state_module_name: mdr_perception_behaviours.perceive_shelf
+        
+        state_class_name: PerceivePlanes
+        transitions:
+            - transition:
+                name: succeeded
+                state: PLACE_OBJECT
+            - transition:
+                name: failed
+                state: PERCEIVE_TABLE
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: plane_prefix
+                value: table
+            - argument:
+                name: plane_say
+                value: shelf
+
+    # - state:
+    #     name: PERCEIVE_SHELF
+    #     state_module_name: mas_hsr_store_groceries.scenario_states.scan_shelf
+    #     state_class_name: ScanShelf
+    #     transitions:
+    #         - transition:
+    #             name: succeeded
+    #             state: PLACE_OBJECT
+    #         - transition:
+    #             name: failed
+    #             state: PERCEIVE_SHELF
+    #     arguments:
+    #         - argument:
+    #             name: arm_joints
+    #             value:
+    #                 arm_lift_joint: 0.3
+    #                 arm_roll_joint: 1.57
+    #                 wrist_flex_joint: -1.57
+    - state:
+        name: PLACE_OBJECT
+        state_module_name: mdr_manipulation_behaviours.place
+        state_class_name: Place
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_TABLE
+            - transition:
+                name: failed
+                state: PLACE_OBJECT
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: placing_surface_prefix
+                value: table
+
+            
+    

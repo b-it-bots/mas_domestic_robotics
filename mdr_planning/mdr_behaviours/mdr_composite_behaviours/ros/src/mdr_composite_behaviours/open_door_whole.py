@@ -1,4 +1,6 @@
 import rospy
+import math
+#from utils import *
 import time
 import actionlib
 import random
@@ -33,6 +35,112 @@ from mas_execution_manager.scenario_state_base import ScenarioStateBase
 import moveit_commander
 import geometry_msgs.msg
 from tf.transformations import quaternion_from_euler
+from mdr_composite_behaviours.composite_behaviours import CompositeBehaviours
+# from mdr_composite_behaviours.base_manuver import move_in_forward_right_arc, move_in_forward_left_arc
+
+#move_in_forward_right_arc(0.1, 0.9, 50) = opening the door
+#move_in_forward_left_arc(0.1, 0.9, 50) = closing the door
+
+
+#rospy.init_node('base_manuver')
+
+
+import math
+
+from geometry_msgs.msg import Twist
+
+# 速度指令のパブリッシャーを作成
+base_vel_pub = rospy.Publisher('/hsrb/command_velocity', Twist, queue_size=1)
+
+def move_base_vel(vx, vy, vw):
+    u"""台車を速度制御する関数
+
+    引数:
+        vx (float): 直進方向の速度指令値 [m/s]（前進が正、後進が負）
+        vy (float): 横方向の速度指令値 [m/s]（左が正、右が負）
+        vw (float): 回転方向の速度指令値 [deg/s]（左回転が正、右回転が負）
+
+    """
+
+    # 速度指令値をセットします
+    twist = Twist()
+    twist.linear.x = vx
+    twist.linear.y = vy
+    twist.angular.z = -1*vw / 180.0 * math.pi  # 「度」から「ラジアン」に変換します
+    base_vel_pub.publish(twist) 
+
+# import math
+
+def move_in_backward_right_arc(v, r, theta_degrees):
+    # Calculate angular velocity in degrees per second
+    omega = -(abs(v) * 180) / (r * math.pi)
+
+    # Calculate time to complete the arc
+    t = theta_degrees / abs(omega)
+
+    # Get current time
+    start_time = rospy.Time.now().to_sec()
+
+    # Command the robot to move in the arc
+    while rospy.Time.now().to_sec() - start_time < t:
+        move_base_vel(v, 0, omega)  # Note: v should be passed as a negative value for backward motion
+    
+    # Stop the robot after completing the arc
+    move_base_vel(0, 0, 0)
+
+    #Call the function with a velocity of -0.5 m/s (backward), radius of 0.8 m, and an angle of 80 degrees
+    #move_in_backward_right_arc(-0.1, 0.3, 80)
+
+def move_in_forward_left_arc(v, r, theta_degrees):
+    # Calculate angular velocity in degrees per second
+    omega = -(abs(v) * 180) / (r * math.pi)
+
+    # Calculate time to complete the arc
+    t = theta_degrees / abs(omega)
+
+    # Get current time
+    start_time = rospy.Time.now().to_sec()
+
+    # Command the robot to move in the arc
+    while get_current_time_sec() - start_time < t:
+        move_base_vel(v, 0, omega)  # Note: v should be passed as a negative value for backward motion
+    
+    # Stop the robot after completing the arc
+    move_base_vel(0, 0, 0)
+
+def move_in_forward_right_arc(v, r, theta_degrees):
+    # Calculate angular velocity in degrees per second
+    omega = -(abs(v) * 180) / (r * math.pi)
+
+    # Calculate time to complete the arc
+    t = theta_degrees / abs(omega)
+
+    # Get current time
+    start_time = rospy.Time.now().to_sec()
+
+    # Command the robot to move in the arc
+    while rospy.Time.now().to_sec() - start_time < t:
+        move_base_vel(v, 0, -1*omega)  # Note: v should be passed as a negative value for backward motion
+    
+    # Stop the robot after completing the arc
+    move_base_vel(0, 0, 0)
+
+def move_left(distance, vy):
+    # Calculate time to move the given distance at the specified velocity
+    t = distance / vy
+
+    # Get current time
+    start_time = rospy.Time.now().to_sec()
+
+    # Command the robot to move left
+    while rospy.Time.now().to_sec() - start_time < t:
+        move_base_vel(0, vy, 0)
+    
+    # Stop the robot after moving the desired distance
+    move_base_vel(0, 0, 0)
+
+# Call the function to move left by 1 meter at 0.5 m/s
+# move_left(1, 0.5)
 
 
 def compute_difference(pre_data_list, post_data_list,initial,post):
@@ -89,8 +197,6 @@ class OpenDoor(ScenarioStateBase):
         self.forceCapture=None
         self.node=None
 
-
-
         self.door_direction=None
                
         # intialize gripper controllerr
@@ -123,6 +229,11 @@ class OpenDoor(ScenarioStateBase):
         except Exception as exc:
             rospy.logerr('[door_open] %s server does not seem to respond: %s',
                         "move_arm_server", str(exc))
+
+        # joint states
+        self.joint_states_sub = rospy.Subscriber('/hsrb/joint_states', JointState, self.joint_states_cb)
+        self.joint_states = None
+
         print("All good!!")
         ##===========================================================================
         
@@ -145,6 +256,33 @@ class OpenDoor(ScenarioStateBase):
         self.whole_body.set_planning_time(5)
         self.whole_body.set_workspace([-3.0, -3.0, 3.0, 3.0])
         self.arm.set_pose_reference_frame('base_link')
+
+    def __move_arm(self, goal_type, goal, dmp_flag=True):
+        '''Sends a request to the 'move_arm' action server and waits for the
+        results of the action execution.
+
+        Keyword arguments:
+        goal_type -- 'MoveArmGoal.NAMED_TARGET' or 'MoveArmGoal.END_EFFECTOR_POSE'
+        goal -- A string if 'goal_type' is 'MoveArmGoal.NAMED_TARGET';
+                a 'geometry_msgs/PoseStamped' if 'goal_type' is 'MoveArmGoal.END_EFFECTOR_POSE'
+
+        '''
+        rospy.loginfo('[pickup] I am inside _move_arm')
+        # pdb.set_trace()
+        move_arm_goal = MoveArmGoal()
+        move_arm_goal.goal_type = goal_type
+        if goal_type == MoveArmGoal.NAMED_TARGET:
+            move_arm_goal.named_target = goal
+        elif goal_type == MoveArmGoal.END_EFFECTOR_POSE:
+            rospy.logerr("END_EFFECTOR_POSE not handled for move arm")
+            return None
+        elif goal_type == MoveArmGoal.JOINT_VALUES:
+            move_arm_goal.joint_values = goal
+                
+        self.move_arm_client.send_goal(move_arm_goal)
+        self.move_arm_client.wait_for_result()
+        result = self.move_arm_client.get_result()
+        return result
 
     def get_force_feedback(self, msg):
         if msg.data and self.speak:
@@ -192,6 +330,13 @@ class OpenDoor(ScenarioStateBase):
         rospy.loginfo("Back to neutral position")
         rospy.sleep(5)
 
+    def control_gripper(self, val):
+        self.gripper.set_joint_value_target("hand_motor_joint", val)
+        self.gripper.go()    
+
+    def joint_states_cb(self, msg):
+        self.joint_states = msg
+
     def one_func(self):
         self.speak=1
         # open gripper by default
@@ -201,6 +346,17 @@ class OpenDoor(ScenarioStateBase):
         traj = trajectory_msgs.msg.JointTrajectory()
         traj.joint_names = ["arm_lift_joint", "arm_flex_joint", "arm_roll_joint", "wrist_flex_joint", "wrist_roll_joint"]
         p = trajectory_msgs.msg.JointTrajectoryPoint()
+        rospy.loginfo("turning wrist")
+        current_joint_pos = self.joint_states
+        arm_joint_pos_indices = [current_joint_pos.name.index('arm_lift_joint'), current_joint_pos.name.index('arm_flex_joint'),
+                                 current_joint_pos.name.index('arm_roll_joint'), current_joint_pos.name.index('wrist_flex_joint'),
+                                 current_joint_pos.name.index('wrist_roll_joint')]
+        arm_joint_pos = [self.joint_states.position[idx] for idx in arm_joint_pos_indices]
+        arm_joint_pos[4] = -1.6
+        arm_joint_pos.append(0)
+        arm_motion_success = self.__move_arm(MoveArmGoal.JOINT_VALUES, arm_joint_pos)
+        if not arm_motion_success:
+            rospy.logerr('[pickup] Arm motion unsuccessful')
         # Move to initial grabbing position
         # angles= list(range(0, -100, -15))
         # inRadians= np.deg2rad(angles)
@@ -215,9 +371,9 @@ class OpenDoor(ScenarioStateBase):
         #     self.action_cli.wait_for_result()
         # close gripper arm
 
-       
+       ## wrist_roll_angle=-pi/2
 
-        return 'succeeded'
+        # return 'succeeded'
 
         rospy.loginfo("=======================================")
         rospy.loginfo("arm pose function finished")
@@ -233,7 +389,7 @@ class OpenDoor(ScenarioStateBase):
         inRadians= np.deg2rad(angles)
         wrist_roll_angles= np.round(inRadians, 2)
         for i in wrist_roll_angles:
-            p.positions= [0.31, -0.42, 0.0, -1.00, i]
+            p.positions= [0.20, -0.42, 0.0, -1.00, i]
             p.velocities = [0, 0, 0, 0, 0]
             p.time_from_start = rospy.Duration(1)
             traj.points = [p]
@@ -246,14 +402,22 @@ class OpenDoor(ScenarioStateBase):
         rospy.Rate(10)
         # while not rospy.is_shutdown():
         #     rospy.sleep(0.1)
-        rospy.loginfo('Received force feedback')
-        cmd_vel_msg = Twist()
-        cmd_vel_msg.linear.x = -0.05
-        self.pub_cmd_vel.publish(cmd_vel_msg)
-        time.sleep(0.5)
-        cmd_vel_msg.linear.x = 0.0
-        self.pub_cmd_vel.publish(cmd_vel_msg)
-
+        
+        rospy.sleep(3)
+        self.control_gripper(0.0)
+        move_in_forward_right_arc(0.1, 0.9, 45) # opening the door
+        rospy.sleep(4)
+        move_left(1, 0.5)
+    #  ##---------------- zain commented------------------------  
+    #     rospy.loginfo('Received force feedback')
+    #     cmd_vel_msg = Twist()
+    #     # cmd_vel_msg.linear.x = -0.05
+    #     cmd_vel_msg.linear.x = 0.05
+    #     self.pub_cmd_vel.publish(cmd_vel_msg)
+    #     time.sleep(0.5)
+    #     cmd_vel_msg.linear.x = 0.0
+    #     self.pub_cmd_vel.publish(cmd_vel_msg)
+    # ##---------------- zain commented------------------------
         # p.positions= [0.35, -0.42, 0.0, -1.00, np.round(np.deg2rad(-90), 2)]
         # p.velocities = [0, 0, 0, 0, 0]
         # p.time_from_start = rospy.Duration(1)
@@ -275,6 +439,9 @@ class OpenDoor(ScenarioStateBase):
         self.say('In state open door')
         self.say('Im using whole file')
         self.say('Trying to open the door') 
+        #self.moveToNeutral()
+        self.arm.set_named_target("neutral")       
+        self.arm.go()
         # pick_pour= pickAndPour()
         self.lever_pose=userdata.lever_pose
         rospy.loginfo("User data lever pose: ")

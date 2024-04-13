@@ -12,7 +12,7 @@ class DetectPerson(ScenarioStateBase):
         ScenarioStateBase.__init__(self, 'detect_person',
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed', 'failed_after_retrying'],
-                                   output_keys=['person_list'])
+                                   output_keys=['person_list','person_location'])
         self.sm_id = kwargs.get('sm_id', 'mdr_demo_context_aware_hand_over')
         self.action_server = kwargs.get('action_server', 'find_people_server')
         self.timeout = kwargs.get('timeout', 120.)
@@ -21,6 +21,7 @@ class DetectPerson(ScenarioStateBase):
         self.retry_count = 0
         self.client = actionlib.SimpleActionClient(self.action_server, FindPeopleAction)
         self.person_img_pub = rospy.Publisher('/heartmet/person_detect', Image, queue_size=1)
+        self.person_img_crop = rospy.Publisher('/cropped_image', Image, queue_size=1)
         self.client.wait_for_server(rospy.Duration(10.))
         
     def execute(self, userdata):
@@ -38,6 +39,7 @@ class DetectPerson(ScenarioStateBase):
             
             rospy.loginfo('Publishing image and sleeping for 3s')
             self.person_img_pub.publish(result.person_list.persons[0].views[0].image)
+            self.person_img_crop.publish(result.person_list.persons[0].views[0].image)
 
             userdata.person_list = result.person_list
             return 'succeeded'

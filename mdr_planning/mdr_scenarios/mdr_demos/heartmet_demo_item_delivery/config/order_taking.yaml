@@ -1,4 +1,5 @@
 # Description: Defines a state machine for a simple pick and place scenario (picking an object and placing it back on the same surface)
+# Description: Defines a state machine for a simple pick and place scenario (picking an object and placing it back on the same surface)
 # Author: Heartmet_Team
 # Email: unknown
 sm_id: heartmet_demo_item_delivery

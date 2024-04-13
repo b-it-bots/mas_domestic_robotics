@@ -56,7 +56,7 @@ class DetectPerson(ScenarioStateBase):
             # userdata.object_tilt = self.object_tilt
             return 'succeeded'
         else:
-            rospy.logerr('Could not detect a person')
+            rospy.logerr('Could not detect a person test')
             self.say('Could not detect a person')
             if self.retry_count == self.number_of_retries:
                 self.say('Aborting operation')

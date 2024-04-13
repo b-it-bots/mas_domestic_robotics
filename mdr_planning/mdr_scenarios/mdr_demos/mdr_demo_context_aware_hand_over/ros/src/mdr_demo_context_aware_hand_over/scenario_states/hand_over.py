@@ -23,8 +23,11 @@ class HandOver(ScenarioStateBase):
         self.client.wait_for_server(rospy.Duration(10.))
 
     def execute(self, userdata):
+        rospy.logwarn(userdata.posture)
+        rospy.logwarn(type(userdata.posture))
         goal = HandOverGoal()
-        goal.posture_type = userdata.posture
+        # goal.posture_type = userdata.posture
+        goal.posture_type = "seated"
         goal.obstacle = self.obstacle_present
         goal.context_aware = self.context_aware
         goal.release_detection = self.release_detection

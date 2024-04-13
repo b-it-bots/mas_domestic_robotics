@@ -5,6 +5,8 @@ import os
 import rospy
 import smach
 import torch
+import mediapipe as mp
+import numpy as np
 
 import tf
 from sensor_msgs.msg import PointCloud2, Image
@@ -13,8 +15,8 @@ from mas_perception_msgs.msg import Person, PersonList, ObjectView
 from mas_perception_libs.image_detector import ImageDetectionKey
 from mas_perception_libs.visualization import crop_image
 from mas_perception_libs.utils import cloud_msg_to_cv_image
-from cv_bridge import CvBridge
-from mdr_find_people.find_people import FindPeople
+from cv_bridge import CvBridge, CvBridgeError
+from mdr_find_people.mepiapipe_face_detector import MediapipeFaceDetector
 
 from dataset_interface.siamese_net.model import SiameseNetwork
 from dataset_interface.siamese_net.utils import get_transforms
@@ -69,6 +71,22 @@ class FindPeopleState(smach.State):
 
 
         self.cv_bridge = CvBridge()
+        mpFaceDetection = mp.solutions.face_detection
+        self.faceDetection = mpFaceDetection.FaceDetection(0.50)
+        self.image_pub = rospy.Publisher("mediapipe_face", Image, queue_size=10)
+        #self.cv_image = np.zeros((480,640,3),dtype=np.uint8)
+        #self.image_sub = rospy.Subscriber("/hsrb/head_rgbd_sensor/rgb/image_raw", Image, self.callback)
+
+    '''def callback(self,data):
+        try:
+            self.cv_image = self.cv_bridge.imgmsg_to_cv2(data)
+            #self.cv_image = cv2.cvtColor(im, cv2.COLOR_RGB2BGR)
+        except CvBridgeError as e:
+            print(e)'''
+
+    def publish_image(self, img):
+        image_message = self.cv_bridge.cv2_to_imgmsg(img, encoding="passthrough")
+        self.image_pub.publish(image_message)
 
     def execute(self, userdata):
         rospy.loginfo('Executing state FIND_PEOPLE')
@@ -77,11 +95,10 @@ class FindPeopleState(smach.State):
         cloud_msg = rospy.wait_for_message(self.pointcloud_topic, PointCloud2)
 
         # Get positions of people
-        predictions, bb2ds, poses = FindPeople.detect(cloud_msg,
-                                                      self.detector,
-                                                      self.model_device,
-                                                      self.class_annotations,
-                                                      self.detection_threshold)
+        predictions, bb2ds, poses, detect_image = MediapipeFaceDetector.detect(cloud_msg,
+                                                                               self.faceDetection)
+        
+        self.publish_image(detect_image)
 
         # Get people images
         cv_image = cloud_msg_to_cv_image(cloud_msg).astype('uint8')

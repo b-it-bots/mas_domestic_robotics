@@ -12,7 +12,7 @@
     <!-- Actions -->
         <!-- Move Base Action -->
     <!-- <include file="$(find mas_hsr_move_base_action)/ros/launch/move_base.launch" /> -->
-    <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
+        <!--<include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" /> -->
     
 
       <!-- Gesture Action -->

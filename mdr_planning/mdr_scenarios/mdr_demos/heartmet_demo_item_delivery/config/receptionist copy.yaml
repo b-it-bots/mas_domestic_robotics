@@ -1,0 +1,111 @@
+# Description: Defines a state machine for a simple pick and place scenario (picking an object and placing it back on the same surface)
+# Description: Defines a state machine for a simple pick and place scenario (picking an object and placing it back on the same surface)
+# Author: Heartmet_Team
+# Email: unknown
+sm_id: heartmet_demo_item_delivery
+states: [GREETING,VERIFY,GO_TO_LOCATION,INTRO]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: GREETING
+        state_module_name: mdr_hri_behaviours.receptionist_iuc_testing
+        state_class_name: ReceptionistTask
+        transitions:
+            - transition:
+                name: succeeded
+                state: VERIFY
+            - transition:
+                name: failed
+                state: GREETING
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GREETING_2
+        state_module_name: mdr_hri_behaviours.receptionist_iuc_testing_2
+        state_class_name: ReceptionistTask
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_LOCATION
+            - transition:
+                name: failed
+                state: GREETING_2
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: VERIFY
+        state_module_name: mdr_hri_behaviours.verify_person
+        state_class_name: VerifyPerson
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_LOCATION
+            - transition:
+                name: failed
+                state: VERIFY
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_LOCATION
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: INTRO
+            - transition:
+                name: failed
+                state: GO_TO_LOCATION
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: destination_locations
+                value: [living_room]
+
+    - state:
+        name: INTRO
+        state_module_name: mdr_hri_behaviours.receptionist_iuc_guest_intro
+        state_class_name: MultiGuestIntroductionTask
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: INTRO
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    # - state:
+    #     name: GO_TO_LOCATION_INITIAL
+    #     state_module_name: mdr_navigation_behaviours.move_base
+    #     state_class_name: MoveBase
+    #     transitions:
+    #         - transition:
+    #             name: succeeded
+    #             state: INTRO
+    #         - transition:
+    #             name: failed
+    #             state: GO_TO_LOCATION
+    #         - transition:
+    #             name: failed_after_retrying
+    #             state: FAILED
+    #     arguments:
+    #         - argument:
+    #             name: number_of_retries
+    #             value: 3
+    #         - argument:
+    #             name: destination_locations
+    #             value: [starting_area]

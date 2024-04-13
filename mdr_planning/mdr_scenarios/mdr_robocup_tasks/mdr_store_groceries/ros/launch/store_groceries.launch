@@ -32,6 +32,6 @@
 
     <!-- State machine -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="store_groceries" output="screen">
-        <param name="sm_config_file" type="str" value="$(find mdr_store_groceries)/config/store_groceries_sm.yaml" />
+        <param name="sm_config_file" type="str" value="$(find mdr_store_groceries)/config/store_groceries_test.yaml" />
     </node>
 </launch>

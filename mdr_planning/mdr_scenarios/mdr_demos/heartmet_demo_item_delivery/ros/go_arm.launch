@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+
+    <!-- Move Base Client -->
+    <!--include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" /-->  
+
+    <!-- Perceive Plane Client -->
+    
+    <!-- Pickup Client -->
+    <!-- <include file="$(find mas_hsr_pickup_action)/ros/launch/pickup_action.launch" /> -->
+    
+    <!-- State machine -->
+    <!-- <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
+        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/heartmet_task_first.yaml" />
+    </node> -->
+    <!-- <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
+        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/all_locations.yaml" />
+    </node> -->
+    <!-- <node pkg="mdr_composite_behaviour" type="force_publisher.py" name="force_publisher.py" /> -->
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
+        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/head_arm_adjust.yaml" />
+    </node>
+</launch>

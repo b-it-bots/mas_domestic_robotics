@@ -77,6 +77,7 @@ class Mover:
         for obj_pose in obj_poses:
             transformation = self.tfbuffer_.lookup_transform('base_link', "head_rgbd_sensor_rgb_frame", rospy.Time())
             transformed_pose = tf2_geometry_msgs.do_transform_pose(obj_pose, transformation)
+            #transformed_pose.pose.position.z = 0.92
             transformed.append(transformed_pose)
         return transformed
 

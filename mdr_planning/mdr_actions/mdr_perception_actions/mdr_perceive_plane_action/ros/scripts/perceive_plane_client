@@ -2,6 +2,7 @@
 import rospy
 import actionlib
 
+from mdr_rosplan_interface.clear_message_store import ClearMessageStore
 import rosplan_dispatch_msgs.msg as plan_dispatch_msgs
 from mas_perception_msgs.msg import Plane, Object
 from mdr_rosplan_interface.action_client_base import ActionClientBase
@@ -17,6 +18,7 @@ class PerceivePlaneClient(ActionClientBase):
     def __init__(self):
         super(PerceivePlaneClient, self).__init__()
         self.clear_plane_memory = rospy.get_param('~clear_plane_memory', False)
+        # self.clear_plane_memory=True
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
 
@@ -45,17 +47,33 @@ class PerceivePlaneClient(ActionClientBase):
         else:
             self.send_action_feedback(False)
 
+    # def get_action_message(self, rosplan_action_msg):
+    #     '''Reads the action parameters and uses them to initialise an actionlib message.
+    #     '''
+    #     goal = PerceivePlaneGoal()
+    #     for param in rosplan_action_msg.parameters:
+    #         if param.key == 'plane':
+    #             goal.plane_config = param.value
+    #             goal.plane_frame_prefix = param.value
+    #         elif param.key == 'bot':
+    #             self.robot_name = param.value
+    #     return goal
     def get_action_message(self, rosplan_action_msg):
-        '''Reads the action parameters and uses them to initialise an actionlib message.
-        '''
         goal = PerceivePlaneGoal()
+        clear_memory = False  # Default to not clearing memory
+
         for param in rosplan_action_msg.parameters:
             if param.key == 'plane':
                 goal.plane_config = param.value
                 goal.plane_frame_prefix = param.value
             elif param.key == 'bot':
                 self.robot_name = param.value
+            elif param.key == 'clear_memory':
+                clear_memory = (param.value.lower() == 'true')
+
+        self.clear_plane_memory = clear_memory
         return goal
+
 
     def update_knowledge_base(self, plane_prefix, plane_list):
         '''Updates the knowledge base with the following facts:
@@ -68,8 +86,10 @@ class PerceivePlaneClient(ActionClientBase):
         objects_to_add = []
         for i, plane in enumerate(plane_list.planes):
             if self.clear_plane_memory:
-                self.__delete_plane_from_kb(plane.name)
-
+                rospy.logwarn('Clearing database')
+                _ = ClearMessageStore()
+                # self.__delete_plane_from_kb(plane.name)
+                rospy.logerr("i have cleared memory!!")
             facts_to_add.append(('explored', [('plane', plane.name)]))
             facts_to_remove.append(('unexplored', [('plane', plane.name)]))
             objects_to_add.append((plane.name, plane))
@@ -102,6 +122,7 @@ class PerceivePlaneClient(ActionClientBase):
         # we update the lists of facts and objects to remove
         # with the objects that on the plane
         plane_objects = self.kb_interface.get_surface_object_names(plane_name)
+        rospy.logerr(plane_objects)
         for obj_name in plane_objects:
             fact = ('on', [('obj', obj_name), ('plane', plane_name)])
             facts_to_remove.append(fact)

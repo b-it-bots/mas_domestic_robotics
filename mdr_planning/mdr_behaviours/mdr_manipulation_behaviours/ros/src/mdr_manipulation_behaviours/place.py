@@ -17,16 +17,25 @@ class Place(ScenarioStateBase):
         self.state_name = kwargs.get('state_name', 'place')
         self.placing_surface_prefix = kwargs.get('placing_surface_prefix', '')
         self.timeout = kwargs.get('timeout', 120.)
-
+        self.grasped_object = kwargs.get('grasped_object','')
         self.number_of_retries = kwargs.get('number_of_retries', 0)
         self.retry_count = 0
 
     def execute(self, userdata):
         if self.save_sm_state:
             self.save_current_state()
+        
+        if len(self.grasped_object) == 0:
+            self.grasped_object = userdata.grasped_object
+            grasped_object = userdata.grasped_object
+            rospy.loginfo("Using userdata's grasped_object {0}".format(self.grasped_object))
+        else:
+            grasped_object =self.grasped_object
 
-        grasped_object = userdata.grasped_object
+
+        
         surface_name = self.kb_interface.get_surface_name(self.placing_surface_prefix)
+        
         dispatch_msg = self.get_dispatch_msg(grasped_object, surface_name)
         rospy.loginfo('Placing %s on %s' % (grasped_object, surface_name))
         self.say('Placing ' + grasped_object + ' on ' + surface_name)

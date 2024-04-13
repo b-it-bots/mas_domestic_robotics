@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- <arg name="robot_env" default="$(optenv ROBOT_ENV !!NO_ROBOT_ENV_SET!!)" />
+    <include file="$(find mdr_rosplan_interface)/ros/launch/rosplan.launch">
+        <arg name="data_path" value="$(find mdr_store_groceries)/config/" />
+        <arg name="domain_path" value="$(find mdr_store_groceries)/config/domain.pddl" />
+        <arg name="problem_path" value="$(find mdr_store_groceries)/config/problem.pddl" />
+        <arg name="strl_file_path" value="$(find mdr_store_groceries)/config/plan.strl" />
+    </include> -->
+
+    <!-- <node name="init_planning_problem" pkg="mdr_rosplan_interface" type="init_planning_problem" respawn="false" output="screen">
+        <param name="problem_file" type="str" value="$(find mdr_store_groceries)/config/sample_initial_problem.yaml" />
+        <param name="kb_update_service" type="str" value="/rosplan_knowledge_base/update" />
+    </node> -->
+
+    <!-- Actions -->
+    <!-- <include file="$(find mdr_listen_action)/ros/launch/listen.launch" /> -->
+    <!-- <include file="$(find mdr_process_speech_command_action)/ros/launch/process_command.launch" /> -->
+    <!-- <include file="$(find mdr_move_arm_action)/ros/launch/move_arm.launch" /> -->
+
+    <!-- <include file="$(find mdr_move_base_action)/ros/launch/move_base_action.launch" /> -->
+    <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />
+
+    <!-- <include file="$(find mdr_perceive_plane_action)/ros/launch/perceive_plane.launch" /> -->
+    <include file="$(find mdr_perceive_plane_action)/ros/launch/perceive_plane_client.launch" />
+
+    <!-- <include file="$(find mdr_pickup_action)/ros/launch/pickup_action.launch" /> -->
+    <include file="$(find mdr_pickup_action)/ros/launch/pickup_client.launch" />
+
+    <!-- <include file="$(find mdr_place_action)/ros/launch/place_action.launch" /> -->
+    <include file="$(find mdr_place_action)/ros/launch/place_client.launch" />
+
+    <!-- State machine -->
+    <node pkg="mas_execution_manager" type="state_machine_creator" name="store_groceries" output="screen">
+        <param name="sm_config_file" type="str" value="$(find mdr_store_groceries)/config/store_groceries_test.yaml" />
+    </node>
+</launch>

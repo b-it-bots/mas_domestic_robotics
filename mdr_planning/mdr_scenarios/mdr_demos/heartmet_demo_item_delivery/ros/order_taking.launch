@@ -16,7 +16,7 @@
     
 
       <!-- Gesture Action -->
-    <!-- <include file="$(find mdr_detect_gesture)/ros/launch/detect_gesture.launch" /> -->
+    <include file="$(find mdr_detect_gesture)/ros/launch/detect_gesture.launch" />
 
     <!-- Move Forward Action -->
     <!-- <include file="$(find mas_hsr_move_forward_action)/ros/launch/move_forward.launch" /> -->
@@ -32,7 +32,7 @@
 
     <!-- State machine -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
-        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/order_taking.yaml" />
+        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/handover_demo_sm.yaml" />
     </node>
 
 

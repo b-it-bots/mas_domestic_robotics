@@ -4,7 +4,9 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import String
 import cv2
 import random
+import tf
 import speech_recognition as sr
+import numpy as np
 #import time
 #from collections import deque
 #from mdr_listen_action.msg import ListenAction, ListenGoal
@@ -23,7 +25,7 @@ class InteractionClient(ScenarioStateBase):
         ScenarioStateBase.__init__(self, 'InteractionClient',
                                    save_sm_state=save_sm_state,
                                    outcomes=['succeeded', 'failed'],
-                                   output_keys=['destination_locations', 'object_tilt'],
+                                   output_keys=['destination_locations', 'object_tilt','person_location'],
                                    input_keys=['command'])
         rospy.loginfo("This is voice stuff")
         self.number_of_retries = kwargs.get('number_of_retries', 0)
@@ -31,17 +33,19 @@ class InteractionClient(ScenarioStateBase):
         self.timeout = kwargs.get('timeout', 120.)
         self.threshold = kwargs.get('threshold', 0.68)
         self.current = rospy.Time.now()
+        self.person_location = list(kwargs.get('person_location', list()))
         # Load spacy NER model
         model_directory = '/home/lucy/ros/noetic/src/mas_models/model-latest'
         #self.nlp_ner = spacy.load(model_directory)
         # Initialize the speech recognition module
         self.r = sr.Recognizer()
         #self.r.dynamic_energy_threshold = False
-        #self.r.energy_threshold = 2000
-        self.mic = sr.Microphone(device_index=9)
+        #self.r.energy_threshold = 800
+        # self.mic = sr.Microphone(device_index=9)
+        self.mic = sr.Microphone()
         with self.mic as source:
             self.r.adjust_for_ambient_noise(source)
-        #self.disp_imager = np.ones((480,640,3),dtype=np.uint8)
+        self.disp_imager = np.ones((480,640,3),dtype=np.uint8)
         self.stop_image = False
         # Define a list of possible friendly responses from the robot
         self.friendly_responses = ["Sure, I can do that.", "No problem.", "Okay, I'm on it.", "Consider it done."]
@@ -50,13 +54,13 @@ class InteractionClient(ScenarioStateBase):
                                 "I didn't quite catch that. Can you repeat it?", "Sorry, I'm having trouble understanding you. Please speak more clearly."]
         #self.r.pause_threshold = 1.0  # Adjust the value as needed
         self.objects_list = {"1": "pringles", "2": "spatula", "3": "soup", "4": "windex", "5": "tshirt"}
-        self.loc_list = {"1": "living_room", "2": "hall","3": "reading_room", "4": "dining"}
+        self.loc_list = {"1": "living_shelf", "2": "dining_table", "3":"reading_room"}
         self.props = {"1": "object", "2": "location", "3": "both"}
         self.client = actionlib.SimpleActionClient('mdr_actions/detect_gesture_server', DetectGestureAction)
         self.client.wait_for_server()
         self.goal = DetectGestureGoal()
         self.pub_obj = rospy.Publisher('heartmet/target_object', String, queue_size=1)
-        self.object_map = {"windex": ["windex bottle", "windex", "cleaner", "sprayer", "bottle of windex"],
+        self.object_map = {"windex": ["windex bottle", "windex", "cleaner", "sprayer", "bottle of windex", "vindex"],
                            "pringles": ["pringles can", "pringles", "prings", "pringle", "pringle can", "chips", "chips can"],
                            "soup": ["campbell soup", "soup", "can of soup", "soup can", "tomato soup", "campbell"],
                            "tshirt": ["t-shirt", "shirt", "t shirt", "black t-shirt", "black shirt", "black t shirt", "tshirt"],
@@ -73,25 +77,67 @@ class InteractionClient(ScenarioStateBase):
 
         # Use this only when using brsu-c069 map
         self.q=0
-        self.location_map = {"living_room": ["living room", "livingroom", "living","reading","reading room"],
-                             "dining_table": ["dining table", "dining room", "table", "diningtable", "diningroom", "dining"],
-                             "kitchen_counter": ["kitchen", "kitchen counter", "counter"],
-                             "living_room_shelf": ["living room shelf", "shelf"],
-                             "sofa": ["sofa", "living room sofa"],
-                             "hall_shelf": ["hall", "hall cabinet","hall shelf"],
-                             "living_room_cabinet": ["living room cabinet", "living cabinet", "livingroomcabinet", "cabinet"]}
+        self.location_map = {"living_shelf": ["living room", "livingroom", "living", "living room shelf", "living shelf"],
+                             "dining_table": ["dining table", "dining room", "table", "diningtable", "diningroom",  "dining room shelf", "dining shelf", "diningshelf"],
+                             "reading_room": ["reading room", "readingroom", "reading shelf", "readingshelf", "reading room shelf"]}
+        #"dining_shelf": ["dining room shelf", "dining shelf", "diningshelf"],
+        #"reading_shelf": ["reading shelf", "readingshelf", "reading room shelf"],
         self.bridge = CvBridge()
         self.image_pub = rospy.Publisher("erl_image", Image, queue_size=10)
+        self.head_tilts = {"living_shelf": -0.1, "dining_table": -0.1, "reading_room":-0.7}
 
+        self.knowledgebase = {"living_shelf": ["tshirt", "spatula"],
+                             "dining_table": ["pringles", "soup", "windex"],
+                             "reading_room": []}
         ''''self.spell = SpellChecker(language=None, distance=1)
         wdicts = ["windex", "bottle", "cleaner", "sprayer", "pringles", "can", "pringle", "chips",
                   "soup", "campbell", "tomato", "tshirt", "t-shirt", "shirt", "black", "spatula",
                   "spoon", "ladel"]
         self.spell.word_frequency.load_words(wdicts)'''
+
+    def get_robot_pose(self):
+        listener = tf.TransformListener()
+
+        while not rospy.is_shutdown():
+            try:
+                # Look up the transform from the "map" frame to the robot's base frame
+                (trans, rot) = listener.lookupTransform("map", "base_link", rospy.Time(0))
+                break  # Break the loop once the transform is available
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                rospy.sleep(1.0)  # Sleep for 1 second before trying again
+
+        # Get the robot's position (x, y, z) in the map frame
+        robot_x, robot_y, _ = trans
+
+        # Get the robot's orientation (quaternion) in the map frame
+        _, _, robot_theta = tf.transformations.euler_from_quaternion(rot)
+
+        # Now you have the robot's pose as (x, y, theta) in the map frame
+        return robot_x, robot_y, robot_theta
     
     def handler(self, signum, frame):
         print("Forever is over!")     
         raise Exception("end of time")
+    
+    def add_image(self, obj, loc):
+        imgs_dis_path = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/"
+        back = 255*np.ones((480,640,3),dtype=np.uint8)
+        image1 = cv2.imread(imgs_dis_path+obj+".jpg")
+        image2 = cv2.imread(imgs_dis_path+loc+".jpg")
+        (h1, w1) = image1.shape[:2]
+        (h2, w2) = image2.shape[:2]
+        print(h1,w1,h2,w2)
+        c1 = (240,160)
+        c2 = (240,460)
+        x1,y1 = c1[1]-int(w1/2), c1[0]-int(h1/2)
+        x2,y2 = c2[1]-int(w2/2), c2[0]-int(h2/2)
+        print(x1,y1,x2,y2)
+        back[y1:y1+h1,x1:x1+w1,:] = image1
+        back[y2:y2+h2,x2:x2+w2,:] = image2
+        #cv2.imwrite(imgs_dis_path+"Slide100.png",back)
+        image_message = self.bridge.cv2_to_imgmsg(back, encoding="passthrough")
+        self.image_pub.publish(image_message)
+        return back
     
     def publish_image(self,img_path):
         disp_imager1 = cv2.imread(img_path)
@@ -145,21 +191,16 @@ class InteractionClient(ScenarioStateBase):
         # self.say("I will be looking for object via hand gestures")
         # rospy.sleep(1)
         self.say_this("Please show me the gesture corresponding to the "+item+" as shown on the display", time_out=5)
-        '''for locs in list(item_dict.items()):
-            if locs[0]==0:
-                self.say("For "+locs[1]+" put up "+ locs[0] + " finger")
-            else:
-                self.say("For "+locs[1]+" put up "+ locs[0] + " fingers")
-            rospy.sleep(1)'''
-        #self.say("fingers respectively")
-        #rospy.sleep(3)
+        rospy.sleep(4)
+        self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide13.PNG")
         self.gesture_call(state=True)
         finger = self.gesture_result.gesture_selection
+        self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide14.PNG")
         if finger == "-1":
             item = None
         else:
             if finger in list(item_dict.keys()):
-                item = set([item_dict[finger]])
+                item = str(item_dict[finger])
             else:
                 item = None
         return item
@@ -168,9 +209,11 @@ class InteractionClient(ScenarioStateBase):
         self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide4.PNG")
         #self.disp_imager = cv2.imread("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide4.PNG")
         self.say_this("Could you show thumbs up to confirm or thumbs down to decline", time_out=3)
-        #rospy.sleep(3)
+        rospy.sleep(4)
+        self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide13.PNG")
         self.gesture_call(state=True)
         gest = self.gesture_result.gesture
+        self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide14.PNG")
         if gest == 'Thumbs up':
             return True
         elif gest == 'Thumbs down':
@@ -183,38 +226,9 @@ class InteractionClient(ScenarioStateBase):
 
     def generate_error_response(self):
         return random.choice(self.error_responses)
-
-    def listen_to_audio(self):
+    
+    def whisper_rec(self,audio):
         try:
-            with self.mic as source:
-                print("Say something!")
-                #audio = self.r.listen(source,timeout=8)
-                self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide10.PNG")
-                audio = self.r.record(source,duration=10)
-                self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide11.PNG")
-                rospy.loginfo('✅--------------heard the person going to recognize------------------✅')
-        except sr.UnknownValueError as e:
-                print(e)
-                self.say_this("Sorry, there was an error processing your request. Please try again later.")
-                print(self.generate_error_response())
-                return None
-        except sr.RequestError as e:
-            print(e)
-            print("Sorry, there was an error processing your request. Please try again later.")
-            return None
-        try:
-            #signal.signal(signal.SIGALRM, self.handler)
-            #signal.alarm(12)
-            user_input = self.r.recognize_google(audio,language = 'en-IN') #'en-us'
-            print("google-------")
-            print(user_input)
-            #user_input = self.r.recognize_whisper(audio, language="english")#, model="tiny")
-            user_input = user_input.lower()
-            user_input = re.sub(r'[^\w]', ' ', user_input)
-            print("You said:", user_input)
-            return user_input
-        except Exception as e:
-            print(e)
             #user_input = self.r.recognize_sphinx(audio)
             user_input = self.r.recognize_whisper(audio, language="english")
             print("whisper-------")
@@ -223,6 +237,67 @@ class InteractionClient(ScenarioStateBase):
             user_input = re.sub(r'[^\w]', ' ', user_input)
             print("You said:", user_input)
             return user_input
+        except sr.RequestError as e:
+            print(e)
+            # API was unreachable or unresponsive
+            self.say_this("Sorry, there was an error recognizing you.")
+            return None
+        except sr.UnknownValueError as e:
+            print(e)
+            # speech was unintelligible
+            self.say_this("Sorry, there was an error recognizing you.")
+            return None
+        except Exception as e:
+            print(e)
+            self.say_this("Sorry, there was an error recognizing you.")
+            return None
+
+    def listen_to_audio(self):
+        try:
+            with self.mic as source:
+                print("Say something!")
+                #audio = self.r.listen(source,timeout=8)
+                self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide10.PNG")
+                audio = self.r.record(source,duration=8)
+                with open("microphone-results.wav", "wb") as f:
+                    f.write(audio.get_wav_data())
+                self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide11.PNG")
+                rospy.loginfo('✅--------------heard the person going to recognize------------------✅')
+        except sr.UnknownValueError as e:
+            print(e)
+            self.say_this("Sorry, there was an error hearing you.")
+            return None
+        except sr.RequestError as e:
+            print(e)
+            self.say_this("Sorry, there was an error hearing you.")
+            return None
+        except Exception as e:
+            print(e)
+            self.say_this("Sorry, there was an error hearing you.")
+            return None
+        try:
+            #signal.signal(signal.SIGALRM, self.handler)
+            #signal.alarm(12)
+            user_input = self.r.recognize_google(audio,language = 'en-GB') #'en-IN') #'en-us'
+            #user_input = self.r.recognize_whisper(audio, language="english") 
+            print("-------google-------")
+            print(user_input)
+            #user_input = self.r.recognize_whisper(audio, language="english")#, model="tiny")
+            user_input = user_input.lower()
+            user_input = re.sub(r'[^\w]', ' ', user_input)
+            print("You said:", user_input)
+            return user_input    
+        except sr.RequestError as e:
+            print(e)
+            # API was unreachable or unresponsive
+            return self.whisper_rec(audio)
+        except sr.UnknownValueError as e:
+            print(e)
+            # speech was unintelligible
+            return self.whisper_rec(audio)
+        except Exception as e:
+            print(e)
+            return self.whisper_rec(audio)
 
     def speech_execution(self):
         print('speech execution')
@@ -240,11 +315,11 @@ class InteractionClient(ScenarioStateBase):
             # print(i)audio
             for word in i[1]:
                 if sentence:
-                    if word.lower() in sentence:
-                        return set([i[0]])
+                    if word.lower() in  sentence: 
+                        return str(i[0])
         return None
 
-    def get_map(self, objects, locations):
+    '''def get_map(self, objects, locations):
         if locations:
             loc = list(locations)[0]
             loc = self.detect_word(loc, self.location_map)
@@ -255,7 +330,7 @@ class InteractionClient(ScenarioStateBase):
             obj = self.detect_word(obj, self.object_map)
         else:
             obj = None
-        return obj, loc
+        return obj, loc'''
     
     '''def autocorrecter(self,user_input):
         words = user_input.split()
@@ -274,8 +349,8 @@ class InteractionClient(ScenarioStateBase):
             return None, None
         #user_input = self.autocorrecter(user_input)
         try:
-            objects = []
-            locations = []
+            #objects = []
+            #locations = []
             '''entities = self.nlp_ner(user_input)
             for ent in entities.ents:
                 if ent.label_ == 'OBJ':
@@ -296,20 +371,20 @@ class InteractionClient(ScenarioStateBase):
                         print(e)
                         loc1 = ent.text'''
                     # locations.append(loc)
-            objects, locations = set(objects), set(locations)
+            objects, locations = None, None #set(objects), set(locations)
             if not objects and user_input:
                 objects = self.detect_word(user_input, self.object_map)
             if not locations and user_input:
                 locations = self.detect_word(user_input, self.location_map)
-            objects, locations = self.get_map(objects, locations)
+            #objects, locations = self.get_map(objects, locations)
             if not objects:
                 rospy.loginfo("no object heard:")
             else:
-                rospy.loginfo("object heard:" + str(list(objects)[0]))
+                rospy.loginfo("object heard:" + str(objects))
             if not locations:
                 rospy.loginfo("no location heard:")
             else:
-                rospy.loginfo("location heard:" + str(list(locations)[0]))
+                rospy.loginfo("location heard:" + str(locations))
             '''if not objects and user_input:
                 objects = self.detect_word(user_input,self.object_map)
             if not locations and user_input:
@@ -336,7 +411,7 @@ class InteractionClient(ScenarioStateBase):
                 return False
             else:
                 self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide8.PNG")
-                self.say_this("Sorry, I didn't understand. Please say yes or no.")
+                self.say_this("Sorry, I didn't understand. Can you please repeat?")
                 return None
         else:
             self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide8.PNG")
@@ -440,10 +515,6 @@ class InteractionClient(ScenarioStateBase):
                     objects = self.list_items2(self.objects_list,"object")
                     if objects:
                         break
-                if not objects:
-                    self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide8.PNG")
-                    #self.disp_imager = cv2.imread("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide8.PNG")
-                    self.say_this("I'm sorry, but I didn't get any object to fetch. Feel free to call me if you want something.", time_out=4)
             
             if not locations and objects:
                 for tryi in range(gesture_retries):
@@ -477,7 +548,7 @@ class InteractionClient(ScenarioStateBase):
                 #self.disp_imager = cv2.imread("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide6.PNG")
                 self.say_this("I'm sorry, but I could't properly catch what you might have said. Can you please provide the gesture for it?", time_out=4)
                 # rospy.sleep(6)
-                prop = self.list_items(self.props)
+                prop = self.list_items2(self.props, "response")
                 if prop:
                     break
             if not prop:
@@ -504,8 +575,20 @@ class InteractionClient(ScenarioStateBase):
         objects, locations = None, None
         for i in range(retries):
             objects, locations = self.get_info(objects, locations)
+            if not locations and objects:
+                for i in list(self.knowledgebase.items()):
+                    # print(i)audio
+                    for word in i[1]:
+                        if word.lower() == str(objects):
+                            locations =  str(i[0])
             if objects and locations:
-                self.say_this(f"Just to confirm, You want me to bring {', '.join(objects)} from {', '.join(locations)}. Is that correct?", time_out=3)
+                self.add_image(objects, locations)
+                #self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide100.PNG")
+                if locations == "living_shelf":
+                    self.say_this("Just to confirm, You want me to bring "+objects+" from living room. Is that correct?", time_out=3)
+                else:
+                    self.say_this("Just to confirm, You want me to bring "+objects+" from "+locations+". Is that correct?", time_out=3)
+                rospy.sleep(2)
                 confirmed = self.comfirm_loop()
                 if not confirmed:
                     prop = self.get_props()
@@ -516,38 +599,18 @@ class InteractionClient(ScenarioStateBase):
                     else:
                         objects, locations = None, None
                 else:
-                    loc = list(locations)[0]
-                    obj = list(objects)[0]
-                    userdata.destination_locations = [
-                        loc]  # ['dining_table']
+                    loc = str(locations)
+                    obj = str(objects)
+                    userdata.destination_locations = [loc]  # ['dining_table']
+                    userdata.person_location=self.person_location 
                     self.pub_obj.publish(obj)
+                    userdata.object_tilt = self.head_tilts[loc]
                     # userdata.objects = [obj]
-                    self.say_this(f"I will fetch {', '.join(objects)} from {', '.join(locations)}.", time_out=3)
-
-                    if loc == "hall":
-                        userdata.object_tilt = -0.1
-                    elif loc == "reading_room":
-                        userdata.object_tilt = -0.7
-                    elif loc == "shelf_close_left":
-                        userdata.object_tilt = -0.1
-                    elif loc == "dining":
-                        userdata.object_tilt = -0.1
-                    else:
-                        userdata.object_tilt = -0.1
-                    '''if image_thread.is_alive():
-                        self.stop_image = True
-                        cv2.destroyAllWindows()  # Close the image window
-                        image_thread.join()
-                    cv2.destroyAllWindows()'''
+                    self.add_image(objects, locations)
+                    self.say_this(f"I will fetch "+objects+" from "+locations+".", time_out=3)
+                    self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide15.PNG")
                     return 'succeeded'
-        if objects:
-            # self.say_this("Sorry I could not identify the object and or location. Please try again later",time_out=3)
-            self.say_this(f"I will fetch {', '.join(objects)}", time_out=3)
-            # userdata.destination_locations = ['dining'] #['dining_table']
-            # self.pub_obj.publish('pringles')
-        '''if image_thread.is_alive():
-            self.stop_image = True
-            cv2.destroyAllWindows()  # Close the image window
-            image_thread.join()
-        cv2.destroyAllWindows()'''
+        self.publish_image("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide8.PNG")
+        #self.disp_imager = cv2.imread("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/disp_imgs/Slide8.PNG")
+        self.say_this("I'm sorry, but I didn't get any object to fetch. Feel free to call me if you want something.", time_out=4)
         return 'failed'

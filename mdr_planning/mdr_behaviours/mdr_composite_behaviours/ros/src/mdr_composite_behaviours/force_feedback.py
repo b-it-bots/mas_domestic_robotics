@@ -54,14 +54,14 @@ class ForceToVelocityNode:
         # self.push_door_motion()
         if self.push_pull==None and self.door_open_status==False:
             if msg.data:
-                self.push_pull='push'
-            else:
                 self.push_pull='pull'
+            else:
+                self.push_pull='push'
         else:
-            if self.push_pull=='pull':
+            if self.push_pull=='push':
                 print('A')
                 self.pull_door_motion()
-            elif self.push_pull=='push':
+            elif self.push_pull=='pull':
                 print('B')
                 self.push_door_motion()
     def get_odom_data(self,msg):

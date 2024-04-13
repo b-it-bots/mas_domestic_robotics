@@ -94,10 +94,19 @@ class t2d2t3d:
         possible_faces = np.array([front_face, left_face, right_face, back_face]) #bottom_face, top_face
         return possible_faces
     
+    def get_box_voxel_simple(self, bbox, cloud):
+        cld = self.cloud_msg_to_ndarray(cloud, fields=['x', 'y', 'z'])
+        padd = 0
+        data_croped = cld[bbox[0][1]:bbox[1][1]-padd,bbox[0][0]:bbox[1][0]-padd,:]
+        whole = self.numpy_to_open3d(cld, remove_outliers=0, voxel=0)
+        cropped = self.numpy_to_open3d(data_croped, remove_outliers=1, voxel=0)
+        cropped.colors = o3d.utility.Vector3dVector([np.array([1,0.5,1])]*len(np.asarray(cropped.points)))
+        return whole, cropped
+    
     def get_box_voxel(self, bbox, cloud):
         rob_coords = np.array([0, 0, 0])
         cld = self.cloud_msg_to_ndarray(cloud, fields=['x', 'y', 'z'])
-        padd = 5
+        padd = 0
         data_croped = cld[bbox[0][1]:bbox[1][1]-padd,bbox[0][0]:bbox[1][0]-padd,:]
         whole = self.numpy_to_open3d(cld, remove_outliers=0, voxel=0)
         cropped = self.numpy_to_open3d(data_croped, remove_outliers=1, voxel=0)
@@ -105,6 +114,16 @@ class t2d2t3d:
         obj_bb = cropped.get_oriented_bounding_box() 
         obj_mean = obj_bb.center
         rob_coords[1] = obj_mean[1]
+        #obj_pose = self.get_3D_cords(cropped) #open3d frame
+        #no_plane, plane, planebox = self.plane_remove(whole,obj_pose,plane_orrientation="vertical")
+        #if no_plane == None:
+            #no_plane = whole
+        '''viz=False
+        if viz:
+            if plane!=None:
+                self.visualizations.extend([plane,planebox])
+            o3d.visualization.draw_geometries(self.visualizations)'''
+        # obj = no_plane.crop(obj_bb)
         obj = whole.crop(obj_bb)
         obj_points = np.asarray(obj.points)
         labels = obj.cluster_dbscan(eps=0.02, min_points=10)
@@ -160,7 +179,7 @@ class t2d2t3d:
         angle = np.arccos(dot_prod / np.linalg.norm(normal))
         return np.degrees(angle)
 
-    def plane_remove(self,whole,object_pose,padd=0.4):
+    def plane_remove(self,whole,object_pose,padd=0.4,plane_orrientation="horizontal"):
         pointsw = np.array(whole.points)
         pointst = []
         for i in pointsw:
@@ -169,12 +188,22 @@ class t2d2t3d:
                 pointst.append(i)
         roia = np.array(pointst)
         roi = self.numpy_to_open3d(roia, remove_outliers=0, voxel=0, reshape=0)
-        plane_model, inliers = roi.segment_plane(distance_threshold=0.015,
+        plane_model, inliers = roi.segment_plane(distance_threshold=0.005,
                                                  ransac_n=3,
                                                  num_iterations=1000)
         angle = self.get_plane_angle_from_horizontal(plane_model)
         # print(angle,"----------------------")
-        if 80<angle<100:
+        p_remove=False
+        if plane_orrientation=="horizontal":
+            if 80<angle<100:
+                p_remove = True
+                print("horizontal plane found")
+        elif plane_orrientation=="vertical":
+            if -20<angle<20:
+                p_remove = True
+                print("vertical plane found")
+
+        if p_remove:
             print("plane found")
             inlier_cloud = roi.select_by_index(inliers)
             inlier_bbox = inlier_cloud.get_oriented_bounding_box()

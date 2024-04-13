@@ -73,7 +73,7 @@ class PickupServer(object):
 
 
     def execute(self, goal):
-        self.say('Inside pick up server execute')
+        rospy.loginfo('Inside pick up server execute')
         rospy.loginfo('[pickup] Received an action request')
         self.action_sm.goal = goal
         self.action_sm.result = None

@@ -2,7 +2,7 @@
 # Author: Alex Mitrevski
 # Email: aleksandar.mitrevski@h-brs.de
 sm_id: mdr_store_groceries
-states: [GO_TO_CUPBOARD, PREPARE_TO_SCAN_CUPBOARD, PERCEIVE_SHELF, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_CUPBOARD, PLACE_OBJECT, CHECK_EMPTY_TABLE, GO_BACK_TO_TABLE, EXIT]
+states: [GO_TO_CUPBOARD, PERCEIVE_SHELF, GO_TO_TABLE, PERCEIVE_TABLE, PICK_OBJECT, FIND_OBJECTS_BEFORE_PICKING, GO_BACK_TO_CUPBOARD, PLACE_OBJECT, CHECK_EMPTY_TABLE, GO_BACK_TO_TABLE, EXIT]
 outcomes: [DONE, TIMEOUT, FAILED]
 state_descriptions:
     - state:
@@ -12,7 +12,7 @@ state_descriptions:
         transitions:
             - transition:
                 name: succeeded
-                state: PREPARE_TO_SCAN_CUPBOARD
+                state: PERCEIVE_SHELF
             - transition:
                 name: failed
                 state: GO_TO_CUPBOARD
@@ -22,28 +22,28 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [shelf]
+                value: [living_room_shelf]
             - argument:
                 name: number_of_retries
                 value: 3
-    - state:
-        name: PREPARE_TO_SCAN_CUPBOARD
-        state_module_name: mdr_store_groceries.scenario_states
-        state_class_name: ScanCupboard
-        transitions:
-            - transition:
-                name: succeeded
-                state: PERCEIVE_SHELF
-            - transition:
-                name: failed
-                state: PREPARE_TO_SCAN_CUPBOARD
-            - transition:
-                name: failed_after_retrying
-                state: FAILED
-        arguments:
-            - argument:
-                name: number_of_retries
-                value: 3
+                #    - state:
+                #        name: PREPARE_TO_SCAN_CUPBOARD
+                #        state_module_name: mdr_store_groceries.scenario_states
+                #        state_class_name: ScanCupboard
+                #        transitions:
+                #            - transition:
+                #                name: succeeded
+                #                state: PERCEIVE_SHELF
+                #            - transition:
+                #                name: failed
+                #                state: PREPARE_TO_SCAN_CUPBOARD
+                #            - transition:
+                #                name: failed_after_retrying
+                #                state: FAILED
+                #        arguments:
+                #            - argument:
+                #                name: number_of_retries
+                #                value: 3
     - state:
         name: PERCEIVE_SHELF
         state_module_name: mdr_perception_behaviours.perceive_planes
@@ -82,7 +82,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [shelf_cupboard]
+                value: [dining_table]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -169,7 +169,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [shelf]
+                value: [living_room_shelf]
             - argument:
                 name: number_of_retries
                 value: 3
@@ -226,7 +226,7 @@ state_descriptions:
         arguments:
             - argument:
                 name: destination_locations
-                value: [shelf_cupboard]
+                value: [dining_table]
             - argument:
                 name: number_of_retries
                 value: 3

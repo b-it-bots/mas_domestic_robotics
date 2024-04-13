@@ -30,10 +30,12 @@ class IdentifyPosture(ScenarioStateBase):
         for posture, ratio_ranges in self.posture_height_width_ratio_ranges.items():
             if ratio_ranges[0] <= bb_height_width_ratio <= ratio_ranges[1]:
                 person_posture = posture
-
+        rospy.loginfo('posture of the detected person' )
+        rospy.loginfo(person_posture)
         userdata.person_pose = userdata.person_list.persons[closest_person_idx].pose
 
         rospy.loginfo('[identify_posture] Found a {0} person'.format(person_posture))
+        rospy.logwarn(person_posture)
         userdata.posture = person_posture
         return 'succeeded'
 

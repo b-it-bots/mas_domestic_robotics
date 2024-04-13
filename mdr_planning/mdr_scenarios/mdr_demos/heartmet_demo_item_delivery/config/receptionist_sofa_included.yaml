@@ -1,0 +1,190 @@
+# Description: Defines a state machine for a simple pick and place scenario (picking an object and placing it back on the same surface)
+# Description: Defines a state machine for a simple pick and place scenario (picking an object and placing it back on the same surface)
+# Author: Heartmet_Team
+# Email: unknown
+sm_id: heartmet_demo_item_delivery
+states: [GO_TO_RECEPTION,GO_TO_RECEPTION_2,GREETING,GREETING_2,VERIFY,GO_TO_LIVING_1,GO_TO_LIVING_2,INTRO,SIT_PROMPT1,SIT_PROMPT2]
+outcomes: [DONE, FAILED]
+state_descriptions:
+    - state:
+        name: GO_TO_RECEPTION
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GREETING
+            - transition:
+                name: failed
+                state: GO_TO_RECEPTION
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: destination_locations
+                value: [greeting]
+    - state:
+        name: GREETING
+        state_module_name: mdr_hri_behaviours.receptionist_iuc_copy_updated
+        state_class_name: ReceptionistTask
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_LIVING_1
+            - transition:
+                name: failed
+                state: GREETING
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    - state:
+        name: GO_TO_LIVING_1
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: SIT_PROMPT1
+            - transition:
+                name: failed
+                state: GO_TO_LIVING_1
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: destination_locations
+                value: [lving_room]
+                
+    - state:
+        name: SIT_PROMPT1
+        state_module_name: mdr_hri_behaviours.receptionist_iuc_sitting_area_sofa
+        state_class_name: GuestIntroductionTask
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_RECEPTION_2
+            - transition:
+                name: failed
+                state: SIT_PROMPT1
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+
+
+
+
+    - state:
+        name: GO_TO_RECEPTION_2
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: GREETING_2
+            - transition:
+                name: failed
+                state: GO_TO_RECEPTION_2
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: destination_locations
+                value: [greeting]
+    - state:
+        name: GREETING_2
+        state_module_name: mdr_hri_behaviours.receptionist_iuc_copy_2
+        state_class_name: ReceptionistTask
+        transitions:
+            - transition:
+                name: succeeded
+                state: GO_TO_LIVING_2
+            - transition:
+                name: failed
+                state: GREETING_2
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+    # - state:
+    #     name: VERIFY
+    #     state_module_name: mdr_hri_behaviours.verify_person
+    #     state_class_name: VerifyPerson
+    #     transitions:
+    #         - transition:
+    #             name: succeeded
+    #             state: GO_TO_LOCATION
+    #         - transition:
+    #             name: failed
+    #             state: VERIFY
+    #     arguments:
+    #         - argument:
+    #             name: number_of_retries
+    #             value: 3
+    - state:
+        name: GO_TO_LIVING_2
+        state_module_name: mdr_navigation_behaviours.move_base
+        state_class_name: MoveBase
+        transitions:
+            - transition:
+                name: succeeded
+                state: SIT_PROMPT2
+            - transition:
+                name: failed
+                state: GO_TO_LIVING_2
+            - transition:
+                name: failed_after_retrying
+                state: FAILED
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+            - argument:
+                name: destination_locations
+                value: [lving_room]
+    - state:
+        name: SIT_PROMPT2
+        state_module_name: mdr_hri_behaviours.receptionist_iuc_sitting_area_sofa
+        state_class_name: GuestIntroductionTask
+        transitions:
+            - transition:
+                name: succeeded
+                state: INTRO
+            - transition:
+                name: failed
+                state: SIT_PROMPT2
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+
+                
+    - state:
+        name: INTRO
+        state_module_name: mdr_hri_behaviours.receptionist_iuc_guest_intro
+        state_class_name: MultiGuestIntroductionTask
+        transitions:
+            - transition:
+                name: succeeded
+                state: DONE
+            - transition:
+                name: failed
+                state: INTRO
+        arguments:
+            - argument:
+                name: number_of_retries
+                value: 3
+

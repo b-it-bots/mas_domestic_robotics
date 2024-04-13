@@ -85,7 +85,7 @@ class PickupClient(ActionClientBase):
             #pdb.set_trace()
             grasp_pose, grasp_strategy = self.get_grasping_pose_and_strategy(complete_obj)
             # TODO: remove this; set manually
-            grasp_strategy = PickupGoal.SIDEWAYS_GRASP
+            grasp_strategy = PickupGoal.TOP_GRASP
             self.target_grasp_pose.publish(grasp_pose)
             goal.pose = grasp_pose
 
@@ -128,7 +128,7 @@ class PickupClient(ActionClientBase):
                 else:
                     self.strategy = PickupGoal.TOP_GRASP
                     rospy.loginfo('[pickup] pickup_client: strategy - TOP_GRASP')
-
+        self.strategy = PickupGoal.TOP_GRASP
         try:
             obj = self.kb_interface.get_obj_instance(self.obj, Object._type)
             object_pose = obj.pose
@@ -184,7 +184,7 @@ class PickupClient(ActionClientBase):
         if object_to_pick_up.bounding_box.dimensions.z > max(object_to_pick_up.bounding_box.dimensions.x,
                                                     object_to_pick_up.bounding_box.dimensions.y):
             desired_gripper_orientation_base_link = (np.pi, -np.pi/2, 0.)
-            grasping_strategy = PickupGoal.SIDEWAYS_GRASP
+            grasping_strategy = PickupGoal.TOP_GRASP
         # this orientation guarantees a top-down grasp and
         # alignment along the longest axis of the object
         else:

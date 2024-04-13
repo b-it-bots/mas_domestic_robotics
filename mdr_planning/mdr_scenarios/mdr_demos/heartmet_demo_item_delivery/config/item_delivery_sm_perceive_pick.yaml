@@ -8,6 +8,7 @@ state_descriptions:
     - state:
         name: PERCEIVE_TABLE
         state_module_name: mdr_perception_behaviours.perceive_planes
+        
         state_class_name: PerceivePlanes
         transitions:
             - transition:
@@ -26,9 +27,9 @@ state_descriptions:
             - argument:
                 name: plane_prefix
                 value: table
-            - argument:
-                name: object_tilt
-                value: -0.7
+            # - argument:
+            #     name: object_tilt
+            #     value: -0.1
     - state:
         name: PICK_OBJECT
         state_module_name: mdr_manipulation_behaviours.pick_closest_from_surface

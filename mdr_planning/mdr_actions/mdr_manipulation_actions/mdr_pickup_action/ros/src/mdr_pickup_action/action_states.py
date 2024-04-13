@@ -34,6 +34,7 @@ class PickupSM(ActionSMBase):
                  move_forward_server='move_forward_server',
                  base_elbow_offset=-1.,
                  arm_base_offset=-1.,
+                 gripper_offset=0.00,
                  grasping_orientation=None,
                  grasping_dmp='',
                  dmp_tau=1.,
@@ -67,11 +68,15 @@ class PickupSM(ActionSMBase):
 
         self.target_pose_pub = rospy.Publisher('target_pose', PoseStamped, queue_size=1)
         self.joint_states_pub = rospy.Subscriber('/hsrb/joint_states', JointState, self.joint_states_cb)
+        self.grasp_strategy = rospy.Subscriber('/germanopen/store_groceries/grasp_strategy', String, self.strategy_cb)
 
         self.move_arm_client = None
         self.move_base_client = None
         self.move_forward_client = None
         self.base_object_offset = 0.55
+        
+
+        self.gripper_offset = gripper_offset
 
         self.say_pub = rospy.Publisher('/say', String, latch=True, queue_size=1)
 
@@ -104,12 +109,20 @@ class PickupSM(ActionSMBase):
         rospy.wait_for_service('/clear_octomap')
         rospy.loginfo('Found /clear_octomap service')
         self.clear_octomap_service = rospy.ServiceProxy('/clear_octomap', Empty)
-
+        
         return FTSMTransitions.INITIALISED
 
     def running(self):
         pose = self.goal.pose
         self.target_pose_pub.publish(self.goal.pose)
+
+        print(f'🚧🚧{self.strategy}🚧🚧')
+
+        if self.strategy == 'TOP':
+            self.goal.strategy = PickupGoal.TOP_GRASP
+        else:
+            self.goal.strategy = PickupGoal.SIDEWAYS_GRASP
+        
         pose.header.stamp = rospy.Time(0)
         pose_base_link = self.tf_listener.transformPose('base_link', pose)
 
@@ -130,11 +143,7 @@ class PickupSM(ActionSMBase):
                 rospy.loginfo('[pickup] Grasping with hardcoded arm position...')
                 self.__align_base_with_pose_x(pose_base_link)
 
-        if self.grasping_orientation:
-            pose_base_link.pose.orientation.x = self.grasping_orientation[0]
-            pose_base_link.pose.orientation.y = self.grasping_orientation[1]
-            pose_base_link.pose.orientation.z = self.grasping_orientation[2]
-            pose_base_link.pose.orientation.w = self.grasping_orientation[3]
+
 
         grasp_successful = False
         retry_count = 0
@@ -174,6 +183,7 @@ class PickupSM(ActionSMBase):
                     rospy.loginfo('[pickup] Arm motion successful')
                 else:
                     rospy.loginfo('[pickup] Grasping...')
+                    pose_base_link.pose.position.x+=0.05
                     arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
                     if not arm_motion_success:
                         rospy.logerr('[pickup] Arm motion unsuccessful')
@@ -182,18 +192,44 @@ class PickupSM(ActionSMBase):
 
                     rospy.loginfo('[pickup] Arm motion successful')
             elif self.goal.strategy == PickupGoal.TOP_GRASP:
+                self.grasping_orientation = [0,0,-0.707,0.707]
+                if self.grasping_orientation:
+                    pose_base_link.pose.orientation.x = self.grasping_orientation[0]
+                    pose_base_link.pose.orientation.y = self.grasping_orientation[1]
+                    pose_base_link.pose.orientation.z = self.grasping_orientation[2]
+                    pose_base_link.pose.orientation.w = self.grasping_orientation[3]
+
                 self.say('Preparing top grasp')
                 rospy.loginfo('[pickup] Preparing top grasp')
                 pose_base_link, x_align_distance = self.__prepare_top_grasp(pose_base_link)
                 self.gripper.orient_z(pose_base_link.pose.orientation)
 
                 # pose_base_link, _ = self.__prepare_top_grasp(pose_base_link)
-                rospy.loginfo('[pickup] Grasping...')
-                arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
-                if not arm_motion_success:
-                    rospy.logerr('[pickup] Arm motion unsuccessful')
-                    self.result = self.set_result(False)
-                    return FTSMTransitions.DONE
+                # rospy.loginfo('[pickup] Grasping...')
+                rospy.loginfo('[pickup] Moving arm down until surface impact is detected...')
+                self.gripper.init_impact_detection_z()
+                while not self.gripper.detect_impact_z():
+                    self.gripper.move_down(-0.1)
+                    rospy.sleep(0.1)
+                    rospy.loginfo('[pickup] Moving arm down...')
+                self.gripper.stop_arm()
+                rospy.loginfo('[pickup] Impact detected')
+
+                start_time = rospy.Time.now().to_sec()
+                while (rospy.Time.now().to_sec() - start_time) < 0.7:
+                    self.gripper.move_down(0.1)
+                    rospy.sleep(0.1)
+                    rospy.loginfo('[pickup] Moving arm up...')
+                self.gripper.stop_arm()
+
+                    # self.gripper.move_down(-0.1)
+                    # rospy.sleep(0.1)
+                    # rospy.loginfo('[pickup] Moving gripper down')
+                # arm_motion_success = self.__move_arm(MoveArmGoal.END_EFFECTOR_POSE, pose_base_link)
+                # if not arm_motion_success:
+                #     rospy.logerr('[pickup] Arm motion unsuccessful')
+                #     self.result = self.set_result(False)
+                #     return FTSMTransitions.DONE
 
                 rospy.loginfo('[pickup] Arm motion successful')
             else:
@@ -207,23 +243,31 @@ class PickupSM(ActionSMBase):
             rospy.loginfo('[pickup] Clearing octomap')
             self.clear_octomap_service()
 
+            if self.goal.strategy == PickupGoal.TOP_GRASP:
+                start_time = rospy.Time.now().to_sec()
+                while (rospy.Time.now().to_sec() - start_time) < 0.7:
+                    self.gripper.move_down(0.1)
+                    rospy.sleep(0.1)
+                    rospy.loginfo('[pickup] Moving arm up...')
+                self.gripper.stop_arm()
+
             if self.goal.context != PickupGoal.CONTEXT_TABLETOP_MANIPULATION:
                 rospy.loginfo('[pickup] Moving the arm back')
-                current_joint_pos = self.joint_states
-                arm_joint_pos_indices = [current_joint_pos.name.index('arm_lift_joint'), current_joint_pos.name.index('arm_flex_joint'),
-                                         current_joint_pos.name.index('arm_roll_joint'), current_joint_pos.name.index('wrist_flex_joint'),
-                                         current_joint_pos.name.index('wrist_roll_joint')]
-                arm_joint_pos = [self.joint_states.position[idx] for idx in arm_joint_pos_indices]
-                arm_joint_pos.append(0.0)
-                # Added an offset to the arm_lift_joint to avoid collision with the table
-                arm_joint_pos[0] += 0.08
-                self.__move_arm(MoveArmGoal.JOINT_VALUES, arm_joint_pos)
-                rospy.loginfo('\n[pickup] ***************************************\n')
-                rospy.logwarn('[pickup] Arm moving up after pickup')
-                self.__move_base_along_x(-0.1)
+                # current_joint_pos = self.joint_states
+                # arm_joint_pos_indices = [current_joint_pos.name.index('arm_lift_joint'), current_joint_pos.name.index('arm_flex_joint'),
+                #                          current_joint_pos.name.index('arm_roll_joint'), current_joint_pos.name.index('wrist_flex_joint'),
+                #                          current_joint_pos.name.index('wrist_roll_joint')]
+                # arm_joint_pos = [self.joint_states.position[idx] for idx in arm_joint_pos_indices]
+                # arm_joint_pos.append(0.0)
+                # # Added an offset to the arm_lift_joint to avoid collision with the table
+                # arm_joint_pos[0] += 0.08
+                # self.__move_arm(MoveArmGoal.JOINT_VALUES, arm_joint_pos)
+                # rospy.loginfo('\n[pickup] ***************************************\n')
+                # rospy.logwarn('[pickup] Arm moving up after pickup')
+                self.__move_base_along_x(-0.2)
                 rospy.logwarn('[pickup] Base moving back after pickup')
-                self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
-                rospy.logwarn('[pickup] Arm moving to pregrasp after pickup')
+                # self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_config_name)
+                # rospy.logwarn('[pickup] Arm moving to pregrasp after pickup')
                 self.__move_arm(MoveArmGoal.NAMED_TARGET, self.safe_arm_joint_config)
                 rospy.logwarn('[pickup] Arm moving to safe config after pickup')
 
@@ -235,7 +279,7 @@ class PickupSM(ActionSMBase):
             rospy.loginfo('[pickup] Verifying the grasp...')
             rospy.loginfo('\n[pickup] END***************************************\n')
             # Added a condition to check if the object is grasped or not by using hand_motor_joint 'closed' value as the min threshold
-            grasp_successful = (self.joint_states.position[self.joint_states.name.index('hand_motor_joint')]) > -0.73 # NOTE: -0.83 value comes from thinnest object which is toothbrush
+            grasp_successful = (self.joint_states.position[self.joint_states.name.index('hand_motor_joint')]) > -0.60 # NOTE: -0.83 value comes from thinnest object which is toothbrush
 
             if grasp_successful:
                 rospy.loginfo('[pickup] Successfully grasped object')
@@ -346,6 +390,10 @@ class PickupSM(ActionSMBase):
         else:
             self.__move_arm(MoveArmGoal.NAMED_TARGET, self.pregrasp_low_config_name)
 
+        # offset the gripper size
+        pose_base_link.pose.position.x += self.gripper_offset
+
+        # prepare intermediate grasp
         if self.intermediate_grasp_offset > 0:
             rospy.loginfo('[PICKUP] Moving to intermediate grasping pose...')
             pose_base_link.pose.position.x -= self.intermediate_grasp_offset
@@ -382,6 +430,9 @@ class PickupSM(ActionSMBase):
 
     def joint_states_cb(self, msg):
         self.joint_states = msg
+    
+    def strategy_cb(self, msg):
+        self.strategy = msg
     
     def say(self, sentence):
         say_msg = String()

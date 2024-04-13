@@ -1,0 +1,2 @@
+model_path: /home/lucy/ros/noetic/src/mas_perception_libs/models/best.pt
+threshold: 0.5
