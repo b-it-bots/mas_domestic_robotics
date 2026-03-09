@@ -2,7 +2,6 @@
 <launch>
 
     <!-- Move Base Client -->
-    <include file="$(find mdr_move_base_action)/ros/launch/move_base_client.launch" />  
 
     <!-- Perceive Plane Client -->
     <include file="$(find mdr_perceive_plane_action)/ros/launch/perceive_plane_client.launch" />
@@ -14,7 +13,7 @@
     
     <!-- State machine -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="item_delivery" output="screen">
-        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/sm_perceive_pick_place.yaml" />
+        <param name="sm_config_file" type="str" value="$(find heartmet_demo_item_delivery)/config/gg_percieve_pick_place.yaml" />
     </node>
 </launch>
 

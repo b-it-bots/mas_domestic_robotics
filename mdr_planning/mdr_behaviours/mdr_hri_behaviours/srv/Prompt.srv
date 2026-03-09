@@ -1,0 +1,6 @@
+# Request
+string prompt
+---
+# Response
+string response
+string guests_json

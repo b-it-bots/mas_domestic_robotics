@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Slim action servers launch — no ROSPlan, no MongoDB.
+         For use with KB-free state machines (hsr_task_sm). -->
+
+    <!-- Move Arm Action -->
+    <include file="$(find mas_hsr_move_arm_action)/ros/launch/move_arm.launch" />
+
+    <!-- Move Arm Joints Action -->
+    <include file="$(find mas_hsr_move_arm_joints_action)/ros/launch/move_arm_joints.launch" />
+
+    <!-- Move Base Action -->
+    <include file="$(find mas_hsr_move_base_action)/ros/launch/move_base.launch" />
+
+    <!-- Move Forward Action -->
+    <include file="$(find mas_hsr_move_forward_action)/ros/launch/move_forward.launch" />
+
+    <!-- Perceive Plane Action -->
+    <include file="$(find mas_hsr_perceive_plane_action)/ros/launch/perceive_plane.launch" />
+
+    <!-- Pickup and Place Actions -->
+    <include file="$(find mas_hsr_pickup_action)/ros/launch/pickup_action.launch" />
+    <include file="$(find mas_hsr_place_action)/ros/launch/place_action.launch" />
+
+</launch>

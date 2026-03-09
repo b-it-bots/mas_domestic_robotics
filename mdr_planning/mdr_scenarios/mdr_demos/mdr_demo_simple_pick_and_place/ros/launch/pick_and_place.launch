@@ -25,6 +25,6 @@
 
     <!-- State machine -->
     <node pkg="mas_execution_manager" type="state_machine_creator" name="pick_and_place" output="screen">
-        <param name="sm_config_file" type="str" value="$(find mdr_demo_simple_pick_and_place)/config/pick_and_place_sm.yaml" />
+        <param name="sm_config_file" type="str" value="$(find mdr_demo_simple_pick_and_place)/config/perceive_pick_sm.yaml" />
     </node>
 </launch>
