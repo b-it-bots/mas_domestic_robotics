@@ -3,8 +3,7 @@
 import rospy
 from std_msgs.msg import String
 from std_srvs.srv import Trigger, TriggerResponse
-# import whisper
-from faster_whisper import WhisperModel
+import whisper
 import subprocess
 import os
 from mas_execution_manager.scenario_state_base import ScenarioStateBase
@@ -34,15 +33,14 @@ class SpeechRecognitionService(ScenarioStateBase):
         transcript_topic="/speech/transcript",
         whisper_model_size="tiny.en",  # tiny.en, base.en, small.en, medium.en
         record_device="hw:1,0",        # default microphone
-        record_duration=5, 
-        device="cpu",            # seconds
+        record_duration=5,             # seconds
     ):
         self.instance_id = instance_id
         self.record_device = record_device
         self.record_duration = int(record_duration)
 
         rospy.loginfo(f"[{self.instance_id}] Loading Whisper model ({whisper_model_size})...")
-        self.whisper_model = WhisperModel(whisper_model_size, device=device, compute_type="float16")
+        self.whisper_model = whisper.load_model(whisper_model_size)
         rospy.loginfo(f"[{self.instance_id}] Whisper model loaded.")
 
         # Publisher for transcripts
@@ -124,18 +122,13 @@ class SpeechRecognitionService(ScenarioStateBase):
             return None
 
         try:
-            # result = self.whisper_model.transcribe(
-            #     temp_filename,
-            #     language="en",
-            #     temperature=0.0,
-            #     no_speech_threshold=0.6
-            # )
-            # text = result["text"].strip()
-
-            segments, info = self.whisper_model.transcribe(temp_filename, beam_size=5)
-            text = " ".join([segment.text for segment in segments]).strip()
-
-            
+            result = self.whisper_model.transcribe(
+                temp_filename,
+                language="en",
+                temperature=0.0,
+                no_speech_threshold=0.6
+            )
+            text = result["text"].strip()
             if text:
                 rospy.loginfo(f"[{self.instance_id}] Recognized: {text}")
                 self.transcript_pub.publish(String(data=text))
@@ -168,9 +161,9 @@ if __name__ == "__main__":
     rospy.init_node("speech_to_text_service_node", anonymous=False)
 
     transcript_topic = rospy.get_param("~transcript_topic", "/speech/transcript")
-    whisper_model_size = rospy.get_param("~whisper_model_size", "base.en")
+    whisper_model_size = rospy.get_param("~whisper_model_size", "tiny.en")
     record_device = rospy.get_param("~record_device", "hw:1,0")
-    record_duration = rospy.get_param("~record_duration", 6)
+    record_duration = rospy.get_param("~record_duration", 7)
 
     stt_service = SpeechRecognitionService.get_instance(
         instance_id="default",

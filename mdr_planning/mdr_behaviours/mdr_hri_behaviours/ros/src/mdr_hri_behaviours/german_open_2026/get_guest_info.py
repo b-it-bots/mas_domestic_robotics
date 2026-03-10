@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import rospy
 from std_msgs.msg import String, Bool
 import ollama
@@ -73,24 +74,44 @@ class GuestInformation (ScenarioStateBase):
         # Integrate with a ROS publisher if you want the robot to speak out the text
         self.say(text)
 
-    def display_image(self,type_,delay):
+
+    def display_image(self, type_):
         if type_ == "listen":
-            path = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/hri_utils/listen.jpg"
-            window_name_ = "Listening"
-        
+            path = "/home/lucy/.../listen.jpg"
+            window_name = "Listening"
         else:
-            path = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/hri_utils/speaking.jpg"
-            window_name_ ="Speaking"
-        
+            path = "/home/lucy/.../speaking.jpg"
+            window_name = "Speaking"
+
         image = cv2.imread(path)
-                # Check if the image was loaded successfully
-        if image is not None:
-            window_name = window_name_
-            cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-            cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-            cv2.imshow(window_name, image)
-            cv2.waitKey(int(delay)) # Display for 3 seconds
-            cv2.destroyWindow(window_name)
+        if image is None:
+            rospy.logwarn("Image not found: " + path)
+            return None, None
+
+        cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+        cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+        cv2.imshow(window_name, image)
+        cv2.waitKey(1)  # required to display
+        return window_name, image
+
+    # def display_image(self,type_,delay):
+    #     if type_ == "listen":
+    #         path = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/hri_utils/listen.jpg"
+    #         window_name_ = "Listening"
+        
+    #     else:
+    #         path = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/hri_utils/speaking.jpg"
+    #         window_name_ ="Speaking"
+        
+    #     image = cv2.imread(path)
+    #             # Check if the image was loaded successfully
+    #     if image is not None:
+    #         window_name = window_name_
+    #         cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+    #         cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
+    #         cv2.imshow(window_name, image)
+    #         cv2.waitKey(int(delay)) # Display for 3 seconds
+    #         cv2.destroyWindow(window_name)
 
     
 
@@ -109,7 +130,7 @@ class GuestInformation (ScenarioStateBase):
             try:
                 rospy.loginfo("Calling speech recognition service...")
                 response = speech_service(req)
-                self.display_image("listen",6900)
+                self.display_image("listen")
                 
 
                 if not response.success or not response.message.strip():
@@ -156,9 +177,13 @@ class GuestInformation (ScenarioStateBase):
                 rospy.loginfo(f"Guest extracted: {name} wants {drink}")
 
                 json_data = {"guest1": guest1}
-
+                json1_path = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/person_json/person1.json"
+                if os.path.isfile(json1_path):
+                    file_path = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/person_json/person2.json"
+                else:
+                    file_path = json1_path
                 with open(
-                    "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/person_json/person1.json",
+                    file_path,
                     "w",
                 ) as f:
                     json.dump(json_data, f, indent=4)
@@ -168,7 +193,7 @@ class GuestInformation (ScenarioStateBase):
                 length = self.length_calculation(reply)
                 sleep_time = self.calculate_delay(reply,length)
                 self.say_this(reply)
-                self.display_image("speaking",sleep_time)
+                self.display_image("speaking")
                 rospy.sleep(sleep_time)
 
                 break
@@ -178,7 +203,7 @@ class GuestInformation (ScenarioStateBase):
                 length = self.length_calculation(reply)
                 sleep_time = self.calculate_delay(reply,length)
                 self.say_this(reply)
-                self.display_image("speaking",sleep_time)
+                self.display_image("speaking")
                 rospy.sleep(sleep_time)
 
                 self.mic_control_pub.publish(Bool(data=True))
@@ -199,143 +224,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# def call_speech_service(self):
-    #     # speech_service = rospy.ServiceProxy('/speech_recognize', Trigger)
-    #     req = TriggerRequest()
-    #     response = None
-
-    #     while not rospy.is_shutdown():  # keep looping until ROS shuts down
-    #         try:
-    #             rospy.loginfo("Calling speech recognition service...")
-    #             response = self.stt_service(req)
-
-    #             if response.success:
-    #                 rospy.loginfo(f"Transcription received: {response.message}")
-    #                 break  # exit the loop if we got a successful response
-    #             else:
-    #                 rospy.logwarn("No transcription. Retrying...")
-    #                 rospy.sleep(1.0)  # wait 1 second before retrying
-
-    #         except rospy.ServiceException as e:
-    #             rospy.logerr(f"Service call failed: {e}")
-    #             rospy.sleep(1.0)  # wait a bit before retrying
-
-    #     return response.message if response else ""
-
-
-    # def execute(self):
-
-    #     try:
-    #         #say_this("Hello, welcome My name is Lucy")
-    #         #rospy.sleep(2)
-    #         rospy.loginfo("Calling speech recognition service...")
-    #         speech_service = rospy.ServiceProxy('/speech_recognize', Trigger)
-    #         req = TriggerRequest()
-    #         response = speech_service(req)
-    #         if response.success:
-    #             rospy.loginfo(f"Transcription: {response.message}")
-    #         else:
-    #             #say_this("I am sorry I cant hearyou can you repaet again?")
-    #             #rospy.sleep(2)
-    #             rospy.logwarn("I am sorry I cant hearyou can you repaet again?")
-    #             rospy.logwarn("Failed to recognize speech: " + response.message)
-
-    #     except rospy.ServiceException as e:
-    #         rospy.logerr(f"Service call failed: {e}")
-        
-        
-    #     text = (response.message or "").strip()
-    #     if not text:
-    #         return
-    #     try:
-    #         self.mic_control_pub.publish(Bool(data=False))
-    #         rospy.loginfo(f"Sending prompt: {text}")
-
-    #         result = self.proxy(text)
-
-    #         guests = result.guests_json
-
-
-    #        # Guest 1
-    #         if guests["guest1"]["name"] and guests["guest1"]["drink"]:
-
-    #             json_data = {
-    #                 "guest1": guests["guest1"]
-    #             }
-    #             with open("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/person_json/person1.json", "w") as f:
-    #                 json.dump(json_data, f, indent=4)
-
-    #         if guests["guest2"]["name"] and guests["guest2"]["drink"]:
-
-    #             json_data = {
-    #                 "guest2": guests["guest2"]
-    #             }
-    #             with open("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/person_json/person2.json", "w") as f:
-    #                 json.dump(json_data, f, indent=4)
-
-    #         self.mic_control_pub.publish(Bool(data=True))
-
-    #     except rospy.ServiceException as e:
-
-    #         rospy.logwarn(f"Service call failed: {e}")
-
-    # def execute(self):
-    #     """Continuously call the speech service until a valid transcription is received,
-    #     then send the prompt and save guest information to JSON files.
-    #     """
-    #     # ---------------- Keep trying speech recognition ----------------
-    #     speech_service = rospy.ServiceProxy('/speech_recognize', Trigger)
-    #     req = TriggerRequest()
-    #     response = None
-
-    #     while not rospy.is_shutdown():
-    #         try:
-    #             rospy.loginfo("Calling speech recognition service...")
-    #             response = speech_service(req)
-
-    #             if response.success and response.message.strip():
-    #                 rospy.loginfo(f"Transcription received: {response.message}")
-    #                 break  # exit the loop on successful transcription
-    #             else:
-    #                 rospy.logwarn("No transcription or empty message. Retrying...")
-    #                 rospy.sleep(1.0)
-
-    #         except rospy.ServiceException as e:
-    #             rospy.logerr(f"Service call failed: {e}")
-    #             rospy.sleep(1.0)
-
-    #     text = response.message.strip()
-    #     if not text:
-    #         rospy.logwarn("No valid transcription obtained. Exiting execute.")
-    #         return
-
-    #     # ---------------- Disable mic while processing ----------------
-    #     self.mic_control_pub.publish(Bool(data=False))
-
-    #     # ---------------- Send prompt to voicebot ----------------
-    #     try:
-    #         rospy.loginfo(f"Sending prompt to voicebot: {text}")
-    #         result = self.proxy(text)
-    #         guests = result.guests_json
-
-    #         # ---------------- Save guest1 info if available ----------------
-    #         if guests.get("guest1") and guests["guest1"].get("name") and guests["guest1"].get("drink"):
-    #             json_data = {"guest1": guests["guest1"]}
-    #             with open("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/person_json/person1.json", "w") as f:
-    #                 json.dump(json_data, f, indent=4)
-    #             rospy.loginfo("Saved guest1 info to JSON.")
-
-    #         # ---------------- Save guest2 info if available ----------------
-    #         if guests.get("guest2") and guests["guest2"].get("name") and guests["guest2"].get("drink"):
-    #             json_data = {"guest2": guests["guest2"]}
-    #             with open("/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/person_json/person2.json", "w") as f:
-    #                 json.dump(json_data, f, indent=4)
-    #             rospy.loginfo("Saved guest2 info to JSON.")
-
-    #     except rospy.ServiceException as e:
-    #         rospy.logwarn(f"Voicebot service call failed: {e}")
-
-    #     # ---------------- Re-enable mic ----------------
-    #     self.mic_control_pub.publish(Bool(data=True))
