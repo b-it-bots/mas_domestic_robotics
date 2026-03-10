@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+    <arg name="table_location"          default="dining_table" />
+    <arg name="shelf_location"          default="shelf" />
+    <arg name="plane_prefix"            default="table" />
+    <arg name="picking_surface_prefix"  default="table" />
+    <arg name="nav_timeout"             default="120.0" />
+    <arg name="perceive_timeout"        default="30.0" />
+    <arg name="pickup_timeout"          default="120.0" />
+    <arg name="nav_retries"             default="2" />
+    <arg name="perceive_retries"        default="2" />
+    <arg name="pick_retries"            default="2" />
+
+    <node pkg="hsr_task_sm"
+          type="pick_place_full_sm"
+          name="pick_place_full_sm"
+          output="screen">
+        <param name="table_location"          value="$(arg table_location)" />
+        <param name="shelf_location"          value="$(arg shelf_location)" />
+        <param name="plane_prefix"            value="$(arg plane_prefix)" />
+        <param name="picking_surface_prefix"  value="$(arg picking_surface_prefix)" />
+        <param name="nav_timeout"             value="$(arg nav_timeout)" />
+        <param name="perceive_timeout"        value="$(arg perceive_timeout)" />
+        <param name="pickup_timeout"          value="$(arg pickup_timeout)" />
+        <param name="nav_retries"             value="$(arg nav_retries)" />
+        <param name="perceive_retries"        value="$(arg perceive_retries)" />
+        <param name="pick_retries"            value="$(arg pick_retries)" />
+    </node>
+</launch>

@@ -1,0 +1,27 @@
+<launch>
+  <node name="door_traverse_sm"
+        pkg="hsr_task_sm"
+        type="door_traverse_sm"
+        output="screen">
+
+    <!-- Waypoint in front of the door (map frame) -->
+    <param name="door_x"     value="1.110358" />
+    <param name="door_y"     value="-2.838731" />
+    <param name="door_theta" value="0.017712" />
+
+    <!-- Waypoint inside the door (map frame) -->
+    <param name="inside_x"     value="7.607594" />
+    <param name="inside_y"     value="-2.614543" />
+    <param name="inside_theta" value="1.922439" />
+
+    <!-- Door open checker -->
+    <param name="door_result_topic"  value="/door_open_checker/result" />
+    <param name="door_wait_timeout"  value="20.0" />  <!-- seconds per attempt -->
+    <param name="door_max_retries"   value="5" />
+
+    <!-- Navigation -->
+    <param name="nav_timeout" value="120.0" />
+    <param name="nav_retries" value="2" />
+
+  </node>
+</launch>

@@ -1,0 +1,186 @@
+#!/usr/bin/env python3
+"""
+door_traverse_sm – Go to a door, wait for it to open, then go inside.
+
+Flow
+----
+  GO_TO_DOOR
+    → succeeded        : WAIT_FOR_DOOR
+    → failed           : GO_TO_DOOR          (NavigateTo-style retry)
+    → failed_after_retrying : FAILED
+
+  WAIT_FOR_DOOR
+    → open             : GO_INSIDE
+    → closed           : COUNT_DOOR_RETRY    (door never opened in time)
+    → timeout          : COUNT_DOOR_RETRY    (topic not publishing)
+
+  COUNT_DOOR_RETRY
+    → retry            : WAIT_FOR_DOOR
+    → give_up          : FAILED
+
+  GO_INSIDE
+    → succeeded        : DONE
+    → failed           : GO_INSIDE
+    → failed_after_retrying : FAILED
+
+ROS parameters (all private)
+-----------------------------
+  ~door_x             (float, default:  1.0)  – x of waypoint in front of door
+  ~door_y             (float, default:  0.0)  – y of waypoint in front of door
+  ~door_theta         (float, default:  0.0)  – heading at door waypoint (rad)
+
+  ~inside_x           (float, default:  3.0)  – x of waypoint inside the door
+  ~inside_y           (float, default:  0.0)  – y of waypoint inside the door
+  ~inside_theta       (float, default:  0.0)  – heading at inside waypoint (rad)
+
+  ~door_result_topic  (str,   default: '/door_open_checker/result')
+  ~door_wait_timeout  (float, default: 20.0)  – seconds to wait per attempt
+  ~door_max_retries   (int,   default:  5)    – how many times to retry waiting
+
+  ~nav_timeout        (float, default: 120.0) – move_base action timeout
+  ~nav_retries        (int,   default:  2)    – move_base retries per goal
+"""
+
+import rospy
+import smach
+import smach_ros
+
+from hsr_task_sm.states import GoToGoal, CheckDoorOpen
+
+
+# --------------------------------------------------------------------------- #
+#  Helper state: retry counter                                                 #
+# --------------------------------------------------------------------------- #
+
+class CountDoorRetry(smach.State):
+    """
+    Increment the door-check retry counter stored in userdata.
+
+    Outcomes
+    --------
+    retry    – counter is below max_retries; try again
+    give_up  – counter has reached max_retries
+    """
+
+    def __init__(self, max_retries):
+        smach.State.__init__(
+            self,
+            outcomes=['retry', 'give_up'],
+            input_keys=['door_retries'],
+            output_keys=['door_retries']
+        )
+        self.max_retries = max_retries
+
+    def execute(self, userdata):
+        userdata.door_retries += 1
+        attempt = userdata.door_retries
+        rospy.logwarn(
+            '[CountDoorRetry] Door check attempt %d/%d failed.',
+            attempt, self.max_retries
+        )
+        if attempt >= self.max_retries:
+            rospy.logerr('[CountDoorRetry] Max retries (%d) reached. Giving up.',
+                         self.max_retries)
+            return 'give_up'
+        rospy.loginfo('[CountDoorRetry] Retrying (%d/%d) ...',
+                      attempt, self.max_retries)
+        return 'retry'
+
+
+# --------------------------------------------------------------------------- #
+#  SM builder                                                                  #
+# --------------------------------------------------------------------------- #
+
+def build_sm():
+    # --- load parameters ---------------------------------------------------
+    door_x     = rospy.get_param('~door_x',    1.0)
+    door_y     = rospy.get_param('~door_y',    0.0)
+    door_theta = rospy.get_param('~door_theta', 0.0)
+
+    inside_x     = rospy.get_param('~inside_x',    3.0)
+    inside_y     = rospy.get_param('~inside_y',    0.0)
+    inside_theta = rospy.get_param('~inside_theta', 0.0)
+
+    door_topic       = rospy.get_param('~door_result_topic', '/door_open_checker/result')
+    door_wait_timeout = rospy.get_param('~door_wait_timeout', 20.0)
+    door_max_retries  = rospy.get_param('~door_max_retries',   5)
+
+    nav_timeout = rospy.get_param('~nav_timeout', 120.0)
+    nav_retries = rospy.get_param('~nav_retries',   2)
+
+    # --- build machine -----------------------------------------------------
+    sm = smach.StateMachine(outcomes=['DONE', 'FAILED'])
+    sm.userdata.door_retries = 0  # retry counter reset each SM execution
+
+    with sm:
+
+        # 1. Navigate to the waypoint in front of the door
+        smach.StateMachine.add(
+            'GO_TO_DOOR',
+            GoToGoal(x=door_x, y=door_y, theta=door_theta,
+                     timeout=nav_timeout, retries=nav_retries),
+            transitions={
+                'succeeded':             'WAIT_FOR_DOOR',
+                'failed':                'GO_TO_DOOR',
+                'failed_after_retrying': 'FAILED',
+            }
+        )
+
+        # 2. Block until the door opens (or the per-attempt timeout fires)
+        smach.StateMachine.add(
+            'WAIT_FOR_DOOR',
+            CheckDoorOpen(result_topic=door_topic,
+                          wait_timeout=door_wait_timeout),
+            transitions={
+                'open':    'GO_INSIDE',
+                'closed':  'COUNT_DOOR_RETRY',
+                'timeout': 'COUNT_DOOR_RETRY',
+            }
+        )
+
+        # 3. Count retries; loop back or bail out
+        smach.StateMachine.add(
+            'COUNT_DOOR_RETRY',
+            CountDoorRetry(max_retries=door_max_retries),
+            transitions={
+                'retry':    'WAIT_FOR_DOOR',
+                'give_up':  'FAILED',
+            }
+        )
+
+        # 4. Door is open – go inside
+        smach.StateMachine.add(
+            'GO_INSIDE',
+            GoToGoal(x=inside_x, y=inside_y, theta=inside_theta,
+                     timeout=nav_timeout, retries=nav_retries),
+            transitions={
+                'succeeded':             'DONE',
+                'failed':                'GO_INSIDE',
+                'failed_after_retrying': 'FAILED',
+            }
+        )
+
+    return sm
+
+
+# --------------------------------------------------------------------------- #
+#  Entry point                                                                 #
+# --------------------------------------------------------------------------- #
+
+def main():
+    rospy.init_node('door_traverse_sm')
+
+    sm = build_sm()
+
+    sis = smach_ros.IntrospectionServer('door_traverse_sm', sm, '/DOOR_TRAVERSE_SM')
+    sis.start()
+
+    rospy.loginfo('[door_traverse_sm] Starting ...')
+    outcome = sm.execute()
+    rospy.loginfo('[door_traverse_sm] Final outcome: %s', outcome)
+
+    sis.stop()
+
+
+if __name__ == '__main__':
+    main()

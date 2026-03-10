@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>hsr_task_sm</name>
+  <version>0.1.0</version>
+  <description>
+    Slim, KB-free state machines for HSR-B task execution.
+    Bypasses ROSPlan knowledge base and MongoDB/datacentre entirely;
+    uses smach userdata for direct data passing between states.
+  </description>
+
+  <maintainer email="robot@hsr.local">HSR Team</maintainer>
+  <license>Apache 2.0</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>rospy</depend>
+  <depend>smach</depend>
+  <depend>smach_ros</depend>
+  <depend>actionlib</depend>
+  <depend>std_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>geometry_msgs</depend>
+
+  <!-- HSR action packages -->
+  <depend>mdr_perceive_plane_action</depend>
+  <depend>mdr_pickup_action</depend>
+  <depend>mdr_place_action</depend>
+  <depend>mdr_move_base_action</depend>
+  <depend>mdr_move_arm_action</depend>
+
+  <!-- Perception messages -->
+  <depend>mas_perception_msgs</depend>
+
+  <exec_depend>python3-numpy</exec_depend>
+</package>

@@ -1,0 +1,106 @@
+#!/usr/bin/env python3
+"""
+Full pick-and-place state machine with navigation.
+
+GO_TO_TABLE -> PERCEIVE_TABLE -> PICK_OBJECT -> GO_TO_SHELF -> DONE
+
+Parameters (ROS ~private):
+  ~table_location         (str,   default: 'dining_table')
+  ~shelf_location         (str,   default: 'shelf')
+  ~plane_prefix           (str,   default: 'table')
+  ~picking_surface_prefix (str,   default: 'table')
+  ~nav_timeout            (float, default: 120.0)
+  ~perceive_timeout       (float, default: 30.0)
+  ~pickup_timeout         (float, default: 120.0)
+  ~nav_retries            (int,   default: 2)
+  ~perceive_retries       (int,   default: 2)
+  ~pick_retries           (int,   default: 2)
+"""
+
+import rospy
+import smach
+import smach_ros
+
+from hsr_task_sm.states import ClearCostmap, NavigateTo, PerceiveTable, PickObject
+
+
+def build_sm():
+    table_loc    = rospy.get_param('~table_location',         'dining_table')
+    shelf_loc    = rospy.get_param('~shelf_location',         'shelf')
+    plane_prefix = rospy.get_param('~plane_prefix',           'table')
+    surf_prefix  = rospy.get_param('~picking_surface_prefix', 'table')
+    nav_timeout  = rospy.get_param('~nav_timeout',            120.0)
+    perc_timeout = rospy.get_param('~perceive_timeout',       30.0)
+    pick_timeout = rospy.get_param('~pickup_timeout',         120.0)
+    nav_retries  = rospy.get_param('~nav_retries',            2)
+    perc_retries = rospy.get_param('~perceive_retries',       2)
+    pick_retries = rospy.get_param('~pick_retries',           2)
+
+    sm = smach.StateMachine(outcomes=['DONE', 'FAILED'])
+    sm.userdata.perceived_planes = None
+    sm.userdata.grasped_object   = ''
+
+    with sm:
+        smach.StateMachine.add(
+            'CLEAR_COSTMAP',
+            ClearCostmap(),
+            transitions={'succeeded': 'GO_TO_TABLE', 'failed': 'FAILED'}
+        )
+
+        smach.StateMachine.add(
+            'GO_TO_TABLE',
+            NavigateTo(destination=table_loc, timeout=nav_timeout, retries=nav_retries),
+            transitions={
+                'succeeded':             'PERCEIVE_TABLE',
+                'failed':                'GO_TO_TABLE',
+                'failed_after_retrying': 'FAILED',
+            }
+        )
+
+        smach.StateMachine.add(
+            'PERCEIVE_TABLE',
+            PerceiveTable(plane_prefix=plane_prefix, timeout=perc_timeout, retries=perc_retries),
+            transitions={
+                'succeeded':             'PICK_OBJECT',
+                'failed':                'PERCEIVE_TABLE',
+                'failed_after_retrying': 'FAILED',
+            }
+        )
+
+        smach.StateMachine.add(
+            'PICK_OBJECT',
+            PickObject(picking_surface_prefix=surf_prefix, timeout=pick_timeout, retries=pick_retries),
+            transitions={
+                'succeeded':                   'GO_TO_SHELF',
+                'failed':                      'PICK_OBJECT',
+                'failed_after_retrying':       'FAILED',
+                'find_objects_before_picking': 'PERCEIVE_TABLE',
+            }
+        )
+
+        smach.StateMachine.add(
+            'GO_TO_SHELF',
+            NavigateTo(destination=shelf_loc, timeout=nav_timeout, retries=nav_retries),
+            transitions={
+                'succeeded':             'DONE',
+                'failed':                'GO_TO_SHELF',
+                'failed_after_retrying': 'FAILED',
+            }
+        )
+
+    return sm
+
+
+def main():
+    rospy.init_node('pick_place_full_sm')
+    sm = build_sm()
+    sis = smach_ros.IntrospectionServer('pick_place_full_sm', sm, '/PICK_PLACE_FULL_SM')
+    sis.start()
+    rospy.loginfo('[pick_place_full_sm] Starting ...')
+    outcome = sm.execute()
+    rospy.loginfo('[pick_place_full_sm] Final outcome: %s', outcome)
+    sis.stop()
+
+
+if __name__ == '__main__':
+    main()

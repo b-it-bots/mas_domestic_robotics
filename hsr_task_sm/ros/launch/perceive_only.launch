@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+    <!--
+        Perception-only test. Useful for verifying the perceive_plane pipeline
+        without triggering any manipulation.
+    -->
+
+    <arg name="plane_prefix"      default="table" />
+    <arg name="perceive_timeout"  default="30.0" />
+    <arg name="perceive_retries"  default="2" />
+
+    <node pkg="hsr_task_sm"
+          type="perceive_only_sm"
+          name="perceive_only_sm"
+          output="screen">
+        <param name="plane_prefix"      value="$(arg plane_prefix)" />
+        <param name="perceive_timeout"  value="$(arg perceive_timeout)" />
+        <param name="perceive_retries"  value="$(arg perceive_retries)" />
+    </node>
+</launch>

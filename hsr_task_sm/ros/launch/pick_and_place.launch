@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<launch>
+    <!--
+        Slim pick-and-place state machine.
+        All action servers are expected to already be running
+        (hsr-rosplan-servers.service provides them).
+
+        No ROSPlan KB, no MongoDB/datacentre needed.
+    -->
+
+    <arg name="plane_prefix"            default="table" />
+    <arg name="picking_surface_prefix"  default="table" />
+    <arg name="perceive_timeout"        default="30.0" />
+    <arg name="pickup_timeout"          default="120.0" />
+    <arg name="perceive_retries"        default="2" />
+    <arg name="pick_retries"            default="2" />
+    <arg name="z_offset"                default="0.08" />
+
+    <node pkg="hsr_task_sm"
+          type="pick_and_place_sm"
+          name="pick_and_place_sm"
+          output="screen">
+        <param name="plane_prefix"            value="$(arg plane_prefix)" />
+        <param name="picking_surface_prefix"  value="$(arg picking_surface_prefix)" />
+        <param name="perceive_timeout"        value="$(arg perceive_timeout)" />
+        <param name="pickup_timeout"          value="$(arg pickup_timeout)" />
+        <param name="perceive_retries"        value="$(arg perceive_retries)" />
+        <param name="pick_retries"            value="$(arg pick_retries)" />
+        <param name="z_offset"                value="$(arg z_offset)" />
+    </node>
+</launch>

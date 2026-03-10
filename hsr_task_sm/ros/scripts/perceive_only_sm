@@ -1,0 +1,55 @@
+#!/usr/bin/env python3
+"""
+Perceive-only state machine entry point.
+
+Useful for testing the perception pipeline in isolation.
+Perceives a table, logs found objects, then exits.
+
+Parameters (ROS ~private):
+  ~plane_prefix     (str,   default: 'table')
+  ~perceive_timeout (float, default: 30.0)
+  ~perceive_retries (int,   default: 2)
+"""
+
+import rospy
+import smach
+import smach_ros
+
+from hsr_task_sm.states import PerceiveTable
+
+
+def main():
+    rospy.init_node('perceive_only_sm')
+
+    plane_prefix = rospy.get_param('~plane_prefix', 'table')
+    timeout = rospy.get_param('~perceive_timeout', 30.0)
+    retries = rospy.get_param('~perceive_retries', 2)
+
+    sm = smach.StateMachine(outcomes=['DONE', 'FAILED'])
+    sm.userdata.perceived_planes = None
+
+    with sm:
+        smach.StateMachine.add(
+            'PERCEIVE_TABLE',
+            PerceiveTable(plane_prefix=plane_prefix,
+                          timeout=timeout,
+                          retries=retries),
+            transitions={
+                'succeeded':             'DONE',
+                'failed':                'PERCEIVE_TABLE',
+                'failed_after_retrying': 'FAILED',
+            }
+        )
+
+    sis = smach_ros.IntrospectionServer('perceive_only_sm', sm, '/PERCEIVE_ONLY_SM')
+    sis.start()
+
+    rospy.loginfo('[perceive_only_sm] Starting ...')
+    outcome = sm.execute()
+    rospy.loginfo('[perceive_only_sm] Final outcome: %s', outcome)
+
+    sis.stop()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""
+Pick-and-Place state machine entry point.
+
+Perceives objects on a table surface, picks the closest one.
+No ROSPlan KB, no MongoDB/datacentre dependency.
+
+Parameters (ROS ~private):
+  ~plane_prefix          (str,   default: 'table')   -- surface name prefix for perception
+  ~picking_surface_prefix (str,  default: 'table')   -- surface name prefix for picking
+  ~perceive_timeout      (float, default: 30.0)       -- perceive action timeout (s)
+  ~pickup_timeout        (float, default: 120.0)      -- pickup action timeout (s)
+  ~perceive_retries      (int,   default: 2)
+  ~pick_retries          (int,   default: 2)
+"""
+
+import rospy
+import smach
+import smach_ros
+
+from hsr_task_sm.states import ClearCostmap, PerceiveTable, PickObject
+
+
+def build_sm():
+    plane_prefix = rospy.get_param('~plane_prefix', 'table')
+    surface_prefix = rospy.get_param('~picking_surface_prefix', 'table')
+    perceive_timeout = rospy.get_param('~perceive_timeout', 30.0)
+    pickup_timeout = rospy.get_param('~pickup_timeout', 120.0)
+    perceive_retries = rospy.get_param('~perceive_retries', 2)
+    pick_retries = rospy.get_param('~pick_retries', 2)
+    z_offset = rospy.get_param('~z_offset', 0.05)
+
+    sm = smach.StateMachine(outcomes=['DONE', 'FAILED'])
+    sm.userdata.perceived_planes = None
+    sm.userdata.grasped_object = ''
+
+    with sm:
+        smach.StateMachine.add(
+            'CLEAR_COSTMAP',
+            ClearCostmap(),
+            transitions={
+                'succeeded': 'PERCEIVE_TABLE',
+                'failed':    'FAILED',
+            }
+        )
+
+        smach.StateMachine.add(
+            'PERCEIVE_TABLE',
+            PerceiveTable(plane_prefix=plane_prefix,
+                          timeout=perceive_timeout,
+                          retries=perceive_retries),
+            transitions={
+                'succeeded':             'PICK_OBJECT',
+                'failed':                'PERCEIVE_TABLE',
+                'failed_after_retrying': 'FAILED',
+            }
+        )
+
+        smach.StateMachine.add(
+            'PICK_OBJECT',
+            PickObject(picking_surface_prefix=surface_prefix,
+                       z_offset=z_offset,
+                       timeout=pickup_timeout,
+                       retries=pick_retries),
+            transitions={
+                'succeeded':                  'DONE',
+                'failed':                     'PICK_OBJECT',
+                'failed_after_retrying':      'FAILED',
+                'find_objects_before_picking':'PERCEIVE_TABLE',
+            }
+        )
+
+    return sm
+
+
+def main():
+    rospy.init_node('pick_and_place_sm')
+
+    sm = build_sm()
+
+    sis = smach_ros.IntrospectionServer('pick_and_place_sm', sm, '/PICK_AND_PLACE_SM')
+    sis.start()
+
+    rospy.loginfo('[pick_and_place_sm] Starting ...')
+    outcome = sm.execute()
+    rospy.loginfo('[pick_and_place_sm] Final outcome: %s', outcome)
+
+    sis.stop()
+
+
+if __name__ == '__main__':
+    main()
