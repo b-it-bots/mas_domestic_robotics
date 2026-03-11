@@ -1,0 +1,40 @@
+<launch>
+    <!-- 
+    Generic Challenge State Machine Launcher
+    
+    Usage:
+        roslaunch hsr_task_sm challenge.launch challenge:=hri_challenge
+        roslaunch hsr_task_sm challenge.launch challenge:=pick_place_challenge
+        roslaunch hsr_task_sm challenge.launch challenge:=gpsr_challenge
+        roslaunch hsr_task_sm challenge.launch challenge:=laundry_challenge
+        roslaunch hsr_task_sm challenge.launch challenge:=restaurant_challenge
+        roslaunch hsr_task_sm challenge.launch challenge:=finals_challenge
+    
+    Or with custom config:
+        roslaunch hsr_task_sm challenge.launch config:=/path/to/custom.yaml
+    -->
+    
+    <!-- Arguments -->
+    <arg name="challenge" default="hri_challenge" doc="Challenge name (without .yaml extension)"/>
+    <arg name="config" default="" doc="Override: full path to custom YAML config"/>
+    <arg name="introspection" default="true" doc="Enable SMACH viewer support"/>
+    <arg name="validate_only" default="false" doc="Only validate config, don't run"/>
+    
+    <!-- Determine config path -->
+    <arg name="config_path" value="$(arg config)" if="$(eval config != '')"/>
+    <arg name="config_path" value="$(find hsr_task_sm)/config/challenges/$(arg challenge).yaml" unless="$(eval config != '')"/>
+    
+    <!-- Run the YAML state machine runner -->
+    <node name="$(arg challenge)_sm" pkg="hsr_task_sm" type="yaml_sm_runner.py" output="screen">
+        <param name="config" value="$(arg config_path)"/>
+        <param name="introspection" value="$(arg introspection)"/>
+        <param name="validate_only" value="$(arg validate_only)"/>
+    </node>
+    
+    <!-- Optional: SMACH viewer -->
+    <node name="smach_viewer" pkg="smach_viewer" type="smach_viewer.py" output="screen" if="$(arg introspection)">
+        <!-- Uncomment to auto-start viewer -->
+        <!-- <param name="start_viewer" value="true"/> -->
+    </node>
+    
+</launch>

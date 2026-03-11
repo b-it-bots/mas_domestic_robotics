@@ -1,0 +1,232 @@
+# GPSR Challenge - General Purpose Service Robot
+# RoboCup@Home 2026
+#
+# Task: Listen for and execute 3 spoken commands from the operator.
+#       Commands include navigation, manipulation, and HRI tasks.
+#
+# Edit the locations and command grammar below to customize.
+
+name: gpsr_challenge
+description: "Execute 3 spoken commands from operator"
+
+# ============================================================================
+# CONFIGURATION - Edit these values
+# ============================================================================
+userdata:
+  # Locations in your arena (using navigation_goals.yaml names)
+  known_locations:
+    - living_room_table
+    - living_room_far
+    - dining_table
+    - bedroom_enterance
+    - door1_inside
+    - door1_outside
+    - shelf
+    - fridge
+  
+  # Known objects (must match command parser)
+  known_objects:
+    - cup
+    - bottle
+    - plate
+    - bowl
+    - apple
+    - orange
+    - bread
+  
+  # Known people
+  known_people:
+    - host
+    - guest
+    - operator
+  
+  # Command settings
+  operator_location: "living_room_table"
+  max_commands: 3
+  commands_completed: 0
+  
+  # Current command being executed
+  current_command: ""
+  parsed_action: ""
+  parsed_target: ""
+  parsed_location: ""
+
+# ============================================================================
+# STATE MACHINE - Modify carefully
+# ============================================================================
+states:
+  # ----- Initialization -----
+  - name: CLEAR_COSTMAP
+    type: ClearCostmap
+    transitions:
+      succeeded: ANNOUNCE_START
+      failed: ANNOUNCE_START
+
+  - name: ANNOUNCE_START
+    type: Speak
+    params:
+      text: "Starting GPSR Challenge. I will execute 3 commands."
+    transitions:
+      succeeded: GO_TO_OPERATOR
+      failed: GO_TO_OPERATOR
+
+  # ----- Go to Operator -----
+  - name: GO_TO_OPERATOR
+    type: NavigateTo
+    params:
+      destination_key: operator_location
+    transitions:
+      succeeded: ASK_FOR_COMMAND
+      failed: ASK_FOR_COMMAND
+      failed_after_retrying: ASK_FOR_COMMAND
+
+  - name: ASK_FOR_COMMAND
+    type: Speak
+    params:
+      text: "I am ready. Please give me a command."
+    transitions:
+      succeeded: LISTEN_COMMAND
+      failed: LISTEN_COMMAND
+
+  # ----- Listen for Command -----
+  - name: LISTEN_COMMAND
+    type: ListenForCommand
+    params:
+      timeout: 15.0
+    transitions:
+      succeeded: CONFIRM_COMMAND
+      timeout: ASK_REPEAT
+      failed: ASK_REPEAT
+    remapping:
+      recognized_command: current_command
+
+  - name: ASK_REPEAT
+    type: Speak
+    params:
+      text: "I did not understand. Please repeat the command."
+    transitions:
+      succeeded: LISTEN_COMMAND
+      failed: LISTEN_COMMAND
+
+  - name: CONFIRM_COMMAND
+    type: Speak
+    params:
+      text: "I understood. Let me execute that command."
+    transitions:
+      succeeded: PARSE_COMMAND
+      failed: PARSE_COMMAND
+
+  # ----- Parse Command -----
+  - name: PARSE_COMMAND
+    type: ParseCommand
+    transitions:
+      succeeded: EXECUTE_NAVIGATE
+      failed: ASK_CLARIFY
+    remapping:
+      action: parsed_action
+      target: parsed_target
+      location: parsed_location
+
+  - name: ASK_CLARIFY
+    type: Speak
+    params:
+      text: "I could not understand the command. Please rephrase."
+    transitions:
+      succeeded: LISTEN_COMMAND
+      failed: LISTEN_COMMAND
+
+  # ----- Execute Command (Navigation) -----
+  - name: EXECUTE_NAVIGATE
+    type: NavigateTo
+    params:
+      destination_key: parsed_location
+    transitions:
+      succeeded: CHECK_ACTION_TYPE
+      failed: ANNOUNCE_NAV_FAILED
+      failed_after_retrying: ANNOUNCE_NAV_FAILED
+
+  - name: ANNOUNCE_NAV_FAILED
+    type: Speak
+    params:
+      text: "I could not reach the destination."
+    transitions:
+      succeeded: REPORT_PARTIAL
+      failed: REPORT_PARTIAL
+
+  # ----- Check Action Type -----
+  - name: CHECK_ACTION_TYPE
+    type: CheckCondition
+    params:
+      condition_key: parsed_action
+    transitions:
+      'true': EXECUTE_ACTION
+      'false': REPORT_SUCCESS
+
+  - name: EXECUTE_ACTION
+    type: Speak
+    params:
+      text: "Executing the action."
+    transitions:
+      succeeded: PERCEIVE_FOR_ACTION
+      failed: PERCEIVE_FOR_ACTION
+
+  - name: PERCEIVE_FOR_ACTION
+    type: PerceiveTable
+    transitions:
+      succeeded: DO_MANIPULATION
+      failed: REPORT_PARTIAL
+      failed_after_retrying: REPORT_PARTIAL
+
+  - name: DO_MANIPULATION
+    type: PickObject
+    transitions:
+      succeeded: REPORT_SUCCESS
+      failed: REPORT_PARTIAL
+      failed_after_retrying: REPORT_PARTIAL
+
+  # ----- Report Results -----
+  - name: REPORT_SUCCESS
+    type: Speak
+    params:
+      text: "Command executed successfully."
+    transitions:
+      succeeded: INCREMENT_COMMAND
+      failed: INCREMENT_COMMAND
+
+  - name: REPORT_PARTIAL
+    type: Speak
+    params:
+      text: "I could only partially complete the command."
+    transitions:
+      succeeded: INCREMENT_COMMAND
+      failed: INCREMENT_COMMAND
+
+  # ----- Loop Control -----
+  - name: INCREMENT_COMMAND
+    type: IncrementCounter
+    params:
+      counter_key: commands_completed
+    transitions:
+      succeeded: CHECK_MORE_COMMANDS
+
+  - name: CHECK_MORE_COMMANDS
+    type: CheckRetries
+    params:
+      max_retries: 3
+      counter_key: commands_completed
+    transitions:
+      retry: GO_TO_OPERATOR
+      max_reached: ANNOUNCE_DONE
+
+  # ----- Finish -----
+  - name: ANNOUNCE_DONE
+    type: Speak
+    params:
+      text: "GPSR Challenge complete. All commands have been executed."
+    transitions:
+      succeeded: SUCCEEDED
+      failed: SUCCEEDED
+
+outcomes:
+  - SUCCEEDED
+  - FAILED

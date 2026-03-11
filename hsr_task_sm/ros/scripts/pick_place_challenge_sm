@@ -1,0 +1,476 @@
+#!/usr/bin/env python3
+"""
+Pick and Place Challenge State Machine
+
+RoboCup@Home 2026 - Clean dining table and serve breakfast:
+1. Navigate to kitchen
+2. Clean dining table: 
+   - Cutlery/tableware -> dishwasher
+   - Trash -> trash bin
+   - Other objects -> cabinet (grouped by category)
+3. Serve breakfast: bowl, spoon, cereal, milk on clean table area
+
+Parameters (~private):
+  ~kitchen_location     (str)   - Kitchen location name
+  ~dining_table        (str)   - Dining table location
+  ~dishwasher_location (str)   - Dishwasher location
+  ~cabinet_location    (str)   - Cabinet location
+  ~trash_bin_location  (str)   - Trash bin location
+  ~trash_category      (str)   - Object category treated as trash
+"""
+
+import rospy
+import smach
+import smach_ros
+
+from hsr_task_sm.states import (
+    NavigateTo, ClearCostmap, PerceiveTable, PickObject
+)
+from hsr_task_sm.states.place_object import PlaceObject, PlaceInContainer
+from hsr_task_sm.states.furniture_manipulation import OpenDoor, CloseDoor, PullDishwasherRack
+from hsr_task_sm.states.speak import Speak
+
+
+# Object categories
+CUTLERY = ['fork', 'knife', 'spoon']
+TABLEWARE = ['mug', 'cup', 'plate', 'bowl']
+BREAKFAST_ITEMS = ['bowl', 'spoon', 'cereal', 'milk']
+
+
+class ClassifyObject(smach.State):
+    """Classify detected object into category."""
+    
+    def __init__(self, trash_category='trash'):
+        smach.State.__init__(
+            self,
+            outcomes=['cutlery', 'tableware', 'trash', 'other', 'breakfast', 'no_objects'],
+            input_keys=['perceived_planes', 'current_object_index'],
+            output_keys=['current_object', 'object_category', 'current_object_index']
+        )
+        self.trash_category = trash_category
+
+    def execute(self, userdata):
+        planes = userdata.perceived_planes.planes
+        all_objects = []
+        for plane in planes:
+            all_objects.extend(plane.object_list.objects)
+        
+        idx = getattr(userdata, 'current_object_index', 0)
+        
+        if idx >= len(all_objects):
+            return 'no_objects'
+        
+        obj = all_objects[idx]
+        userdata.current_object = obj
+        userdata.current_object_index = idx + 1
+        
+        name = obj.name.lower()
+        
+        if name in [c.lower() for c in CUTLERY]:
+            userdata.object_category = 'cutlery'
+            return 'cutlery'
+        elif name in [t.lower() for t in TABLEWARE]:
+            userdata.object_category = 'tableware'
+            return 'tableware'
+        elif self.trash_category.lower() in name:
+            userdata.object_category = 'trash'
+            return 'trash'
+        elif name in [b.lower() for b in BREAKFAST_ITEMS]:
+            userdata.object_category = 'breakfast'
+            return 'breakfast'
+        else:
+            userdata.object_category = 'other'
+            return 'other'
+
+
+class PickCurrentObject(smach.State):
+    """Pick the current classified object."""
+    
+    def __init__(self, pickup_timeout=60.0):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed', 'failed_after_retrying'],
+            input_keys=['current_object'],
+            output_keys=['grasped_object']
+        )
+        self.pickup_timeout = pickup_timeout
+
+    def execute(self, userdata):
+        obj = userdata.current_object
+        rospy.loginfo('[PickCurrentObject] Picking up: %s', obj.name)
+        
+        # Integrate with mdr_pickup_action
+        # Placeholder
+        rospy.sleep(2.0)
+        
+        userdata.grasped_object = obj.name
+        return 'succeeded'
+
+
+class PlaceInDishwasher(smach.State):
+    """Place object in dishwasher."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['grasped_object']
+        )
+
+    def execute(self, userdata):
+        rospy.loginfo('[PlaceInDishwasher] Placing %s in dishwasher...', 
+                      userdata.grasped_object)
+        rospy.sleep(2.0)
+        return 'succeeded'
+
+
+class PlaceInCabinet(smach.State):
+    """Place object in cabinet grouped by category."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['grasped_object', 'object_category']
+        )
+
+    def execute(self, userdata):
+        rospy.loginfo('[PlaceInCabinet] Placing %s in cabinet (category: %s)...', 
+                      userdata.grasped_object, userdata.object_category)
+        rospy.sleep(2.0)
+        return 'succeeded'
+
+
+class PlaceInTrashBin(smach.State):
+    """Place object in trash bin."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['grasped_object']
+        )
+
+    def execute(self, userdata):
+        rospy.loginfo('[PlaceInTrashBin] Placing %s in trash bin...', 
+                      userdata.grasped_object)
+        rospy.sleep(2.0)
+        return 'succeeded'
+
+
+class PlaceOnTable(smach.State):
+    """Place breakfast item on table."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['grasped_object']
+        )
+
+    def execute(self, userdata):
+        rospy.loginfo('[PlaceOnTable] Placing %s on table for breakfast...', 
+                      userdata.grasped_object)
+        rospy.sleep(2.0)
+        return 'succeeded'
+
+
+class CheckAllObjectsProcessed(smach.State):
+    """Check if all objects have been processed."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['more_objects', 'all_done'],
+            input_keys=['perceived_planes', 'current_object_index']
+        )
+
+    def execute(self, userdata):
+        planes = userdata.perceived_planes.planes
+        total_objects = sum(len(p.object_list.objects) for p in planes)
+        
+        idx = getattr(userdata, 'current_object_index', 0)
+        
+        if idx < total_objects:
+            return 'more_objects'
+        return 'all_done'
+
+
+def build_cleanup_iteration_sm(trash_category):
+    """Build sub-SM for processing one object."""
+    
+    sm = smach.StateMachine(
+        outcomes=['next_object', 'cleanup_done', 'failed'],
+        input_keys=['perceived_planes', 'current_object_index'],
+        output_keys=['current_object_index']
+    )
+    
+    with sm:
+        smach.StateMachine.add(
+            'CLASSIFY_OBJECT',
+            ClassifyObject(trash_category=trash_category),
+            transitions={
+                'cutlery': 'PICK_FOR_DISHWASHER',
+                'tableware': 'PICK_FOR_DISHWASHER',
+                'trash': 'PICK_FOR_TRASH',
+                'other': 'PICK_FOR_CABINET',
+                'breakfast': 'next_object',  # Skip breakfast items during cleanup
+                'no_objects': 'cleanup_done'
+            }
+        )
+        
+        # Cutlery/Tableware -> Dishwasher
+        smach.StateMachine.add(
+            'PICK_FOR_DISHWASHER',
+            PickCurrentObject(),
+            transitions={
+                'succeeded': 'PLACE_IN_DISHWASHER',
+                'failed': 'next_object',
+                'failed_after_retrying': 'next_object'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'PLACE_IN_DISHWASHER',
+            PlaceInDishwasher(),
+            transitions={
+                'succeeded': 'next_object',
+                'failed': 'next_object'
+            }
+        )
+        
+        # Trash -> Trash bin
+        smach.StateMachine.add(
+            'PICK_FOR_TRASH',
+            PickCurrentObject(),
+            transitions={
+                'succeeded': 'PLACE_IN_TRASH',
+                'failed': 'next_object',
+                'failed_after_retrying': 'next_object'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'PLACE_IN_TRASH',
+            PlaceInTrashBin(),
+            transitions={
+                'succeeded': 'next_object',
+                'failed': 'next_object'
+            }
+        )
+        
+        # Other -> Cabinet
+        smach.StateMachine.add(
+            'PICK_FOR_CABINET',
+            PickCurrentObject(),
+            transitions={
+                'succeeded': 'PLACE_IN_CABINET',
+                'failed': 'next_object',
+                'failed_after_retrying': 'next_object'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'PLACE_IN_CABINET',
+            PlaceInCabinet(),
+            transitions={
+                'succeeded': 'next_object',
+                'failed': 'next_object'
+            }
+        )
+    
+    return sm
+
+
+def build_sm():
+    """Build the main Pick and Place Challenge state machine."""
+    
+    # Parameters
+    kitchen_location = rospy.get_param('~kitchen_location', 'kitchen')
+    dining_table = rospy.get_param('~dining_table', 'dining_table')
+    dishwasher_location = rospy.get_param('~dishwasher_location', 'dishwasher')
+    cabinet_location = rospy.get_param('~cabinet_location', 'cabinet')
+    trash_bin_location = rospy.get_param('~trash_bin_location', 'trash_bin')
+    trash_category = rospy.get_param('~trash_category', 'wrapper')
+    breakfast_location = rospy.get_param('~breakfast_location', 'breakfast_counter')
+    
+    sm = smach.StateMachine(outcomes=['DONE', 'FAILED'])
+    sm.userdata.perceived_planes = None
+    sm.userdata.current_object_index = 0
+    sm.userdata.current_object = None
+    sm.userdata.grasped_object = ''
+    sm.userdata.object_category = ''
+    
+    with sm:
+        # Navigate to kitchen
+        smach.StateMachine.add(
+            'CLEAR_COSTMAP',
+            ClearCostmap(),
+            transitions={
+                'succeeded': 'GO_TO_KITCHEN',
+                'failed': 'GO_TO_KITCHEN'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'GO_TO_KITCHEN',
+            NavigateTo(destination=kitchen_location),
+            transitions={
+                'succeeded': 'ANNOUNCE_START',
+                'failed': 'GO_TO_KITCHEN',
+                'failed_after_retrying': 'FAILED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_START',
+            Speak(text='Starting pick and place challenge. I will clean the dining table and serve breakfast.'),
+            transitions={
+                'succeeded': 'GO_TO_DINING_TABLE',
+                'failed': 'GO_TO_DINING_TABLE'
+            }
+        )
+        
+        # Phase 1: Clean up dining table
+        smach.StateMachine.add(
+            'GO_TO_DINING_TABLE',
+            NavigateTo(destination=dining_table),
+            transitions={
+                'succeeded': 'PERCEIVE_TABLE',
+                'failed': 'GO_TO_DINING_TABLE',
+                'failed_after_retrying': 'FAILED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'PERCEIVE_TABLE',
+            PerceiveTable(plane_prefix='table', timeout=30.0),
+            transitions={
+                'succeeded': 'OPEN_DISHWASHER',
+                'failed': 'PERCEIVE_TABLE',
+                'failed_after_retrying': 'FAILED'
+            }
+        )
+        
+        # Open dishwasher (bonus)
+        smach.StateMachine.add(
+            'OPEN_DISHWASHER',
+            OpenDoor(door_type='dishwasher'),
+            transitions={
+                'succeeded': 'PULL_RACK',
+                'failed': 'CLEANUP_ITERATION',
+                'failed_after_retrying': 'CLEANUP_ITERATION'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'PULL_RACK',
+            PullDishwasherRack(action='pull'),
+            transitions={
+                'succeeded': 'CLEANUP_ITERATION',
+                'failed': 'CLEANUP_ITERATION'
+            }
+        )
+        
+        # Cleanup loop
+        smach.StateMachine.add(
+            'CLEANUP_ITERATION',
+            build_cleanup_iteration_sm(trash_category),
+            transitions={
+                'next_object': 'CLEANUP_ITERATION',
+                'cleanup_done': 'PUSH_RACK',
+                'failed': 'CLEANUP_ITERATION'
+            }
+        )
+        
+        # Close dishwasher
+        smach.StateMachine.add(
+            'PUSH_RACK',
+            PullDishwasherRack(action='push'),
+            transitions={
+                'succeeded': 'CLOSE_DISHWASHER',
+                'failed': 'CLOSE_DISHWASHER'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'CLOSE_DISHWASHER',
+            CloseDoor(door_type='dishwasher'),
+            transitions={
+                'succeeded': 'GO_TO_BREAKFAST_AREA',
+                'failed': 'GO_TO_BREAKFAST_AREA',
+                'failed_after_retrying': 'GO_TO_BREAKFAST_AREA'
+            }
+        )
+        
+        # Phase 2: Serve breakfast
+        smach.StateMachine.add(
+            'GO_TO_BREAKFAST_AREA',
+            NavigateTo(destination=breakfast_location),
+            transitions={
+                'succeeded': 'PERCEIVE_BREAKFAST_ITEMS',
+                'failed': 'GO_TO_BREAKFAST_AREA',
+                'failed_after_retrying': 'ANNOUNCE_DONE'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'PERCEIVE_BREAKFAST_ITEMS',
+            PerceiveTable(plane_prefix='counter', timeout=30.0),
+            transitions={
+                'succeeded': 'PICK_BOWL',
+                'failed': 'PERCEIVE_BREAKFAST_ITEMS',
+                'failed_after_retrying': 'ANNOUNCE_DONE'
+            }
+        )
+        
+        # Pick and place breakfast items (simplified - would be a loop in practice)
+        smach.StateMachine.add(
+            'PICK_BOWL',
+            PickObject(picking_surface_prefix='counter'),
+            transitions={
+                'succeeded': 'PLACE_BOWL_ON_TABLE',
+                'failed': 'PICK_BOWL',
+                'failed_after_retrying': 'ANNOUNCE_DONE',
+                'find_objects_before_picking': 'PERCEIVE_BREAKFAST_ITEMS'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'PLACE_BOWL_ON_TABLE',
+            PlaceOnTable(),
+            transitions={
+                'succeeded': 'ANNOUNCE_DONE',
+                'failed': 'ANNOUNCE_DONE'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_DONE',
+            Speak(text='Pick and place challenge completed. The table is clean and breakfast is served.'),
+            transitions={
+                'succeeded': 'DONE',
+                'failed': 'DONE'
+            }
+        )
+    
+    return sm
+
+
+def main():
+    rospy.init_node('pick_place_challenge_sm')
+    
+    sm = build_sm()
+    
+    sis = smach_ros.IntrospectionServer('pick_place_challenge_sm', sm, '/PICK_PLACE_CHALLENGE_SM')
+    sis.start()
+    
+    rospy.loginfo('[pick_place_challenge_sm] Starting Pick and Place Challenge...')
+    outcome = sm.execute()
+    rospy.loginfo('[pick_place_challenge_sm] Final outcome: %s', outcome)
+    
+    sis.stop()
+
+
+if __name__ == '__main__':
+    main()

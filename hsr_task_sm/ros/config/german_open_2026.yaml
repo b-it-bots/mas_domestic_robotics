@@ -1,0 +1,300 @@
+# German Open 2026 Competition Data
+# Reference: https://github.com/RoboCupAtHome/GermanOpen2026
+#
+# This file contains all official competition data:
+# - Object categories and names
+# - Room and location names
+# - Guest names
+# - Object-to-location mappings
+
+# =============================================================================
+# ROOMS
+# =============================================================================
+rooms:
+  - utility_room
+  - bedroom
+  - kitchen
+  - living_room
+  - corridor
+
+# =============================================================================
+# LOCATIONS (with placement capability)
+# =============================================================================
+locations:
+  # Placeable locations (where objects can be placed)
+  placeable:
+    - desk
+    - cabinet
+    - dresser
+    - bed
+    - nightstand
+    - shelf
+    - washing_machine
+    - kitchen_counter
+    - tv_stand
+    - drawer
+    - couch_table
+    - bar
+    - arm_chair
+    - dining_table
+    - dishwasher
+    - sink
+    - fridge
+  
+  # Non-placeable locations
+  non_placeable:
+    - office_chair
+    - coat_hanger
+    - trash_bin
+    - garbage_bin
+
+# =============================================================================
+# LOCATION TO OBJECT CATEGORY MAPPING
+# Where each category of objects should be stored
+# =============================================================================
+location_categories:
+  desk: snacks
+  cabinet: cleaning_supplies
+  nightstand: toiletries
+  kitchen_counter: foods
+  couch_table: fruits
+  bar: drinks
+  dishwasher: dishes
+
+# =============================================================================
+# OBJECTS BY CATEGORY
+# =============================================================================
+objects:
+  drinks:
+    - water
+    - red_bull
+    - milk
+    - orange_juice
+    - coke
+    - ice_tea
+    - coffee_creamer
+  
+  fruits:
+    - avocado
+    - lemon
+    - apple
+    - orange
+  
+  snacks:
+    - pringles
+    - cookies
+    - gum
+    - chips
+    - mixed_nuts
+  
+  toiletries:
+    - toothpaste
+    - soap
+    - hand_creme
+  
+  foods:
+    - tomato_soup
+    - bread
+    - cornflakes
+    - potato
+    - instant_noodles
+  
+  dishes:
+    - cup
+    - bowl
+    - fork
+    - plate
+    - knife
+    - spoon
+  
+  cleaning_supplies:
+    - cloth
+    - sponge
+
+# Test objects (challenge-specific)
+test_objects:
+  laundry:
+    - shirts
+    - robocup_shirt
+    - basket
+  
+  hri_challenge:
+    - bag
+  
+  pick_and_place:
+    - dishwasher_tab
+
+# =============================================================================
+# GUEST NAMES (for HRI challenges)
+# =============================================================================
+names:
+  - Oliver
+  - Charlotte
+  - Henry
+  - Amelia
+  - Jack
+  - Sophia
+  - Thomas
+  - Emily
+  - James
+  - Isabella
+  - William
+  - Ava
+  - George
+  - Mia
+  - Harry
+  - Lily
+  - Samuel
+  - Grace
+  - Benjamin
+  - Chloe
+  - Daniel
+  - Ella
+  - Matthew
+  - Scarlett
+  - Joseph
+  - Harper
+  - David
+  - Evelyn
+  - Lucas
+  - Abigail
+  - Alexander
+  - Madison
+  - Michael
+  - Avery
+  - Ethan
+  - Sofia
+  - Jacob
+  - Aria
+  - Logan
+  - Zoey
+  - Noah
+  - Hannah
+  - Ryan
+  - Stella
+  - Nathan
+  - Victoria
+  - Caleb
+
+# =============================================================================
+# FLAT LISTS (for quick lookups)
+# =============================================================================
+all_objects:
+  # Drinks
+  - water
+  - red_bull
+  - milk
+  - orange_juice
+  - coke
+  - ice_tea
+  - coffee_creamer
+  # Fruits
+  - avocado
+  - lemon
+  - apple
+  - orange
+  # Snacks
+  - pringles
+  - cookies
+  - gum
+  - chips
+  - mixed_nuts
+  # Toiletries
+  - toothpaste
+  - soap
+  - hand_creme
+  # Foods
+  - tomato_soup
+  - bread
+  - cornflakes
+  - potato
+  - instant_noodles
+  # Dishes
+  - cup
+  - bowl
+  - fork
+  - plate
+  - knife
+  - spoon
+  # Cleaning
+  - cloth
+  - sponge
+
+all_locations:
+  - office_chair
+  - desk
+  - cabinet
+  - dresser
+  - bed
+  - nightstand
+  - shelf
+  - washing_machine
+  - kitchen_counter
+  - tv_stand
+  - drawer
+  - couch_table
+  - coat_hanger
+  - bar
+  - arm_chair
+  - dining_table
+  - dishwasher
+  - sink
+  - trash_bin
+  - garbage_bin
+  - fridge
+
+# =============================================================================
+# CATEGORY LOOKUP (object -> category)
+# =============================================================================
+object_to_category:
+  # Drinks
+  water: drinks
+  red_bull: drinks
+  milk: drinks
+  orange_juice: drinks
+  coke: drinks
+  ice_tea: drinks
+  coffee_creamer: drinks
+  # Fruits
+  avocado: fruits
+  lemon: fruits
+  apple: fruits
+  orange: fruits
+  # Snacks
+  pringles: snacks
+  cookies: snacks
+  gum: snacks
+  chips: snacks
+  mixed_nuts: snacks
+  # Toiletries
+  toothpaste: toiletries
+  soap: toiletries
+  hand_creme: toiletries
+  # Foods
+  tomato_soup: foods
+  bread: foods
+  cornflakes: foods
+  potato: foods
+  instant_noodles: foods
+  # Dishes
+  cup: dishes
+  bowl: dishes
+  fork: dishes
+  plate: dishes
+  knife: dishes
+  spoon: dishes
+  # Cleaning
+  cloth: cleaning_supplies
+  sponge: cleaning_supplies
+
+# =============================================================================
+# CATEGORY TO DESTINATION (where to place objects by category)
+# =============================================================================
+category_to_destination:
+  drinks: bar
+  fruits: couch_table
+  snacks: desk
+  toiletries: nightstand
+  foods: kitchen_counter
+  dishes: dishwasher
+  cleaning_supplies: cabinet

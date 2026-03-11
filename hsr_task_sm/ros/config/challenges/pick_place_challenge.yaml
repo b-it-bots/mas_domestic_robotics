@@ -1,0 +1,286 @@
+# Pick & Place Challenge
+# RoboCup@Home 2026 - German Open
+#
+# Task: Clean the table by picking up objects and placing them
+#       in their correct locations based on category.
+#
+# Reference: GermanOpen2026/objects/objects.md
+# See also: ros/config/german_open_2026.yaml for full object list
+
+name: pick_place_challenge
+description: "Clean table, pick up objects and place in correct locations by category"
+
+# ============================================================================
+# GERMAN OPEN 2026 - OBJECT CATEGORIES TO DESTINATIONS
+# ============================================================================
+# drinks      -> bar
+# fruits      -> couch_table  
+# snacks      -> desk
+# toiletries  -> nightstand
+# foods       -> kitchen_counter
+# dishes      -> dishwasher
+# cleaning    -> cabinet
+
+# ============================================================================
+# CONFIGURATION - Edit these values for your arena
+# Navigation goals from: mas_environments/lucy/german_open_2026/navigation_goals.yaml
+# ============================================================================
+userdata:
+  # Locations in your arena (from navigation_goals.yaml)
+  start_location: "home"
+  table_location: "dining_table"
+  
+  # Official German Open 2026 object-to-destination mappings
+  # Using actual navigation goal names
+  placement_locations:
+    # Drinks -> bar (dining_table_far)
+    water: "dining_table_far"
+    red_bull: "dining_table_far"
+    milk: "dining_table_far"
+    orange_juice: "dining_table_far"
+    coke: "dining_table_far"
+    ice_tea: "dining_table_right"
+    coffee_creamer: "dining_table_right"
+    # Fruits -> living_room_table
+    avocado: "living_room_table"
+    lemon: "living_room_table"
+    apple: "living_room_table"
+    orange: "living_room_table"
+    # Snacks -> bedroom_table
+    pringles: "bedroom_table"
+    cookies: "bedroom_table"
+    gum: "bedroom_table"
+    chips: "bedroom_table"
+    mixed_nuts: "bedroom_table"
+    # Toiletries -> bedside_table
+    toothpaste: "bedside_table"
+    soap: "bedside_table"
+    hand_creme: "bedside_table"
+    # Foods -> shelf
+    tomato_soup: "shelf"
+    bread: "shelf"
+    cornflakes: "shelf"
+    potato: "shelf"
+    instant_noodles: "shelf"
+    # Dishes -> dish_washer
+    cup: "dish_washer"
+    bowl: "dish_washer"
+    fork: "dish_washer"
+    plate: "dish_washer"
+    knife: "dish_washer"
+    spoon: "dish_washer"
+    # Cleaning supplies -> cabinet
+    cloth: "cabinet"
+    sponge: "cabinet"
+    # Challenge specific
+    dishwasher_tab: "dish_washer"
+  
+  # Default placement for unknown objects
+  default_placement: "cabinet"
+  
+  # Task settings
+  max_objects: 5
+  objects_placed: 0
+  
+  # Current object being processed
+  current_object: null
+  detected_objects: []
+
+# ============================================================================
+# STATE MACHINE
+# ============================================================================
+states:
+  # ----- Initialization -----
+  - name: CLEAR_COSTMAP
+    type: ClearCostmap
+    transitions:
+      succeeded: ANNOUNCE_START
+      failed: ANNOUNCE_START
+
+  - name: ANNOUNCE_START
+    type: Speak
+    params:
+      text: "Starting Pick and Place Challenge. I will clean the table."
+    transitions:
+      succeeded: GO_TO_TABLE
+      failed: GO_TO_TABLE
+
+  # ----- Go to Table -----
+  - name: GO_TO_TABLE
+    type: NavigateTo
+    params:
+      destination_key: table_location
+    transitions:
+      succeeded: PERCEIVE_TABLE
+      failed: RETRY_NAV_TABLE
+      failed_after_retrying: ANNOUNCE_NAV_FAILED
+
+  - name: RETRY_NAV_TABLE
+    type: ClearCostmap
+    transitions:
+      succeeded: GO_TO_TABLE
+      failed: GO_TO_TABLE
+
+  - name: ANNOUNCE_NAV_FAILED
+    type: Speak
+    params:
+      text: "I cannot reach the table. Challenge failed."
+    transitions:
+      succeeded: FAILED
+      failed: FAILED
+
+  # ----- Perceive Objects -----
+  - name: PERCEIVE_TABLE
+    type: PerceiveTable
+    params:
+      plane_frame_prefix: "table"
+    transitions:
+      succeeded: CHECK_OBJECTS_FOUND
+      failed: RETRY_PERCEIVE
+      failed_after_retrying: ANNOUNCE_PERCEIVE_FAILED
+    remapping:
+      detected_objects: detected_objects
+
+  - name: RETRY_PERCEIVE
+    type: Wait
+    params:
+      duration: 2.0
+    transitions:
+      succeeded: PERCEIVE_TABLE
+
+  - name: ANNOUNCE_PERCEIVE_FAILED
+    type: Speak
+    params:
+      text: "I cannot detect objects on the table."
+    transitions:
+      succeeded: ANNOUNCE_DONE
+      failed: ANNOUNCE_DONE
+
+  - name: CHECK_OBJECTS_FOUND
+    type: CheckCondition
+    params:
+      condition_key: detected_objects
+    transitions:
+      'true': ANNOUNCE_FOUND_OBJECTS
+      'false': ANNOUNCE_TABLE_CLEAN
+
+  - name: ANNOUNCE_TABLE_CLEAN
+    type: Speak
+    params:
+      text: "The table is already clean. No objects detected."
+    transitions:
+      succeeded: ANNOUNCE_DONE
+      failed: ANNOUNCE_DONE
+
+  - name: ANNOUNCE_FOUND_OBJECTS
+    type: Speak
+    params:
+      text: "I found objects on the table. Starting cleanup."
+    transitions:
+      succeeded: PICK_OBJECT
+      failed: PICK_OBJECT
+
+  # ----- Pick Object -----
+  - name: PICK_OBJECT
+    type: PickObject
+    transitions:
+      succeeded: ANNOUNCE_PICKED
+      failed: RETRY_PICK
+      failed_after_retrying: SKIP_OBJECT
+    remapping:
+      picked_object: current_object
+
+  - name: RETRY_PICK
+    type: Speak
+    params:
+      text: "Let me try picking that up again."
+    transitions:
+      succeeded: PICK_OBJECT
+      failed: PICK_OBJECT
+
+  - name: SKIP_OBJECT
+    type: Speak
+    params:
+      text: "I could not pick this object. Moving to the next one."
+    transitions:
+      succeeded: CHECK_MORE_OBJECTS
+      failed: CHECK_MORE_OBJECTS
+
+  - name: ANNOUNCE_PICKED
+    type: Speak
+    params:
+      text: "Object picked up. Going to place it."
+    transitions:
+      succeeded: GO_TO_PLACEMENT
+      failed: GO_TO_PLACEMENT
+
+  # ----- Place Object -----
+  - name: GO_TO_PLACEMENT
+    type: NavigateTo
+    params:
+      destination_key: default_placement
+    transitions:
+      succeeded: PLACE_OBJECT
+      failed: PLACE_OBJECT
+      failed_after_retrying: PLACE_OBJECT
+
+  - name: PLACE_OBJECT
+    type: PlaceObject
+    transitions:
+      succeeded: ANNOUNCE_PLACED
+      failed: RETRY_PLACE
+      failed_after_retrying: ANNOUNCE_PLACE_FAILED
+
+  - name: RETRY_PLACE
+    type: Speak
+    params:
+      text: "Let me try placing that again."
+    transitions:
+      succeeded: PLACE_OBJECT
+      failed: PLACE_OBJECT
+
+  - name: ANNOUNCE_PLACE_FAILED
+    type: Speak
+    params:
+      text: "I could not place the object properly."
+    transitions:
+      succeeded: CHECK_MORE_OBJECTS
+      failed: CHECK_MORE_OBJECTS
+
+  - name: ANNOUNCE_PLACED
+    type: Speak
+    params:
+      text: "Object placed successfully."
+    transitions:
+      succeeded: INCREMENT_COUNT
+      failed: INCREMENT_COUNT
+
+  # ----- Loop Control -----
+  - name: INCREMENT_COUNT
+    type: IncrementCounter
+    params:
+      counter_key: objects_placed
+    transitions:
+      succeeded: CHECK_MORE_OBJECTS
+
+  - name: CHECK_MORE_OBJECTS
+    type: CheckRetries
+    params:
+      max_retries: 5
+      counter_key: objects_placed
+    transitions:
+      retry: GO_TO_TABLE
+      max_reached: ANNOUNCE_DONE
+
+  # ----- Finish -----
+  - name: ANNOUNCE_DONE
+    type: Speak
+    params:
+      text: "Pick and Place Challenge complete. The table has been cleaned."
+    transitions:
+      succeeded: SUCCEEDED
+      failed: SUCCEEDED
+
+outcomes:
+  - SUCCEEDED
+  - FAILED

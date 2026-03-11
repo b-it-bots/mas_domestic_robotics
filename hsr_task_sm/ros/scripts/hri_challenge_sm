@@ -1,0 +1,385 @@
+#!/usr/bin/env python3
+"""
+Human Robot Interaction Challenge State Machine (Receptionist Task)
+
+RoboCup@Home 2026 - The robot works as a receptionist at a party:
+1. Wait for doorbell and meet guest at door
+2. Ask for name and favorite drink
+3. Guide guest to living room and offer seat
+4. Repeat for second guest
+5. Introduce both guests to each other
+6. Receive bag from second guest and follow host to drop location
+
+Parameters (~private):
+  ~start_location    (str)   - Starting position name
+  ~entrance_door     (str)   - Entrance door location
+  ~living_room       (str)   - Living room location
+  ~open_door         (bool)  - Whether to open door (bonus points)
+"""
+
+import rospy
+import smach
+import smach_ros
+
+from hsr_task_sm.states import (
+    NavigateTo, ClearCostmap, 
+)
+from hsr_task_sm.states.speak import Speak
+from hsr_task_sm.states.listen_for_command import ListenForCommand
+from hsr_task_sm.states.detect_person import DetectPerson
+from hsr_task_sm.states.gaze_control import LookAtPerson, LookAtNavigationGoal
+from hsr_task_sm.states.furniture_manipulation import WaitForDoorbell, OpenDoor
+from hsr_task_sm.states.handover import ReceiveObject
+from hsr_task_sm.states.follow_person import FollowPerson
+
+
+class AskGuestInfo(smach.State):
+    """Ask guest for name and favorite drink."""
+    
+    def __init__(self, guest_number=1):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            output_keys=['guest_name', 'guest_drink']
+        )
+        self.guest_number = guest_number
+
+    def execute(self, userdata):
+        rospy.loginfo('[AskGuestInfo] Asking guest %d for info...', self.guest_number)
+        
+        # In practice, combine Speak + Listen states
+        # Placeholder: simulate getting info
+        userdata.guest_name = f'Guest{self.guest_number}'
+        userdata.guest_drink = 'water'
+        
+        return 'succeeded'
+
+
+class StoreGuestInfo(smach.State):
+    """Store guest information for later introduction."""
+    
+    def __init__(self, guest_index=0):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded'],
+            input_keys=['guest_name', 'guest_drink', 'guests_info'],
+            output_keys=['guests_info']
+        )
+        self.guest_index = guest_index
+
+    def execute(self, userdata):
+        if not hasattr(userdata, 'guests_info') or userdata.guests_info is None:
+            userdata.guests_info = [{}, {}]
+        
+        userdata.guests_info[self.guest_index] = {
+            'name': userdata.guest_name,
+            'drink': userdata.guest_drink
+        }
+        rospy.loginfo('[StoreGuestInfo] Stored guest %d: %s likes %s',
+                      self.guest_index + 1,
+                      userdata.guest_name,
+                      userdata.guest_drink)
+        return 'succeeded'
+
+
+class OfferSeat(smach.State):
+    """Offer a free seat to the guest."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed']
+        )
+
+    def execute(self, userdata):
+        rospy.loginfo('[OfferSeat] Offering seat to guest...')
+        # Point to seat / indicate location
+        return 'succeeded'
+
+
+class IntroduceGuests(smach.State):
+    """Introduce both guests to each other."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['guests_info']
+        )
+
+    def execute(self, userdata):
+        if not userdata.guests_info or len(userdata.guests_info) < 2:
+            rospy.logerr('[IntroduceGuests] Not enough guest info!')
+            return 'failed'
+        
+        g1 = userdata.guests_info[0]
+        g2 = userdata.guests_info[1]
+        
+        rospy.loginfo('[IntroduceGuests] Introducing %s to %s...', g1['name'], g2['name'])
+        
+        # Look at guest 1, introduce guest 2
+        intro1 = f"{g1['name']}, this is {g2['name']}. Their favorite drink is {g2['drink']}."
+        rospy.loginfo('[IntroduceGuests] %s', intro1)
+        
+        # Look at guest 2, introduce guest 1
+        intro2 = f"{g2['name']}, this is {g1['name']}. Their favorite drink is {g1['drink']}."
+        rospy.loginfo('[IntroduceGuests] %s', intro2)
+        
+        return 'succeeded'
+
+
+def build_welcome_guest_sm(guest_number, entrance_location, living_room_location, open_door=False):
+    """Build sub-state machine for welcoming one guest."""
+    
+    sm = smach.StateMachine(
+        outcomes=['succeeded', 'failed'],
+        output_keys=['guest_name', 'guest_drink']
+    )
+    
+    with sm:
+        # Go to entrance door
+        smach.StateMachine.add(
+            'GO_TO_ENTRANCE',
+            NavigateTo(destination=entrance_location),
+            transitions={
+                'succeeded': 'OPEN_DOOR' if open_door else 'LOOK_AT_GUEST',
+                'failed': 'GO_TO_ENTRANCE',
+                'failed_after_retrying': 'failed'
+            }
+        )
+        
+        if open_door:
+            smach.StateMachine.add(
+                'OPEN_DOOR',
+                OpenDoor(door_type='entrance'),
+                transitions={
+                    'succeeded': 'LOOK_AT_GUEST',
+                    'failed': 'LOOK_AT_GUEST',
+                    'failed_after_retrying': 'LOOK_AT_GUEST'
+                }
+            )
+        
+        smach.StateMachine.add(
+            'LOOK_AT_GUEST',
+            LookAtPerson(),
+            transitions={
+                'succeeded': 'GREET_GUEST',
+                'failed': 'GREET_GUEST'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'GREET_GUEST',
+            Speak(text=f'Hello! Welcome to the party. I am your robot assistant.'),
+            transitions={
+                'succeeded': 'ASK_NAME',
+                'failed': 'ASK_NAME'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ASK_NAME',
+            AskGuestInfo(guest_number=guest_number),
+            transitions={
+                'succeeded': 'GUIDE_TO_LIVING_ROOM',
+                'failed': 'ASK_NAME'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'GUIDE_TO_LIVING_ROOM',
+            NavigateTo(destination=living_room_location),
+            transitions={
+                'succeeded': 'OFFER_SEAT',
+                'failed': 'GUIDE_TO_LIVING_ROOM',
+                'failed_after_retrying': 'failed'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'OFFER_SEAT',
+            OfferSeat(),
+            transitions={
+                'succeeded': 'succeeded',
+                'failed': 'succeeded'  # Continue anyway
+            }
+        )
+    
+    return sm
+
+
+def build_sm():
+    """Build the main HRI Challenge state machine."""
+    
+    # Parameters
+    start_location = rospy.get_param('~start_location', 'living_room')
+    entrance_location = rospy.get_param('~entrance_door', 'entrance')
+    living_room_location = rospy.get_param('~living_room', 'living_room')
+    open_door = rospy.get_param('~open_door', False)
+    
+    sm = smach.StateMachine(outcomes=['DONE', 'FAILED'])
+    sm.userdata.guests_info = [{}, {}]
+    sm.userdata.guest_name = ''
+    sm.userdata.guest_drink = ''
+    
+    with sm:
+        # Initial setup
+        smach.StateMachine.add(
+            'CLEAR_COSTMAP',
+            ClearCostmap(),
+            transitions={
+                'succeeded': 'GO_TO_START',
+                'failed': 'GO_TO_START'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'GO_TO_START',
+            NavigateTo(destination=start_location),
+            transitions={
+                'succeeded': 'WAIT_FOR_DOORBELL_1',
+                'failed': 'GO_TO_START',
+                'failed_after_retrying': 'FAILED'
+            }
+        )
+        
+        # Wait for first guest
+        smach.StateMachine.add(
+            'WAIT_FOR_DOORBELL_1',
+            WaitForDoorbell(timeout=120.0),
+            transitions={
+                'doorbell_detected': 'WELCOME_GUEST_1',
+                'timeout': 'WELCOME_GUEST_1'  # Go anyway after timeout
+            }
+        )
+        
+        # Welcome first guest
+        smach.StateMachine.add(
+            'WELCOME_GUEST_1',
+            build_welcome_guest_sm(1, entrance_location, living_room_location, open_door),
+            transitions={
+                'succeeded': 'STORE_GUEST_1_INFO',
+                'failed': 'FAILED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'STORE_GUEST_1_INFO',
+            StoreGuestInfo(guest_index=0),
+            transitions={'succeeded': 'RETURN_TO_START_1'}
+        )
+        
+        smach.StateMachine.add(
+            'RETURN_TO_START_1',
+            NavigateTo(destination=start_location),
+            transitions={
+                'succeeded': 'WAIT_FOR_DOORBELL_2',
+                'failed': 'RETURN_TO_START_1',
+                'failed_after_retrying': 'WAIT_FOR_DOORBELL_2'
+            }
+        )
+        
+        # Wait for second guest
+        smach.StateMachine.add(
+            'WAIT_FOR_DOORBELL_2',
+            WaitForDoorbell(timeout=120.0),
+            transitions={
+                'doorbell_detected': 'WELCOME_GUEST_2',
+                'timeout': 'WELCOME_GUEST_2'
+            }
+        )
+        
+        # Welcome second guest
+        smach.StateMachine.add(
+            'WELCOME_GUEST_2',
+            build_welcome_guest_sm(2, entrance_location, living_room_location, open_door),
+            transitions={
+                'succeeded': 'STORE_GUEST_2_INFO',
+                'failed': 'FAILED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'STORE_GUEST_2_INFO',
+            StoreGuestInfo(guest_index=1),
+            transitions={'succeeded': 'INTRODUCE_GUESTS'}
+        )
+        
+        # Introduce both guests
+        smach.StateMachine.add(
+            'INTRODUCE_GUESTS',
+            IntroduceGuests(),
+            transitions={
+                'succeeded': 'ASK_FOR_BAG',
+                'failed': 'ASK_FOR_BAG'
+            }
+        )
+        
+        # Bag handling
+        smach.StateMachine.add(
+            'ASK_FOR_BAG',
+            Speak(text='May I take your bag? Please hand it to me.'),
+            transitions={
+                'succeeded': 'RECEIVE_BAG',
+                'failed': 'RECEIVE_BAG'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'RECEIVE_BAG',
+            ReceiveObject(),
+            transitions={
+                'succeeded': 'ANNOUNCE_FOLLOW',
+                'failed': 'ANNOUNCE_FOLLOW',
+                'failed_after_retrying': 'ANNOUNCE_FOLLOW'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_FOLLOW',
+            Speak(text='I will now follow the host to the drop location.'),
+            transitions={
+                'succeeded': 'FOLLOW_HOST',
+                'failed': 'FOLLOW_HOST'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'FOLLOW_HOST',
+            FollowPerson(timeout=120.0),
+            transitions={
+                'succeeded': 'DROP_BAG',
+                'lost_person': 'DROP_BAG',
+                'failed': 'DROP_BAG'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'DROP_BAG',
+            Speak(text='I have arrived. Dropping the bag here.'),
+            transitions={
+                'succeeded': 'DONE',
+                'failed': 'DONE'
+            }
+        )
+    
+    return sm
+
+
+def main():
+    rospy.init_node('hri_challenge_sm')
+    
+    sm = build_sm()
+    
+    sis = smach_ros.IntrospectionServer('hri_challenge_sm', sm, '/HRI_CHALLENGE_SM')
+    sis.start()
+    
+    rospy.loginfo('[hri_challenge_sm] Starting Human Robot Interaction Challenge...')
+    outcome = sm.execute()
+    rospy.loginfo('[hri_challenge_sm] Final outcome: %s', outcome)
+    
+    sis.stop()
+
+
+if __name__ == '__main__':
+    main()

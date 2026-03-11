@@ -1,0 +1,458 @@
+#!/usr/bin/env python3
+"""
+Restaurant Challenge State Machine
+
+RoboCup@Home 2026 - Restaurant service:
+1. Start at kitchen bar
+2. Detect calling/waving customer
+3. Navigate to customer's table
+4. Take order (understand and confirm)
+5. Return to bar, communicate order
+6. Pick up items
+7. Return to customer, serve order
+8. Optionally use tray for transport
+
+Parameters (~private):
+  ~kitchen_bar      (str)   - Kitchen bar location
+  ~use_tray         (bool)  - Whether to use tray for transport (bonus)
+  ~num_customers    (int)   - Number of customers to serve
+"""
+
+import rospy
+import smach
+import smach_ros
+
+from hsr_task_sm.states import NavigateTo, ClearCostmap, PickObject
+from hsr_task_sm.states.speak import Speak
+from hsr_task_sm.states.listen_for_command import ListenForCommand
+from hsr_task_sm.states.detect_person import DetectWavingPerson, DetectPerson
+from hsr_task_sm.states.gaze_control import LookAtPerson
+from hsr_task_sm.states.place_object import PlaceObject
+
+
+class ScanForCallingCustomer(smach.State):
+    """Scan for customers who are waving or calling."""
+    
+    def __init__(self, timeout=30.0):
+        smach.State.__init__(
+            self,
+            outcomes=['customer_found', 'no_customer', 'timeout'],
+            output_keys=['customer_location', 'customer_pose']
+        )
+        self.timeout = timeout
+
+    def execute(self, userdata):
+        rospy.loginfo('[ScanForCallingCustomer] Scanning for calling customers...')
+        
+        # Would use gesture detection in practice
+        start_time = rospy.Time.now()
+        rate = rospy.Rate(2)
+        
+        while not rospy.is_shutdown():
+            elapsed = (rospy.Time.now() - start_time).to_sec()
+            if elapsed > self.timeout:
+                return 'timeout'
+            
+            # Placeholder: simulate detection
+            # In practice: subscribe to gesture detection topic
+            if elapsed > 3.0:  # Simulate finding customer
+                userdata.customer_location = 'table_1'
+                userdata.customer_pose = None  # Would be actual pose
+                rospy.loginfo('[ScanForCallingCustomer] Found calling customer at table_1!')
+                return 'customer_found'
+            
+            rate.sleep()
+        
+        return 'no_customer'
+
+
+class NavigateToCustomer(smach.State):
+    """Navigate to customer's table."""
+    
+    def __init__(self, timeout=60.0):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed', 'need_guidance'],
+            input_keys=['customer_location']
+        )
+        self.timeout = timeout
+
+    def execute(self, userdata):
+        location = userdata.customer_location
+        rospy.loginfo('[NavigateToCustomer] Navigating to %s...', location)
+        
+        # In unknown restaurant environment
+        rospy.sleep(3.0)  # Placeholder
+        
+        rospy.loginfo('[NavigateToCustomer] Arrived at customer table')
+        return 'succeeded'
+
+
+class TakeOrder(smach.State):
+    """Take customer's order."""
+    
+    def __init__(self, timeout=30.0):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed', 'need_repeat'],
+            input_keys=['customer_location'],
+            output_keys=['order_items']
+        )
+        self.timeout = timeout
+
+    def execute(self, userdata):
+        rospy.loginfo('[TakeOrder] Taking order from customer...')
+        
+        # Look at customer
+        rospy.loginfo('[TakeOrder] Looking at customer...')
+        
+        # Ask for order
+        rospy.loginfo('[TakeOrder] What would you like to order?')
+        
+        # Listen for response
+        rospy.sleep(2.0)  # Placeholder
+        
+        # Placeholder order
+        userdata.order_items = ['coffee', 'sandwich']
+        
+        rospy.loginfo('[TakeOrder] Order received: %s', userdata.order_items)
+        return 'succeeded'
+
+
+class ConfirmOrder(smach.State):
+    """Confirm order with customer."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['confirmed', 'need_correction'],
+            input_keys=['order_items']
+        )
+
+    def execute(self, userdata):
+        items = userdata.order_items
+        confirmation = f"So you would like {' and '.join(items)}. Is that correct?"
+        
+        rospy.loginfo('[ConfirmOrder] %s', confirmation)
+        
+        # Wait for confirmation
+        rospy.sleep(1.0)  # Placeholder
+        
+        return 'confirmed'
+
+
+class CommunicateOrderToBarman(smach.State):
+    """Communicate order to the barman."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['order_items', 'customer_location']
+        )
+
+    def execute(self, userdata):
+        items = userdata.order_items
+        customer = userdata.customer_location
+        
+        rospy.loginfo('[CommunicateOrderToBarman] Order for %s: %s', 
+                      customer, ', '.join(items))
+        
+        return 'succeeded'
+
+
+class PickUpOrderItems(smach.State):
+    """Pick up order items from the bar."""
+    
+    def __init__(self, use_tray=False):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed', 'ask_help'],
+            input_keys=['order_items'],
+            output_keys=['picked_items']
+        )
+        self.use_tray = use_tray
+
+    def execute(self, userdata):
+        items = userdata.order_items
+        
+        if self.use_tray:
+            rospy.loginfo('[PickUpOrderItems] Placing items on tray...')
+        
+        picked = []
+        for item in items:
+            rospy.loginfo('[PickUpOrderItems] Picking up %s...', item)
+            rospy.sleep(2.0)  # Placeholder
+            picked.append(item)
+        
+        userdata.picked_items = picked
+        
+        if self.use_tray:
+            rospy.loginfo('[PickUpOrderItems] Picking up tray...')
+            rospy.sleep(1.0)
+        
+        rospy.loginfo('[PickUpOrderItems] All items picked up!')
+        return 'succeeded'
+
+
+class ServeOrder(smach.State):
+    """Serve order to customer."""
+    
+    def __init__(self, use_tray=False):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['picked_items', 'customer_location']
+        )
+        self.use_tray = use_tray
+
+    def execute(self, userdata):
+        items = userdata.picked_items
+        
+        rospy.loginfo('[ServeOrder] Serving order to customer...')
+        
+        if self.use_tray:
+            rospy.loginfo('[ServeOrder] Placing tray on table...')
+        
+        for item in items:
+            rospy.loginfo('[ServeOrder] Placing %s on table...', item)
+            rospy.sleep(1.0)
+        
+        rospy.loginfo('[ServeOrder] Order served successfully!')
+        return 'succeeded'
+
+
+class IncrementCustomerCount(smach.State):
+    """Track served customers."""
+    
+    def __init__(self, max_customers=2):
+        smach.State.__init__(
+            self,
+            outcomes=['more_customers', 'all_served'],
+            input_keys=['customers_served'],
+            output_keys=['customers_served']
+        )
+        self.max_customers = max_customers
+
+    def execute(self, userdata):
+        served = getattr(userdata, 'customers_served', 0) + 1
+        userdata.customers_served = served
+        
+        rospy.loginfo('[IncrementCustomerCount] Served %d/%d customers', 
+                      served, self.max_customers)
+        
+        if served >= self.max_customers:
+            return 'all_served'
+        return 'more_customers'
+
+
+def build_serve_customer_sm(use_tray=False):
+    """Build sub-SM for serving one customer."""
+    
+    sm = smach.StateMachine(
+        outcomes=['succeeded', 'failed'],
+        input_keys=['customer_location', 'customer_pose'],
+        output_keys=[]
+    )
+    sm.userdata.order_items = []
+    sm.userdata.picked_items = []
+    
+    with sm:
+        smach.StateMachine.add(
+            'NAVIGATE_TO_CUSTOMER',
+            NavigateToCustomer(),
+            transitions={
+                'succeeded': 'LOOK_AT_CUSTOMER',
+                'failed': 'NAVIGATE_TO_CUSTOMER',
+                'need_guidance': 'NAVIGATE_TO_CUSTOMER'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'LOOK_AT_CUSTOMER',
+            LookAtPerson(),
+            transitions={
+                'succeeded': 'TAKE_ORDER',
+                'failed': 'TAKE_ORDER'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'TAKE_ORDER',
+            TakeOrder(),
+            transitions={
+                'succeeded': 'CONFIRM_ORDER',
+                'failed': 'TAKE_ORDER',
+                'need_repeat': 'TAKE_ORDER'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'CONFIRM_ORDER',
+            ConfirmOrder(),
+            transitions={
+                'confirmed': 'GO_TO_BAR',
+                'need_correction': 'TAKE_ORDER'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'GO_TO_BAR',
+            NavigateTo(destination='kitchen_bar'),
+            transitions={
+                'succeeded': 'COMMUNICATE_ORDER',
+                'failed': 'GO_TO_BAR',
+                'failed_after_retrying': 'failed'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'COMMUNICATE_ORDER',
+            CommunicateOrderToBarman(),
+            transitions={
+                'succeeded': 'PICK_UP_ITEMS',
+                'failed': 'COMMUNICATE_ORDER'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'PICK_UP_ITEMS',
+            PickUpOrderItems(use_tray=use_tray),
+            transitions={
+                'succeeded': 'RETURN_TO_CUSTOMER',
+                'failed': 'PICK_UP_ITEMS',
+                'ask_help': 'PICK_UP_ITEMS'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'RETURN_TO_CUSTOMER',
+            NavigateToCustomer(),
+            transitions={
+                'succeeded': 'SERVE_ORDER',
+                'failed': 'RETURN_TO_CUSTOMER',
+                'need_guidance': 'RETURN_TO_CUSTOMER'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'SERVE_ORDER',
+            ServeOrder(use_tray=use_tray),
+            transitions={
+                'succeeded': 'succeeded',
+                'failed': 'SERVE_ORDER'
+            }
+        )
+    
+    return sm
+
+
+def build_sm():
+    """Build the main Restaurant Challenge state machine."""
+    
+    # Parameters
+    kitchen_bar = rospy.get_param('~kitchen_bar', 'kitchen_bar')
+    use_tray = rospy.get_param('~use_tray', False)
+    num_customers = rospy.get_param('~num_customers', 2)
+    
+    sm = smach.StateMachine(outcomes=['DONE', 'FAILED'])
+    sm.userdata.customer_location = ''
+    sm.userdata.customer_pose = None
+    sm.userdata.customers_served = 0
+    
+    with sm:
+        smach.StateMachine.add(
+            'CLEAR_COSTMAP',
+            ClearCostmap(),
+            transitions={
+                'succeeded': 'GO_TO_BAR',
+                'failed': 'GO_TO_BAR'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'GO_TO_BAR',
+            NavigateTo(destination=kitchen_bar),
+            transitions={
+                'succeeded': 'ANNOUNCE_READY',
+                'failed': 'GO_TO_BAR',
+                'failed_after_retrying': 'FAILED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_READY',
+            Speak(text='Restaurant service ready. Looking for customers.'),
+            transitions={
+                'succeeded': 'SCAN_FOR_CUSTOMER',
+                'failed': 'SCAN_FOR_CUSTOMER'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'SCAN_FOR_CUSTOMER',
+            ScanForCallingCustomer(timeout=60.0),
+            transitions={
+                'customer_found': 'SERVE_CUSTOMER',
+                'no_customer': 'SCAN_FOR_CUSTOMER',
+                'timeout': 'SCAN_FOR_CUSTOMER'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'SERVE_CUSTOMER',
+            build_serve_customer_sm(use_tray=use_tray),
+            transitions={
+                'succeeded': 'COUNT_CUSTOMER',
+                'failed': 'COUNT_CUSTOMER'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'COUNT_CUSTOMER',
+            IncrementCustomerCount(max_customers=num_customers),
+            transitions={
+                'more_customers': 'RETURN_TO_BAR',
+                'all_served': 'ANNOUNCE_DONE'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'RETURN_TO_BAR',
+            NavigateTo(destination=kitchen_bar),
+            transitions={
+                'succeeded': 'SCAN_FOR_CUSTOMER',
+                'failed': 'RETURN_TO_BAR',
+                'failed_after_retrying': 'SCAN_FOR_CUSTOMER'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_DONE',
+            Speak(text='Restaurant challenge completed. All customers served.'),
+            transitions={
+                'succeeded': 'DONE',
+                'failed': 'DONE'
+            }
+        )
+    
+    return sm
+
+
+def main():
+    rospy.init_node('restaurant_challenge_sm')
+    
+    sm = build_sm()
+    
+    sis = smach_ros.IntrospectionServer('restaurant_challenge_sm', sm, '/RESTAURANT_CHALLENGE_SM')
+    sis.start()
+    
+    rospy.loginfo('[restaurant_challenge_sm] Starting Restaurant Challenge...')
+    outcome = sm.execute()
+    rospy.loginfo('[restaurant_challenge_sm] Final outcome: %s', outcome)
+    
+    sis.stop()
+
+
+if __name__ == '__main__':
+    main()

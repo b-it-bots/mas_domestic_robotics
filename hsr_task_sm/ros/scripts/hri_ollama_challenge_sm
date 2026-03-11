@@ -1,0 +1,490 @@
+#!/usr/bin/env python3
+"""
+HRI Challenge State Machine - Ollama Version
+
+RoboCup@Home 2026 - Receptionist Task using:
+- Whisper STT service (on slave laptop)
+- Ollama LLM service (on slave laptop)
+- YOLO person detection (on robot or slave)
+
+Slave Laptop Setup:
+    export ROS_MASTER_URI=http://<robot_ip>:11311
+    export ROS_IP=<slave_laptop_ip>
+    rosrun hsr_task_sm whisper_stt_service.py &
+    rosrun hsr_task_sm voicebot_ollama_service.py &
+
+Robot:
+    rosrun hsr_task_sm hri_ollama_challenge_sm
+
+Parameters:
+    ~max_guests (int): Number of guests to greet (default: 2)
+    ~entrance_location (str): Where to wait for guests
+    ~living_room_location (str): Where to introduce guests
+"""
+
+import json
+import rospy
+import smach
+import smach_ros
+
+from hsr_task_sm.states import NavigateTo, ClearCostmap
+from hsr_task_sm.states.speak import Speak
+from hsr_task_sm.states.detect_person import DetectPerson
+from hsr_task_sm.states.ollama_hri_states import (
+    ListenWithWhisper,
+    GetVoicebotResponse,
+    SpeakResponse,
+    ControlMicrophone,
+    ConversationLoop,
+    SaveGuestInfo
+)
+
+
+class InitializeHRI(smach.State):
+    """Initialize HRI challenge, reset guest counter."""
+    
+    def __init__(self, max_guests=2):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded'],
+            output_keys=['current_guest', 'max_guests', 'all_guests']
+        )
+        self.max_guests = max_guests
+    
+    def execute(self, userdata):
+        userdata.current_guest = 1
+        userdata.max_guests = self.max_guests
+        userdata.all_guests = []
+        rospy.loginfo(f'[InitializeHRI] Will greet {self.max_guests} guests')
+        return 'succeeded'
+
+
+class GreetNewGuest(smach.State):
+    """Initial greeting for a new guest."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded'],
+            input_keys=['current_guest']
+        )
+        self.say_pub = None
+    
+    def execute(self, userdata):
+        if not self.say_pub:
+            from std_msgs.msg import String
+            self.say_pub = rospy.Publisher('/say', String, queue_size=10)
+            rospy.sleep(0.3)
+        
+        guest_num = userdata.current_guest
+        
+        if guest_num == 1:
+            greeting = "Hello! Welcome to the party. I'm the robot receptionist. What is your name?"
+        else:
+            greeting = "Hello! Welcome! I see we have another guest. What is your name?"
+        
+        rospy.loginfo(f'[GreetNewGuest] {greeting}')
+        self.say_pub.publish(greeting)
+        rospy.sleep(3.0)
+        
+        return 'succeeded'
+
+
+class StoreGuestAndCheckMore(smach.State):
+    """Store guest info and check if more guests expected."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['more_guests', 'all_done'],
+            input_keys=['guest_name', 'guest_drink', 'current_guest', 'max_guests', 'all_guests'],
+            output_keys=['current_guest', 'all_guests', 'guest_number']
+        )
+    
+    def execute(self, userdata):
+        name = getattr(userdata, 'guest_name', 'Guest')
+        drink = getattr(userdata, 'guest_drink', 'water')
+        current = userdata.current_guest
+        max_guests = userdata.max_guests
+        
+        # Store guest info
+        guest_info = {'name': name, 'drink': drink, 'number': current}
+        all_guests = list(userdata.all_guests)
+        all_guests.append(guest_info)
+        userdata.all_guests = all_guests
+        userdata.guest_number = current
+        
+        rospy.loginfo(f'[StoreGuestAndCheckMore] Stored guest {current}: {name} likes {drink}')
+        
+        # Check if more guests
+        if current < max_guests:
+            userdata.current_guest = current + 1
+            return 'more_guests'
+        
+        return 'all_done'
+
+
+class IntroduceToHost(smach.State):
+    """Introduce guest(s) to the host."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded'],
+            input_keys=['all_guests']
+        )
+        self.say_pub = None
+    
+    def execute(self, userdata):
+        if not self.say_pub:
+            from std_msgs.msg import String
+            self.say_pub = rospy.Publisher('/say', String, queue_size=10)
+            rospy.sleep(0.3)
+        
+        guests = userdata.all_guests
+        
+        intro_parts = ["Dear host, please meet our guests."]
+        
+        for guest in guests:
+            name = guest.get('name', 'Guest')
+            drink = guest.get('drink', 'a drink')
+            intro_parts.append(f"{name} enjoys {drink}.")
+        
+        intro_text = " ".join(intro_parts)
+        
+        rospy.loginfo(f'[IntroduceToHost] {intro_text}')
+        self.say_pub.publish(intro_text)
+        
+        # Wait for speech
+        rospy.sleep(len(intro_text.split()) * 0.4)
+        
+        return 'succeeded'
+
+
+class OfferSeating(smach.State):
+    """Offer seating to the guest."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded'],
+            input_keys=['guest_name']
+        )
+        self.say_pub = None
+    
+    def execute(self, userdata):
+        if not self.say_pub:
+            from std_msgs.msg import String
+            self.say_pub = rospy.Publisher('/say', String, queue_size=10)
+            rospy.sleep(0.3)
+        
+        name = getattr(userdata, 'guest_name', 'Guest')
+        
+        text = f"{name}, please have a seat and make yourself comfortable."
+        rospy.loginfo(f'[OfferSeating] {text}')
+        self.say_pub.publish(text)
+        rospy.sleep(3.0)
+        
+        return 'succeeded'
+
+
+def build_conversation_sm():
+    """Build the conversation sub-state machine."""
+    
+    sm = smach.StateMachine(
+        outcomes=['guest_complete', 'failed'],
+        output_keys=['guest_name', 'guest_drink']
+    )
+    
+    sm.userdata.recognized_text = ''
+    sm.userdata.user_text = ''
+    sm.userdata.bot_response = ''
+    sm.userdata.response_text = ''
+    sm.userdata.guest_name = None
+    sm.userdata.guest_drink = None
+    
+    with sm:
+        smach.StateMachine.add(
+            'ENABLE_MIC',
+            ControlMicrophone(enable=True),
+            transitions={'succeeded': 'LISTEN'}
+        )
+        
+        smach.StateMachine.add(
+            'LISTEN',
+            ListenWithWhisper(timeout=30.0),
+            transitions={
+                'succeeded': 'DISABLE_MIC',
+                'timeout': 'ASK_REPEAT',
+                'failed': 'ASK_REPEAT'
+            },
+            remapping={'recognized_text': 'user_text'}
+        )
+        
+        smach.StateMachine.add(
+            'ASK_REPEAT',
+            SpeakResponse(text="I didn't catch that. Could you please repeat?"),
+            transitions={
+                'succeeded': 'ENABLE_MIC',
+                'failed': 'ENABLE_MIC'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'DISABLE_MIC',
+            ControlMicrophone(enable=False),
+            transitions={'succeeded': 'GET_RESPONSE'}
+        )
+        
+        smach.StateMachine.add(
+            'GET_RESPONSE',
+            GetVoicebotResponse(),
+            transitions={
+                'succeeded': 'SPEAK_RESPONSE',
+                'guest_complete': 'SPEAK_AND_COMPLETE',
+                'failed': 'SPEAK_ERROR'
+            },
+            remapping={
+                'user_text': 'user_text',
+                'bot_response': 'response_text'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'SPEAK_RESPONSE',
+            SpeakResponse(text_key='response_text'),
+            transitions={
+                'succeeded': 'ENABLE_MIC',
+                'failed': 'ENABLE_MIC'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'SPEAK_AND_COMPLETE',
+            SpeakResponse(text_key='response_text'),
+            transitions={
+                'succeeded': 'guest_complete',
+                'failed': 'guest_complete'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'SPEAK_ERROR',
+            SpeakResponse(text="I'm having trouble understanding. Let's try again."),
+            transitions={
+                'succeeded': 'ENABLE_MIC',
+                'failed': 'failed'
+            }
+        )
+    
+    return sm
+
+
+def build_sm():
+    """Build the main HRI Challenge state machine."""
+    
+    # Parameters
+    max_guests = rospy.get_param('~max_guests', 2)
+    entrance_location = rospy.get_param('~entrance_location', 'entrance')
+    living_room_location = rospy.get_param('~living_room_location', 'living_room')
+    
+    sm = smach.StateMachine(outcomes=['DONE', 'FAILED'])
+    
+    with sm:
+        # Initialize
+        smach.StateMachine.add(
+            'INIT',
+            InitializeHRI(max_guests=max_guests),
+            transitions={'succeeded': 'CLEAR_COSTMAP'}
+        )
+        
+        smach.StateMachine.add(
+            'CLEAR_COSTMAP',
+            ClearCostmap(),
+            transitions={
+                'succeeded': 'ANNOUNCE_START',
+                'failed': 'ANNOUNCE_START'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_START',
+            Speak(text='Starting receptionist task. I will greet guests and introduce them to the host.'),
+            transitions={
+                'succeeded': 'GO_TO_ENTRANCE',
+                'failed': 'GO_TO_ENTRANCE'
+            }
+        )
+        
+        # Go to entrance
+        smach.StateMachine.add(
+            'GO_TO_ENTRANCE',
+            NavigateTo(destination=entrance_location),
+            transitions={
+                'succeeded': 'ANNOUNCE_WAITING',
+                'failed': 'ANNOUNCE_WAITING',
+                'failed_after_retrying': 'ANNOUNCE_WAITING'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_WAITING',
+            Speak(text='I am at the entrance, waiting for guests.'),
+            transitions={
+                'succeeded': 'DETECT_GUEST',
+                'failed': 'DETECT_GUEST'
+            }
+        )
+        
+        # Detect guest
+        smach.StateMachine.add(
+            'DETECT_GUEST',
+            DetectPerson(timeout=60.0),
+            transitions={
+                'succeeded': 'GREET_GUEST',
+                'no_person': 'WAIT_AND_RETRY_DETECT',
+                'failed': 'WAIT_AND_RETRY_DETECT'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'WAIT_AND_RETRY_DETECT',
+            Speak(text='I am still waiting for the next guest.'),
+            transitions={
+                'succeeded': 'DETECT_GUEST',
+                'failed': 'DETECT_GUEST'
+            }
+        )
+        
+        # Greet and have conversation
+        smach.StateMachine.add(
+            'GREET_GUEST',
+            GreetNewGuest(),
+            transitions={'succeeded': 'CONVERSATION'}
+        )
+        
+        # Conversation sub-state machine
+        conversation_sm = build_conversation_sm()
+        smach.StateMachine.add(
+            'CONVERSATION',
+            conversation_sm,
+            transitions={
+                'guest_complete': 'CONFIRM_INFO',
+                'failed': 'CONVERSATION_FAILED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'CONVERSATION_FAILED',
+            Speak(text='I had trouble understanding. Let me take you to the host anyway.'),
+            transitions={
+                'succeeded': 'STORE_AND_CHECK',
+                'failed': 'STORE_AND_CHECK'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'CONFIRM_INFO',
+            Speak(text='Great! I have your information. Please follow me to meet the host.'),
+            transitions={
+                'succeeded': 'SAVE_GUEST_INFO',
+                'failed': 'SAVE_GUEST_INFO'
+            }
+        )
+        
+        # Save guest info
+        smach.StateMachine.add(
+            'SAVE_GUEST_INFO',
+            SaveGuestInfo(output_dir='/tmp/hri_guests'),
+            transitions={
+                'succeeded': 'STORE_AND_CHECK',
+                'failed': 'STORE_AND_CHECK'
+            }
+        )
+        
+        # Check if more guests
+        smach.StateMachine.add(
+            'STORE_AND_CHECK',
+            StoreGuestAndCheckMore(),
+            transitions={
+                'more_guests': 'GO_TO_LIVING_ROOM',
+                'all_done': 'GO_TO_LIVING_ROOM_FINAL'
+            }
+        )
+        
+        # Lead guest to living room (more guests expected)
+        smach.StateMachine.add(
+            'GO_TO_LIVING_ROOM',
+            NavigateTo(destination=living_room_location),
+            transitions={
+                'succeeded': 'OFFER_SEAT',
+                'failed': 'OFFER_SEAT',
+                'failed_after_retrying': 'OFFER_SEAT'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'OFFER_SEAT',
+            OfferSeating(),
+            transitions={'succeeded': 'GO_BACK_TO_ENTRANCE'}
+        )
+        
+        smach.StateMachine.add(
+            'GO_BACK_TO_ENTRANCE',
+            NavigateTo(destination=entrance_location),
+            transitions={
+                'succeeded': 'ANNOUNCE_WAITING',
+                'failed': 'ANNOUNCE_WAITING',
+                'failed_after_retrying': 'ANNOUNCE_WAITING'
+            }
+        )
+        
+        # Final introduction (all guests done)
+        smach.StateMachine.add(
+            'GO_TO_LIVING_ROOM_FINAL',
+            NavigateTo(destination=living_room_location),
+            transitions={
+                'succeeded': 'INTRODUCE_TO_HOST',
+                'failed': 'INTRODUCE_TO_HOST',
+                'failed_after_retrying': 'INTRODUCE_TO_HOST'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'INTRODUCE_TO_HOST',
+            IntroduceToHost(),
+            transitions={'succeeded': 'ANNOUNCE_DONE'}
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_DONE',
+            Speak(text='Receptionist task complete. All guests have been introduced.'),
+            transitions={
+                'succeeded': 'DONE',
+                'failed': 'DONE'
+            }
+        )
+    
+    return sm
+
+
+def main():
+    rospy.init_node('hri_ollama_challenge_sm')
+    
+    sm = build_sm()
+    
+    # Introspection server
+    sis = smach_ros.IntrospectionServer('hri_ollama_challenge_sm', sm, '/HRI_OLLAMA_CHALLENGE')
+    sis.start()
+    
+    rospy.loginfo('[hri_ollama_challenge_sm] Starting HRI Challenge with Ollama...')
+    rospy.loginfo('[hri_ollama_challenge_sm] Make sure slave laptop services are running!')
+    
+    outcome = sm.execute()
+    rospy.loginfo(f'[hri_ollama_challenge_sm] Final outcome: {outcome}')
+    
+    sis.stop()
+
+
+if __name__ == '__main__':
+    main()

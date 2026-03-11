@@ -1,0 +1,85 @@
+# Blank Template - Copy and Edit!
+# ================================
+# 1. Copy this file: cp blank_template.yaml my_task.yaml
+# 2. Change the name and description
+# 3. Add your states between START and SUCCEEDED/FAILED
+# 4. Run: roslaunch hsr_task_sm task_sm.launch config:=my_task.yaml
+
+name: change_me
+description: "Describe what your task does here"
+
+# ============================================================================
+# USERDATA - Variables your robot remembers
+# ============================================================================
+# Add your own variables here. These can be used by states.
+# Examples:
+#   target_location: "kitchen"
+#   object_name: "cup"
+#   person_name: ""
+
+userdata:
+  # Add your variables here
+
+# ============================================================================
+# STATES - The steps your robot does
+# ============================================================================
+states:
+
+  # ----- ALWAYS START WITH THIS -----
+  - name: START
+    type: ClearCostmap
+    transitions:
+      succeeded: YOUR_FIRST_STATE    # <-- Change this!
+      failed: YOUR_FIRST_STATE       # <-- Change this!
+
+  # ----- ADD YOUR STATES HERE -----
+  
+  # Example: Say something
+  # - name: SAY_HELLO
+  #   type: Speak
+  #   params:
+  #     text: "Hello!"
+  #     retries: 2
+  #   transitions:
+  #     succeeded: NEXT_STATE
+  #     failed: SAY_HELLO
+  #     failed_after_retrying: NEXT_STATE
+
+  # Example: Go somewhere
+  # - name: GO_TO_KITCHEN
+  #   type: NavigateTo
+  #   params:
+  #     destination: "kitchen"
+  #     retries: 3
+  #   transitions:
+  #     succeeded: NEXT_STATE
+  #     failed: GO_TO_KITCHEN
+  #     failed_after_retrying: FAILED
+
+  # Example: Listen for command
+  # - name: LISTEN
+  #   type: ListenForCommand
+  #   params:
+  #     timeout: 10.0
+  #     retries: 3
+  #   transitions:
+  #     succeeded: NEXT_STATE
+  #     failed: LISTEN
+  #     failed_after_retrying: FAILED
+  #   remapping:
+  #     recognized_command: user_command  # Saves to userdata.user_command
+
+  # ----- ALWAYS END WITH THESE -----
+  - name: SUCCEEDED
+    type: Wait
+    params:
+      duration: 0.1
+    transitions:
+      succeeded: null
+
+  - name: FAILED
+    type: Wait
+    params:
+      duration: 0.1
+    transitions:
+      succeeded: null

@@ -1,0 +1,50 @@
+# HRI Test Suite
+# Run with: rosrun hsr_task_sm state_tester_cli.py --suite test_hri.yaml --live
+
+name: hri_test_suite
+description: "Test HRI states for German Open 2026"
+
+userdata:
+  guest_name: ""
+  guest_drink: ""
+  conversation_history: []
+
+tests:
+  # Speech output
+  - state: Speak
+    description: "Greet guest"
+    params:
+      text: "Hello! Welcome to the German Open 2026."
+    expected: succeeded
+  
+  - state: Speak
+    description: "Ask name"
+    params:
+      text: "What is your name?"
+    expected: succeeded
+  
+  # Whisper + Ollama HRI (requires voicebot service)
+  - state: ListenWithWhisper
+    description: "Listen for guest name"
+    params:
+      timeout: 10.0
+    expected: succeeded
+  
+  - state: GetVoicebotResponse
+    description: "Process with Ollama"
+    params:
+      prompt_key: "transcribed_text"
+    expected: succeeded
+  
+  - state: SpeakResponse
+    description: "Speak Ollama response"
+    expected: succeeded
+  
+  # Detection
+  - state: DetectPerson
+    description: "Detect guest"
+    expected: succeeded
+  
+  - state: GetPersonFeatures
+    description: "Get guest features"
+    expected: succeeded

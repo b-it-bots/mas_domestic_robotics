@@ -1,0 +1,490 @@
+#!/usr/bin/env python3
+"""
+Finals Challenge State Machine
+
+RoboCup@Home 2026 - Household maintenance and problem solving:
+1. Explore arena to find problems
+2. Solve problems:
+   - Pick up trash from floor
+   - Return misplaced objects
+   - Help people with requests
+   - Close dishwasher door
+   - Welcome guest at exit door
+   - Execute custom tasks
+
+Parameters (~private):
+  ~max_problems      (int)   - Maximum problems to solve
+  ~exploration_time  (float) - Time to explore (seconds)
+"""
+
+import rospy
+import smach
+import smach_ros
+
+from hsr_task_sm.states import NavigateTo, ClearCostmap, PerceiveTable, PickObject
+from hsr_task_sm.states.speak import Speak
+from hsr_task_sm.states.listen_for_command import ListenForCommand
+from hsr_task_sm.states.detect_person import DetectPerson
+from hsr_task_sm.states.place_object import PlaceObject
+from hsr_task_sm.states.furniture_manipulation import CloseDoor, OpenDoor
+
+
+# Problem types
+PROBLEM_TRASH = 'trash_on_floor'
+PROBLEM_MISPLACED = 'misplaced_object'
+PROBLEM_PERSON_REQUEST = 'person_request'
+PROBLEM_DISHWASHER = 'close_dishwasher'
+PROBLEM_WELCOME_GUEST = 'welcome_guest'
+
+
+class ExploreArena(smach.State):
+    """Explore arena room by room to find problems."""
+    
+    ROOMS = ['living_room', 'kitchen', 'bedroom', 'dining_room']
+    
+    def __init__(self, exploration_time=30.0):
+        smach.State.__init__(
+            self,
+            outcomes=['problem_found', 'exploration_done'],
+            input_keys=['rooms_explored', 'problems_found'],
+            output_keys=['rooms_explored', 'current_problem', 'problem_location']
+        )
+        self.exploration_time = exploration_time
+
+    def execute(self, userdata):
+        explored = getattr(userdata, 'rooms_explored', [])
+        
+        # Find next room to explore
+        for room in self.ROOMS:
+            if room not in explored:
+                explored.append(room)
+                userdata.rooms_explored = explored
+                
+                rospy.loginfo('[ExploreArena] Exploring %s...', room)
+                rospy.sleep(2.0)  # Placeholder for navigation + scanning
+                
+                # Simulate finding a problem
+                import random
+                if random.random() > 0.3:  # 70% chance to find a problem
+                    problem_types = [
+                        PROBLEM_TRASH, 
+                        PROBLEM_MISPLACED,
+                        PROBLEM_PERSON_REQUEST
+                    ]
+                    problem = random.choice(problem_types)
+                    userdata.current_problem = problem
+                    userdata.problem_location = room
+                    rospy.loginfo('[ExploreArena] Found problem: %s in %s', problem, room)
+                    return 'problem_found'
+        
+        # All rooms explored
+        return 'exploration_done'
+
+
+class IdentifyProblem(smach.State):
+    """Identify and announce the current problem."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['trash', 'misplaced', 'person', 'dishwasher', 'guest', 'unknown'],
+            input_keys=['current_problem', 'problem_location'],
+            output_keys=['problem_description']
+        )
+
+    def execute(self, userdata):
+        problem = userdata.current_problem
+        location = userdata.problem_location
+        
+        descriptions = {
+            PROBLEM_TRASH: f'I found trash on the floor in the {location}.',
+            PROBLEM_MISPLACED: f'I found a misplaced object in the {location}.',
+            PROBLEM_PERSON_REQUEST: f'Someone in the {location} needs help.',
+            PROBLEM_DISHWASHER: 'The dishwasher door needs to be closed.',
+            PROBLEM_WELCOME_GUEST: 'There is a guest waiting at the door.'
+        }
+        
+        userdata.problem_description = descriptions.get(problem, f'Unknown problem: {problem}')
+        rospy.loginfo('[IdentifyProblem] %s', userdata.problem_description)
+        
+        if problem == PROBLEM_TRASH:
+            return 'trash'
+        elif problem == PROBLEM_MISPLACED:
+            return 'misplaced'
+        elif problem == PROBLEM_PERSON_REQUEST:
+            return 'person'
+        elif problem == PROBLEM_DISHWASHER:
+            return 'dishwasher'
+        elif problem == PROBLEM_WELCOME_GUEST:
+            return 'guest'
+        return 'unknown'
+
+
+class SolveTrashProblem(smach.State):
+    """Pick up trash from floor and put in trash bin."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['solved', 'failed'],
+            input_keys=['problem_location']
+        )
+
+    def execute(self, userdata):
+        location = userdata.problem_location
+        rospy.loginfo('[SolveTrashProblem] Picking up trash in %s...', location)
+        
+        # Would integrate with perception and manipulation
+        rospy.sleep(3.0)
+        
+        rospy.loginfo('[SolveTrashProblem] Placing in trash bin...')
+        rospy.sleep(2.0)
+        
+        rospy.loginfo('[SolveTrashProblem] Trash problem solved!')
+        return 'solved'
+
+
+class SolveMisplacedObjectProblem(smach.State):
+    """Return misplaced object to its default location."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['solved', 'failed'],
+            input_keys=['problem_location']
+        )
+
+    def execute(self, userdata):
+        location = userdata.problem_location
+        rospy.loginfo('[SolveMisplacedObjectProblem] Finding misplaced object in %s...', location)
+        
+        # Perceive, identify, pick, navigate to correct location, place
+        rospy.sleep(5.0)
+        
+        rospy.loginfo('[SolveMisplacedObjectProblem] Object returned to correct location!')
+        return 'solved'
+
+
+class SolvePersonRequestProblem(smach.State):
+    """Help person with their request (GPSR-style)."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['solved', 'failed'],
+            input_keys=['problem_location']
+        )
+
+    def execute(self, userdata):
+        location = userdata.problem_location
+        rospy.loginfo('[SolvePersonRequestProblem] Finding person in %s...', location)
+        
+        rospy.sleep(1.0)
+        rospy.loginfo('[SolvePersonRequestProblem] How can I help you?')
+        
+        # Listen for command
+        rospy.sleep(2.0)
+        
+        # Execute command
+        rospy.loginfo('[SolvePersonRequestProblem] Executing request...')
+        rospy.sleep(3.0)
+        
+        rospy.loginfo('[SolvePersonRequestProblem] Request completed!')
+        return 'solved'
+
+
+class SolveDishwasherProblem(smach.State):
+    """Close the dishwasher door."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['solved', 'failed']
+        )
+
+    def execute(self, userdata):
+        rospy.loginfo('[SolveDishwasherProblem] Navigating to dishwasher...')
+        rospy.sleep(2.0)
+        
+        rospy.loginfo('[SolveDishwasherProblem] Closing dishwasher door...')
+        rospy.sleep(3.0)
+        
+        rospy.loginfo('[SolveDishwasherProblem] Dishwasher door closed!')
+        return 'solved'
+
+
+class SolveWelcomeGuestProblem(smach.State):
+    """Welcome guest at exit door."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['solved', 'failed']
+        )
+
+    def execute(self, userdata):
+        rospy.loginfo('[SolveWelcomeGuestProblem] Navigating to exit door...')
+        rospy.sleep(2.0)
+        
+        rospy.loginfo('[SolveWelcomeGuestProblem] Opening door...')
+        rospy.sleep(2.0)
+        
+        rospy.loginfo('[SolveWelcomeGuestProblem] Welcome! How can I assist you?')
+        rospy.sleep(2.0)
+        
+        rospy.loginfo('[SolveWelcomeGuestProblem] Guest welcomed!')
+        return 'solved'
+
+
+class TrackProblemsSolved(smach.State):
+    """Track number of problems solved and check for repetition penalty."""
+    
+    def __init__(self, max_problems=10):
+        smach.State.__init__(
+            self,
+            outcomes=['continue', 'max_reached'],
+            input_keys=['current_problem', 'problems_solved', 'problem_types_solved'],
+            output_keys=['problems_solved', 'problem_types_solved', 'repetition_penalty']
+        )
+        self.max_problems = max_problems
+
+    def execute(self, userdata):
+        solved = getattr(userdata, 'problems_solved', 0) + 1
+        types_solved = getattr(userdata, 'problem_types_solved', {})
+        problem = userdata.current_problem
+        
+        # Track repetition
+        types_solved[problem] = types_solved.get(problem, 0) + 1
+        
+        # Calculate repetition penalty
+        penalty = 0
+        if types_solved[problem] == 2:
+            penalty = 300  # Second time same category
+        elif types_solved[problem] > 2:
+            penalty = 500  # Third+ time same category
+        
+        userdata.problems_solved = solved
+        userdata.problem_types_solved = types_solved
+        userdata.repetition_penalty = penalty
+        
+        rospy.loginfo('[TrackProblemsSolved] Solved %d problems (penalty: %d)', solved, penalty)
+        
+        if solved >= self.max_problems:
+            return 'max_reached'
+        return 'continue'
+
+
+def build_sm():
+    """Build the main Finals state machine."""
+    
+    # Parameters
+    max_problems = rospy.get_param('~max_problems', 10)
+    exploration_time = rospy.get_param('~exploration_time', 30.0)
+    
+    sm = smach.StateMachine(outcomes=['DONE', 'FAILED'])
+    sm.userdata.rooms_explored = []
+    sm.userdata.problems_found = []
+    sm.userdata.problems_solved = 0
+    sm.userdata.problem_types_solved = {}
+    sm.userdata.current_problem = ''
+    sm.userdata.problem_location = ''
+    sm.userdata.problem_description = ''
+    sm.userdata.repetition_penalty = 0
+    
+    with sm:
+        smach.StateMachine.add(
+            'CLEAR_COSTMAP',
+            ClearCostmap(),
+            transitions={
+                'succeeded': 'ANNOUNCE_START',
+                'failed': 'ANNOUNCE_START'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_START',
+            Speak(text='Starting Finals. I will find and solve problems in the arena.'),
+            transitions={
+                'succeeded': 'EXPLORE_ARENA',
+                'failed': 'EXPLORE_ARENA'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'EXPLORE_ARENA',
+            ExploreArena(exploration_time=exploration_time),
+            transitions={
+                'problem_found': 'ANNOUNCE_PROBLEM',
+                'exploration_done': 'CHECK_SPECIAL_PROBLEMS'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_PROBLEM',
+            Speak(text_key='problem_description'),
+            transitions={
+                'succeeded': 'IDENTIFY_PROBLEM',
+                'failed': 'IDENTIFY_PROBLEM'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'IDENTIFY_PROBLEM',
+            IdentifyProblem(),
+            transitions={
+                'trash': 'SOLVE_TRASH',
+                'misplaced': 'SOLVE_MISPLACED',
+                'person': 'SOLVE_PERSON',
+                'dishwasher': 'SOLVE_DISHWASHER',
+                'guest': 'SOLVE_GUEST',
+                'unknown': 'TRACK_SOLVED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'SOLVE_TRASH',
+            SolveTrashProblem(),
+            transitions={
+                'solved': 'TRACK_SOLVED',
+                'failed': 'TRACK_SOLVED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'SOLVE_MISPLACED',
+            SolveMisplacedObjectProblem(),
+            transitions={
+                'solved': 'TRACK_SOLVED',
+                'failed': 'TRACK_SOLVED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'SOLVE_PERSON',
+            SolvePersonRequestProblem(),
+            transitions={
+                'solved': 'TRACK_SOLVED',
+                'failed': 'TRACK_SOLVED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'SOLVE_DISHWASHER',
+            SolveDishwasherProblem(),
+            transitions={
+                'solved': 'TRACK_SOLVED',
+                'failed': 'TRACK_SOLVED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'SOLVE_GUEST',
+            SolveWelcomeGuestProblem(),
+            transitions={
+                'solved': 'TRACK_SOLVED',
+                'failed': 'TRACK_SOLVED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'TRACK_SOLVED',
+            TrackProblemsSolved(max_problems=max_problems),
+            transitions={
+                'continue': 'EXPLORE_ARENA',
+                'max_reached': 'ANNOUNCE_DONE'
+            }
+        )
+        
+        # Check for special problems (dishwasher, guest)
+        smach.StateMachine.add(
+            'CHECK_SPECIAL_PROBLEMS',
+            smach.CBState(
+                lambda ud: 'check_dishwasher',
+                outcomes=['check_dishwasher'],
+                input_keys=[]
+            ),
+            transitions={
+                'check_dishwasher': 'CHECK_DISHWASHER_STATE'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'CHECK_DISHWASHER_STATE',
+            smach.CBState(
+                lambda ud: 'open',  # Would check actual state
+                outcomes=['open', 'closed'],
+                input_keys=[]
+            ),
+            transitions={
+                'open': 'SOLVE_DISHWASHER_FINAL',
+                'closed': 'CHECK_EXIT_DOOR'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'SOLVE_DISHWASHER_FINAL',
+            SolveDishwasherProblem(),
+            transitions={
+                'solved': 'CHECK_EXIT_DOOR',
+                'failed': 'CHECK_EXIT_DOOR'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'CHECK_EXIT_DOOR',
+            NavigateTo(destination='exit_door'),
+            transitions={
+                'succeeded': 'OPEN_EXIT_DOOR',
+                'failed': 'ANNOUNCE_DONE',
+                'failed_after_retrying': 'ANNOUNCE_DONE'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'OPEN_EXIT_DOOR',
+            OpenDoor(door_type='exit'),
+            transitions={
+                'succeeded': 'WELCOME_FINAL_GUEST',
+                'failed': 'ANNOUNCE_DONE',
+                'failed_after_retrying': 'ANNOUNCE_DONE'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'WELCOME_FINAL_GUEST',
+            SolveWelcomeGuestProblem(),
+            transitions={
+                'solved': 'ANNOUNCE_DONE',
+                'failed': 'ANNOUNCE_DONE'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_DONE',
+            Speak(text='Finals completed. I have solved as many problems as I could find.'),
+            transitions={
+                'succeeded': 'DONE',
+                'failed': 'DONE'
+            }
+        )
+    
+    return sm
+
+
+def main():
+    rospy.init_node('finals_challenge_sm')
+    
+    sm = build_sm()
+    
+    sis = smach_ros.IntrospectionServer('finals_challenge_sm', sm, '/FINALS_CHALLENGE_SM')
+    sis.start()
+    
+    rospy.loginfo('[finals_challenge_sm] Starting Finals Challenge...')
+    outcome = sm.execute()
+    rospy.loginfo('[finals_challenge_sm] Final outcome: %s', outcome)
+    
+    sis.stop()
+
+
+if __name__ == '__main__':
+    main()

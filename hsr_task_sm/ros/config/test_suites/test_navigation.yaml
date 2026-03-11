@@ -1,0 +1,67 @@
+# Sample Test Suite for State Tester
+# Run with: rosrun hsr_task_sm state_tester_cli.py --suite test_navigation.yaml
+#
+# Tests navigation states with various configurations
+
+name: navigation_test_suite
+description: "Test navigation states for German Open 2026"
+
+# Shared userdata for all tests
+userdata:
+  target_location: "living_room_table"
+  robot_name: "HSR"
+
+# Test cases
+tests:
+  # Basic navigation tests
+  - state: ClearCostmap
+    description: "Clear costmap before navigation"
+    expected: succeeded
+  
+  - state: NavigateTo
+    description: "Navigate to living room"
+    params:
+      destination: "living_room_table"
+    expected: succeeded
+  
+  - state: NavigateTo
+    description: "Navigate to dining table"
+    params:
+      destination: "dining_table"
+    expected: succeeded
+  
+  - state: NavigateTo
+    description: "Navigate home"
+    params:
+      destination: "home"
+    expected: succeeded
+  
+  # Navigation with userdata key
+  - state: NavigateTo
+    description: "Navigate using userdata key"
+    params:
+      destination_key: "target_location"
+    expected: succeeded
+  
+  # Pose-based navigation
+  - state: NavigateToPose
+    description: "Navigate to specific coordinates"
+    params:
+      x: 10.2
+      y: 0.3
+      theta: -1.5
+    expected: succeeded
+  
+  # Speech test
+  - state: Speak
+    description: "Announce arrival"
+    params:
+      text: "I have arrived at the destination"
+    expected: succeeded
+  
+  # Wait test
+  - state: WaitState
+    description: "Wait for 1 second"
+    params:
+      duration: 1.0
+    expected: succeeded

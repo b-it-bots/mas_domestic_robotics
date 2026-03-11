@@ -1,0 +1,472 @@
+#!/usr/bin/env python3
+"""
+General Purpose Service Robot (GPSR) Challenge State Machine
+
+RoboCup@Home 2026 - Execute three commands from operator:
+1. Navigate to instruction point
+2. Receive spoken command
+3. Parse and execute command
+4. Return to instruction point
+5. Repeat for 3 commands
+
+Command types supported:
+- Navigation: "go to the kitchen"
+- Pick and Place: "bring me the cup from the table"
+- Find person: "find John in the living room"
+- Deliver: "take this to the bedroom"
+
+Parameters (~private):
+  ~instruction_point  (str)   - Location name for receiving commands
+  ~num_commands       (int)   - Number of commands to execute (default: 3)
+"""
+
+import rospy
+import smach
+import smach_ros
+import re
+
+from hsr_task_sm.states import NavigateTo, ClearCostmap, PerceiveTable, PickObject
+from hsr_task_sm.states.speak import Speak
+from hsr_task_sm.states.listen_for_command import ListenForCommand
+from hsr_task_sm.states.detect_person import DetectPerson
+from hsr_task_sm.states.place_object import PlaceObject
+from hsr_task_sm.states.handover import GiveObject
+
+
+class ParseCommand(smach.State):
+    """
+    Parse a spoken command into action type and parameters.
+    
+    Supported command patterns:
+    - "go to <location>" -> navigate
+    - "bring me <object> from <location>" -> fetch
+    - "find <person> in <location>" -> find_person
+    - "take this to <location>" -> deliver
+    - "say <message>" -> speak
+    """
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['navigate', 'fetch', 'find_person', 'deliver', 'speak', 'unknown'],
+            input_keys=['recognized_command'],
+            output_keys=['action_type', 'action_params', 'parsed_plan']
+        )
+        
+        # Command patterns
+        self.patterns = {
+            'navigate': [
+                r'go to (?:the )?(\w+)',
+                r'navigate to (?:the )?(\w+)',
+                r'move to (?:the )?(\w+)'
+            ],
+            'fetch': [
+                r'bring (?:me )?(?:the )?(\w+) from (?:the )?(\w+)',
+                r'get (?:the )?(\w+) from (?:the )?(\w+)',
+                r'fetch (?:the )?(\w+) from (?:the )?(\w+)'
+            ],
+            'find_person': [
+                r'find (\w+) in (?:the )?(\w+)',
+                r'look for (\w+) in (?:the )?(\w+)',
+                r'locate (\w+)'
+            ],
+            'deliver': [
+                r'take (?:this|the \w+) to (?:the )?(\w+)',
+                r'deliver (?:this|the \w+) to (?:the )?(\w+)',
+                r'bring (?:this|the \w+) to (?:the )?(\w+)'
+            ],
+            'speak': [
+                r'say (.+)',
+                r'tell (?:them|him|her|everyone) (.+)',
+                r'announce (.+)'
+            ]
+        }
+
+    def execute(self, userdata):
+        command = userdata.recognized_command.lower().strip()
+        rospy.loginfo('[ParseCommand] Parsing: "%s"', command)
+        
+        for action_type, patterns in self.patterns.items():
+            for pattern in patterns:
+                match = re.search(pattern, command, re.IGNORECASE)
+                if match:
+                    params = match.groups()
+                    userdata.action_type = action_type
+                    userdata.action_params = params
+                    userdata.parsed_plan = f"Action: {action_type}, Params: {params}"
+                    rospy.loginfo('[ParseCommand] Parsed: %s -> %s', action_type, params)
+                    return action_type
+        
+        rospy.logwarn('[ParseCommand] Could not parse command')
+        userdata.action_type = 'unknown'
+        userdata.action_params = (command,)
+        userdata.parsed_plan = f"Unknown command: {command}"
+        return 'unknown'
+
+
+class AnnouncePlan(smach.State):
+    """Announce the parsed plan to demonstrate understanding."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded'],
+            input_keys=['parsed_plan']
+        )
+
+    def execute(self, userdata):
+        rospy.loginfo('[AnnouncePlan] Plan: %s', userdata.parsed_plan)
+        # Would use TTS here
+        return 'succeeded'
+
+
+class ExecuteNavigate(smach.State):
+    """Execute a navigation command."""
+    
+    def __init__(self, timeout=120.0):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['action_params']
+        )
+        self.timeout = timeout
+
+    def execute(self, userdata):
+        location = userdata.action_params[0]
+        rospy.loginfo('[ExecuteNavigate] Navigating to: %s', location)
+        
+        # Would integrate with actual navigation
+        rospy.sleep(3.0)  # Placeholder
+        
+        return 'succeeded'
+
+
+class ExecuteFetch(smach.State):
+    """Execute a fetch command (go, pick, return, give)."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['action_params']
+        )
+
+    def execute(self, userdata):
+        obj_name = userdata.action_params[0]
+        location = userdata.action_params[1]
+        
+        rospy.loginfo('[ExecuteFetch] Fetching %s from %s', obj_name, location)
+        
+        # Would be a sub-state machine in practice:
+        # 1. Navigate to location
+        # 2. Perceive object
+        # 3. Pick object
+        # 4. Return to operator
+        # 5. Give object
+        
+        rospy.sleep(5.0)  # Placeholder
+        return 'succeeded'
+
+
+class ExecuteFindPerson(smach.State):
+    """Execute a find person command."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['action_params']
+        )
+
+    def execute(self, userdata):
+        person_name = userdata.action_params[0]
+        location = userdata.action_params[1] if len(userdata.action_params) > 1 else 'arena'
+        
+        rospy.loginfo('[ExecuteFindPerson] Finding %s in %s', person_name, location)
+        
+        rospy.sleep(3.0)  # Placeholder
+        return 'succeeded'
+
+
+class ExecuteDeliver(smach.State):
+    """Execute a deliver command."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['action_params']
+        )
+
+    def execute(self, userdata):
+        location = userdata.action_params[0]
+        
+        rospy.loginfo('[ExecuteDeliver] Delivering to %s', location)
+        
+        rospy.sleep(3.0)  # Placeholder
+        return 'succeeded'
+
+
+class ExecuteSpeak(smach.State):
+    """Execute a speak command."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['action_params']
+        )
+
+    def execute(self, userdata):
+        message = userdata.action_params[0]
+        
+        rospy.loginfo('[ExecuteSpeak] Saying: %s', message)
+        
+        return 'succeeded'
+
+
+class IncrementCommandCounter(smach.State):
+    """Increment the command counter and check if done."""
+    
+    def __init__(self, num_commands=3):
+        smach.State.__init__(
+            self,
+            outcomes=['more_commands', 'all_done'],
+            input_keys=['command_count'],
+            output_keys=['command_count']
+        )
+        self.num_commands = num_commands
+
+    def execute(self, userdata):
+        count = getattr(userdata, 'command_count', 0) + 1
+        userdata.command_count = count
+        
+        rospy.loginfo('[IncrementCommandCounter] Completed %d/%d commands', 
+                      count, self.num_commands)
+        
+        if count >= self.num_commands:
+            return 'all_done'
+        return 'more_commands'
+
+
+def build_execute_command_sm():
+    """Build sub-SM for executing a parsed command."""
+    
+    sm = smach.StateMachine(
+        outcomes=['succeeded', 'failed'],
+        input_keys=['action_type', 'action_params', 'parsed_plan']
+    )
+    
+    with sm:
+        smach.StateMachine.add(
+            'ANNOUNCE_PLAN',
+            AnnouncePlan(),
+            transitions={'succeeded': 'CHECK_ACTION_TYPE'}
+        )
+        
+        smach.StateMachine.add(
+            'CHECK_ACTION_TYPE',
+            smach.CBState(
+                lambda ud: ud.action_type,
+                outcomes=['navigate', 'fetch', 'find_person', 'deliver', 'speak', 'unknown'],
+                input_keys=['action_type']
+            ),
+            transitions={
+                'navigate': 'EXECUTE_NAVIGATE',
+                'fetch': 'EXECUTE_FETCH',
+                'find_person': 'EXECUTE_FIND_PERSON',
+                'deliver': 'EXECUTE_DELIVER',
+                'speak': 'EXECUTE_SPEAK',
+                'unknown': 'failed'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'EXECUTE_NAVIGATE',
+            ExecuteNavigate(),
+            transitions={
+                'succeeded': 'succeeded',
+                'failed': 'failed'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'EXECUTE_FETCH',
+            ExecuteFetch(),
+            transitions={
+                'succeeded': 'succeeded',
+                'failed': 'failed'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'EXECUTE_FIND_PERSON',
+            ExecuteFindPerson(),
+            transitions={
+                'succeeded': 'succeeded',
+                'failed': 'failed'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'EXECUTE_DELIVER',
+            ExecuteDeliver(),
+            transitions={
+                'succeeded': 'succeeded',
+                'failed': 'failed'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'EXECUTE_SPEAK',
+            ExecuteSpeak(),
+            transitions={
+                'succeeded': 'succeeded',
+                'failed': 'failed'
+            }
+        )
+    
+    return sm
+
+
+def build_sm():
+    """Build the main GPSR state machine."""
+    
+    instruction_point = rospy.get_param('~instruction_point', 'instruction_point')
+    num_commands = rospy.get_param('~num_commands', 3)
+    
+    sm = smach.StateMachine(outcomes=['DONE', 'FAILED'])
+    sm.userdata.recognized_command = ''
+    sm.userdata.action_type = ''
+    sm.userdata.action_params = ()
+    sm.userdata.parsed_plan = ''
+    sm.userdata.command_count = 0
+    
+    with sm:
+        smach.StateMachine.add(
+            'CLEAR_COSTMAP',
+            ClearCostmap(),
+            transitions={
+                'succeeded': 'GO_TO_INSTRUCTION_POINT',
+                'failed': 'GO_TO_INSTRUCTION_POINT'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'GO_TO_INSTRUCTION_POINT',
+            NavigateTo(destination=instruction_point),
+            transitions={
+                'succeeded': 'ANNOUNCE_READY',
+                'failed': 'GO_TO_INSTRUCTION_POINT',
+                'failed_after_retrying': 'FAILED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_READY',
+            Speak(text='I am ready to receive your command.'),
+            transitions={
+                'succeeded': 'LISTEN_FOR_COMMAND',
+                'failed': 'LISTEN_FOR_COMMAND'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'LISTEN_FOR_COMMAND',
+            ListenForCommand(timeout=15.0, retries=3),
+            transitions={
+                'succeeded': 'PARSE_COMMAND',
+                'failed': 'LISTEN_FOR_COMMAND',
+                'failed_after_retrying': 'ANNOUNCE_NOT_UNDERSTOOD'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_NOT_UNDERSTOOD',
+            Speak(text='I could not understand. Please repeat the command.'),
+            transitions={
+                'succeeded': 'LISTEN_FOR_COMMAND',
+                'failed': 'LISTEN_FOR_COMMAND'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'PARSE_COMMAND',
+            ParseCommand(),
+            transitions={
+                'navigate': 'EXECUTE_COMMAND',
+                'fetch': 'EXECUTE_COMMAND',
+                'find_person': 'EXECUTE_COMMAND',
+                'deliver': 'EXECUTE_COMMAND',
+                'speak': 'EXECUTE_COMMAND',
+                'unknown': 'ANNOUNCE_NOT_UNDERSTOOD'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'EXECUTE_COMMAND',
+            build_execute_command_sm(),
+            transitions={
+                'succeeded': 'INCREMENT_COUNTER',
+                'failed': 'INCREMENT_COUNTER'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'INCREMENT_COUNTER',
+            IncrementCommandCounter(num_commands=num_commands),
+            transitions={
+                'more_commands': 'RETURN_TO_INSTRUCTION_POINT',
+                'all_done': 'FINAL_RETURN'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'RETURN_TO_INSTRUCTION_POINT',
+            NavigateTo(destination=instruction_point),
+            transitions={
+                'succeeded': 'ANNOUNCE_READY',
+                'failed': 'RETURN_TO_INSTRUCTION_POINT',
+                'failed_after_retrying': 'ANNOUNCE_READY'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'FINAL_RETURN',
+            NavigateTo(destination=instruction_point),
+            transitions={
+                'succeeded': 'ANNOUNCE_DONE',
+                'failed': 'FINAL_RETURN',
+                'failed_after_retrying': 'ANNOUNCE_DONE'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_DONE',
+            Speak(text='I have completed all commands. Thank you.'),
+            transitions={
+                'succeeded': 'DONE',
+                'failed': 'DONE'
+            }
+        )
+    
+    return sm
+
+
+def main():
+    rospy.init_node('gpsr_challenge_sm')
+    
+    sm = build_sm()
+    
+    sis = smach_ros.IntrospectionServer('gpsr_challenge_sm', sm, '/GPSR_CHALLENGE_SM')
+    sis.start()
+    
+    rospy.loginfo('[gpsr_challenge_sm] Starting GPSR Challenge...')
+    outcome = sm.execute()
+    rospy.loginfo('[gpsr_challenge_sm] Final outcome: %s', outcome)
+    
+    sis.stop()
+
+
+if __name__ == '__main__':
+    main()

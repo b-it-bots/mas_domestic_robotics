@@ -1,0 +1,335 @@
+# Finals Challenge
+# RoboCup@Home 2026
+#
+# Task: Household maintenance - find and solve problems.
+#       Problems include: trash on floor, misplaced objects,
+#       people needing help, dishwasher door open, guest at door.
+#
+# Edit the locations and problem settings below to customize.
+
+name: finals_challenge
+description: "Household maintenance - find and solve problems"
+
+# ============================================================================
+# CONFIGURATION - Edit these values
+# ============================================================================
+userdata:
+  # Rooms to explore (in order)
+  exploration_rooms:
+    - living_room
+    - kitchen
+    - bedroom
+    - dining_room
+  
+  # Special locations
+  trash_bin_location: "trash_bin"
+  dishwasher_location: "dishwasher"
+  exit_door_location: "exit_door"
+  
+  # Object placement defaults
+  default_placements:
+    cup: "kitchen_counter"
+    book: "bookshelf"
+    remote: "coffee_table"
+    clothes: "laundry_basket"
+  
+  # Task settings
+  max_problems: 10
+  exploration_time: 30.0
+  current_room_index: 0
+  
+  # Problem tracking
+  problems_solved: 0
+  current_problem: ""
+  problem_location: ""
+
+# ============================================================================
+# STATE MACHINE - Modify carefully
+# ============================================================================
+states:
+  # ----- Initialization -----
+  - name: CLEAR_COSTMAP
+    type: ClearCostmap
+    transitions:
+      succeeded: ANNOUNCE_START
+      failed: ANNOUNCE_START
+
+  - name: ANNOUNCE_START
+    type: Speak
+    params:
+      text: "Starting Finals Challenge. I will find and solve household problems."
+    transitions:
+      succeeded: EXPLORE_NEXT_ROOM
+      failed: EXPLORE_NEXT_ROOM
+
+  # ----- Exploration Loop -----
+  - name: EXPLORE_NEXT_ROOM
+    type: Speak
+    params:
+      text: "Exploring the next room."
+    transitions:
+      succeeded: GO_TO_ROOM
+      failed: GO_TO_ROOM
+
+  - name: GO_TO_ROOM
+    type: NavigateTo
+    params:
+      destination: "living_room"  # Will be overridden by logic
+    transitions:
+      succeeded: SCAN_ROOM
+      failed: SCAN_ROOM
+      failed_after_retrying: INCREMENT_ROOM
+
+  - name: SCAN_ROOM
+    type: PerceiveTable
+    transitions:
+      succeeded: CHECK_FOR_PROBLEMS
+      failed: CHECK_FOR_PEOPLE
+      failed_after_retrying: CHECK_FOR_PEOPLE
+
+  # ----- Problem Detection -----
+  - name: CHECK_FOR_PROBLEMS
+    type: Speak
+    params:
+      text: "Checking for problems in this room."
+    transitions:
+      succeeded: CHECK_FOR_TRASH
+      failed: CHECK_FOR_TRASH
+
+  - name: CHECK_FOR_TRASH
+    type: CheckCondition
+    params:
+      condition_key: detected_trash
+    transitions:
+      'true': SOLVE_TRASH_PROBLEM
+      'false': CHECK_FOR_MISPLACED
+
+  - name: CHECK_FOR_MISPLACED
+    type: CheckCondition
+    params:
+      condition_key: detected_misplaced
+    transitions:
+      'true': SOLVE_MISPLACED_PROBLEM
+      'false': CHECK_FOR_PEOPLE
+
+  - name: CHECK_FOR_PEOPLE
+    type: DetectPerson
+    params:
+      timeout: 5.0
+    transitions:
+      succeeded: SOLVE_PERSON_REQUEST
+      no_person: INCREMENT_ROOM
+      failed: INCREMENT_ROOM
+
+  # ----- Solve Trash Problem -----
+  - name: SOLVE_TRASH_PROBLEM
+    type: Speak
+    params:
+      text: "I found trash on the floor. Picking it up."
+    transitions:
+      succeeded: PICK_TRASH
+      failed: PICK_TRASH
+
+  - name: PICK_TRASH
+    type: PickObject
+    transitions:
+      succeeded: GO_TO_TRASH_BIN
+      failed: INCREMENT_SOLVED
+      failed_after_retrying: INCREMENT_SOLVED
+
+  - name: GO_TO_TRASH_BIN
+    type: NavigateTo
+    params:
+      destination_key: trash_bin_location
+    transitions:
+      succeeded: PLACE_IN_TRASH
+      failed: PLACE_IN_TRASH
+      failed_after_retrying: INCREMENT_SOLVED
+
+  - name: PLACE_IN_TRASH
+    type: PlaceObject
+    transitions:
+      succeeded: ANNOUNCE_TRASH_SOLVED
+      failed: INCREMENT_SOLVED
+      failed_after_retrying: INCREMENT_SOLVED
+
+  - name: ANNOUNCE_TRASH_SOLVED
+    type: Speak
+    params:
+      text: "Trash has been disposed of properly."
+    transitions:
+      succeeded: INCREMENT_SOLVED
+      failed: INCREMENT_SOLVED
+
+  # ----- Solve Misplaced Object -----
+  - name: SOLVE_MISPLACED_PROBLEM
+    type: Speak
+    params:
+      text: "I found a misplaced object. Returning it to the correct location."
+    transitions:
+      succeeded: PICK_MISPLACED
+      failed: PICK_MISPLACED
+
+  - name: PICK_MISPLACED
+    type: PickObject
+    transitions:
+      succeeded: GO_TO_CORRECT_LOCATION
+      failed: INCREMENT_SOLVED
+      failed_after_retrying: INCREMENT_SOLVED
+
+  - name: GO_TO_CORRECT_LOCATION
+    type: NavigateTo
+    params:
+      destination: "kitchen_counter"  # Default, would be dynamic
+    transitions:
+      succeeded: PLACE_CORRECTLY
+      failed: PLACE_CORRECTLY
+      failed_after_retrying: INCREMENT_SOLVED
+
+  - name: PLACE_CORRECTLY
+    type: PlaceObject
+    transitions:
+      succeeded: ANNOUNCE_MISPLACED_SOLVED
+      failed: INCREMENT_SOLVED
+      failed_after_retrying: INCREMENT_SOLVED
+
+  - name: ANNOUNCE_MISPLACED_SOLVED
+    type: Speak
+    params:
+      text: "Object has been returned to its correct location."
+    transitions:
+      succeeded: INCREMENT_SOLVED
+      failed: INCREMENT_SOLVED
+
+  # ----- Solve Person Request -----
+  - name: SOLVE_PERSON_REQUEST
+    type: Speak
+    params:
+      text: "Hello! How can I help you?"
+    transitions:
+      succeeded: LISTEN_REQUEST
+      failed: LISTEN_REQUEST
+
+  - name: LISTEN_REQUEST
+    type: ListenForCommand
+    params:
+      timeout: 10.0
+    transitions:
+      succeeded: ACKNOWLEDGE_REQUEST
+      timeout: INCREMENT_SOLVED
+      failed: INCREMENT_SOLVED
+
+  - name: ACKNOWLEDGE_REQUEST
+    type: Speak
+    params:
+      text: "I understand. Let me help you with that."
+    transitions:
+      succeeded: INCREMENT_SOLVED
+      failed: INCREMENT_SOLVED
+
+  # ----- Progress Tracking -----
+  - name: INCREMENT_SOLVED
+    type: IncrementCounter
+    params:
+      counter_key: problems_solved
+    transitions:
+      succeeded: CHECK_MAX_PROBLEMS
+
+  - name: CHECK_MAX_PROBLEMS
+    type: CheckRetries
+    params:
+      max_retries: 10
+      counter_key: problems_solved
+    transitions:
+      retry: INCREMENT_ROOM
+      max_reached: CHECK_SPECIAL_PROBLEMS
+
+  - name: INCREMENT_ROOM
+    type: IncrementCounter
+    params:
+      counter_key: current_room_index
+    transitions:
+      succeeded: CHECK_MORE_ROOMS
+
+  - name: CHECK_MORE_ROOMS
+    type: CheckRetries
+    params:
+      max_retries: 4
+      counter_key: current_room_index
+    transitions:
+      retry: EXPLORE_NEXT_ROOM
+      max_reached: CHECK_SPECIAL_PROBLEMS
+
+  # ----- Special Problems -----
+  - name: CHECK_SPECIAL_PROBLEMS
+    type: Speak
+    params:
+      text: "Checking for special problems."
+    transitions:
+      succeeded: GO_TO_DISHWASHER
+      failed: GO_TO_DISHWASHER
+
+  - name: GO_TO_DISHWASHER
+    type: NavigateTo
+    params:
+      destination_key: dishwasher_location
+    transitions:
+      succeeded: CLOSE_DISHWASHER
+      failed: GO_TO_EXIT_DOOR
+      failed_after_retrying: GO_TO_EXIT_DOOR
+
+  - name: CLOSE_DISHWASHER
+    type: CloseDoor
+    params:
+      door_type: "dishwasher"
+    transitions:
+      succeeded: ANNOUNCE_DISHWASHER_CLOSED
+      failed: GO_TO_EXIT_DOOR
+      failed_after_retrying: GO_TO_EXIT_DOOR
+
+  - name: ANNOUNCE_DISHWASHER_CLOSED
+    type: Speak
+    params:
+      text: "Dishwasher door has been closed."
+    transitions:
+      succeeded: GO_TO_EXIT_DOOR
+      failed: GO_TO_EXIT_DOOR
+
+  - name: GO_TO_EXIT_DOOR
+    type: NavigateTo
+    params:
+      destination_key: exit_door_location
+    transitions:
+      succeeded: OPEN_EXIT_DOOR
+      failed: ANNOUNCE_DONE
+      failed_after_retrying: ANNOUNCE_DONE
+
+  - name: OPEN_EXIT_DOOR
+    type: OpenDoor
+    params:
+      door_type: "exit"
+    transitions:
+      succeeded: WELCOME_GUEST
+      failed: ANNOUNCE_DONE
+      failed_after_retrying: ANNOUNCE_DONE
+
+  - name: WELCOME_GUEST
+    type: Speak
+    params:
+      text: "Welcome! Please come in. How can I assist you?"
+    transitions:
+      succeeded: ANNOUNCE_DONE
+      failed: ANNOUNCE_DONE
+
+  # ----- Finish -----
+  - name: ANNOUNCE_DONE
+    type: Speak
+    params:
+      text: "Finals Challenge complete. I have solved as many problems as I could find."
+    transitions:
+      succeeded: SUCCEEDED
+      failed: SUCCEEDED
+
+outcomes:
+  - SUCCEEDED
+  - FAILED

@@ -6,6 +6,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   geometry_msgs
   actionlib
+  message_generation
   mdr_perceive_plane_action
   mdr_pickup_action
   mdr_place_action
@@ -16,7 +17,19 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_python_setup()
 
-catkin_package()
+add_service_files(
+  FILES
+  VoicebotPrompt.srv
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
+catkin_package(
+  CATKIN_DEPENDS message_runtime
+)
 
 install(DIRECTORY ros/launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/ros/launch)
@@ -27,4 +40,7 @@ install(DIRECTORY config/
 install(PROGRAMS
   ros/scripts/pick_and_place_sm
   ros/scripts/perceive_only_sm
+  ros/scripts/whisper_stt_service.py
+  ros/scripts/voicebot_ollama_service.py
+  ros/scripts/hri_ollama_challenge_sm
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

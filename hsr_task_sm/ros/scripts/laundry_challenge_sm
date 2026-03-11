@@ -1,0 +1,425 @@
+#!/usr/bin/env python3
+"""
+Doing Laundry Challenge State Machine
+
+RoboCup@Home 2026 - Laundry task:
+1. Navigate to laundry area
+2. Open washing machine (bonus)
+3. Retrieve clothes from basket or washing machine
+4. Transport to folding table
+5. Fold clothes neatly
+
+Parameters (~private):
+  ~laundry_area        (str)   - Laundry area location
+  ~washing_machine     (str)   - Washing machine location
+  ~folding_table       (str)   - Folding table location
+  ~use_basket          (bool)  - Whether to use laundry basket for transport
+"""
+
+import rospy
+import smach
+import smach_ros
+
+from hsr_task_sm.states import NavigateTo, ClearCostmap
+from hsr_task_sm.states.speak import Speak
+from hsr_task_sm.states.furniture_manipulation import OpenDoor
+
+
+class OpenWashingMachine(smach.State):
+    """Open washing machine door."""
+    
+    def __init__(self, timeout=60.0):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed', 'request_help']
+        )
+        self.timeout = timeout
+
+    def execute(self, userdata):
+        rospy.loginfo('[OpenWashingMachine] Opening washing machine door...')
+        
+        # Attempt to open door
+        rospy.sleep(2.0)  # Placeholder
+        
+        # In practice: detect success/failure
+        rospy.loginfo('[OpenWashingMachine] Door opened!')
+        return 'succeeded'
+
+
+class PickClothFromBasket(smach.State):
+    """Pick a piece of clothing from the laundry basket."""
+    
+    def __init__(self, timeout=60.0):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'basket_empty', 'failed'],
+            input_keys=['clothes_picked'],
+            output_keys=['clothes_picked', 'current_cloth']
+        )
+        self.timeout = timeout
+
+    def execute(self, userdata):
+        picked = getattr(userdata, 'clothes_picked', 0)
+        max_clothes = 8  # Typical number in basket
+        
+        if picked >= max_clothes:
+            return 'basket_empty'
+        
+        rospy.loginfo('[PickClothFromBasket] Picking cloth %d from basket...', picked + 1)
+        
+        # Deformable object manipulation
+        rospy.sleep(3.0)  # Placeholder
+        
+        userdata.clothes_picked = picked + 1
+        userdata.current_cloth = f'tshirt_{picked + 1}'
+        
+        rospy.loginfo('[PickClothFromBasket] Picked cloth successfully')
+        return 'succeeded'
+
+
+class PickClothFromWashingMachine(smach.State):
+    """Pick a piece of clothing from washing machine."""
+    
+    def __init__(self, timeout=60.0):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'machine_empty', 'failed'],
+            output_keys=['current_cloth']
+        )
+        self.timeout = timeout
+        self.clothes_in_machine = 3  # Typical
+        self.picked_from_machine = 0
+
+    def execute(self, userdata):
+        if self.picked_from_machine >= self.clothes_in_machine:
+            return 'machine_empty'
+        
+        rospy.loginfo('[PickClothFromWashingMachine] Retrieving cloth from washing machine...')
+        
+        # Reach into machine - more difficult manipulation
+        rospy.sleep(4.0)  # Placeholder
+        
+        self.picked_from_machine += 1
+        userdata.current_cloth = f'tshirt_wm_{self.picked_from_machine}'
+        
+        rospy.loginfo('[PickClothFromWashingMachine] Retrieved cloth successfully')
+        return 'succeeded'
+
+
+class PlaceClothOnTable(smach.State):
+    """Place cloth on folding table."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['current_cloth']
+        )
+
+    def execute(self, userdata):
+        rospy.loginfo('[PlaceClothOnTable] Placing %s on folding table...', 
+                      userdata.current_cloth)
+        
+        rospy.sleep(2.0)  # Placeholder
+        
+        return 'succeeded'
+
+
+class FoldCloth(smach.State):
+    """
+    Fold a piece of clothing.
+    
+    Folding quality is evaluated by neatness.
+    """
+    
+    def __init__(self, timeout=120.0):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'partial_fold', 'failed'],
+            input_keys=['current_cloth'],
+            output_keys=['folded_clothes']
+        )
+        self.timeout = timeout
+
+    def execute(self, userdata):
+        cloth = userdata.current_cloth
+        rospy.loginfo('[FoldCloth] Folding %s...', cloth)
+        
+        # Bimanual deformable object manipulation
+        # Steps: flatten, fold in half vertically, fold horizontally
+        
+        rospy.loginfo('[FoldCloth] Step 1: Flattening cloth...')
+        rospy.sleep(2.0)
+        
+        rospy.loginfo('[FoldCloth] Step 2: Folding vertically...')
+        rospy.sleep(2.0)
+        
+        rospy.loginfo('[FoldCloth] Step 3: Folding horizontally...')
+        rospy.sleep(2.0)
+        
+        # Track folded clothes
+        folded = getattr(userdata, 'folded_clothes', [])
+        folded.append(cloth)
+        userdata.folded_clothes = folded
+        
+        rospy.loginfo('[FoldCloth] %s folded successfully! Total folded: %d', 
+                      cloth, len(folded))
+        return 'succeeded'
+
+
+class StackFoldedClothes(smach.State):
+    """Stack folded clothes neatly."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed'],
+            input_keys=['folded_clothes']
+        )
+
+    def execute(self, userdata):
+        clothes = getattr(userdata, 'folded_clothes', [])
+        rospy.loginfo('[StackFoldedClothes] Stacking %d folded items...', len(clothes))
+        
+        rospy.sleep(2.0)  # Placeholder
+        
+        return 'succeeded'
+
+
+class UseBasketForTransport(smach.State):
+    """Use laundry basket to transport clothes."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed']
+        )
+
+    def execute(self, userdata):
+        rospy.loginfo('[UseBasketForTransport] Picking up laundry basket (bimanual)...')
+        
+        # Requires two arms to carry
+        rospy.sleep(3.0)  # Placeholder
+        
+        rospy.loginfo('[UseBasketForTransport] Basket secured!')
+        return 'succeeded'
+
+
+class PlaceBasket(smach.State):
+    """Place basket near folding table."""
+    
+    def __init__(self):
+        smach.State.__init__(
+            self,
+            outcomes=['succeeded', 'failed']
+        )
+
+    def execute(self, userdata):
+        rospy.loginfo('[PlaceBasket] Placing basket near folding surface...')
+        
+        rospy.sleep(2.0)  # Placeholder
+        
+        return 'succeeded'
+
+
+class CheckMoreClothesToFold(smach.State):
+    """Check if there are more clothes to fold."""
+    
+    def __init__(self, max_folds=6):
+        smach.State.__init__(
+            self,
+            outcomes=['more_clothes', 'done_folding'],
+            input_keys=['folded_clothes']
+        )
+        self.max_folds = max_folds
+
+    def execute(self, userdata):
+        folded = len(getattr(userdata, 'folded_clothes', []))
+        
+        if folded >= self.max_folds:
+            return 'done_folding'
+        return 'more_clothes'
+
+
+def build_sm():
+    """Build the main Laundry Challenge state machine."""
+    
+    # Parameters
+    laundry_area = rospy.get_param('~laundry_area', 'laundry_room')
+    washing_machine = rospy.get_param('~washing_machine', 'washing_machine')
+    folding_table = rospy.get_param('~folding_table', 'folding_table')
+    use_basket = rospy.get_param('~use_basket', True)
+    
+    sm = smach.StateMachine(outcomes=['DONE', 'FAILED'])
+    sm.userdata.clothes_picked = 0
+    sm.userdata.current_cloth = ''
+    sm.userdata.folded_clothes = []
+    
+    with sm:
+        smach.StateMachine.add(
+            'CLEAR_COSTMAP',
+            ClearCostmap(),
+            transitions={
+                'succeeded': 'GO_TO_LAUNDRY',
+                'failed': 'GO_TO_LAUNDRY'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'GO_TO_LAUNDRY',
+            NavigateTo(destination=laundry_area),
+            transitions={
+                'succeeded': 'ANNOUNCE_START',
+                'failed': 'GO_TO_LAUNDRY',
+                'failed_after_retrying': 'FAILED'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_START',
+            Speak(text='Starting laundry challenge. I will retrieve and fold the clothes.'),
+            transitions={
+                'succeeded': 'OPEN_WASHING_MACHINE',
+                'failed': 'OPEN_WASHING_MACHINE'
+            }
+        )
+        
+        # Try to open washing machine (bonus points)
+        smach.StateMachine.add(
+            'OPEN_WASHING_MACHINE',
+            OpenWashingMachine(),
+            transitions={
+                'succeeded': 'PICK_FROM_MACHINE',
+                'failed': 'USE_BASKET' if use_basket else 'PICK_FROM_BASKET',
+                'request_help': 'USE_BASKET' if use_basket else 'PICK_FROM_BASKET'
+            }
+        )
+        
+        # Option 1: Get clothes from washing machine
+        smach.StateMachine.add(
+            'PICK_FROM_MACHINE',
+            PickClothFromWashingMachine(),
+            transitions={
+                'succeeded': 'PLACE_ON_TABLE_WM',
+                'machine_empty': 'USE_BASKET' if use_basket else 'PICK_FROM_BASKET',
+                'failed': 'USE_BASKET' if use_basket else 'PICK_FROM_BASKET'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'PLACE_ON_TABLE_WM',
+            PlaceClothOnTable(),
+            transitions={
+                'succeeded': 'FOLD_CLOTH',
+                'failed': 'PICK_FROM_MACHINE'
+            }
+        )
+        
+        # Option 2: Use basket for transport
+        if use_basket:
+            smach.StateMachine.add(
+                'USE_BASKET',
+                UseBasketForTransport(),
+                transitions={
+                    'succeeded': 'GO_TO_FOLDING_TABLE_WITH_BASKET',
+                    'failed': 'PICK_FROM_BASKET'
+                }
+            )
+            
+            smach.StateMachine.add(
+                'GO_TO_FOLDING_TABLE_WITH_BASKET',
+                NavigateTo(destination=folding_table),
+                transitions={
+                    'succeeded': 'PLACE_BASKET',
+                    'failed': 'GO_TO_FOLDING_TABLE_WITH_BASKET',
+                    'failed_after_retrying': 'PLACE_BASKET'
+                }
+            )
+            
+            smach.StateMachine.add(
+                'PLACE_BASKET',
+                PlaceBasket(),
+                transitions={
+                    'succeeded': 'PICK_FROM_BASKET',
+                    'failed': 'PICK_FROM_BASKET'
+                }
+            )
+        
+        # Pick from basket
+        smach.StateMachine.add(
+            'PICK_FROM_BASKET',
+            PickClothFromBasket(),
+            transitions={
+                'succeeded': 'PLACE_ON_TABLE',
+                'basket_empty': 'STACK_CLOTHES',
+                'failed': 'PICK_FROM_BASKET'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'PLACE_ON_TABLE',
+            PlaceClothOnTable(),
+            transitions={
+                'succeeded': 'FOLD_CLOTH',
+                'failed': 'FOLD_CLOTH'
+            }
+        )
+        
+        # Fold cloth
+        smach.StateMachine.add(
+            'FOLD_CLOTH',
+            FoldCloth(),
+            transitions={
+                'succeeded': 'CHECK_MORE_CLOTHES',
+                'partial_fold': 'CHECK_MORE_CLOTHES',
+                'failed': 'CHECK_MORE_CLOTHES'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'CHECK_MORE_CLOTHES',
+            CheckMoreClothesToFold(max_folds=6),
+            transitions={
+                'more_clothes': 'PICK_FROM_BASKET',
+                'done_folding': 'STACK_CLOTHES'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'STACK_CLOTHES',
+            StackFoldedClothes(),
+            transitions={
+                'succeeded': 'ANNOUNCE_DONE',
+                'failed': 'ANNOUNCE_DONE'
+            }
+        )
+        
+        smach.StateMachine.add(
+            'ANNOUNCE_DONE',
+            Speak(text='Laundry challenge completed. All clothes are folded and stacked.'),
+            transitions={
+                'succeeded': 'DONE',
+                'failed': 'DONE'
+            }
+        )
+    
+    return sm
+
+
+def main():
+    rospy.init_node('laundry_challenge_sm')
+    
+    sm = build_sm()
+    
+    sis = smach_ros.IntrospectionServer('laundry_challenge_sm', sm, '/LAUNDRY_CHALLENGE_SM')
+    sis.start()
+    
+    rospy.loginfo('[laundry_challenge_sm] Starting Laundry Challenge...')
+    outcome = sm.execute()
+    rospy.loginfo('[laundry_challenge_sm] Final outcome: %s', outcome)
+    
+    sis.stop()
+
+
+if __name__ == '__main__':
+    main()

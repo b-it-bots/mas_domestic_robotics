@@ -1,0 +1,252 @@
+# HRI Challenge - Receptionist Task
+# RoboCup@Home 2026 - German Open
+#
+# Task: Greet guests at the door, learn their name and favorite drink,
+#       introduce them to the host and other guests.
+#
+# Reference: GermanOpen2026/names/names.md
+# Reference: GermanOpen2026/objects/objects.md (drinks category)
+
+name: hri_challenge
+description: "Receptionist task - greet guests, learn names/drinks, introduce to host"
+
+# ============================================================================
+# GERMAN OPEN 2026 - OFFICIAL DATA
+# ============================================================================
+# NAMES: Oliver, Charlotte, Henry, Amelia, Jack, Sophia, Thomas, Emily,
+#        James, Isabella, William, Ava, George, Mia, Harry, Lily,
+#        Samuel, Grace, Benjamin, Chloe, Daniel, Ella, Matthew, Scarlett,
+#        Joseph, Harper, David, Evelyn, Lucas, Abigail, Alexander, Madison,
+#        Michael, Avery, Ethan, Sofia, Jacob, Aria, Logan, Zoey, Noah,
+#        Hannah, Ryan, Stella, Nathan, Victoria, Caleb
+#
+# DRINKS: water, red_bull, milk, orange_juice, coke, ice_tea, coffee_creamer
+
+# ============================================================================
+# CONFIGURATION - Edit these values
+# ============================================================================
+userdata:
+  # Locations in your arena (from navigation_goals.yaml)
+  # Available: door1_inside, living_room_table, living_room_far, living_room_left, etc.
+  entrance_location: "door1_inside"
+  living_room_location: "living_room_table"
+  host_location: "living_room_far"
+  
+  # Guest settings
+  max_guests: 2
+  current_guest: 0
+  
+  # Speech timeouts (seconds)
+  listen_timeout: 10.0
+  
+  # Valid names (from German Open 2026)
+  valid_names:
+    - Oliver
+    - Charlotte
+    - Henry
+    - Amelia
+    - Jack
+    - Sophia
+    - Thomas
+    - Emily
+    - James
+    - Isabella
+    - William
+    - Ava
+    - George
+    - Mia
+    - Harry
+    - Lily
+    - Samuel
+    - Grace
+    - Benjamin
+    - Chloe
+    - Daniel
+    - Ella
+    - Matthew
+    - Scarlett
+  
+  # Valid drinks (from German Open 2026)
+  valid_drinks:
+    - water
+    - red bull
+    - milk
+    - orange juice
+    - coke
+    - ice tea
+    - coffee creamer
+  
+  # Stored guest information
+  guest_names: []
+  guest_drinks: []
+  current_name: ""
+  current_drink: ""
+
+# ============================================================================
+# STATE MACHINE
+# ============================================================================
+states:
+  # ----- Initialization -----
+  - name: CLEAR_COSTMAP
+    type: ClearCostmap
+    transitions:
+      succeeded: ANNOUNCE_START
+      failed: ANNOUNCE_START
+
+  - name: ANNOUNCE_START
+    type: Speak
+    params:
+      text: "Starting HRI Challenge. I will greet guests and introduce them."
+    transitions:
+      succeeded: GO_TO_ENTRANCE
+      failed: GO_TO_ENTRANCE
+
+  # ----- Wait for Guest -----
+  - name: GO_TO_ENTRANCE
+    type: NavigateTo
+    params:
+      destination_key: entrance_location
+      retries: 3
+    transitions:
+      succeeded: WAIT_FOR_GUEST
+      failed: GO_TO_ENTRANCE       # Loop back for retry
+      failed_after_retrying: FAILED
+
+  - name: WAIT_FOR_GUEST
+    type: Speak
+    params:
+      text: "Waiting for the next guest at the entrance."
+    transitions:
+      succeeded: DETECT_GUEST
+      failed: DETECT_GUEST
+
+  - name: DETECT_GUEST
+    type: DetectPerson
+    params:
+      timeout: 30.0
+    transitions:
+      succeeded: GREET_GUEST
+      no_person: WAIT_FOR_GUEST
+      failed: WAIT_FOR_GUEST
+
+  # ----- Learn Guest Info -----
+  - name: GREET_GUEST
+    type: Speak
+    params:
+      text: "Hello! Welcome to the party. What is your name?"
+    transitions:
+      succeeded: LISTEN_NAME
+      failed: LISTEN_NAME
+
+  - name: LISTEN_NAME
+    type: ListenForCommand
+    params:
+      timeout: 10.0
+      retries: 3
+    transitions:
+      succeeded: CONFIRM_NAME
+      failed: LISTEN_NAME           # Loop back for retry
+      failed_after_retrying: ASK_NAME_AGAIN
+    remapping:
+      recognized_command: current_name
+
+  - name: ASK_NAME_AGAIN
+    type: Speak
+    params:
+      text: "I didn't catch that. Could you please tell me your name again?"
+    transitions:
+      succeeded: LISTEN_NAME
+      failed: LISTEN_NAME
+
+  - name: CONFIRM_NAME
+    type: Speak
+    params:
+      text: "Nice to meet you. And what is your favorite drink?"
+    transitions:
+      succeeded: LISTEN_DRINK
+      failed: LISTEN_DRINK
+
+  - name: LISTEN_DRINK
+    type: ListenForCommand
+    params:
+      timeout: 10.0
+      retries: 3
+    transitions:
+      succeeded: ACKNOWLEDGE_INFO
+      failed: LISTEN_DRINK          # Loop back for retry
+      failed_after_retrying: ASK_DRINK_AGAIN
+    remapping:
+      recognized_command: current_drink
+
+  - name: ASK_DRINK_AGAIN
+    type: Speak
+    params:
+      text: "Sorry, what drink did you say?"
+    transitions:
+      succeeded: LISTEN_DRINK
+      failed: LISTEN_DRINK
+
+  - name: ACKNOWLEDGE_INFO
+    type: Speak
+    params:
+      text: "Great, I have noted your information. Please follow me to meet the host."
+    transitions:
+      succeeded: LEAD_TO_HOST
+      failed: LEAD_TO_HOST
+
+  # ----- Lead to Host -----
+  - name: LEAD_TO_HOST
+    type: NavigateTo
+    params:
+      destination_key: living_room_location
+      retries: 3
+    transitions:
+      succeeded: INTRODUCE_TO_HOST
+      failed: LEAD_TO_HOST          # Loop back for retry
+      failed_after_retrying: INTRODUCE_TO_HOST  # Continue anyway
+
+  - name: INTRODUCE_TO_HOST
+    type: Speak
+    params:
+      text: "Host, please meet our new guest. They enjoy drinking."
+    transitions:
+      succeeded: FIND_SEAT
+      failed: FIND_SEAT
+
+  # ----- Complete Guest -----
+  - name: FIND_SEAT
+    type: Speak
+    params:
+      text: "Please have a seat. Make yourself comfortable."
+    transitions:
+      succeeded: CHECK_MORE_GUESTS
+      failed: CHECK_MORE_GUESTS
+
+  - name: CHECK_MORE_GUESTS
+    type: IncrementCounter
+    params:
+      counter_key: current_guest
+    transitions:
+      succeeded: CHECK_GUEST_COUNT
+
+  - name: CHECK_GUEST_COUNT
+    type: CheckRetries
+    params:
+      max_retries: 2
+      counter_key: current_guest
+    transitions:
+      retry: GO_TO_ENTRANCE
+      max_reached: ANNOUNCE_DONE
+
+  # ----- Finish -----
+  - name: ANNOUNCE_DONE
+    type: Speak
+    params:
+      text: "HRI Challenge complete. All guests have been introduced."
+    transitions:
+      succeeded: SUCCEEDED
+      failed: SUCCEEDED
+
+outcomes:
+  - SUCCEEDED
+  - FAILED

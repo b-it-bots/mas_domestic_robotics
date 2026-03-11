@@ -1,0 +1,138 @@
+# Robust State Machine Template
+# ================================
+# All states have built-in retry logic via `retries` parameter.
+# When a state fails, it returns 'failed' for retries, and 
+# 'failed_after_retrying' when max retries exhausted.
+#
+# Pattern:
+#   - name: MY_STATE
+#     type: StateType
+#     params:
+#       retries: 3           # Built-in retry logic
+#     transitions:
+#       succeeded: NEXT_STATE
+#       failed: MY_STATE     # Loop back for retry
+#       failed_after_retrying: FAILURE_HANDLER
+#
+name: my_challenge
+description: "Robust state machine with built-in retry handling"
+
+# ============================================================================
+# USERDATA - Task variables only (no retry counters needed!)
+# ============================================================================
+userdata:
+  target_location: "living_room_table"
+  object_to_pick: "cup"
+
+# ============================================================================
+# STATES - Each state handles retries internally
+# ============================================================================
+states:
+  # ==================== START ====================
+  - name: START
+    type: ClearCostmap
+    transitions:
+      succeeded: SAY_HELLO
+      failed: SAY_HELLO  # ClearCostmap is non-critical
+
+  # ==================== SPEAK ====================
+  - name: SAY_HELLO
+    type: Speak
+    params:
+      text: "Hello! Starting my task."
+      retries: 2
+    transitions:
+      succeeded: GO_TO_TABLE
+      failed: SAY_HELLO  # Retry internally
+      failed_after_retrying: GO_TO_TABLE  # Continue anyway, speech not critical
+
+  # ==================== NAVIGATION ====================
+  - name: GO_TO_TABLE
+    type: NavigateTo
+    params:
+      destination: "living_room_table"
+      timeout: 120.0
+      retries: 3
+    transitions:
+      succeeded: ANNOUNCE_ARRIVAL
+      failed: GO_TO_TABLE_CLEAR  # Clear costmap before retry
+      failed_after_retrying: NAV_FAILED
+
+  - name: GO_TO_TABLE_CLEAR
+    type: ClearCostmap
+    transitions:
+      succeeded: GO_TO_TABLE  # Retry navigation
+      failed: GO_TO_TABLE     # Retry anyway
+
+  # ==================== SPEAK ====================
+  - name: ANNOUNCE_ARRIVAL
+    type: Speak
+    params:
+      text: "I have arrived at the table."
+      retries: 2
+    transitions:
+      succeeded: WAIT_A_BIT
+      failed: ANNOUNCE_ARRIVAL
+      failed_after_retrying: WAIT_A_BIT
+
+  # ==================== WAIT ====================
+  - name: WAIT_A_BIT
+    type: Wait
+    params:
+      duration: 3.0
+    transitions:
+      succeeded: GO_HOME
+
+  # ==================== NAVIGATION ====================
+  - name: GO_HOME
+    type: NavigateTo
+    params:
+      destination: "home"
+      timeout: 120.0
+      retries: 3
+    transitions:
+      succeeded: DONE
+      failed: GO_HOME_CLEAR
+      failed_after_retrying: NAV_FAILED
+
+  - name: GO_HOME_CLEAR
+    type: ClearCostmap
+    transitions:
+      succeeded: GO_HOME
+      failed: GO_HOME
+
+  # ==================== SUCCESS ====================
+  - name: DONE
+    type: Speak
+    params:
+      text: "Task completed successfully! Goodbye."
+      retries: 2
+    transitions:
+      succeeded: SUCCEEDED
+      failed: DONE
+      failed_after_retrying: SUCCEEDED
+
+  - name: SUCCEEDED
+    type: Wait
+    params:
+      duration: 0.1
+    transitions:
+      succeeded: null
+
+  # ==================== FAILURE HANDLERS ====================
+  - name: NAV_FAILED
+    type: Speak
+    params:
+      text: "Navigation failed after multiple attempts. Aborting task."
+      retries: 2
+    transitions:
+      succeeded: FAILED
+      failed: NAV_FAILED
+      failed_after_retrying: FAILED
+
+  - name: FAILED
+    type: Wait
+    params:
+      duration: 0.1
+    transitions:
+      succeeded: null

@@ -1,0 +1,150 @@
+# Navigation Goals for German Open 2026
+# Source: mas_environments/lucy/german_open_2026/navigation_goals.yaml
+#
+# Format: location_name: [x, y, theta]
+# Use with NavigateTo state: destination="location_name"
+#
+# Map: mas_environments/lucy/german_open_2026/map.yaml
+# Resolution: 0.05 m/pixel
+
+# =============================================================================
+# NAVIGATION GOAL POINTS
+# =============================================================================
+navigation_goals:
+  # ----- ENTRANCE / START -----
+  home: [1.080857, -0.172509, -3.054897]
+  door1_outside: [0.183077, 0.335669, -3.137861]
+  door1_inside: [2.425884, 0.331094, 3.119247]
+  door2_entrance: [1.110358, -2.838731, 0.017712]
+  inspection_point: [7.607594, -2.614543, 1.922439]
+  
+  # ----- BEDROOM -----
+  bedroom_enterance: [3.911721, 0.752947, 1.615298]
+  bed_right: [2.876048, 1.706892, 2.129420]
+  bedside_table: [2.469989, 2.101678, 3.122958]
+  bedroom_corner: [4.945355, 4.199382, -2.405889]
+  bedroom_table: [4.366133, 1.589813, -0.066376]
+  
+  # ----- UTILITY ROOM -----
+  cabinet: [5.937707, 0.043953, -1.594462]
+  cabinet_near: [5.939210, -0.149282, -1.606662]
+  cabinet_far: [5.980967, 0.345263, -1.613872]
+  shelf: [4.026563, -2.127830, 1.648824]
+  washing_table: [4.355475, -3.587599, -2.446509]
+  washing_machine: [5.311961, -4.016603, -0.041487]
+  washing_machine_far: [5.064790, -4.051255, 0.011100]
+  
+  # ----- LIVING ROOM -----
+  living_room_table: [10.214854, 0.285113, -1.531836]
+  living_room_far: [10.801933, 1.597663, 2.282191]
+  living_room_left: [7.228867, 3.081637, -0.433663]
+  living_room_tv: [6.637278, 3.365108, -0.404788]
+  
+  # ----- KITCHEN / DINING -----
+  dining_table: [8.278991, -3.020380, -0.296786]
+  dining_table_right: [10.186847, -3.684589, 1.701846]
+  dining_table_left: [10.070429, -1.948895, -1.568219]
+  dining_table_far: [11.096046, -2.722437, -3.077226]
+  dish_washer: [9.184246, -3.597270, -1.577720]
+  fridge: [8.085733, -3.587131, -1.563493]
+
+# =============================================================================
+# LOCATION ALIASES (friendly names -> actual goals)
+# =============================================================================
+location_aliases:
+  # Task-friendly names
+  entrance: door1_inside
+  start: home
+  start_position: home
+  
+  # Living room
+  living_room: living_room_table
+  couch_table: living_room_table
+  tv_stand: living_room_tv
+  arm_chair: living_room_far
+  
+  # Bedroom
+  bedroom: bedroom_enterance
+  bed: bed_right
+  nightstand: bedside_table
+  dresser: bedroom_table
+  
+  # Kitchen
+  kitchen: dining_table
+  kitchen_counter: dining_table_left
+  sink: dish_washer  # near sink area
+  dishwasher: dish_washer
+  bar: dining_table_far
+  
+  # Utility room
+  utility_room: shelf
+  washing_machine_area: washing_machine
+  desk: bedroom_table
+  
+  # Competition specific
+  host_seat: living_room_far
+  guest_seat: living_room_left
+
+# =============================================================================
+# ROOM BOUNDARIES (for semantic understanding)
+# =============================================================================
+rooms:
+  bedroom:
+    locations: [bedroom_enterance, bed_right, bedside_table, bedroom_corner, bedroom_table]
+    center: [3.5, 2.0]
+  
+  living_room:
+    locations: [living_room_table, living_room_far, living_room_left, living_room_tv]
+    center: [8.5, 2.0]
+  
+  kitchen:
+    locations: [dining_table, dining_table_right, dining_table_left, dining_table_far, dish_washer, fridge]
+    center: [9.5, -3.0]
+  
+  utility_room:
+    locations: [cabinet, cabinet_near, cabinet_far, shelf, washing_table, washing_machine, washing_machine_far]
+    center: [5.0, -2.5]
+  
+  corridor:
+    locations: [home, door1_outside, door1_inside, door2_entrance, inspection_point]
+    center: [3.0, -1.0]
+
+# =============================================================================
+# CHALLENGE-SPECIFIC MAPPINGS
+# =============================================================================
+challenges:
+  hri_challenge:
+    entrance: door1_inside
+    living_room: living_room_table
+    host_location: living_room_far
+    guest_seat_1: living_room_left
+    guest_seat_2: living_room_tv
+  
+  pick_place:
+    start: home
+    table: dining_table
+    # Category destinations (from German Open 2026 spec)
+    drinks_destination: dining_table_far      # bar
+    fruits_destination: living_room_table     # couch_table
+    snacks_destination: bedroom_table         # desk
+    toiletries_destination: bedside_table     # nightstand
+    foods_destination: dining_table_left      # kitchen_counter
+    dishes_destination: dish_washer           # dishwasher
+    cleaning_destination: cabinet             # cabinet
+  
+  laundry:
+    start: home
+    laundry_basket: bedroom_corner
+    washing_machine: washing_machine
+    sorting_area: washing_table
+  
+  gpsr:
+    start: home
+    # All locations available for GPSR commands
+  
+  restaurant:
+    start: home
+    bar: dining_table_far
+    kitchen: dining_table_left
+    customer_table_1: living_room_table
+    customer_table_2: living_room_left

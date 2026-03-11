@@ -1,0 +1,49 @@
+<!-- 
+  Slave Laptop Launch File for HRI Challenge
+  
+  This launch file runs on the slave laptop connected to the robot.
+  
+  BEFORE LAUNCH, set environment variables:
+    export ROS_MASTER_URI=http://<robot_ip>:11311
+    export ROS_IP=<slave_laptop_ip>
+  
+  REQUIREMENTS on slave laptop:
+    - Python packages: openai-whisper, ollama, pyaudio
+    - System: arecord (alsa-utils), pulseaudio 
+    - Ollama server: ollama serve (default port 11434)
+    - Pull model: ollama pull llama3.2
+  
+  USAGE:
+    roslaunch hsr_task_sm slave_laptop_hri.launch
+  
+  OPTIONAL ARGS:
+    whisper_model:= tiny.en | base.en | small.en
+    ollama_model:= llama3.2 | mistral | etc
+    record_duration:= 5 (seconds)
+-->
+
+<launch>
+  <arg name="whisper_model" default="base.en"/>
+  <arg name="ollama_model" default="llama3.2"/>
+  <arg name="record_duration" default="5"/>
+  <arg name="ollama_url" default="http://localhost:11434"/>
+  
+  <!-- Whisper Speech Recognition Service -->
+  <node name="whisper_stt_service" 
+        pkg="hsr_task_sm" 
+        type="whisper_stt_service.py" 
+        output="screen">
+    <param name="whisper_model" value="$(arg whisper_model)"/>
+    <param name="record_duration" value="$(arg record_duration)"/>
+  </node>
+  
+  <!-- Voicebot Ollama Service -->
+  <node name="voicebot_ollama_service" 
+        pkg="hsr_task_sm" 
+        type="voicebot_ollama_service.py" 
+        output="screen">
+    <param name="ollama_model" value="$(arg ollama_model)"/>
+    <param name="ollama_url" value="$(arg ollama_url)"/>
+  </node>
+  
+</launch>

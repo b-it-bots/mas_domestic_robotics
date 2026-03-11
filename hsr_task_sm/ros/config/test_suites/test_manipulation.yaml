@@ -1,0 +1,47 @@
+# Manipulation Test Suite
+# Run with: rosrun hsr_task_sm state_tester_cli.py --suite test_manipulation.yaml --live
+
+name: manipulation_test_suite
+description: "Test manipulation states for German Open 2026"
+
+userdata:
+  current_object: "cup"
+  target_placement: "dining_table"
+
+tests:
+  # Perception
+  - state: PerceiveTable
+    description: "Perceive objects on table"
+    expected: succeeded
+  
+  # Picking
+  - state: PickObject
+    description: "Pick up cup"
+    params:
+      object_name: "cup"
+    expected: succeeded
+  
+  # Placing
+  - state: PlaceObject
+    description: "Place on dining table"
+    params:
+      location: "dining_table"
+    expected: succeeded
+  
+  # Handover
+  - state: HandoverToHuman
+    description: "Hand object to human"
+    expected: succeeded
+  
+  - state: ReceiveFromHuman
+    description: "Receive object from human"
+    expected: succeeded
+  
+  # Furniture manipulation
+  - state: OpenDrawer
+    description: "Open drawer"
+    expected: succeeded
+  
+  - state: CloseDrawer
+    description: "Close drawer"
+    expected: succeeded

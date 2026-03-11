@@ -1,0 +1,220 @@
+# HRI Challenge with Ollama - YAML Configuration
+# RoboCup@Home 2026
+#
+# This challenge uses:
+# - Whisper STT (speech-to-text) running on slave laptop
+# - Ollama LLM (conversational AI) running on slave laptop
+# - Person detection via YOLO
+#
+# Slave Laptop Setup:
+#   export ROS_MASTER_URI=http://<robot_ip>:11311
+#   export ROS_IP=<slave_laptop_ip>
+#   rosrun hsr_task_sm whisper_stt_service.py &
+#   rosrun hsr_task_sm voicebot_ollama_service.py &
+
+name: hri_ollama_challenge
+description: "Receptionist task using Whisper STT and Ollama LLM on slave laptop"
+
+# ============================================================================
+# CONFIGURATION - Edit these values for your arena
+# ============================================================================
+userdata:
+  # Locations
+  entrance_location: "entrance"
+  living_room_location: "living_room"
+  host_location: "host_seat"
+  
+  # Guest settings
+  max_guests: 2
+  current_guest: 1
+  
+  # Timeouts (seconds)
+  speech_timeout: 30.0
+  person_detect_timeout: 60.0
+  
+  # Storage
+  all_guests: []
+  guest_name: null
+  guest_drink: null
+
+# ============================================================================
+# OLLAMA CONFIGURATION
+# ============================================================================
+ollama_config:
+  model: "llama3.2"               # Ollama model to use
+  whisper_model: "base.en"        # Whisper model (tiny.en, base.en, small.en)
+  record_duration: 5              # Seconds to record speech
+  
+  # System prompt for the LLM
+  system_prompt: |
+    You are a friendly robot receptionist at a party. Your job is to:
+    1. Greet guests warmly
+    2. Ask for their name if not provided
+    3. Ask for their favorite drink if not provided
+    4. Remember information about guests
+    
+    Keep responses SHORT (1-2 sentences). Be conversational and friendly.
+    When you have both name and drink, confirm and say "Please follow me."
+    
+    Important: If the guest hasn't given their name, ask for it.
+    If they haven't said their favorite drink, ask about it.
+
+# ============================================================================
+# STATE MACHINE
+# ============================================================================
+states:
+  - name: CLEAR_COSTMAP
+    type: ClearCostmap
+    transitions:
+      succeeded: ANNOUNCE_START
+      failed: ANNOUNCE_START
+
+  - name: ANNOUNCE_START
+    type: Speak
+    params:
+      text: "Starting receptionist task with Ollama. I will greet guests and introduce them to the host."
+    transitions:
+      succeeded: GO_TO_ENTRANCE
+      failed: GO_TO_ENTRANCE
+
+  - name: GO_TO_ENTRANCE
+    type: NavigateTo
+    params:
+      destination_key: entrance_location
+    transitions:
+      succeeded: ANNOUNCE_WAITING
+      failed: ANNOUNCE_WAITING
+      failed_after_retrying: FAILED
+
+  - name: ANNOUNCE_WAITING
+    type: Speak
+    params:
+      text: "I am at the entrance. Waiting for the next guest."
+    transitions:
+      succeeded: DETECT_GUEST
+      failed: DETECT_GUEST
+
+  - name: DETECT_GUEST
+    type: DetectPerson
+    params:
+      timeout: 60.0
+    transitions:
+      succeeded: GREET_GUEST
+      no_person: WAIT_FOR_GUEST
+      failed: WAIT_FOR_GUEST
+
+  - name: WAIT_FOR_GUEST
+    type: Wait
+    params:
+      duration: 5.0
+    transitions:
+      succeeded: DETECT_GUEST
+
+  - name: GREET_GUEST
+    type: Speak
+    params:
+      text: "Hello! Welcome to the party. I am the robot receptionist. What is your name?"
+    transitions:
+      succeeded: START_CONVERSATION
+      failed: START_CONVERSATION
+
+  - name: START_CONVERSATION
+    type: ConversationLoop
+    params:
+      max_iterations: 10
+    transitions:
+      guest_complete: CONFIRM_INFO
+      max_iterations: CONVERSATION_TIMEOUT
+      failed: CONVERSATION_FAILED
+
+  - name: CONVERSATION_TIMEOUT
+    type: Speak
+    params:
+      text: "I had some trouble understanding. Let me take you to the host anyway."
+    transitions:
+      succeeded: LEAD_TO_HOST
+      failed: LEAD_TO_HOST
+
+  - name: CONVERSATION_FAILED
+    type: Speak
+    params:
+      text: "I apologize for the technical difficulties. Please follow me."
+    transitions:
+      succeeded: LEAD_TO_HOST
+      failed: LEAD_TO_HOST
+
+  - name: CONFIRM_INFO
+    type: Speak
+    params:
+      text: "Perfect! I have your information. Please follow me to meet the host."
+    transitions:
+      succeeded: SAVE_GUEST
+      failed: SAVE_GUEST
+
+  - name: SAVE_GUEST
+    type: SaveGuestInfo
+    transitions:
+      succeeded: CHECK_MORE_GUESTS
+      failed: CHECK_MORE_GUESTS
+
+  - name: CHECK_MORE_GUESTS
+    type: CheckRetries
+    params:
+      max_retries: 2
+      counter_key: current_guest
+    transitions:
+      retry: LEAD_TO_HOST
+      max_reached: LEAD_TO_HOST_FINAL
+
+  - name: LEAD_TO_HOST
+    type: NavigateTo
+    params:
+      destination_key: living_room_location
+    transitions:
+      succeeded: OFFER_SEAT
+      failed: OFFER_SEAT
+      failed_after_retrying: OFFER_SEAT
+
+  - name: OFFER_SEAT
+    type: Speak
+    params:
+      text: "Please have a seat and make yourself comfortable. I will return shortly."
+    transitions:
+      succeeded: INCREMENT_GUEST
+      failed: INCREMENT_GUEST
+
+  - name: INCREMENT_GUEST
+    type: IncrementCounter
+    params:
+      counter_key: current_guest
+    transitions:
+      succeeded: GO_TO_ENTRANCE
+
+  - name: LEAD_TO_HOST_FINAL
+    type: NavigateTo
+    params:
+      destination_key: living_room_location
+    transitions:
+      succeeded: INTRODUCE_GUESTS
+      failed: INTRODUCE_GUESTS
+      failed_after_retrying: INTRODUCE_GUESTS
+
+  - name: INTRODUCE_GUESTS
+    type: Speak
+    params:
+      text: "Dear host, please meet our guests for today's party."
+    transitions:
+      succeeded: ANNOUNCE_DONE
+      failed: ANNOUNCE_DONE
+
+  - name: ANNOUNCE_DONE
+    type: Speak
+    params:
+      text: "Receptionist task complete. All guests have been introduced."
+    transitions:
+      succeeded: SUCCEEDED
+      failed: SUCCEEDED
+
+outcomes:
+  - SUCCEEDED
+  - FAILED
