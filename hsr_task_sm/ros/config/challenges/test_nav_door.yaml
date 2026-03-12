@@ -1,0 +1,32 @@
+name: test_nav_door
+
+outcomes:
+  - DONE
+  - FAILED
+
+states:
+  - name: START
+    type: ClearCostmap
+    transitions:
+      succeeded: GO_TO_DOOR
+      failed: GO_TO_DOOR
+
+  - name: GO_TO_DOOR
+    type: NavigateTo
+    params:
+      destination: "door1_ouside"
+      retries: 3
+    transitions:
+      succeeded: SAY_ARRIVED
+      failed: GO_TO_DOOR
+      failed_after_retrying: FAILED
+
+  - name: SAY_ARRIVED
+    type: Speak
+    params:
+      text: "I have arrived at the door."
+      retries: 2
+    transitions:
+      succeeded: DONE
+      failed: SAY_ARRIVED
+      failed_after_retrying: DONE

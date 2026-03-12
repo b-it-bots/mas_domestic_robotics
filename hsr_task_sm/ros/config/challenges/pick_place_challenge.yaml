@@ -1,282 +1,534 @@
-# Pick & Place Challenge
-# RoboCup@Home 2026 - German Open
+# Pick and Place Challenge
+# RoboCup@Home 2026
 #
-# Task: Clean the table by picking up objects and placing them
-#       in their correct locations based on category.
+# Two phases:
+#   PHASE 1 - TIDY UP (loop until dining table is clear):
+#     Navigate to dining table → perceive → pick → classify → place in correct container → repeat
+#     Containers: dishwasher (tableware), trash bin, cabinet (common objects)
 #
-# Reference: GermanOpen2026/objects/objects.md
-# See also: ros/config/german_open_2026.yaml for full object list
+#   PHASE 2 - SERVE BREAKFAST (4 sequential pick+place cycles):
+#     Pick bowl, spoon, cereal, milk from side shelf → place on clean end of dining table
+#
+# Locations (must match navigation_goals.yaml):
+#   dining_table        - main table to tidy
+#   dining_table_far    - clean end of dining table for breakfast serving
+#   dish_washer         - dishwasher
+#   cabinet             - cabinet for common objects
+#   shelf               - side table with breakfast items
+#   dust_bin           - trash bin (add to navigation_goals.yaml if missing)
+#   door1_inside        - arena entry point
 
 name: pick_place_challenge
-description: "Clean table, pick up objects and place in correct locations by category"
+description: "Tidy up dining table, then serve breakfast"
 
-# ============================================================================
-# GERMAN OPEN 2026 - OBJECT CATEGORIES TO DESTINATIONS
-# ============================================================================
-# drinks      -> bar
-# fruits      -> couch_table  
-# snacks      -> desk
-# toiletries  -> nightstand
-# foods       -> kitchen_counter
-# dishes      -> dishwasher
-# cleaning    -> cabinet
-
-# ============================================================================
-# CONFIGURATION - Edit these values for your arena
-# Navigation goals from: mas_environments/lucy/german_open_2026/navigation_goals.yaml
-# ============================================================================
 userdata:
-  # Locations in your arena (from navigation_goals.yaml)
-  start_location: "home"
-  table_location: "dining_table"
-  
-  # Official German Open 2026 object-to-destination mappings
-  # Using actual navigation goal names
-  placement_locations:
-    # Drinks -> bar (dining_table_far)
-    water: "dining_table_far"
-    red_bull: "dining_table_far"
-    milk: "dining_table_far"
-    orange_juice: "dining_table_far"
-    coke: "dining_table_far"
-    ice_tea: "dining_table_right"
-    coffee_creamer: "dining_table_right"
-    # Fruits -> living_room_table
-    avocado: "living_room_table"
-    lemon: "living_room_table"
-    apple: "living_room_table"
-    orange: "living_room_table"
-    # Snacks -> bedroom_table
-    pringles: "bedroom_table"
-    cookies: "bedroom_table"
-    gum: "bedroom_table"
-    chips: "bedroom_table"
-    mixed_nuts: "bedroom_table"
-    # Toiletries -> bedside_table
-    toothpaste: "bedside_table"
-    soap: "bedside_table"
-    hand_creme: "bedside_table"
-    # Foods -> shelf
-    tomato_soup: "shelf"
-    bread: "shelf"
-    cornflakes: "shelf"
-    potato: "shelf"
-    instant_noodles: "shelf"
-    # Dishes -> dish_washer
-    cup: "dish_washer"
-    bowl: "dish_washer"
-    fork: "dish_washer"
-    plate: "dish_washer"
-    knife: "dish_washer"
-    spoon: "dish_washer"
-    # Cleaning supplies -> cabinet
-    cloth: "cabinet"
-    sponge: "cabinet"
-    # Challenge specific
-    dishwasher_tab: "dish_washer"
-  
-  # Default placement for unknown objects
-  default_placement: "cabinet"
-  
-  # Task settings
-  max_objects: 5
-  objects_placed: 0
-  
-  # Current object being processed
-  current_object: null
-  detected_objects: []
+  object_category: ""
+  perceived_planes: null
+  grasped_object: null
+  grasped_object_height: 0.05
 
 # ============================================================================
-# STATE MACHINE
+# STATES
 # ============================================================================
 states:
-  # ----- Initialization -----
+
+  # --------------------------------------------------------------------------
+  # INIT
+  # --------------------------------------------------------------------------
   - name: CLEAR_COSTMAP
     type: ClearCostmap
     transitions:
-      succeeded: ANNOUNCE_START
-      failed: ANNOUNCE_START
+      succeeded: WAIT_FOR_DOOR
+      failed: WAIT_FOR_DOOR
 
-  - name: ANNOUNCE_START
-    type: Speak
+  - name: WAIT_FOR_DOOR
+    type: CheckDoorOpen
     params:
-      text: "Starting Pick and Place Challenge. I will clean the table."
+      result_topic: /door_open_checker/result
+      wait_timeout: 60.0
     transitions:
-      succeeded: GO_TO_TABLE
-      failed: GO_TO_TABLE
+      open: ENTER_ARENA
+      closed: WAIT_FOR_DOOR
+      timeout: ENTER_ARENA
 
-  # ----- Go to Table -----
-  - name: GO_TO_TABLE
+  - name: ENTER_ARENA
     type: NavigateTo
     params:
-      destination_key: table_location
+      destination: door1_inside
     transitions:
-      succeeded: PERCEIVE_TABLE
-      failed: RETRY_NAV_TABLE
-      failed_after_retrying: ANNOUNCE_NAV_FAILED
+      succeeded: NAV_TO_KITCHEN
+      failed: NAV_TO_KITCHEN
+      failed_after_retrying: NAV_TO_KITCHEN
 
-  - name: RETRY_NAV_TABLE
-    type: ClearCostmap
-    transitions:
-      succeeded: GO_TO_TABLE
-      failed: GO_TO_TABLE
-
-  - name: ANNOUNCE_NAV_FAILED
-    type: Speak
+  - name: NAV_TO_KITCHEN
+    type: NavigateTo
     params:
-      text: "I cannot reach the table. Challenge failed."
+      destination: dining_table
     transitions:
-      succeeded: FAILED
-      failed: FAILED
+      succeeded: ANNOUNCE_TIDY
+      failed: ANNOUNCE_TIDY
+      failed_after_retrying: ANNOUNCE_TIDY
 
-  # ----- Perceive Objects -----
-  - name: PERCEIVE_TABLE
+  # --------------------------------------------------------------------------
+  # PHASE 1 — TIDY UP LOOP
+  # --------------------------------------------------------------------------
+  - name: ANNOUNCE_TIDY
+    type: SpeakResponse
+    params:
+      text: "Starting tidy up. I will clear the dining table."
+    transitions:
+      succeeded: HEAD_TABLE
+      failed: HEAD_TABLE
+
+  # Look at table surface before perceiving
+  - name: HEAD_TABLE
+    type: SetHeadPose
+    params:
+      tilt: 0.20    # slight down to see table
+      pan: 0.0
+    transitions:
+      succeeded: PERCEIVE_DINING
+
+  - name: PERCEIVE_DINING
     type: PerceiveTable
     params:
-      plane_frame_prefix: "table"
+      plane_prefix: table
+      retries: 2
     transitions:
-      succeeded: CHECK_OBJECTS_FOUND
-      failed: RETRY_PERCEIVE
-      failed_after_retrying: ANNOUNCE_PERCEIVE_FAILED
-    remapping:
-      detected_objects: detected_objects
+      succeeded: PICK_TIDY
+      failed: PICK_TIDY
+      failed_after_retrying: ANNOUNCE_BREAKFAST   # table is clear
 
-  - name: RETRY_PERCEIVE
-    type: Wait
-    params:
-      duration: 2.0
-    transitions:
-      succeeded: PERCEIVE_TABLE
-
-  - name: ANNOUNCE_PERCEIVE_FAILED
-    type: Speak
-    params:
-      text: "I cannot detect objects on the table."
-    transitions:
-      succeeded: ANNOUNCE_DONE
-      failed: ANNOUNCE_DONE
-
-  - name: CHECK_OBJECTS_FOUND
-    type: CheckCondition
-    params:
-      condition_key: detected_objects
-    transitions:
-      'true': ANNOUNCE_FOUND_OBJECTS
-      'false': ANNOUNCE_TABLE_CLEAN
-
-  - name: ANNOUNCE_TABLE_CLEAN
-    type: Speak
-    params:
-      text: "The table is already clean. No objects detected."
-    transitions:
-      succeeded: ANNOUNCE_DONE
-      failed: ANNOUNCE_DONE
-
-  - name: ANNOUNCE_FOUND_OBJECTS
-    type: Speak
-    params:
-      text: "I found objects on the table. Starting cleanup."
-    transitions:
-      succeeded: PICK_OBJECT
-      failed: PICK_OBJECT
-
-  # ----- Pick Object -----
-  - name: PICK_OBJECT
+  - name: PICK_TIDY
     type: PickObject
-    transitions:
-      succeeded: ANNOUNCE_PICKED
-      failed: RETRY_PICK
-      failed_after_retrying: SKIP_OBJECT
-    remapping:
-      picked_object: current_object
-
-  - name: RETRY_PICK
-    type: Speak
     params:
-      text: "Let me try picking that up again."
+      picking_surface_prefix: table
+      retries: 2
     transitions:
-      succeeded: PICK_OBJECT
-      failed: PICK_OBJECT
+      succeeded: CLASSIFY_OBJECT
+      failed: PERCEIVE_DINING
+      failed_after_retrying: ANNOUNCE_BREAKFAST   # nothing left
+      find_objects_before_picking: PERCEIVE_DINING
 
-  - name: SKIP_OBJECT
-    type: Speak
-    params:
-      text: "I could not pick this object. Moving to the next one."
+  - name: CLASSIFY_OBJECT
+    type: ClassifyObject
     transitions:
-      succeeded: CHECK_MORE_OBJECTS
-      failed: CHECK_MORE_OBJECTS
+      dishwasher: NAV_TO_DISHWASHER
+      trash: NAV_TO_TRASH
+      cabinet: NAV_TO_CABINET
+      breakfast: NAV_RETURN_TIDY            # misplaced breakfast item, skip
+      failed: NAV_TO_CABINET                # unknown → cabinet
 
-  - name: ANNOUNCE_PICKED
-    type: Speak
-    params:
-      text: "Object picked up. Going to place it."
-    transitions:
-      succeeded: GO_TO_PLACEMENT
-      failed: GO_TO_PLACEMENT
-
-  # ----- Place Object -----
-  - name: GO_TO_PLACEMENT
+  # -- dishwasher branch --
+  - name: NAV_TO_DISHWASHER
     type: NavigateTo
     params:
-      destination_key: default_placement
+      destination: dish_washer
     transitions:
-      succeeded: PLACE_OBJECT
-      failed: PLACE_OBJECT
-      failed_after_retrying: PLACE_OBJECT
+      succeeded: PLACE_DISHWASHER
+      failed: PLACE_DISHWASHER
+      failed_after_retrying: SAY_NAV_FAIL_TIDY
 
-  - name: PLACE_OBJECT
+  - name: PLACE_DISHWASHER
+    type: PlaceInContainer
+    params:
+      container_name: dishwasher
+      retries: 2
+    transitions:
+      succeeded: NAV_RETURN_TIDY
+      failed: NAV_RETURN_TIDY
+      failed_after_retrying: NAV_RETURN_TIDY
+
+  # -- trash branch: navigate → look down → drop in bin --
+  - name: NAV_TO_TRASH
+    type: NavigateTo
+    params:
+      destination: dust_bin
+    transitions:
+      succeeded: HEAD_BIN
+      failed: HEAD_BIN
+      failed_after_retrying: SAY_NAV_FAIL_TIDY
+
+  # Tilt head down to see the bin opening before dropping
+  - name: HEAD_BIN
+    type: SetHeadPose
+    params:
+      tilt: 0.45    # looking down at bin
+      pan: 0.0
+    transitions:
+      succeeded: DROP_TRASH
+
+  - name: DROP_TRASH
+    type: DropInBin
+    transitions:
+      succeeded: HEAD_NEUTRAL_TRASH
+      failed: HEAD_NEUTRAL_TRASH
+
+  - name: HEAD_NEUTRAL_TRASH
+    type: SetHeadPose
+    params:
+      tilt: 0.0
+      pan: 0.0
+    transitions:
+      succeeded: NAV_RETURN_TIDY
+
+  # -- cabinet branch --
+  - name: NAV_TO_CABINET
+    type: NavigateTo
+    params:
+      destination: cabinet
+    transitions:
+      succeeded: PLACE_CABINET
+      failed: PLACE_CABINET
+      failed_after_retrying: SAY_NAV_FAIL_TIDY
+
+  - name: PLACE_CABINET
+    type: PlaceInContainer
+    params:
+      container_name: cabinet
+      retries: 2
+    transitions:
+      succeeded: NAV_RETURN_TIDY
+      failed: NAV_RETURN_TIDY
+      failed_after_retrying: NAV_RETURN_TIDY
+
+  - name: SAY_NAV_FAIL_TIDY
+    type: SpeakResponse
+    params:
+      text: "I could not reach the container. Returning for next object."
+    transitions:
+      succeeded: NAV_RETURN_TIDY
+      failed: NAV_RETURN_TIDY
+
+  - name: NAV_RETURN_TIDY
+    type: NavigateTo
+    params:
+      destination: dining_table
+    transitions:
+      succeeded: PERCEIVE_DINING
+      failed: PERCEIVE_DINING
+      failed_after_retrying: ANNOUNCE_BREAKFAST
+
+  # --------------------------------------------------------------------------
+  # PHASE 2 — SERVE BREAKFAST
+  # 4 sequential pick+place cycles: shelf → dining_table_far
+  # --------------------------------------------------------------------------
+  - name: ANNOUNCE_BREAKFAST
+    type: SpeakResponse
+    params:
+      text: "Dining table is clear. Now I will serve breakfast."
+    transitions:
+      succeeded: NAV_TO_SHELF_1
+      failed: NAV_TO_SHELF_1
+
+  # Breakfast cycle 1 (bowl)
+  - name: NAV_TO_SHELF_1
+    type: NavigateTo
+    params:
+      destination: shelf
+    transitions:
+      succeeded: LIFT_SHELF_1
+      failed: LIFT_SHELF_1
+      failed_after_retrying: ANNOUNCE_DONE
+
+  # Raise lift joint + tilt head up to see shelf contents
+  - name: LIFT_SHELF_1
+    type: SetLiftJoint
+    params:
+      height: 0.25
+    transitions:
+      succeeded: HEAD_SHELF_1
+
+  - name: HEAD_SHELF_1
+    type: SetHeadPose
+    params:
+      tilt: -0.20   # slight up to see shelf
+      pan: 0.0
+    transitions:
+      succeeded: PERCEIVE_SHELF_1
+
+  - name: PERCEIVE_SHELF_1
+    type: PerceiveTable
+    params:
+      plane_prefix: table
+      retries: 2
+    transitions:
+      succeeded: PICK_B1
+      failed: PICK_B1
+      failed_after_retrying: ANNOUNCE_DONE
+
+  - name: PICK_B1
+    type: PickObject
+    params:
+      picking_surface_prefix: table
+      retries: 2
+    transitions:
+      succeeded: NAV_TO_SERVE_1
+      failed: NAV_TO_SHELF_2
+      failed_after_retrying: NAV_TO_SHELF_2
+      find_objects_before_picking: PERCEIVE_SHELF_1
+
+  - name: NAV_TO_SERVE_1
+    type: NavigateTo
+    params:
+      destination: dining_table_far
+    transitions:
+      succeeded: PERCEIVE_SERVE_1
+      failed: PERCEIVE_SERVE_1
+      failed_after_retrying: NAV_TO_SHELF_2
+
+  - name: PERCEIVE_SERVE_1
+    type: PerceiveTable
+    params:
+      plane_prefix: table
+      retries: 1
+    transitions:
+      succeeded: PLACE_B1
+      failed: PLACE_B1
+      failed_after_retrying: NAV_TO_SHELF_2
+
+  - name: PLACE_B1
     type: PlaceObject
-    transitions:
-      succeeded: ANNOUNCE_PLACED
-      failed: RETRY_PLACE
-      failed_after_retrying: ANNOUNCE_PLACE_FAILED
-
-  - name: RETRY_PLACE
-    type: Speak
     params:
-      text: "Let me try placing that again."
+      placing_surface_prefix: table
+      retries: 2
     transitions:
-      succeeded: PLACE_OBJECT
-      failed: PLACE_OBJECT
+      succeeded: NAV_TO_SHELF_2
+      failed: NAV_TO_SHELF_2
+      failed_after_retrying: NAV_TO_SHELF_2
 
-  - name: ANNOUNCE_PLACE_FAILED
-    type: Speak
+  # Breakfast cycle 2 (spoon)
+  - name: NAV_TO_SHELF_2
+    type: NavigateTo
     params:
-      text: "I could not place the object properly."
+      destination: shelf
     transitions:
-      succeeded: CHECK_MORE_OBJECTS
-      failed: CHECK_MORE_OBJECTS
+      succeeded: LIFT_SHELF_2
+      failed: LIFT_SHELF_2
+      failed_after_retrying: ANNOUNCE_DONE
 
-  - name: ANNOUNCE_PLACED
-    type: Speak
+  - name: LIFT_SHELF_2
+    type: SetLiftJoint
     params:
-      text: "Object placed successfully."
+      height: 0.25
     transitions:
-      succeeded: INCREMENT_COUNT
-      failed: INCREMENT_COUNT
+      succeeded: HEAD_SHELF_2
 
-  # ----- Loop Control -----
-  - name: INCREMENT_COUNT
-    type: IncrementCounter
+  - name: HEAD_SHELF_2
+    type: SetHeadPose
     params:
-      counter_key: objects_placed
+      tilt: -0.20
+      pan: 0.0
     transitions:
-      succeeded: CHECK_MORE_OBJECTS
+      succeeded: PERCEIVE_SHELF_2
 
-  - name: CHECK_MORE_OBJECTS
-    type: CheckRetries
+  - name: PERCEIVE_SHELF_2
+    type: PerceiveTable
     params:
-      max_retries: 5
-      counter_key: objects_placed
+      plane_prefix: table
+      retries: 2
     transitions:
-      retry: GO_TO_TABLE
-      max_reached: ANNOUNCE_DONE
+      succeeded: PICK_B2
+      failed: PICK_B2
+      failed_after_retrying: ANNOUNCE_DONE
 
-  # ----- Finish -----
+  - name: PICK_B2
+    type: PickObject
+    params:
+      picking_surface_prefix: table
+      retries: 2
+    transitions:
+      succeeded: NAV_TO_SERVE_2
+      failed: NAV_TO_SHELF_3
+      failed_after_retrying: NAV_TO_SHELF_3
+      find_objects_before_picking: PERCEIVE_SHELF_2
+
+  - name: NAV_TO_SERVE_2
+    type: NavigateTo
+    params:
+      destination: dining_table_far
+    transitions:
+      succeeded: PERCEIVE_SERVE_2
+      failed: PERCEIVE_SERVE_2
+      failed_after_retrying: NAV_TO_SHELF_3
+
+  - name: PERCEIVE_SERVE_2
+    type: PerceiveTable
+    params:
+      plane_prefix: table
+      retries: 1
+    transitions:
+      succeeded: PLACE_B2
+      failed: PLACE_B2
+      failed_after_retrying: NAV_TO_SHELF_3
+
+  - name: PLACE_B2
+    type: PlaceObject
+    params:
+      placing_surface_prefix: table
+      retries: 2
+    transitions:
+      succeeded: NAV_TO_SHELF_3
+      failed: NAV_TO_SHELF_3
+      failed_after_retrying: NAV_TO_SHELF_3
+
+  # Breakfast cycle 3 (cereal)
+  - name: NAV_TO_SHELF_3
+    type: NavigateTo
+    params:
+      destination: shelf
+    transitions:
+      succeeded: LIFT_SHELF_3
+      failed: LIFT_SHELF_3
+      failed_after_retrying: ANNOUNCE_DONE
+
+  - name: LIFT_SHELF_3
+    type: SetLiftJoint
+    params:
+      height: 0.25
+    transitions:
+      succeeded: HEAD_SHELF_3
+
+  - name: HEAD_SHELF_3
+    type: SetHeadPose
+    params:
+      tilt: -0.20
+      pan: 0.0
+    transitions:
+      succeeded: PERCEIVE_SHELF_3
+
+  - name: PERCEIVE_SHELF_3
+    type: PerceiveTable
+    params:
+      plane_prefix: table
+      retries: 2
+    transitions:
+      succeeded: PICK_B3
+      failed: PICK_B3
+      failed_after_retrying: ANNOUNCE_DONE
+
+  - name: PICK_B3
+    type: PickObject
+    params:
+      picking_surface_prefix: table
+      retries: 2
+    transitions:
+      succeeded: NAV_TO_SERVE_3
+      failed: NAV_TO_SHELF_4
+      failed_after_retrying: NAV_TO_SHELF_4
+      find_objects_before_picking: PERCEIVE_SHELF_3
+
+  - name: NAV_TO_SERVE_3
+    type: NavigateTo
+    params:
+      destination: dining_table_far
+    transitions:
+      succeeded: PERCEIVE_SERVE_3
+      failed: PERCEIVE_SERVE_3
+      failed_after_retrying: NAV_TO_SHELF_4
+
+  - name: PERCEIVE_SERVE_3
+    type: PerceiveTable
+    params:
+      plane_prefix: table
+      retries: 1
+    transitions:
+      succeeded: PLACE_B3
+      failed: PLACE_B3
+      failed_after_retrying: NAV_TO_SHELF_4
+
+  - name: PLACE_B3
+    type: PlaceObject
+    params:
+      placing_surface_prefix: table
+      retries: 2
+    transitions:
+      succeeded: NAV_TO_SHELF_4
+      failed: NAV_TO_SHELF_4
+      failed_after_retrying: NAV_TO_SHELF_4
+
+  # Breakfast cycle 4 (milk)
+  - name: NAV_TO_SHELF_4
+    type: NavigateTo
+    params:
+      destination: shelf
+    transitions:
+      succeeded: LIFT_SHELF_4
+      failed: LIFT_SHELF_4
+      failed_after_retrying: ANNOUNCE_DONE
+
+  - name: LIFT_SHELF_4
+    type: SetLiftJoint
+    params:
+      height: 0.25
+    transitions:
+      succeeded: HEAD_SHELF_4
+
+  - name: HEAD_SHELF_4
+    type: SetHeadPose
+    params:
+      tilt: -0.20
+      pan: 0.0
+    transitions:
+      succeeded: PERCEIVE_SHELF_4
+
+  - name: PERCEIVE_SHELF_4
+    type: PerceiveTable
+    params:
+      plane_prefix: table
+      retries: 2
+    transitions:
+      succeeded: PICK_B4
+      failed: PICK_B4
+      failed_after_retrying: ANNOUNCE_DONE
+
+  - name: PICK_B4
+    type: PickObject
+    params:
+      picking_surface_prefix: table
+      retries: 2
+    transitions:
+      succeeded: NAV_TO_SERVE_4
+      failed: ANNOUNCE_DONE
+      failed_after_retrying: ANNOUNCE_DONE
+      find_objects_before_picking: PERCEIVE_SHELF_4
+
+  - name: NAV_TO_SERVE_4
+    type: NavigateTo
+    params:
+      destination: dining_table_far
+    transitions:
+      succeeded: PERCEIVE_SERVE_4
+      failed: PERCEIVE_SERVE_4
+      failed_after_retrying: ANNOUNCE_DONE
+
+  - name: PERCEIVE_SERVE_4
+    type: PerceiveTable
+    params:
+      plane_prefix: table
+      retries: 1
+    transitions:
+      succeeded: PLACE_B4
+      failed: PLACE_B4
+      failed_after_retrying: ANNOUNCE_DONE
+
+  - name: PLACE_B4
+    type: PlaceObject
+    params:
+      placing_surface_prefix: table
+      retries: 2
+    transitions:
+      succeeded: ANNOUNCE_DONE
+      failed: ANNOUNCE_DONE
+      failed_after_retrying: ANNOUNCE_DONE
+
+  # --------------------------------------------------------------------------
+  # FINISH
+  # --------------------------------------------------------------------------
   - name: ANNOUNCE_DONE
-    type: Speak
+    type: SpeakResponse
     params:
-      text: "Pick and Place Challenge complete. The table has been cleaned."
+      text: "Pick and place challenge complete. Table is tidy and breakfast is served."
     transitions:
       succeeded: SUCCEEDED
       failed: SUCCEEDED

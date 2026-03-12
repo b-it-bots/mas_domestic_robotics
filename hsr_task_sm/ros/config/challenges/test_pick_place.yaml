@@ -1,0 +1,113 @@
+name: test_pick_place
+
+outcomes:
+  - DONE
+  - FAILED
+
+states:
+  - name: START
+    type: ClearCostmap
+    transitions:
+      succeeded: SAY_START
+      failed: SAY_START
+
+  - name: SAY_START
+    type: Speak
+    params:
+      text: "Starting pick and place test."
+      retries: 2
+    transitions:
+      succeeded: PERCEIVE
+      failed: SAY_START
+      failed_after_retrying: PERCEIVE
+
+  - name: PERCEIVE
+    type: PerceiveTable
+    params:
+      retries: 3
+    transitions:
+      succeeded: SAY_FOUND
+      failed: PERCEIVE
+      failed_after_retrying: PERCEIVE_FAILED
+
+  - name: SAY_FOUND
+    type: Speak
+    params:
+      text: "I see objects on the table. I will pick and place one now."
+      retries: 2
+    transitions:
+      succeeded: PICK
+      failed: SAY_FOUND
+      failed_after_retrying: PICK
+
+  - name: PICK
+    type: PickObject
+    params:
+      retries: 2
+    transitions:
+      succeeded: SAY_PICKED
+      failed: PERCEIVE
+      failed_after_retrying: PICK_FAILED
+      find_objects_before_picking: PERCEIVE
+
+  - name: SAY_PICKED
+    type: Speak
+    params:
+      text_key: grasped_object
+      text_prefix: "I picked up the "
+      text_suffix: ". Now I will place it on the table."
+      retries: 2
+    transitions:
+      succeeded: PLACE
+      failed: SAY_PICKED
+      failed_after_retrying: PLACE
+
+  - name: PLACE
+    type: PlaceObject
+    params:
+      z_offset: 0.03
+      retries: 2
+    transitions:
+      succeeded: SAY_DONE
+      failed: PLACE
+      failed_after_retrying: PLACE_FAILED
+
+  - name: SAY_DONE
+    type: Speak
+    params:
+      text: "Pick and place completed successfully!"
+      retries: 2
+    transitions:
+      succeeded: DONE
+      failed: SAY_DONE
+      failed_after_retrying: DONE
+
+  - name: PERCEIVE_FAILED
+    type: Speak
+    params:
+      text: "I could not see any objects on the table."
+      retries: 2
+    transitions:
+      succeeded: FAILED
+      failed: FAILED
+      failed_after_retrying: FAILED
+
+  - name: PICK_FAILED
+    type: Speak
+    params:
+      text: "I failed to pick up the object."
+      retries: 2
+    transitions:
+      succeeded: FAILED
+      failed: FAILED
+      failed_after_retrying: FAILED
+
+  - name: PLACE_FAILED
+    type: Speak
+    params:
+      text: "I failed to place the object."
+      retries: 2
+    transitions:
+      succeeded: FAILED
+      failed: FAILED
+      failed_after_retrying: FAILED

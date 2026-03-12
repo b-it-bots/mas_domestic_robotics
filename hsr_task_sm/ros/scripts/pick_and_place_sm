@@ -28,7 +28,6 @@ def build_sm():
     pickup_timeout = rospy.get_param('~pickup_timeout', 120.0)
     perceive_retries = rospy.get_param('~perceive_retries', 2)
     pick_retries = rospy.get_param('~pick_retries', 2)
-    z_offset = rospy.get_param('~z_offset', 0.05)
 
     sm = smach.StateMachine(outcomes=['DONE', 'FAILED'])
     sm.userdata.perceived_planes = None
@@ -59,7 +58,6 @@ def build_sm():
         smach.StateMachine.add(
             'PICK_OBJECT',
             PickObject(picking_surface_prefix=surface_prefix,
-                       z_offset=z_offset,
                        timeout=pickup_timeout,
                        retries=pick_retries),
             transitions={

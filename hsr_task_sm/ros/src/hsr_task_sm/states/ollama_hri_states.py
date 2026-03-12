@@ -377,9 +377,9 @@ class SaveGuestInfo(smach.State):
         try:
             os.makedirs(self.output_dir, exist_ok=True)
             
-            filepath = os.path.join(self.output_dir, f'guest{number}.json')
+            filepath = os.path.join(self.output_dir, f'person{number}.json')
             data = {
-                'guest': {
+                'guest1': {
                     'name': name,
                     'drink': drink
                 }

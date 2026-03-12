@@ -2,18 +2,18 @@
 """
 Speak smach state - Text-to-Speech output.
 
-Uses sound_play or a custom TTS service to speak text.
+Publishes to /say topic for TTS.
 """
 
 import rospy
 import smach
 
-from sound_play.libsoundplay import SoundClient
+from std_msgs.msg import String
 
 
 class Speak(smach.State):
     """
-    Speak a given text using TTS.
+    Speak a given text using TTS via /say topic.
     
     Outcomes:
         succeeded              - speech completed
@@ -21,12 +21,14 @@ class Speak(smach.State):
         failed_after_retrying  - max retries exhausted
     """
 
-    def __init__(self, text=None, text_key=None, blocking=True, retries=2):
+    def __init__(self, text=None, text_key=None, text_prefix=None, text_suffix=None, topic='/say', retries=2):
         """
         Args:
             text: Static text to speak (optional)
             text_key: Userdata key containing text to speak (optional)
-            blocking: Wait for speech to complete (default: True)
+            text_prefix: Static prefix prepended before text_key value (optional)
+            text_suffix: Static suffix appended after text_key value (optional)
+            topic: Topic to publish text to (default: /say)
             retries: Number of retries on failure (default: 2)
         """
         input_keys = [text_key] if text_key else []
@@ -37,16 +39,20 @@ class Speak(smach.State):
         )
         self.text = text
         self.text_key = text_key
-        self.blocking = blocking
+        self.text_prefix = text_prefix or ''
+        self.text_suffix = text_suffix or ''
+        self.topic = topic
         self.retries = retries
         self.retry_count = 0
-        
-        self.sound_client = SoundClient(blocking=blocking)
-        rospy.sleep(0.5)  # Wait for sound_play to initialize
+        self.pub = None
 
     def execute(self, userdata):
+        if self.pub is None:
+            self.pub = rospy.Publisher(self.topic, String, queue_size=1)
+            rospy.sleep(0.3)  # Wait for publisher to connect
+        
         if self.text_key:
-            text_to_speak = getattr(userdata, self.text_key)
+            text_to_speak = self.text_prefix + str(getattr(userdata, self.text_key)) + self.text_suffix
         else:
             text_to_speak = self.text
             
@@ -57,7 +63,8 @@ class Speak(smach.State):
         rospy.loginfo('[Speak] Saying: "%s"', text_to_speak)
         
         try:
-            self.sound_client.say(text_to_speak)
+            self.pub.publish(String(data=text_to_speak))
+            rospy.sleep(0.5)  # Brief pause after speaking
             self.retry_count = 0
             return 'succeeded'
         except Exception as e:

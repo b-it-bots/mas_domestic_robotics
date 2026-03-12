@@ -21,35 +21,44 @@ import smach
 import smach_ros
 from typing import Dict, Any, List, Optional
 
-# Import all available states
-from hsr_task_sm.states import (
-    ClearCostmap,
-    PerceiveTable,
-    PickObject,
-    NavigateTo,
-    GoToGoal,
-    CheckDoorOpen,
-    Speak,
-    ListenForCommand,
-    ParseCommand,
-    DetectPerson,
-    GetPersonFeatures,
-    RecognizePerson,
-    PlaceObject,
-    FollowPerson,
-    StartFollowing,
-    StopFollowing,
-    HandoverToHuman,
-    ReceiveFromHuman,
-    LookAt,
-    LookAtPerson,
-    LookAtObject,
-    ResetGaze,
-    OpenDoor,
-    CloseDoor,
-    OpenDrawer,
-    CloseDrawer,
-)
+# Import all available states (graceful fallback for missing dependencies)
+from hsr_task_sm.states import get_available_states as _get_available_states
+_available = _get_available_states()
+
+def _get_state(name):
+    """Return state class or None if not available."""
+    cls = _available.get(name)
+    if cls is None:
+        rospy.logwarn('[YAMLLoader] State "%s" not available (missing dependency)', name)
+    return cls
+
+ClearCostmap     = _get_state('ClearCostmap')
+PerceiveTable    = _get_state('PerceiveTable')
+PickObject       = _get_state('PickObject')
+NavigateTo       = _get_state('NavigateTo')
+GoToGoal         = _get_state('GoToGoal')
+CheckDoorOpen    = _get_state('CheckDoorOpen')
+Speak            = _get_state('Speak')
+ListenForCommand = _get_state('ListenForCommand')
+DetectPerson     = _get_state('DetectPerson')
+PlaceObject      = _get_state('PlaceObject')
+FollowPerson     = _get_state('FollowPerson')
+LookAtPerson     = _get_state('LookAtPerson')
+OpenDoor         = _get_state('OpenDoor')
+CloseDoor        = _get_state('CloseDoor')
+GetGuestInfo     = _get_state('GetGuestInfo')
+SaveFace         = _get_state('SaveFace')
+IntroduceGuests  = _get_state('IntroduceGuests')
+
+# Ollama / Whisper stack
+ListenWithWhisper   = _get_state('ListenWithWhisper')
+SpeakResponse       = _get_state('SpeakResponse')
+
+# GPSR
+GPSRCommandParser   = _get_state('GPSRCommandParser')
+
+# Pick and Place
+ClassifyObject      = _get_state('ClassifyObject')
 
 
 # Registry mapping state type names to classes
@@ -59,41 +68,54 @@ STATE_REGISTRY = {
     'GoToGoal': GoToGoal,
     'ClearCostmap': ClearCostmap,
     'FollowPerson': FollowPerson,
-    'StartFollowing': StartFollowing,
-    'StopFollowing': StopFollowing,
     
     # Perception
     'PerceiveTable': PerceiveTable,
     'DetectPerson': DetectPerson,
-    'GetPersonFeatures': GetPersonFeatures,
-    'RecognizePerson': RecognizePerson,
     
     # Manipulation
     'PickObject': PickObject,
     'PlaceObject': PlaceObject,
-    'HandoverToHuman': HandoverToHuman,
-    'ReceiveFromHuman': ReceiveFromHuman,
     
     # HRI
     'Speak': Speak,
     'ListenForCommand': ListenForCommand,
-    'ParseCommand': ParseCommand,
+    'GetGuestInfo': GetGuestInfo,
+    'SaveFace': SaveFace,
+    'IntroduceGuests': IntroduceGuests,
     
     # Gaze
-    'LookAt': LookAt,
     'LookAtPerson': LookAtPerson,
-    'LookAtObject': LookAtObject,
-    'ResetGaze': ResetGaze,
-    
+
     # Furniture
     'OpenDoor': OpenDoor,
     'CloseDoor': CloseDoor,
-    'OpenDrawer': OpenDrawer,
-    'CloseDrawer': CloseDrawer,
     'CheckDoorOpen': CheckDoorOpen,
-    
+
+    # Ollama / Whisper stack
+    'ListenWithWhisper': ListenWithWhisper,
+    'SpeakResponse': SpeakResponse,
+
+    # GPSR
+    'GPSRCommandParser': GPSRCommandParser,
+
+    # Pick and Place
+    'ClassifyObject': ClassifyObject,
+    'PlaceInContainer': _get_state('PlaceInContainer'),
+
+    # Robot motion
+    'SetHeadPose':      _get_state('SetHeadPose'),
+    'SetLiftJoint':     _get_state('SetLiftJoint'),
+    'OpenGripper':      _get_state('OpenGripper'),
+    'DropInBin':        _get_state('DropInBin'),
+    'ArmCleaningPose':  _get_state('ArmCleaningPose'),
+    'CloseGripper':     _get_state('CloseGripper'),
+    'MoveBaseVel':      _get_state('MoveBaseVel'),
+    'ArmNeutralPose':   _get_state('ArmNeutralPose'),
+    'MoveToDistance':   _get_state('MoveToDistance'),
+
     # Utility states (defined below)
-    'Wait': None,  # Will be set after class definition
+    'Wait': None,
     'SetUserdata': None,
     'CheckCondition': None,
     'CheckRetries': None,

@@ -40,18 +40,38 @@ _states.update(_safe_import('hsr_task_sm.states.check_door_open', ['CheckDoorOpe
 
 # New utility states for RoboCup@Home 2026 challenges
 _states.update(_safe_import('hsr_task_sm.states.speak', ['Speak']))
-_states.update(_safe_import('hsr_task_sm.states.listen_for_command', ['ListenForCommand', 'ParseCommand']))
-_states.update(_safe_import('hsr_task_sm.states.detect_person', ['DetectPerson', 'GetPersonFeatures', 'RecognizePerson']))
-_states.update(_safe_import('hsr_task_sm.states.place_object', ['PlaceObject']))
-_states.update(_safe_import('hsr_task_sm.states.follow_person', ['FollowPerson', 'StartFollowing', 'StopFollowing']))
-_states.update(_safe_import('hsr_task_sm.states.handover', ['HandoverToHuman', 'ReceiveFromHuman']))
-_states.update(_safe_import('hsr_task_sm.states.gaze_control', ['LookAt', 'LookAtPerson', 'LookAtObject', 'ResetGaze']))
-_states.update(_safe_import('hsr_task_sm.states.furniture_manipulation', ['OpenDoor', 'CloseDoor', 'OpenDrawer', 'CloseDrawer']))
+_states.update(_safe_import('hsr_task_sm.states.listen_for_command', ['ListenForCommand']))
+_states.update(_safe_import('hsr_task_sm.states.detect_person', ['DetectPerson']))
+_states.update(_safe_import('hsr_task_sm.states.place_object', ['PlaceObject', 'PlaceInContainer']))
+_states.update(_safe_import('hsr_task_sm.states.follow_person', ['FollowPerson']))
+_states.update(_safe_import('hsr_task_sm.states.gaze_control', ['LookAtPerson']))
+_states.update(_safe_import('hsr_task_sm.states.furniture_manipulation', ['OpenDoor', 'CloseDoor']))
+
+# HRI Challenge states (Receptionist)
+_states.update(_safe_import('hsr_task_sm.states.get_guest_info', ['GetGuestInfo']))
+_states.update(_safe_import('hsr_task_sm.states.save_face', ['SaveFace']))
+_states.update(_safe_import('hsr_task_sm.states.introduce_guests', ['IntroduceGuests']))
 
 # Ollama-based HRI states (for Whisper STT + Ollama LLM on slave laptop)
 _states.update(_safe_import('hsr_task_sm.states.ollama_hri_states', [
     'ListenWithWhisper', 'GetVoicebotResponse', 'SpeakResponse',
     'ControlMicrophone', 'ConversationLoop', 'SaveGuestInfo'
+]))
+
+# GPSR states
+_states.update(_safe_import('hsr_task_sm.states.gpsr_states', [
+    'GPSRCommandParser',
+]))
+
+# Pick and Place states
+_states.update(_safe_import('hsr_task_sm.states.pick_place_states', [
+    'ClassifyObject',
+]))
+
+# Robot motion states (head, lift, gripper, base velocity, arm poses)
+_states.update(_safe_import('hsr_task_sm.states.robot_motion_states', [
+    'SetHeadPose', 'SetLiftJoint', 'OpenGripper', 'DropInBin',
+    'ArmCleaningPose', 'CloseGripper', 'MoveBaseVel', 'ArmNeutralPose', 'MoveToDistance',
 ]))
 
 # Export all successfully imported states

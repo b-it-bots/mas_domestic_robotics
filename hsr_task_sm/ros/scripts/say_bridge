@@ -1,0 +1,18 @@
+#!/usr/bin/env python3
+import rospy
+from std_msgs.msg import String
+from tmc_msgs.msg import Voice
+
+def cb(msg):
+    voice = Voice()
+    voice.interrupting = False
+    voice.queueing     = False
+    voice.language     = 1
+    voice.sentence     = msg.data
+    pub.publish(voice)
+
+rospy.init_node('say_bridge')
+pub = rospy.Publisher('/talk_request', Voice, queue_size=1)
+rospy.Subscriber('/say', String, cb)
+rospy.loginfo('[say_bridge] Bridging /say -> /talk_request')
+rospy.spin()

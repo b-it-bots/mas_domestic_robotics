@@ -1,0 +1,134 @@
+name: pick_place_dining_to_cabinet
+description: "Pick objects from dining table and place in cabinet. Loop until table is clear."
+
+outcomes:
+  - SUCCEEDED
+  - FAILED
+
+states:
+
+  # --- ENTRY ---
+  - name: WAIT_FOR_DOOR
+    type: CheckDoorOpen
+    params:
+      result_topic: /door_open_checker/result
+      wait_timeout: 60.0
+    transitions:
+      open: ENTER_ARENA
+      closed: WAIT_FOR_DOOR
+      timeout: ENTER_ARENA
+
+  - name: ENTER_ARENA
+    type: NavigateTo
+    params:
+      destination: door1_inside
+    transitions:
+      succeeded: NAV_TO_TABLE
+      failed: NAV_TO_TABLE
+      failed_after_retrying: NAV_TO_TABLE
+
+  - name: NAV_TO_TABLE
+    type: NavigateTo
+    params:
+      destination: dining_table
+    transitions:
+      succeeded: SAY_START
+      failed: SAY_START
+      failed_after_retrying: SAY_START
+
+  - name: SAY_START
+    type: Speak
+    params:
+      text: "I am at the dining table. I will pick objects and place them in the cabinet."
+    transitions:
+      succeeded: HEAD_DOWN
+      failed: HEAD_DOWN
+      failed_after_retrying: HEAD_DOWN
+
+  # --- PICK LOOP ---
+  - name: HEAD_DOWN
+    type: SetHeadPose
+    params:
+      tilt: 0.20
+      pan: 0.0
+    transitions:
+      succeeded: PERCEIVE
+
+  - name: PERCEIVE
+    type: PerceiveTable
+    params:
+      plane_prefix: table
+      retries: 3
+    transitions:
+      succeeded: PICK
+      failed: PICK
+      failed_after_retrying: SAY_DONE   # nothing left on table
+
+  - name: PICK
+    type: PickObject
+    params:
+      picking_surface_prefix: table
+      retries: 2
+    transitions:
+      succeeded: SAY_PICKING
+      failed: PERCEIVE
+      failed_after_retrying: SAY_DONE
+      find_objects_before_picking: PERCEIVE
+
+  - name: SAY_PICKING
+    type: Speak
+    params:
+      text_key: grasped_object
+      text_prefix: "I picked up the "
+      text_suffix: ". Taking it to the cabinet."
+    transitions:
+      succeeded: NAV_TO_CABINET
+      failed: NAV_TO_CABINET
+      failed_after_retrying: NAV_TO_CABINET
+
+  # --- PLACE IN CABINET ---
+  - name: NAV_TO_CABINET
+    type: NavigateTo
+    params:
+      destination: cabinet_near
+    transitions:
+      succeeded: PLACE
+      failed: PLACE
+      failed_after_retrying: NAV_BACK   # nav failed, just drop and continue
+
+  - name: PLACE
+    type: PlaceObject
+    params:
+      z_offset: 0.03
+      retries: 2
+    transitions:
+      succeeded: SAY_PLACED
+      failed: SAY_PLACED
+      failed_after_retrying: SAY_PLACED
+
+  - name: SAY_PLACED
+    type: Speak
+    params:
+      text: "Object placed. Going back for the next one."
+    transitions:
+      succeeded: NAV_BACK
+      failed: NAV_BACK
+      failed_after_retrying: NAV_BACK
+
+  - name: NAV_BACK
+    type: NavigateTo
+    params:
+      destination: dining_table
+    transitions:
+      succeeded: HEAD_DOWN
+      failed: HEAD_DOWN
+      failed_after_retrying: SAY_DONE
+
+  # --- FINISH ---
+  - name: SAY_DONE
+    type: Speak
+    params:
+      text: "Dining table is clear. Task complete."
+    transitions:
+      succeeded: SUCCEEDED
+      failed: SUCCEEDED

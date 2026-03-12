@@ -1,0 +1,52 @@
+name: test_pick_only
+
+outcomes:
+  - DONE
+  - FAILED
+
+states:
+  - name: PERCEIVE
+    type: PerceiveTable
+    params:
+      retries: 3
+    transitions:
+      succeeded: PICK
+      failed: PERCEIVE
+      failed_after_retrying: PERCEIVE_FAILED
+
+  - name: PICK
+    type: PickObject
+    params:
+      retries: 2
+    transitions:
+      succeeded: SAY_DONE
+      failed: PERCEIVE
+      failed_after_retrying: PICK_FAILED
+      find_objects_before_picking: PERCEIVE
+
+  - name: SAY_DONE
+    type: Speak
+    params:
+      text: "Pick successful."
+    transitions:
+      succeeded: DONE
+      failed: DONE
+      failed_after_retrying: DONE
+
+  - name: PERCEIVE_FAILED
+    type: Speak
+    params:
+      text: "Could not perceive any objects."
+    transitions:
+      succeeded: FAILED
+      failed: FAILED
+      failed_after_retrying: FAILED
+
+  - name: PICK_FAILED
+    type: Speak
+    params:
+      text: "Pick failed."
+    transitions:
+      succeeded: FAILED
+      failed: FAILED
+      failed_after_retrying: FAILED

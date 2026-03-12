@@ -16,8 +16,8 @@ name: gpsr_challenge
 description: "Execute 3 spoken GPSR commands using Whisper STT and Ollama LLM"
 
 userdata:
-  instruction_point: "inspection_point"    # GPSR instruction point (from navigation_goals.yaml)
-  operator_location: "inspection_point"
+  instruction_point: "living_room_table"   # Where the operator stands
+  operator_location: "living_room_table"
   commands_completed: 0
   recognized_text: ""
   parsed_action: ""

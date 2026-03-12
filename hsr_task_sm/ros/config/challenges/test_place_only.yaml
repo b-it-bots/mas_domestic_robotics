@@ -1,0 +1,51 @@
+name: test_place_only
+
+outcomes:
+  - DONE
+  - FAILED
+
+states:
+  - name: PERCEIVE
+    type: PerceiveTable
+    params:
+      retries: 3
+    transitions:
+      succeeded: PLACE
+      failed: PERCEIVE
+      failed_after_retrying: PERCEIVE_FAILED
+
+  - name: PLACE
+    type: PlaceObject
+    params:
+      retries: 2
+    transitions:
+      succeeded: SAY_DONE
+      failed: PLACE
+      failed_after_retrying: PLACE_FAILED
+
+  - name: SAY_DONE
+    type: Speak
+    params:
+      text: "Place successful."
+    transitions:
+      succeeded: DONE
+      failed: DONE
+      failed_after_retrying: DONE
+
+  - name: PERCEIVE_FAILED
+    type: Speak
+    params:
+      text: "Could not perceive surface."
+    transitions:
+      succeeded: FAILED
+      failed: FAILED
+      failed_after_retrying: FAILED
+
+  - name: PLACE_FAILED
+    type: Speak
+    params:
+      text: "Place failed."
+    transitions:
+      succeeded: FAILED
+      failed: FAILED
+      failed_after_retrying: FAILED

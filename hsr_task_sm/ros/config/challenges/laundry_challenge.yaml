@@ -1,240 +1,150 @@
-# Laundry Challenge
-# RoboCup@Home 2026
-#
-# Task: Fold clothes from a laundry basket.
-#       Identify clothing items and fold them properly.
-#
-# Edit the locations and clothing types below to customize.
-
 name: laundry_challenge
-description: "Fold clothes from laundry basket"
-
-# ============================================================================
-# CONFIGURATION - Edit these values
-# ============================================================================
-userdata:
-  # Locations in your arena (using navigation_goals.yaml names)
-  laundry_basket_location: "washing_table"
-  folding_table_location: "bedroom_table"
-  wardrobe_location: "bedroom_corner"
-  
-  # Clothing types to recognize
-  clothing_types:
-    - shirt
-    - pants
-    - towel
-    - socks
-    - t-shirt
-  
-  # Task settings
-  max_items: 5
-  items_folded: 0
-  
-  # Current item state
-  current_item: ""
-  current_item_type: ""
-
-# ============================================================================
-# STATE MACHINE - Modify carefully
-# ============================================================================
-states:
-  # ----- Initialization -----
-  - name: CLEAR_COSTMAP
-    type: ClearCostmap
-    transitions:
-      succeeded: ANNOUNCE_START
-      failed: ANNOUNCE_START
-
-  - name: ANNOUNCE_START
-    type: Speak
-    params:
-      text: "Starting Laundry Challenge. I will fold clothes from the basket."
-    transitions:
-      succeeded: GO_TO_BASKET
-      failed: GO_TO_BASKET
-
-  # ----- Go to Laundry Basket -----
-  - name: GO_TO_BASKET
-    type: NavigateTo
-    params:
-      destination_key: laundry_basket_location
-    transitions:
-      succeeded: PERCEIVE_CLOTHES
-      failed: RETRY_NAV_BASKET
-      failed_after_retrying: ANNOUNCE_NAV_FAILED
-
-  - name: RETRY_NAV_BASKET
-    type: ClearCostmap
-    transitions:
-      succeeded: GO_TO_BASKET
-      failed: GO_TO_BASKET
-
-  - name: ANNOUNCE_NAV_FAILED
-    type: Speak
-    params:
-      text: "I cannot reach the laundry basket."
-    transitions:
-      succeeded: FAILED
-      failed: FAILED
-
-  # ----- Perceive Clothes -----
-  - name: PERCEIVE_CLOTHES
-    type: PerceiveTable
-    params:
-      plane_frame_prefix: "basket"
-    transitions:
-      succeeded: CHECK_CLOTHES_FOUND
-      failed: RETRY_PERCEIVE
-      failed_after_retrying: ANNOUNCE_EMPTY_BASKET
-
-  - name: RETRY_PERCEIVE
-    type: Wait
-    params:
-      duration: 2.0
-    transitions:
-      succeeded: PERCEIVE_CLOTHES
-
-  - name: ANNOUNCE_EMPTY_BASKET
-    type: Speak
-    params:
-      text: "The laundry basket appears to be empty."
-    transitions:
-      succeeded: ANNOUNCE_DONE
-      failed: ANNOUNCE_DONE
-
-  - name: CHECK_CLOTHES_FOUND
-    type: Speak
-    params:
-      text: "I found clothes in the basket. Starting to fold."
-    transitions:
-      succeeded: PICK_CLOTHING
-      failed: PICK_CLOTHING
-
-  # ----- Pick Clothing Item -----
-  - name: PICK_CLOTHING
-    type: PickObject
-    transitions:
-      succeeded: ANNOUNCE_PICKED
-      failed: RETRY_PICK_CLOTHING
-      failed_after_retrying: SKIP_ITEM
-    remapping:
-      picked_object: current_item
-
-  - name: RETRY_PICK_CLOTHING
-    type: Speak
-    params:
-      text: "Let me try to pick up this item again."
-    transitions:
-      succeeded: PICK_CLOTHING
-      failed: PICK_CLOTHING
-
-  - name: SKIP_ITEM
-    type: Speak
-    params:
-      text: "I could not pick this item. Moving to the next one."
-    transitions:
-      succeeded: CHECK_MORE_ITEMS
-      failed: CHECK_MORE_ITEMS
-
-  - name: ANNOUNCE_PICKED
-    type: Speak
-    params:
-      text: "I picked up a clothing item. Going to the folding table."
-    transitions:
-      succeeded: GO_TO_FOLDING_TABLE
-      failed: GO_TO_FOLDING_TABLE
-
-  # ----- Go to Folding Table -----
-  - name: GO_TO_FOLDING_TABLE
-    type: NavigateTo
-    params:
-      destination_key: folding_table_location
-    transitions:
-      succeeded: PLACE_FOR_FOLDING
-      failed: PLACE_FOR_FOLDING
-      failed_after_retrying: PLACE_FOR_FOLDING
-
-  - name: PLACE_FOR_FOLDING
-    type: PlaceObject
-    transitions:
-      succeeded: ANNOUNCE_FOLDING
-      failed: ANNOUNCE_FOLDING
-      failed_after_retrying: ANNOUNCE_FOLDING
-
-  # ----- Fold Clothing -----
-  - name: ANNOUNCE_FOLDING
-    type: Speak
-    params:
-      text: "Folding the clothing item."
-    transitions:
-      succeeded: SIMULATE_FOLDING
-      failed: SIMULATE_FOLDING
-
-  - name: SIMULATE_FOLDING
-    type: Wait
-    params:
-      duration: 3.0
-    transitions:
-      succeeded: PICK_FOLDED_ITEM
-
-  - name: PICK_FOLDED_ITEM
-    type: PickObject
-    transitions:
-      succeeded: GO_TO_WARDROBE
-      failed: GO_TO_WARDROBE
-      failed_after_retrying: CHECK_MORE_ITEMS
-
-  # ----- Store in Wardrobe -----
-  - name: GO_TO_WARDROBE
-    type: NavigateTo
-    params:
-      destination_key: wardrobe_location
-    transitions:
-      succeeded: PLACE_IN_WARDROBE
-      failed: PLACE_IN_WARDROBE
-      failed_after_retrying: PLACE_IN_WARDROBE
-
-  - name: PLACE_IN_WARDROBE
-    type: PlaceObject
-    transitions:
-      succeeded: ANNOUNCE_STORED
-      failed: ANNOUNCE_STORED
-      failed_after_retrying: ANNOUNCE_STORED
-
-  - name: ANNOUNCE_STORED
-    type: Speak
-    params:
-      text: "Clothing item folded and stored."
-    transitions:
-      succeeded: INCREMENT_FOLDED
-      failed: INCREMENT_FOLDED
-
-  # ----- Loop Control -----
-  - name: INCREMENT_FOLDED
-    type: IncrementCounter
-    params:
-      counter_key: items_folded
-    transitions:
-      succeeded: CHECK_MORE_ITEMS
-
-  - name: CHECK_MORE_ITEMS
-    type: CheckRetries
-    params:
-      max_retries: 5
-      counter_key: items_folded
-    transitions:
-      retry: GO_TO_BASKET
-      max_reached: ANNOUNCE_DONE
-
-  # ----- Finish -----
-  - name: ANNOUNCE_DONE
-    type: Speak
-    params:
-      text: "Laundry Challenge complete. All clothes have been folded."
-    transitions:
-      succeeded: SUCCEEDED
-      failed: SUCCEEDED
+description: "Navigate to washing machine, grab clothes, bring to washing table and place."
 
 outcomes:
   - SUCCEEDED
   - FAILED
+
+states:
+
+  # --- ENTRY: wait for door then enter arena ---
+  - name: WAIT_FOR_DOOR
+    type: CheckDoorOpen
+    params:
+      result_topic: /door_open_checker/result
+      wait_timeout: 60.0
+    transitions:
+      open: ENTER_ARENA
+      closed: WAIT_FOR_DOOR
+      timeout: ENTER_ARENA
+
+  - name: ENTER_ARENA
+    type: NavigateTo
+    params:
+      destination: greeting
+    transitions:
+      succeeded: NAV_TO_MACHINE
+      failed: NAV_TO_MACHINE
+      failed_after_retrying: NAV_TO_MACHINE
+
+  # --- GO TO WASHING MACHINE ---
+  - name: NAV_TO_MACHINE
+    type: NavigateTo
+    params:
+      destination: washing_machine
+    transitions:
+      succeeded: SAY_AT_MACHINE
+      failed: SAY_AT_MACHINE
+      failed_after_retrying: SAY_AT_MACHINE
+
+  - name: SAY_AT_MACHINE
+    type: Speak
+    params:
+      text: "I am at the washing machine. Preparing to grab the laundry."
+    transitions:
+      succeeded: ARM_CLEANING_POSE
+      failed: ARM_CLEANING_POSE
+      failed_after_retrying: ARM_CLEANING_POSE
+
+  # --- PREPARE ARM + GRIPPER ---
+  - name: ARM_CLEANING_POSE
+    type: ArmCleaningPose
+    transitions:
+      succeeded: OPEN_GRIPPER
+      failed: OPEN_GRIPPER   # try anyway
+
+  - name: OPEN_GRIPPER
+    type: OpenGripper
+    transitions:
+      succeeded: MOVE_FORWARD
+
+  # --- DRIVE INTO MACHINE AND GRAB ---
+  # Robot moves forward until laser reads stop_distance from machine opening
+  - name: MOVE_FORWARD
+    type: MoveToDistance
+    params:
+      stop_distance: 0.30   # metres from machine — tune based on machine depth
+      vx: 0.10              # m/s — slow and controlled
+      timeout: 15.0
+    transitions:
+      succeeded: CLOSE_GRIPPER
+      failed: CLOSE_GRIPPER  # try to grab anyway
+
+  - name: CLOSE_GRIPPER
+    type: CloseGripper
+    params:
+      position: -0.50   # firm grip on clothes — tune (-0.79 = fully closed)
+      duration: 2.0
+    transitions:
+      succeeded: MOVE_BACKWARD
+
+  # --- PULL OUT WITH CLOTHES ---
+  - name: MOVE_BACKWARD
+    type: MoveBaseVel
+    params:
+      vx: -0.15     # m/s backward
+      duration: 2.0
+    transitions:
+      succeeded: ARM_NEUTRAL
+
+  - name: ARM_NEUTRAL
+    type: ArmNeutralPose
+    transitions:
+      succeeded: SAY_GOT_LAUNDRY
+      failed: SAY_GOT_LAUNDRY
+
+  - name: SAY_GOT_LAUNDRY
+    type: Speak
+    params:
+      text: "I have the laundry. Taking it to the washing table."
+    transitions:
+      succeeded: NAV_TO_WASHING_TABLE
+      failed: NAV_TO_WASHING_TABLE
+      failed_after_retrying: NAV_TO_WASHING_TABLE
+
+  # --- GO TO WASHING TABLE AND PLACE ---
+  - name: NAV_TO_WASHING_TABLE
+    type: NavigateTo
+    params:
+      destination: washing_table
+    transitions:
+      succeeded: HEAD_DOWN
+      failed: HEAD_DOWN
+      failed_after_retrying: HEAD_DOWN
+
+  - name: HEAD_DOWN
+    type: SetHeadPose
+    params:
+      tilt: 0.20
+      pan: 0.0
+    transitions:
+      succeeded: PERCEIVE_TABLE
+
+  - name: PERCEIVE_TABLE
+    type: PerceiveTable
+    params:
+      plane_prefix: table
+      retries: 2
+    transitions:
+      succeeded: PLACE
+      failed: PLACE             # try to place anyway
+      failed_after_retrying: PLACE
+
+  - name: PLACE
+    type: PlaceObject
+    params:
+      z_offset: 0.03
+      retries: 2
+    transitions:
+      succeeded: SAY_DONE
+      failed: SAY_DONE
+      failed_after_retrying: SAY_DONE
+
+  # --- FINISH ---
+  - name: SAY_DONE
+    type: Speak
+    params:
+      text: "Laundry has been placed on the washing table. Task complete."
+    transitions:
+      succeeded: SUCCEEDED
+      failed: SUCCEEDED

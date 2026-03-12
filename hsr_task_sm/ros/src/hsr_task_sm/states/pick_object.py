@@ -43,7 +43,7 @@ class PickObject(smach.State):
             outcomes=['succeeded', 'failed', 'failed_after_retrying',
                       'find_objects_before_picking'],
             input_keys=['perceived_planes'],
-            output_keys=['grasped_object']
+            output_keys=['grasped_object', 'grasped_object_height']
         )
         self.picking_surface_prefix = picking_surface_prefix
         self.z_offset = z_offset
@@ -57,6 +57,48 @@ class PickObject(smach.State):
         rospy.loginfo('[PickObject] pickup_server connected.')
 
         self.tf_listener = tf.TransformListener()
+
+    # ------------------------------------------------------------------
+    def _select_strategy(self, obj):
+        """
+        Choose SIDEWAYS_GRASP or TOP_GRASP based on object shape and dimensions.
+
+        Rules (in priority order):
+          1. Cylinder shape           → SIDEWAYS (gripper wraps around)
+          2. height > max(width,depth)→ SIDEWAYS (tall object)
+          3. width/depth > 2x height  → TOP      (flat/plate-like)
+          4. default                  → SIDEWAYS  (safer fallback)
+        """
+        shape_name = ''
+        if hasattr(obj, 'shape') and obj.shape:
+            shape_name = obj.shape.shape.lower()
+
+        # Get bounding box dimensions (x=width, y=depth, z=height)
+        width, depth, height = 0.0, 0.0, 0.0
+        if hasattr(obj, 'bounding_box') and obj.bounding_box and \
+                hasattr(obj.bounding_box, 'dimensions'):
+            d = obj.bounding_box.dimensions
+            width, depth, height = d.x, d.y, d.z
+        elif hasattr(obj, 'dimensions') and obj.dimensions:
+            d = obj.dimensions.vector
+            width, depth, height = d.x, d.y, d.z
+
+        if shape_name == 'cylinder':
+            strategy = PickupGoal.SIDEWAYS_GRASP
+            reason = 'cylinder shape'
+        elif height > 0 and width > 0 and height > max(width, depth):
+            strategy = PickupGoal.SIDEWAYS_GRASP
+            reason = 'tall object (h=%.3f > w=%.3f)' % (height, max(width, depth))
+        elif height > 0 and width > 0 and max(width, depth) > 2.0 * height:
+            strategy = PickupGoal.TOP_GRASP
+            reason = 'flat object (w=%.3f > 2x h=%.3f)' % (max(width, depth), height)
+        else:
+            strategy = PickupGoal.SIDEWAYS_GRASP
+            reason = 'default fallback'
+
+        strategy_name = 'SIDEWAYS' if strategy == PickupGoal.SIDEWAYS_GRASP else 'TOP'
+        rospy.loginfo('[PickObject] Grasp strategy: %s (%s)', strategy_name, reason)
+        return strategy
 
     # ------------------------------------------------------------------
     def _select_closest(self, planes):
@@ -119,7 +161,7 @@ class PickObject(smach.State):
             rospy.logwarn('[PickObject] Plane TF failed, using raw z: %s', e)
             table_z = best_plane.plane_point.z
 
-        # Build goal pose: x,y from object, z = table surface + offset
+        # Build goal pose: use actual object pose from perception
         grasp_pose = PoseStamped()
         grasp_pose.header.frame_id = 'base_link'
         grasp_pose.header.stamp = rospy.Time.now()
@@ -137,7 +179,7 @@ class PickObject(smach.State):
 
         goal = PickupGoal()
         goal.pose     = grasp_pose
-        goal.strategy = PickupGoal.TOP_GRASP
+        goal.strategy = self._select_strategy(best_obj)
 
         self.pickup_client.send_goal(goal)
         finished = self.pickup_client.wait_for_result(rospy.Duration(self.timeout))
@@ -154,5 +196,18 @@ class PickObject(smach.State):
 
         rospy.loginfo('[PickObject] Grasped "%s"', best_obj.name)
         userdata.grasped_object = best_obj.name
+        
+        # Store object height for placing (from bounding box if available)
+        obj_height = 0.05  # default 5cm
+        if hasattr(best_obj, 'bounding_box') and best_obj.bounding_box:
+            bb = best_obj.bounding_box
+            # bounding_box.dimensions is a Vector3 (x, y, z)
+            if hasattr(bb, 'dimensions'):
+                obj_height = bb.dimensions.z  # z is height
+            elif hasattr(bb, 'z'):
+                obj_height = bb.z
+        rospy.loginfo('[PickObject] Object height: %.3f m', obj_height)
+        userdata.grasped_object_height = obj_height
+        
         self.retry_count = 0
         return 'succeeded'

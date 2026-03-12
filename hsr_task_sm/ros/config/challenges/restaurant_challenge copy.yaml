@@ -1,0 +1,256 @@
+# Restaurant Challenge
+# RoboCup@Home 2026
+#
+# Task: Serve customers in a restaurant environment.
+#       Detect calling customers, take orders, and serve items.
+#
+# Edit the locations and menu items below to customize.
+
+name: restaurant_challenge
+description: "Serve customers - detect calls, take orders, serve items"
+
+# ============================================================================
+# CONFIGURATION - Edit these values
+# ============================================================================
+userdata:
+  # Locations in your arena (using navigation_goals.yaml names)
+  bar_location: "dining_table_right"
+  default_position: "door1_inside"
+  
+  # Customer table locations
+  table_locations:
+    - dining_table
+    - dining_table_far
+    - living_room_table
+    - living_room_far
+  
+  # Menu items available
+  menu_items:
+    - coffee
+    - tea
+    - water
+    - juice
+    - sandwich
+    - salad
+    - cake
+  
+  # Task settings
+  max_customers: 3
+  customers_served: 0
+  
+  # Current customer state
+  current_table: ""
+  current_order: []
+  order_items_served: 0
+
+# ============================================================================
+# STATE MACHINE - Modify carefully
+# ============================================================================
+states:
+  # ----- Initialization -----
+  - name: CLEAR_COSTMAP
+    type: ClearCostmap
+    transitions:
+      succeeded: ANNOUNCE_START
+      failed: ANNOUNCE_START
+
+  - name: ANNOUNCE_START
+    type: Speak
+    params:
+      text: "Starting Restaurant Challenge. I am ready to serve customers."
+    transitions:
+      succeeded: GO_TO_DEFAULT
+      failed: GO_TO_DEFAULT
+
+  # ----- Patrol for Customers -----
+  - name: GO_TO_DEFAULT
+    type: NavigateTo
+    params:
+      destination_key: default_position
+    transitions:
+      succeeded: SCAN_FOR_CUSTOMERS
+      failed: SCAN_FOR_CUSTOMERS
+      failed_after_retrying: SCAN_FOR_CUSTOMERS
+
+  - name: SCAN_FOR_CUSTOMERS
+    type: Speak
+    params:
+      text: "Scanning for calling customers."
+    transitions:
+      succeeded: DETECT_CALLING_CUSTOMER
+      failed: DETECT_CALLING_CUSTOMER
+
+  - name: DETECT_CALLING_CUSTOMER
+    type: DetectPerson
+    params:
+      timeout: 10.0
+    transitions:
+      succeeded: ANNOUNCE_CUSTOMER_FOUND
+      no_person: WAIT_AND_SCAN
+      failed: WAIT_AND_SCAN
+    remapping:
+      person_location: current_table
+
+  - name: WAIT_AND_SCAN
+    type: Wait
+    params:
+      duration: 5.0
+    transitions:
+      succeeded: DETECT_CALLING_CUSTOMER
+
+  - name: ANNOUNCE_CUSTOMER_FOUND
+    type: Speak
+    params:
+      text: "I see a customer calling. Going to take their order."
+    transitions:
+      succeeded: GO_TO_CUSTOMER
+      failed: GO_TO_CUSTOMER
+
+  # ----- Take Order -----
+  - name: GO_TO_CUSTOMER
+    type: NavigateTo
+    params:
+      destination_key: current_table
+    transitions:
+      succeeded: GREET_CUSTOMER
+      failed: GREET_CUSTOMER
+      failed_after_retrying: GO_TO_DEFAULT
+
+  - name: GREET_CUSTOMER
+    type: Speak
+    params:
+      text: "Hello! Welcome to our restaurant. What would you like to order?"
+    transitions:
+      succeeded: LISTEN_ORDER
+      failed: LISTEN_ORDER
+
+  - name: LISTEN_ORDER
+    type: ListenForCommand
+    params:
+      timeout: 15.0
+    transitions:
+      succeeded: CONFIRM_ORDER
+      timeout: ASK_ORDER_AGAIN
+      failed: ASK_ORDER_AGAIN
+    remapping:
+      recognized_command: current_order
+
+  - name: ASK_ORDER_AGAIN
+    type: Speak
+    params:
+      text: "I did not catch that. What would you like to order?"
+    transitions:
+      succeeded: LISTEN_ORDER
+      failed: LISTEN_ORDER
+
+  - name: CONFIRM_ORDER
+    type: Speak
+    params:
+      text: "I have noted your order. I will bring it shortly."
+    transitions:
+      succeeded: GO_TO_BAR
+      failed: GO_TO_BAR
+
+  # ----- Get Order from Bar -----
+  - name: GO_TO_BAR
+    type: NavigateTo
+    params:
+      destination_key: bar_location
+    transitions:
+      succeeded: COMMUNICATE_ORDER
+      failed: COMMUNICATE_ORDER
+      failed_after_retrying: COMMUNICATE_ORDER
+
+  - name: COMMUNICATE_ORDER
+    type: Speak
+    params:
+      text: "Barman, I have an order for the customer."
+    transitions:
+      succeeded: WAIT_FOR_ORDER
+      failed: WAIT_FOR_ORDER
+
+  - name: WAIT_FOR_ORDER
+    type: Wait
+    params:
+      duration: 3.0
+    transitions:
+      succeeded: PICK_ORDER_ITEM
+
+  - name: PICK_ORDER_ITEM
+    type: PickObject
+    transitions:
+      succeeded: GO_TO_SERVE
+      failed: RETRY_PICK_ORDER
+      failed_after_retrying: GO_TO_SERVE
+
+  - name: RETRY_PICK_ORDER
+    type: Speak
+    params:
+      text: "Let me try to pick up the order again."
+    transitions:
+      succeeded: PICK_ORDER_ITEM
+      failed: PICK_ORDER_ITEM
+
+  # ----- Serve Customer -----
+  - name: GO_TO_SERVE
+    type: NavigateTo
+    params:
+      destination_key: current_table
+    transitions:
+      succeeded: SERVE_CUSTOMER
+      failed: SERVE_CUSTOMER
+      failed_after_retrying: SERVE_CUSTOMER
+
+  - name: SERVE_CUSTOMER
+    type: PlaceObject
+    transitions:
+      succeeded: ANNOUNCE_SERVED
+      failed: HANDOVER_INSTEAD
+      failed_after_retrying: HANDOVER_INSTEAD
+
+  - name: HANDOVER_INSTEAD
+    type: HandoverToHuman
+    params:
+      timeout: 10.0
+    transitions:
+      succeeded: ANNOUNCE_SERVED
+      failed: ANNOUNCE_SERVED
+      timeout: ANNOUNCE_SERVED
+
+  - name: ANNOUNCE_SERVED
+    type: Speak
+    params:
+      text: "Here is your order. Enjoy your meal!"
+    transitions:
+      succeeded: INCREMENT_SERVED
+      failed: INCREMENT_SERVED
+
+  # ----- Loop Control -----
+  - name: INCREMENT_SERVED
+    type: IncrementCounter
+    params:
+      counter_key: customers_served
+    transitions:
+      succeeded: CHECK_MORE_CUSTOMERS
+
+  - name: CHECK_MORE_CUSTOMERS
+    type: CheckRetries
+    params:
+      max_retries: 3
+      counter_key: customers_served
+    transitions:
+      retry: GO_TO_DEFAULT
+      max_reached: ANNOUNCE_DONE
+
+  # ----- Finish -----
+  - name: ANNOUNCE_DONE
+    type: Speak
+    params:
+      text: "Restaurant Challenge complete. All customers have been served."
+    transitions:
+      succeeded: SUCCEEDED
+      failed: SUCCEEDED
+
+outcomes:
+  - SUCCEEDED
+  - FAILED

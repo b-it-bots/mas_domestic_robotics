@@ -43,7 +43,7 @@ class NavigateTo(smach.State):
                  destination=None,
                  destination_key=None,
                  server_name='move_base_server',
-                 timeout=120.0,
+                 timeout=20.0,
                  retries=2):
         """
         Args:

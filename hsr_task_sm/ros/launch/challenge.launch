@@ -17,12 +17,12 @@
     <!-- Arguments -->
     <arg name="challenge" default="hri_challenge" doc="Challenge name (without .yaml extension)"/>
     <arg name="config" default="" doc="Override: full path to custom YAML config"/>
-    <arg name="introspection" default="true" doc="Enable SMACH viewer support"/>
+    <arg name="introspection" default="false" doc="Enable SMACH viewer support"/>
     <arg name="validate_only" default="false" doc="Only validate config, don't run"/>
     
     <!-- Determine config path -->
     <arg name="config_path" value="$(arg config)" if="$(eval config != '')"/>
-    <arg name="config_path" value="$(find hsr_task_sm)/config/challenges/$(arg challenge).yaml" unless="$(eval config != '')"/>
+    <arg name="config_path" value="$(find hsr_task_sm)/ros/config/challenges/$(arg challenge).yaml" unless="$(eval config != '')"/>
     
     <!-- Run the YAML state machine runner -->
     <node name="$(arg challenge)_sm" pkg="hsr_task_sm" type="yaml_sm_runner.py" output="screen">

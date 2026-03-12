@@ -1,0 +1,632 @@
+# Receptionist Challenge - German Open 2026
+# RoboCup@Home HRI Challenge
+#
+# Task: Robot acts as a receptionist, greeting guests, learning their names
+# and favorite drinks, saving their faces, escorting them to seating, and
+# introducing them to each other.
+#
+# Flow:
+# 1. Navigate to reception area
+# 2. Greet Guest 1, get name/drink via speech
+# 3. Save Guest 1's face image
+# 4. Navigate to seating area
+# 5. Return to reception for Guest 2
+# 6. Repeat for Guest 2
+# 7. Introduce both guests to each other
+
+name: receptionist
+
+outcomes:
+  - DONE
+  - FAILED
+
+# Userdata initialization
+userdata:
+  reception_location: 'reception'
+  seating_location: 'living_room'
+  json_dir: '/tmp/hri_guests'
+
+states:
+  # ========== START ===========
+  - name: START
+    type: ClearCostmap
+    transitions:
+      succeeded: SAY_READY
+      failed: SAY_READY
+
+  - name: SAY_READY
+    type: Speak
+    params:
+      text: "Hello, I am your receptionist robot. I will be receiving guests today."
+    transitions:
+      succeeded: NAV_TO_RECEPTION_1
+      failed: NAV_TO_RECEPTION_1
+      failed_after_retrying: NAV_TO_RECEPTION_1
+
+  # ========== GUEST 1: RECEPTION ===========
+
+  # Uncomment when navigation is configured:
+
+  - name: NAV_TO_RECEPTION_1
+    type: NavigateTo
+    params:
+      destination: "greeting"
+      retries: 3
+    transitions:
+      succeeded: GREET_GUEST_1
+      failed: NAV_TO_RECEPTION_1
+      failed_after_retrying: SAY_NAV_FAILED
+
+
+  # - name: NAV_TO_RECEPTION_1
+  #   type: Speak
+  #   params:
+  #     text: "MOvinging to reception one"
+  #   transitions:
+  #     succeeded: GREET_GUEST_1
+  #     failed: NAV_TO_RECEPTION_1
+  #     failed_after_retrying: SAY_NAV_FAILED
+
+  
+
+  
+  - name: GREET_GUEST_1
+    type: Speak
+    params:
+      text: "I am ready to receive the first guest.  Hello! Please come near and stand in front of me. Would you please tell me your name and your favorite drink."
+    transitions:
+      succeeded: GET_GUEST_1_INFO
+      failed: GREET_GUEST_1
+      failed_after_retrying: GET_GUEST_1_INFO
+
+  - name: GET_GUEST_1_INFO
+    type: GetGuestInfo
+    params:
+      guest_number: 1
+      json_dir: '/tmp/hri_guests'
+      retries: 5
+    transitions:
+      succeeded: SAVE_GUEST_1_FACE
+      failed: GET_GUEST_1_INFO
+      failed_after_retrying: SAY_INFO_FAILED_1
+
+  - name: SAY_INFO_FAILED_1
+    type: Speak
+    params:
+      text: "I could not understand your information. Let me try again."
+    transitions:
+      succeeded: GREET_GUEST_1
+      failed: GREET_GUEST_1
+      failed_after_retrying: GREET_GUEST_1
+
+# Unblock for old working code
+  - name: SAVE_GUEST_1_FACE
+    type: SaveFace
+    params:
+      guest_number: 1
+      save_dir: '/tmp/hri_faces'
+      timeout: 15.0
+      retries: 3
+    transitions:
+      succeeded: SAY_FOLLOW_1
+      failed: SAVE_GUEST_1_FACE
+      failed_after_retrying: SAY_FOLLOW_1  # Continue even if face save fails
+
+  # new save face
+
+  # - name: SAVE_GUEST_1_FACE
+  #   type: FaceDetectionNode #SaveFace
+  #   # params:
+  #   #   guest_number: 1
+  #   #   save_dir: '/tmp/hri_faces'
+  #   #   timeout: 15.0
+  #   #   retries: 3
+  #   transitions:
+  #     succeeded: SAY_FOLLOW_1
+  #     failed: SAVE_GUEST_1_FACE
+  #     failed_after_retrying: SAY_FOLLOW_1  # Continue even if face save fails
+
+  - name: SAY_FOLLOW_1
+    type: Speak
+    params:
+      text: "Please follow me to the seating area."
+    transitions:
+      succeeded: NAV_TO_SEATING_1
+      failed: NAV_TO_SEATING_1
+      failed_after_retrying: NAV_TO_SEATING_1
+
+  # ========== GUEST 1: SEATING ===========
+
+  # Uncomment when navigation is configured:
+  - name: NAV_TO_SEATING_1
+    type: NavigateTo
+    params:
+      destination: "seating_four"
+      retries: 3
+    transitions:
+      succeeded: SAY_TAKE_SEAT_1
+      failed: SAY_TAKE_SEAT_1
+      failed_after_retrying: SAY_TAKE_SEAT_1
+
+  # - name: NAV_TO_SEATING_1
+  #   type: Speak
+  #   params:
+  #     text: "Move to seatinging one"
+  #   transitions:
+  #     succeeded: SAY_TAKE_SEAT_1
+  #     failed: SAY_TAKE_SEAT_1
+  #     failed_after_retrying: SAY_TAKE_SEAT_1
+
+  - name: SAY_TAKE_SEAT_1
+    type: Speak
+    params:
+      text: "Please have a seat. I will now go receive the next guest."
+    transitions:
+      succeeded: NAV_TO_RECEPTION_2
+      failed: NAV_TO_RECEPTION_2
+      failed_after_retrying: NAV_TO_RECEPTION_2
+
+  # ========== GUEST 2: RECEPTION ===========
+   # Uncomment when navigation is configured:
+  - name: NAV_TO_RECEPTION_2
+    type: NavigateTo
+    params:
+      destination: "greeting"
+      retries: 3
+    transitions:
+      succeeded: GREET_GUEST_2
+      failed: GREET_GUEST_2
+      failed_after_retrying: GREET_GUEST_2
+
+  # - name: NAV_TO_RECEPTION_2
+  #   type: Speak
+  #   params:
+  #     text: "Move to reception 2"
+  #   transitions:
+  #     succeeded: GREET_GUEST_2
+  #     failed: GREET_GUEST_2
+  #     failed_after_retrying: GREET_GUEST_2
+
+ 
+
+
+  - name: GREET_GUEST_2
+    type: Speak
+    params:
+      text: "I am ready to receive the second guest. Hello! Please stand in front of me and tell me your name and your favorite drink."
+    transitions:
+      succeeded: GET_GUEST_2_INFO
+      failed: GREET_GUEST_2
+      failed_after_retrying: GET_GUEST_2_INFO
+
+  - name: GET_GUEST_2_INFO
+    type: GetGuestInfo
+    params:
+      guest_number: 2
+      json_dir: '/tmp/hri_guests'
+      retries: 5
+    transitions:
+      succeeded: SAVE_GUEST_2_FACE
+      failed: GET_GUEST_2_INFO
+      failed_after_retrying: SAY_INFO_FAILED_2
+
+  - name: SAY_INFO_FAILED_2
+    type: Speak
+    params:
+      text: "I could not understand your information. Let me try again."
+    transitions:
+      succeeded: GREET_GUEST_2
+      failed: GREET_GUEST_2
+      failed_after_retrying: GREET_GUEST_2
+
+  - name: SAVE_GUEST_2_FACE
+    type: SaveFace
+    params:
+      guest_number: 2
+      save_dir: '/tmp/hri_faces'
+      timeout: 15.0
+      retries: 3
+    transitions:
+      succeeded: SAY_FOLLOW_2
+      failed: SAVE_GUEST_2_FACE
+      failed_after_retrying: SAY_FOLLOW_2
+
+  - name: SAY_FOLLOW_2
+    type: Speak
+    params:
+      text: "Please follow me to the seating area."
+    transitions:
+      succeeded: NAV_TO_SEATING_2
+      failed: NAV_TO_SEATING_2
+      failed_after_retrying: NAV_TO_SEATING_2
+
+  # ========== GUEST 2: SEATING ===========
+  # Uncomment when navigation is configured:
+  - name: NAV_TO_SEATING_2
+    type: NavigateTo
+    params:
+      destination: "seating_four"
+      retries: 3
+    transitions:
+      succeeded: SAY_TAKE_SEAT_2
+      failed: SAY_TAKE_SEAT_2
+      failed_after_retrying: SAY_TAKE_SEAT_2
+
+  
+  # - name: NAV_TO_SEATING_2
+  #   type: Speak
+  #   params:
+  #     text: "Move to seating 2."
+  #   transitions:
+  #     succeeded: SAY_TAKE_SEAT_2
+  #     failed: SAY_TAKE_SEAT_2
+  #     failed_after_retrying: SAY_TAKE_SEAT_2
+
+  - name: SAY_TAKE_SEAT_2
+    type: Speak
+    params:
+      text: "Please have a seat."
+    transitions:
+      succeeded: SAY_INTRODUCE
+      failed: SAY_INTRODUCE
+      failed_after_retrying: SAY_INTRODUCE
+
+  # ========== INTRODUCTIONS ===========
+  - name: SAY_INTRODUCE
+    type: Speak
+    params:
+      text: "Now I will introduce you to each other."
+    transitions:
+      succeeded: INTRODUCE_GUESTS
+      failed: INTRODUCE_GUESTS
+      failed_after_retrying: INTRODUCE_GUESTS
+
+  - name: INTRODUCE_GUESTS
+    type: IntroduceGuests
+    params:
+      json_dir: '/tmp/hri_guests'
+      retries: 2
+    transitions:
+      succeeded: SAY_DONE
+      failed: INTRODUCE_GUESTS
+      failed_after_retrying: SAY_INTRO_FAILED
+
+  - name: SAY_INTRO_FAILED
+    type: Speak
+    params:
+      text: "I apologize, I could not complete the introductions."
+    transitions:
+      succeeded: DONE
+      failed: DONE
+      failed_after_retrying: DONE
+
+  - name: SAY_DONE
+    type: Speak
+    params:
+      text: "I have completed my receptionist duties. Have a nice conversation!"
+    transitions:
+      succeeded: DONE
+      failed: DONE
+      failed_after_retrying: DONE
+
+  # ========== ERROR STATES ===========
+  - name: SAY_NAV_FAILED
+    type: Speak
+    params:
+      text: "I could not navigate to the destination. The task has failed."
+    transitions:
+      succeeded: FAILED
+      failed: FAILED
+      failed_after_retrying: FAILED
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# # Receptionist Challenge - German Open 2026
+# # RoboCup@Home HRI Challenge
+# #
+# # Task: Robot acts as a receptionist, greeting guests, learning their names
+# # and favorite drinks, saving their faces, escorting them to seating, and
+# # introducing them to each other.
+# #
+# # Flow:
+# # 1. Navigate to reception area
+# # 2. Greet Guest 1, get name/drink via speech
+# # 3. Save Guest 1's face image
+# # 4. Navigate to seating area
+# # 5. Return to reception for Guest 2
+# # 6. Repeat for Guest 2
+# # 7. Introduce both guests to each other
+
+# name: receptionist
+
+# outcomes:
+#   - DONE
+#   - FAILED
+
+# # Userdata initialization
+# userdata:
+#   reception_location: 'reception'
+#   seating_location: 'living_room'
+#   json_dir: '/tmp/hri_guests'
+
+# states:
+#   # ========== START ===========
+#   - name: START
+#     type: ClearCostmap
+#     transitions:
+#       succeeded: SAY_READY
+#       failed: SAY_READY
+
+#   - name: SAY_READY
+#     type: Speak
+#     params:
+#       text: "Hello, I am your receptionist robot. I will be receiving guests today."
+#     transitions:
+#       succeeded: NAV_TO_RECEPTION_1
+#       failed: NAV_TO_RECEPTION_1
+#       failed_after_retrying: NAV_TO_RECEPTION_1
+
+#   # ========== GUEST 1: RECEPTION ===========
+#   - name: NAV_TO_RECEPTION_1
+#     type: NavigateTo
+#     params:
+#       destination: "door1_inside"
+#       retries: 3
+#     transitions:
+#       succeeded: GREET_GUEST_1
+#       failed: NAV_TO_RECEPTION_1
+#       failed_after_retrying: SAY_NAV_FAILED
+
+#   # Uncomment when navigation is configured:
+#   # - name: NAV_TO_RECEPTION_1
+#   #   type: NavigateTo
+#   #   params:
+#   #     destination: 'reception'
+#   #     retries: 3
+#   #   transitions:
+#   #     succeeded: GREET_GUEST_1
+#   #     failed: NAV_TO_RECEPTION_1
+#   #     failed_after_retrying: SAY_NAV_FAILED
+
+#   - name: GREET_GUEST_1
+#     type: Speak
+#     params:
+#       text: "I am ready to receive the first guest. Hello! Please stand in front of me and tell me your name and your favorite drink."
+#     transitions:
+#       succeeded: GET_GUEST_1_INFO
+#       failed: GREET_GUEST_1
+#       failed_after_retrying: GET_GUEST_1_INFO
+
+#   - name: GET_GUEST_1_INFO
+#     type: GetGuestInfo
+#     params:
+#       guest_number: 1
+#       json_dir: '/tmp/hri_guests'
+#       retries: 5
+#     transitions:
+#       succeeded: SAVE_GUEST_1_FACE
+#       failed: GET_GUEST_1_INFO
+#       failed_after_retrying: SAY_INFO_FAILED_1
+
+#   - name: SAY_INFO_FAILED_1
+#     type: Speak
+#     params:
+#       text: "I could not understand your information. Let me try again."
+#     transitions:
+#       succeeded: GREET_GUEST_1
+#       failed: GREET_GUEST_1
+#       failed_after_retrying: GREET_GUEST_1
+
+#   - name: SAVE_GUEST_1_FACE
+#     type: SaveFace
+#     params:
+#       guest_number: 1
+#       save_dir: '/tmp/hri_faces'
+#       timeout: 15.0
+#       retries: 3
+#     transitions:
+#       succeeded: SAY_FOLLOW_1
+#       failed: SAVE_GUEST_1_FACE
+#       failed_after_retrying: SAY_FOLLOW_1  # Continue even if face save fails
+
+#   - name: SAY_FOLLOW_1
+#     type: Speak
+#     params:
+#       text: "Please follow me to the seating area."
+#     transitions:
+#       succeeded: NAV_TO_SEATING_1
+#       failed: NAV_TO_SEATING_1
+#       failed_after_retrying: NAV_TO_SEATING_1
+
+#   # ========== GUEST 1: SEATING ===========
+#   - name: NAV_TO_SEATING_1
+#     type: NavigateTo
+#     params:
+#       destination: "living_room_table"
+#       retries: 3
+#     transitions:
+#       succeeded: SAY_TAKE_SEAT_1
+#       failed: SAY_TAKE_SEAT_1
+#       failed_after_retrying: SAY_TAKE_SEAT_1
+
+#   # Uncomment when navigation is configured:
+#   # - name: NAV_TO_SEATING_1
+#   #   type: NavigateTo
+#   #   params:
+#   #     destination: 'living_room'
+#   #     retries: 3
+#   #   transitions:
+#   #     succeeded: SAY_TAKE_SEAT_1
+#   #     failed: NAV_TO_SEATING_1
+#   #     failed_after_retrying: SAY_SEATING_NAV_FAILED
+
+#   - name: SAY_TAKE_SEAT_1
+#     type: Speak
+#     params:
+#       text: "Please have a seat. I will now go receive the next guest."
+#     transitions:
+#       succeeded: NAV_TO_RECEPTION_2
+#       failed: NAV_TO_RECEPTION_2
+#       failed_after_retrying: NAV_TO_RECEPTION_2
+
+#   # ========== GUEST 2: RECEPTION ===========
+#   - name: NAV_TO_RECEPTION_2
+#     type: NavigateTo
+#     params:
+#       destination: "door1_inside"
+#       retries: 3
+#     transitions:
+#       succeeded: GREET_GUEST_2
+#       failed: GREET_GUEST_2
+#       failed_after_retrying: GREET_GUEST_2
+
+#   # Uncomment when navigation is configured:
+#   # - name: NAV_TO_RECEPTION_2
+#   #   type: NavigateTo
+#   #   params:
+#   #     destination: 'reception'
+#   #     retries: 3
+#   #   transitions:
+#   #     succeeded: GREET_GUEST_2
+#   #     failed: NAV_TO_RECEPTION_2
+#   #     failed_after_retrying: SAY_NAV_FAILED
+
+#   - name: GREET_GUEST_2
+#     type: Speak
+#     params:
+#       text: "I am ready to receive the second guest. Hello! Please stand in front of me and tell me your name and your favorite drink."
+#     transitions:
+#       succeeded: GET_GUEST_2_INFO
+#       failed: GREET_GUEST_2
+#       failed_after_retrying: GET_GUEST_2_INFO
+
+#   - name: GET_GUEST_2_INFO
+#     type: GetGuestInfo
+#     params:
+#       guest_number: 2
+#       json_dir: '/tmp/hri_guests'
+#       retries: 5
+#     transitions:
+#       succeeded: SAVE_GUEST_2_FACE
+#       failed: GET_GUEST_2_INFO
+#       failed_after_retrying: SAY_INFO_FAILED_2
+
+#   - name: SAY_INFO_FAILED_2
+#     type: Speak
+#     params:
+#       text: "I could not understand your information. Let me try again."
+#     transitions:
+#       succeeded: GREET_GUEST_2
+#       failed: GREET_GUEST_2
+#       failed_after_retrying: GREET_GUEST_2
+
+#   - name: SAVE_GUEST_2_FACE
+#     type: SaveFace
+#     params:
+#       guest_number: 2
+#       save_dir: '/tmp/hri_faces'
+#       timeout: 15.0
+#       retries: 3
+#     transitions:
+#       succeeded: SAY_FOLLOW_2
+#       failed: SAVE_GUEST_2_FACE
+#       failed_after_retrying: SAY_FOLLOW_2
+
+#   - name: SAY_FOLLOW_2
+#     type: Speak
+#     params:
+#       text: "Please follow me to the seating area."
+#     transitions:
+#       succeeded: NAV_TO_SEATING_2
+#       failed: NAV_TO_SEATING_2
+#       failed_after_retrying: NAV_TO_SEATING_2
+
+#   # ========== GUEST 2: SEATING ===========
+#   - name: NAV_TO_SEATING_2
+#     type: NavigateTo
+#     params:
+#       destination: "living_room_table"
+#       retries: 3
+#     transitions:
+#       succeeded: SAY_TAKE_SEAT_2
+#       failed: SAY_TAKE_SEAT_2
+#       failed_after_retrying: SAY_TAKE_SEAT_2
+
+#   # Uncomment when navigation is configured:
+#   # - name: NAV_TO_SEATING_2
+#   #   type: NavigateTo
+#   #   params:
+#   #     destination: 'living_room'
+#   #     retries: 3
+#   #   transitions:
+#   #     succeeded: SAY_TAKE_SEAT_2
+#   #     failed: NAV_TO_SEATING_2
+#   #     failed_after_retrying: SAY_SEATING_NAV_FAILED
+
+#   - name: SAY_TAKE_SEAT_2
+#     type: Speak
+#     params:
+#       text: "Please have a seat."
+#     transitions:
+#       succeeded: SAY_INTRODUCE
+#       failed: SAY_INTRODUCE
+#       failed_after_retrying: SAY_INTRODUCE
+
+#   # ========== INTRODUCTIONS ===========
+#   - name: SAY_INTRODUCE
+#     type: Speak
+#     params:
+#       text: "Now I will introduce you to each other."
+#     transitions:
+#       succeeded: INTRODUCE_GUESTS
+#       failed: INTRODUCE_GUESTS
+#       failed_after_retrying: INTRODUCE_GUESTS
+
+#   - name: INTRODUCE_GUESTS
+#     type: IntroduceGuests
+#     params:
+#       json_dir: '/tmp/hri_guests'
+#       retries: 2
+#     transitions:
+#       succeeded: SAY_DONE
+#       failed: INTRODUCE_GUESTS
+#       failed_after_retrying: SAY_INTRO_FAILED
+
+#   - name: SAY_INTRO_FAILED
+#     type: Speak
+#     params:
+#       text: "I apologize, I could not complete the introductions."
+#     transitions:
+#       succeeded: DONE
+#       failed: DONE
+#       failed_after_retrying: DONE
+
+#   - name: SAY_DONE
+#     type: Speak
+#     params:
+#       text: "I have completed my receptionist duties. Have a nice conversation!"
+#     transitions:
+#       succeeded: DONE
+#       failed: DONE
+#       failed_after_retrying: DONE
+
+#   # ========== ERROR STATES ===========
+#   - name: SAY_NAV_FAILED
+#     type: Speak
+#     params:
+#       text: "I could not navigate to the destination. The task has failed."
+#     transitions:
+#       succeeded: FAILED
+#       failed: FAILED
+#       failed_after_retrying: FAILED

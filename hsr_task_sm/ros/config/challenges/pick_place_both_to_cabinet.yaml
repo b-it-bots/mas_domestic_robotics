@@ -1,0 +1,215 @@
+name: pick_place_both_to_cabinet
+description: "Phase 1: clear dining table to cabinet. Phase 2: clear washing table to cabinet."
+
+outcomes:
+  - SUCCEEDED
+  - FAILED
+
+states:
+
+  # --- ENTRY ---
+  - name: WAIT_FOR_DOOR
+    type: CheckDoorOpen
+    params:
+      result_topic: /door_open_checker/result
+      wait_timeout: 60.0
+    transitions:
+      open: ENTER_ARENA
+      closed: WAIT_FOR_DOOR
+      timeout: ENTER_ARENA
+
+  - name: ENTER_ARENA
+    type: NavigateTo
+    params:
+      destination: door1_inside
+    transitions:
+      succeeded: NAV_TO_DINING
+      failed: NAV_TO_DINING
+      failed_after_retrying: NAV_TO_DINING
+
+  # ============================================================
+  # PHASE 1 — DINING TABLE → CABINET
+  # ============================================================
+  - name: NAV_TO_DINING
+    type: NavigateTo
+    params:
+      destination: dining_table
+    transitions:
+      succeeded: SAY_PHASE1
+      failed: SAY_PHASE1
+      failed_after_retrying: SAY_PHASE1
+
+  - name: SAY_PHASE1
+    type: Speak
+    params:
+      text: "Starting phase one. I will clear the dining table."
+    transitions:
+      succeeded: HEAD_DOWN_1
+      failed: HEAD_DOWN_1
+      failed_after_retrying: HEAD_DOWN_1
+
+  - name: HEAD_DOWN_1
+    type: SetHeadPose
+    params:
+      tilt: 0.20
+      pan: 0.0
+    transitions:
+      succeeded: PERCEIVE_DINING
+
+  - name: PERCEIVE_DINING
+    type: PerceiveTable
+    params:
+      plane_prefix: table
+      retries: 3
+    transitions:
+      succeeded: PICK_DINING
+      failed: PICK_DINING
+      failed_after_retrying: SAY_PHASE2_START   # table clear, move to phase 2
+
+  - name: PICK_DINING
+    type: PickObject
+    params:
+      picking_surface_prefix: table
+      retries: 2
+    transitions:
+      succeeded: SAY_PICK_DINING
+      failed: PERCEIVE_DINING
+      failed_after_retrying: SAY_PHASE2_START
+      find_objects_before_picking: PERCEIVE_DINING
+
+  - name: SAY_PICK_DINING
+    type: Speak
+    params:
+      text_key: grasped_object
+      text_prefix: "I picked up the "
+      text_suffix: ". Taking it to the cabinet."
+    transitions:
+      succeeded: NAV_CABINET_1
+      failed: NAV_CABINET_1
+      failed_after_retrying: NAV_CABINET_1
+
+  - name: NAV_CABINET_1
+    type: NavigateTo
+    params:
+      destination: cabinet_near
+    transitions:
+      succeeded: PLACE_DINING
+      failed: PLACE_DINING
+      failed_after_retrying: NAV_BACK_DINING
+
+  - name: PLACE_DINING
+    type: PlaceObject
+    params:
+      z_offset: 0.03
+      retries: 2
+    transitions:
+      succeeded: NAV_BACK_DINING
+      failed: NAV_BACK_DINING
+      failed_after_retrying: NAV_BACK_DINING
+
+  - name: NAV_BACK_DINING
+    type: NavigateTo
+    params:
+      destination: dining_table
+    transitions:
+      succeeded: HEAD_DOWN_1
+      failed: HEAD_DOWN_1
+      failed_after_retrying: SAY_PHASE2_START
+
+  # ============================================================
+  # PHASE 2 — WASHING TABLE → CABINET
+  # ============================================================
+  - name: SAY_PHASE2_START
+    type: Speak
+    params:
+      text: "Dining table is clear. Moving to the side table."
+    transitions:
+      succeeded: NAV_TO_WASHING
+      failed: NAV_TO_WASHING
+      failed_after_retrying: NAV_TO_WASHING
+
+  - name: NAV_TO_WASHING
+    type: NavigateTo
+    params:
+      destination: washing_table
+    transitions:
+      succeeded: HEAD_DOWN_2
+      failed: HEAD_DOWN_2
+      failed_after_retrying: HEAD_DOWN_2
+
+  - name: HEAD_DOWN_2
+    type: SetHeadPose
+    params:
+      tilt: 0.20
+      pan: 0.0
+    transitions:
+      succeeded: PERCEIVE_WASHING
+
+  - name: PERCEIVE_WASHING
+    type: PerceiveTable
+    params:
+      plane_prefix: table
+      retries: 3
+    transitions:
+      succeeded: PICK_WASHING
+      failed: PICK_WASHING
+      failed_after_retrying: SAY_DONE   # side table clear
+
+  - name: PICK_WASHING
+    type: PickObject
+    params:
+      picking_surface_prefix: table
+      retries: 2
+    transitions:
+      succeeded: SAY_PICK_WASHING
+      failed: PERCEIVE_WASHING
+      failed_after_retrying: SAY_DONE
+      find_objects_before_picking: PERCEIVE_WASHING
+
+  - name: SAY_PICK_WASHING
+    type: Speak
+    params:
+      text_key: grasped_object
+      text_prefix: "I picked up the "
+      text_suffix: ". Taking it to the cabinet."
+    transitions:
+      succeeded: NAV_CABINET_2
+      failed: NAV_CABINET_2
+      failed_after_retrying: NAV_CABINET_2
+
+  - name: NAV_CABINET_2
+    type: NavigateTo
+    params:
+      destination: cabinet_near
+    transitions:
+      succeeded: PLACE_WASHING
+      failed: PLACE_WASHING
+      failed_after_retrying: NAV_BACK_WASHING
+
+  - name: PLACE_WASHING
+    type: PlaceObject
+    params:
+      z_offset: 0.03
+      retries: 2
+    transitions:
+      succeeded: NAV_BACK_WASHING
+      failed: NAV_BACK_WASHING
+      failed_after_retrying: NAV_BACK_WASHING
+
+  - name: NAV_BACK_WASHING
+    type: NavigateTo
+    params:
+      destination: washing_table
+    transitions:
+      succeeded: HEAD_DOWN_2
+      failed: HEAD_DOWN_2
+      failed_after_retrying: SAY_DONE
+
+  # --- FINISH ---
+  - name: SAY_DONE
+    type: Speak
+    params:
+      text: "Both tables are clear. All objects placed in cabinet. Task complete."
+    transitions:
+      succeeded: SUCCEEDED
+      failed: SUCCEEDED
