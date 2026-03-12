@@ -8,8 +8,8 @@ import ollama
 import queue
 import json
 import re
-# from mdr_hri_behaviours.srv import Prompt, ComparePerson
-from llm_server.srv import Prompt, ComparePerson
+from mdr_hri_behaviours.srv import Prompt, ComparePerson
+# from llm_server.srv import Prompt, ComparePerson
 from std_srvs.srv import Trigger, TriggerRequest
 # from mas_execution_manager.scenario_state_base import ScenarioStateBase
 import os
@@ -90,7 +90,7 @@ class GuestInformation (smach.State): #ScenarioStateBase
     def say_this(self, text):
         rospy.loginfo('Saying: %s' % text)
         # Integrate with a ROS publisher if you want the robot to speak out the text
-        self.say(text)
+        # self.say(text)
 
 
     def display_image(self, type_):
@@ -178,12 +178,12 @@ class GuestInformation (smach.State): #ScenarioStateBase
 
                 json_data = {"guest1": guest1}
 
-                # json1_path = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/person_json/person1.json"
-                json1_path = "/home/sun/catkin_ws/temp/person1.json"
+                json1_path = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/person_json/person1.json"
+                # json1_path = "/home/sun/catkin_ws/temp/person1.json"
 
                 if os.path.isfile(json1_path):
-                    # file_path = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/person_json/person2.json"
-                    file_path = "/home/sun/catkin_ws/temp/person2.json"
+                    file_path = "/home/lucy/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/person_json/person2.json"
+                    # file_path = "/home/sun/catkin_ws/temp/person2.json"
                 else:
                     file_path = json1_path
 
@@ -202,15 +202,15 @@ class GuestInformation (smach.State): #ScenarioStateBase
                 rospy.sleep(sleep_time)
 
                 if file_path == json1_path:
-		    reply = "Please follow me to the setting area and have a seat"
-		    length = self.length_calculation(reply)
+                    reply = "Please follow me to the setting area and have a seat"
+                    length = self.length_calculation(reply)
                     sleep_time = self.calculate_delay(reply,length)
                     self.say_this(reply)
                     self.display_image("speaking")
-		    return 'guest1_info_saved'
-                else:                  
-		    reply = "Please follow me to the setting area and have a seat"  
-		    length = self.length_calculation(reply)
+                    return 'guest1_info_saved'
+                else:
+                    reply = "Please follow me to the setting area and have a seat"
+                    length = self.length_calculation(reply)
                     sleep_time = self.calculate_delay(reply,length)
                     self.say_this(reply)
                     self.display_image("speaking")

@@ -50,7 +50,7 @@ _states.update(_safe_import('hsr_task_sm.states.furniture_manipulation', ['OpenD
 # HRI Challenge states (Receptionist)
 _states.update(_safe_import('hsr_task_sm.states.get_guest_info', ['GetGuestInfo']))
 _states.update(_safe_import('hsr_task_sm.states.save_face', ['SaveFace']))
-_states.update(_safe_import('hsr_task_sm.states.introduce_guests', ['IntroduceGuests']))
+_states.update(_safe_import('hsr_task_sm.states.introduce_guests', ['IntroduceGuests', 'LocateSeatedGuests']))
 
 # Ollama-based HRI states (for Whisper STT + Ollama LLM on slave laptop)
 _states.update(_safe_import('hsr_task_sm.states.ollama_hri_states', [
@@ -66,6 +66,11 @@ _states.update(_safe_import('hsr_task_sm.states.gpsr_states', [
 # Pick and Place states
 _states.update(_safe_import('hsr_task_sm.states.pick_place_states', [
     'ClassifyObject',
+]))
+
+# VLM vision query states (seat detection, door state, shelf placement)
+_states.update(_safe_import('hsr_task_sm.states.vlm_states', [
+    'CheckSeatEmpty', 'CheckDoorState', 'GetShelfPlacement',
 ]))
 
 # Robot motion states (head, lift, gripper, base velocity, arm poses)

@@ -1,0 +1,42 @@
+name: test
+
+outcomes:
+  - DONE
+  - FAILED
+
+# Userdata initialization
+userdata:
+  reception_location: 'reception'
+  seating_location: 'living_room'
+  json_dir: '/tmp/hri_guests'
+
+states:
+  # ========== START ===========
+  - name: START
+    type: ClearCostmap
+    transitions:
+      succeeded: SAY_READY
+      failed: SAY_READY
+
+  - name: SAY_READY
+    type: Speak
+    params:
+      text: "Hello, I am your receptionist robot. I will be receiving guests today."
+    transitions:
+      succeeded: SAVE_GUEST_1_FACE
+      failed: SAVE_GUEST_1_FACE
+      failed_after_retrying: SAVE_GUEST_1_FACE
+
+
+  # Unblock for old working code
+  - name: SAVE_GUEST_1_FACE
+    type: SaveFace
+    params:
+      guest_number: 1
+      save_dir: '/tmp/hri_faces'
+      timeout: 15.0
+      retries: 3
+    transitions:
+      succeeded: SAY_FOLLOW_1
+      failed: SAVE_GUEST_1_FACE
+      failed_after_retrying: SAY_FOLLOW_1

@@ -59,7 +59,7 @@ ARM_TRAJ_TOPIC     = '/hsrb/arm_trajectory_controller/command'
 GRIPPER_TRAJ_TOPIC = '/hsrb/gripper_controller/command'
 BASE_VEL_TOPIC     = '/hsrb/command_velocity'
 
-# Arm pose for reaching into washing machine (from go_to_cleaning_pose.py notebook)
+# Pre grasping arm pose for reaching into washing machine (from go_to_cleaning_pose.py notebook)
 CLEANING_ARM_JOINTS = {
     'arm_flex_joint':   0.0004,   # ~0 (straight)
     'arm_lift_joint':   0.0,      # lowest
@@ -68,10 +68,19 @@ CLEANING_ARM_JOINTS = {
     'wrist_roll_joint': 0.0,
 }
 
+# Arm pose for grasping inside washing machine (from go_to_cleaning_pose.py notebook)
+GRASPING_ARM_JOINTS = {
+    'arm_flex_joint':   0.00,     # ~0 (straight)
+    'arm_lift_joint':   0.00,    # lowest
+    'arm_roll_joint':  -1.57,   # rolled to side
+    'wrist_flex_joint':-0.63,   # wrist pointing forward/down
+    'wrist_roll_joint': 0.00,
+}
+
 # Safe carry/neutral pose for navigating with clothes
 NEUTRAL_ARM_JOINTS = {
     'arm_lift_joint':   0.0,
-    'arm_flex_joint':  -0.70,
+    'arm_flex_joint':   0.0,
     'arm_roll_joint':  -1.57,
     'wrist_flex_joint':-1.57,
     'wrist_roll_joint': 0.0,
@@ -313,6 +322,48 @@ class ArmCleaningPose(smach.State):
             rospy.logerr('[ArmCleaningPose] Error: %s', e)
             return 'failed'
 
+
+class ArmWashingMachineGraspPose(smach.State):
+    """
+    Move arm to the washing machine grasping pose (from go_to_cleaning_pose.py notebook).
+    Also sets head to neutral (looking forward).
+
+    Outcomes: succeeded | failed
+    """
+
+    def __init__(self, duration=3.0):
+        smach.State.__init__(self, outcomes=['succeeded', 'failed'])
+        self.duration = duration
+        self._arm_pub = None
+        self._head_pub = None
+
+    def execute(self, userdata):
+        try:
+            if self._arm_pub is None:
+                self._arm_pub = rospy.Publisher(ARM_TRAJ_TOPIC, JointTrajectory,
+                                                queue_size=1, latch=True)
+                rospy.sleep(0.3)
+            if self._head_pub is None:
+                self._head_pub = rospy.Publisher(HEAD_TRAJ_TOPIC, JointTrajectory,
+                                                 queue_size=1, latch=True)
+                rospy.sleep(0.3)
+
+            rospy.loginfo('[ArmWashingMachineGraspPose] Moving arm to grasping pose')
+            names = list(GRASPING_ARM_JOINTS.keys())
+            positions = [GRASPING_ARM_JOINTS[n] for n in names]
+            self._arm_pub.publish(_make_traj(names, positions, duration=self.duration))
+            rospy.sleep(self.duration + 0.3)
+
+            rospy.loginfo('[ArmWashingMachineGraspPose] Setting head neutral')
+            self._head_pub.publish(_make_traj(
+                ['head_pan_joint', 'head_tilt_joint'], [0.0, 0.0], duration=2.0
+            ))
+            rospy.sleep(2.2)
+
+            return 'succeeded'
+        except Exception as e:
+            rospy.logerr('[ArmWashingMachineGraspPose] Error: %s', e)
+            return 'failed'
 
 class CloseGripper(smach.State):
     """

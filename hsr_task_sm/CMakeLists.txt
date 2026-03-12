@@ -20,6 +20,7 @@ catkin_python_setup()
 add_service_files(
   FILES
   VoicebotPrompt.srv
+  VLMQuery.srv
 )
 
 generate_messages(
@@ -43,4 +44,5 @@ install(PROGRAMS
   ros/scripts/whisper_stt_service.py
   ros/scripts/voicebot_ollama_service.py
   ros/scripts/hri_ollama_challenge_sm
+  ros/scripts/vlm_server.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})

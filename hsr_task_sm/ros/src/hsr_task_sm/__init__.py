@@ -42,16 +42,15 @@ _states.update(_safe_import('hsr_task_sm.states.check_door_open', ['CheckDoorOpe
 _states.update(_safe_import('hsr_task_sm.states.speak', ['Speak']))
 _states.update(_safe_import('hsr_task_sm.states.listen_for_command', ['ListenForCommand']))
 _states.update(_safe_import('hsr_task_sm.states.detect_person', ['DetectPerson']))
-_states.update(_safe_import('hsr_task_sm.states.place_object', ['PlaceObject']))
+_states.update(_safe_import('hsr_task_sm.states.place_object', ['PlaceObject', 'PlaceInContainer']))
 _states.update(_safe_import('hsr_task_sm.states.follow_person', ['FollowPerson']))
 _states.update(_safe_import('hsr_task_sm.states.gaze_control', ['LookAtPerson']))
 _states.update(_safe_import('hsr_task_sm.states.furniture_manipulation', ['OpenDoor', 'CloseDoor']))
 
 # HRI Challenge states (Receptionist)
-_states.update(_safe_import('hsr_task_sm.states.get_guest_info', ['GetGuestInfo']))
+_states.update(_safe_import('hsr_task_sm.states.get_guest_info', ['GetGuestInfo', 'RecognizePerson']))
 _states.update(_safe_import('hsr_task_sm.states.save_face', ['SaveFace']))
 _states.update(_safe_import('hsr_task_sm.states.introduce_guests', ['IntroduceGuests']))
-# _states.update(_safe_import('hsr_task_sm.states.receptionist_save_face', ['FaceDetectionNode']))
 
 # Ollama-based HRI states (for Whisper STT + Ollama LLM on slave laptop)
 _states.update(_safe_import('hsr_task_sm.states.ollama_hri_states', [
@@ -62,6 +61,23 @@ _states.update(_safe_import('hsr_task_sm.states.ollama_hri_states', [
 # GPSR states
 _states.update(_safe_import('hsr_task_sm.states.gpsr_states', [
     'GPSRCommandParser',
+]))
+
+# Pick and Place states
+_states.update(_safe_import('hsr_task_sm.states.pick_place_states', [
+    'ClassifyObject',
+]))
+
+# VLM vision query states (seat detection, door state, shelf placement)
+_states.update(_safe_import('hsr_task_sm.states.vlm_states', [
+    'CheckSeatEmpty', 'CheckDoorState', 'GetShelfPlacement',
+]))
+
+# Robot motion states (head, lift, gripper, base velocity, arm poses)
+_states.update(_safe_import('hsr_task_sm.states.robot_motion_states', [
+    'SetHeadPose', 'SetLiftJoint', 'OpenGripper', 'DropInBin',
+    'ArmCleaningPose', 'CloseGripper', 'MoveBaseVel', 'ArmNeutralPose', 'MoveToDistance',
+    'SetViewpointModePath', 'ViewpointControllerStop', 'ViewpointControllerStart',
 ]))
 
 # Export all successfully imported states

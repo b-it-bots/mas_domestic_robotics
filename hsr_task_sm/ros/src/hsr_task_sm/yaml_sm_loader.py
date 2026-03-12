@@ -47,8 +47,10 @@ LookAtPerson     = _get_state('LookAtPerson')
 OpenDoor         = _get_state('OpenDoor')
 CloseDoor        = _get_state('CloseDoor')
 GetGuestInfo     = _get_state('GetGuestInfo')
+RecognizePerson  = _get_state('RecognizePerson')
 SaveFace         = _get_state('SaveFace')
-IntroduceGuests  = _get_state('IntroduceGuests')
+IntroduceGuests      = _get_state('IntroduceGuests')
+LocateSeatedGuests = _get_state('LocateSeatedGuests')
 
 # Ollama / Whisper stack
 ListenWithWhisper   = _get_state('ListenWithWhisper')
@@ -81,8 +83,10 @@ STATE_REGISTRY = {
     'Speak': Speak,
     'ListenForCommand': ListenForCommand,
     'GetGuestInfo': GetGuestInfo,
+    'RecognizePerson': RecognizePerson,
     'SaveFace': SaveFace,
-    'IntroduceGuests': IntroduceGuests,
+    'IntroduceGuests':      IntroduceGuests,
+    'LocateSeatedGuests': LocateSeatedGuests,
     
     # Gaze
     'LookAtPerson': LookAtPerson,
@@ -103,6 +107,11 @@ STATE_REGISTRY = {
     'ClassifyObject': ClassifyObject,
     'PlaceInContainer': _get_state('PlaceInContainer'),
 
+    # VLM vision queries
+    'CheckSeatEmpty':    _get_state('CheckSeatEmpty'),
+    'CheckDoorState':    _get_state('CheckDoorState'),
+    'GetShelfPlacement': _get_state('GetShelfPlacement'),
+
     # Robot motion
     'SetHeadPose':      _get_state('SetHeadPose'),
     'SetLiftJoint':     _get_state('SetLiftJoint'),
@@ -112,7 +121,10 @@ STATE_REGISTRY = {
     'CloseGripper':     _get_state('CloseGripper'),
     'MoveBaseVel':      _get_state('MoveBaseVel'),
     'ArmNeutralPose':   _get_state('ArmNeutralPose'),
-    'MoveToDistance':   _get_state('MoveToDistance'),
+    'MoveToDistance':           _get_state('MoveToDistance'),
+    'SetViewpointModePath':      _get_state('SetViewpointModePath'),
+    'ViewpointControllerStop':  _get_state('ViewpointControllerStop'),
+    'ViewpointControllerStart': _get_state('ViewpointControllerStart'),
 
     # Utility states (defined below)
     'Wait': None,

@@ -1,0 +1,18 @@
+# VLM (Vision Language Model) Query Service
+# Runs on slave laptop — robot sends image + query type, gets constrained answer back
+#
+# query_type options:
+#   "empty_seat"       -> answer: "left" | "right" | "both" | "none"
+#   "door_state"       -> answer: "open" | "closed"
+#   "shelf_placement"  -> answer: "top" | "middle" | "bottom"
+#
+# context: optional extra info (e.g. object name for shelf_placement)
+# image_base64: RGB image encoded as base64 string
+
+string query_type
+string image_base64
+string context
+---
+string answer
+bool success
+string reason

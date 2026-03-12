@@ -45,6 +45,7 @@ class SpeechRecognitionService(ScenarioStateBase):
 
         # Publisher for transcripts
         self.transcript_pub = rospy.Publisher(transcript_topic, String, queue_size=10)
+        self.say = rospy.Publisher('/say', String, queue_size=10)
 
         # Advertise service
         self.service = rospy.Service(
@@ -56,7 +57,7 @@ class SpeechRecognitionService(ScenarioStateBase):
     def say_this(self, text):
         rospy.loginfo('Saying: %s' % text)
         # Integrate with a ROS publisher if you want the robot to speak out the text
-        self.say(text)
+        self.say.publish(text)
 
     # def display_image(self,type_,delay):
     #     if type_ == "listen":

@@ -11,6 +11,8 @@ import smach
 import cv2
 import numpy as np
 from datetime import datetime
+from geometry_msgs.msg import Twist
+import moveit_commander
 
 try:
     import mediapipe as mp
@@ -64,9 +66,21 @@ class SaveFace(smach.State):
         self.timeout = timeout
         self.retries = retries
         self.retry_count = 0
+        self.head = moveit_commander.MoveGroupCommander("head")
+
+        # Basic parameters
+        self.face_found = False
+        self.backward_speed = 0.2
         
         # Create output directory
         os.makedirs(self.save_dir, exist_ok=True)
+
+        # Head tilt positions - start lower and gradually increase
+        self.head_positions = [0.3, 0.4, 0.5]  # Adjusted tilt angles
+        self.current_head_position = 0
+        
+        # Face position parameters
+        self.ideal_top_offset = 0.15  # Ideal distance from top of frame (15%)
         
         self.bridge = CvBridge()
         self.latest_image = None

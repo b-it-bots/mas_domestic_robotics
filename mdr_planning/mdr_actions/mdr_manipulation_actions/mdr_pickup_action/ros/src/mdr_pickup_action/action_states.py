@@ -432,7 +432,7 @@ class PickupSM(ActionSMBase):
         self.joint_states = msg
     
     def strategy_cb(self, msg):
-        self.strategy = msg
+        self.strategy = msg.data
     
     def say(self, sentence):
         say_msg = String()

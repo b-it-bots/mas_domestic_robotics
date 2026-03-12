@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+
+import rospy
+import smach
+import smach_ros
+
+# import your state
+from ~/ros/noetic/src/mas_domestic_robotics/mdr_planning/mdr_behaviours/mdr_hri_behaviours/ros/src/mdr_hri_behaviours/german_open_2026/guest_info_state import GuestInformation
+from face_detection_and_saving import FaceDetectionNode
+from go_to_goal import GoToGoalState
+from say_state import SayThis
+from introduce_state import Introduce
+
+
+def main():
+
+    rospy.init_node("guest_information_state_machine")
+
+    # Create state machine
+    sm = smach.StateMachine(
+        outcomes=['TASK_FINISHED']
+    )
+
+    # Build state machine
+    with sm:
+
+        smach.StateMachine.add(
+            'MOVE_TO_NEXT_LOCATION_RECEPTION',
+            SayThis("mOVING TO RECEPTION AREA"),
+            # GoToGoalState(x=2.0, y=4.0, theta=1.31),  # example coordinates for next location
+            transitions={
+                'succeeded': 'SAY_HELLO',  # go to next guest info
+                'failed': 'MOVE_TO_NEXT_LOCATION_RECEPTION',
+                'failed_after_retrying' : 'SAY_HELLO'         # stop if error occurs
+            }
+        )
+
+        smach.StateMachine.add(
+            'SAY_HELLO',
+            SayThis("I am now ready to receive the guest. Hi there, please stand in front of me and tell me your name"),
+            transitions={'succeeded': 'GET_GUEST_INFO'}
+        )
+        
+
+        
+
+        smach.StateMachine.add(
+            'GET_GUEST_INFO',
+            GuestInformation(),
+            transitions={
+                'guest1_info_saved': 'SAVE_GUEST1_IMAGE',   # ask for second guest
+                'guest2_info_saved': 'SAVE_GUEST2_IMAGE'
+            }
+        )
+
+        smach.StateMachine.add(
+            'SAVE_GUEST1_IMAGE',
+            FaceDetectionNode(),
+            transitions={
+                'save_image': 'MOVE_TO_NEXT_LOCATION_SEATING',  # go to next guest info
+                'failed': 'SAVE_GUEST1_IMAGE',
+                'failed_after_retrying' : 'SAY_MOVE_FAILED'        # stop if error occurs
+            }
+        )
+
+        smach.StateMachine.add(
+            'SAY_MOVE_FAILED',
+            SayThis("Please go in the living room and take a seat, I will receive the next guest"),
+            transitions={'succeeded': 'MOVE_TO_NEXT_LOCATION_RECEPTION'}
+        )
+
+        smach.StateMachine.add(
+            'MOVE_TO_NEXT_LOCATION_SEATING',
+            SayThis("mOVING TO STEATING AREA"),
+            # GoToGoalState(x=1.0, y=0.0, theta=1.31),  # example coordinates for next location
+            transitions={
+                'succeeded': 'SAY_TAKE_SEAT',  # go to next guest info
+                'failed': 'MOVE_TO_NEXT_LOCATION_RECEPTION',
+                'failed_after_retrying' : 'SAY_MOVE_FAILED'         # stop if error occurs
+            }
+        )
+
+        smach.StateMachine.add(
+            'SAY_TAKE_SEAT',
+            SayThis("Please have a seat"),
+            transitions={'succeeded': 'MOVE_TO_NEXT_LOCATION_RECEPTION'}
+        )
+
+        smach.StateMachine.add(
+            'SAVE_GUEST2_IMAGE',
+            FaceDetectionNode(),
+            transitions={
+                'save_image': 'MOVE_TO_NEXT_LOCATION_SEATING2',  # go to next guest info
+                'failed': 'SAVE_GUEST2_IMAGE',
+                'failed_after_retrying' : 'SAY_MOVE2_FAILED'          # stop if error occurs
+            }
+        )
+
+        smach.StateMachine.add(
+            'SAY_MOVE2_FAILED',
+            SayThis("Please go in the living room and take a seat."),
+            transitions={'succeeded': 'MOVE_TO_NEXT_LOCATION_SEATING2'}
+        )
+
+        smach.StateMachine.add(
+            'MOVE_TO_NEXT_LOCATION_SEATING2',
+            SayThis("mOVING TO SEATING AREA 2"),
+            # GoToGoalState(x=1.0, y=0.0, theta=1.31),  # example coordinates for next location
+            transitions={
+                'succeeded': 'SAY_TAKE_SEAT2',  # go to next guest info
+                'failed': 'MOVE_TO_NEXT_LOCATION_RECEPTION',
+                'failed_after_retrying' : 'SAY_MOVE_FAILED'         # stop if error occurs
+            }
+        )
+
+        smach.StateMachine.add(
+            'SAY_TAKE_SEAT2',
+            SayThis("Please have a seat"),
+            transitions={'succeeded': 'INTRODUCE'}
+        )
+
+        smach.StateMachine.add(
+            'INTRODUCE',
+            Introduce(),
+            transitions={'succeeded': 'TASK_FINISHED'}
+        )
+
+
+
+
+    # Optional: start SMACH viewer
+    sis = smach_ros.IntrospectionServer(
+        'guest_information_smach_viewer',
+        sm,
+        '/SM_ROOT'
+    )
+    sis.start()
+
+    # Execute state machine
+    outcome = sm.execute()
+
+    rospy.loginfo(f"State machine finished with outcome: {outcome}")
+
+    rospy.spin()
+    sis.stop()
+
+
+if __name__ == "__main__":
+    main()

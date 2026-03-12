@@ -25,6 +25,7 @@ userdata:
   reception_location: 'reception'
   seating_location: 'living_room'
   json_dir: '/tmp/hri_guests'
+  guest_positions: {}
 
 states:
   # ========== START ===========
@@ -277,9 +278,16 @@ states:
     params:
       text: "Now I will introduce you to each other."
     transitions:
+      succeeded: LOCATE_GUESTS
+      failed: LOCATE_GUESTS
+      failed_after_retrying: LOCATE_GUESTS
+
+
+  - name: LOCATE_GUESTS
+    type: LocateSeatedGuests
+    transitions:
       succeeded: INTRODUCE_GUESTS
       failed: INTRODUCE_GUESTS
-      failed_after_retrying: INTRODUCE_GUESTS
 
   - name: INTRODUCE_GUESTS
     type: IntroduceGuests
@@ -593,8 +601,7 @@ states:
 #       failed: INTRODUCE_GUESTS
 #       failed_after_retrying: INTRODUCE_GUESTS
 
-#   - name: INTRODUCE_GUESTS
-#     type: IntroduceGuests
+# #     type: IntroduceGuests
 #     params:
 #       json_dir: '/tmp/hri_guests'
 #       retries: 2

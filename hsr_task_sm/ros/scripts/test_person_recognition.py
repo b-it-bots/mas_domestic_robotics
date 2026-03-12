@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+"""
+Test person recognition pipeline.
+Run on lucy:
+  python3 test_person_recognition.py
+
+Step 1: Stand in front of robot -> press Enter -> saves your image as 'TestPerson'
+Step 2: Step away, someone else stands in front -> press Enter -> tries to recognize
+Step 3: Original person stands in front again -> press Enter -> should recognize correctly
+"""
+
+import base64
+import rospy
+import cv2
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image as RosImage
+from hsr_task_sm.srv import VLMQuery
+
+CAMERA_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_raw'
+
+rospy.init_node('test_person_recognition', anonymous=True)
+bridge = CvBridge()
+
+print('Connecting to reid/vlm service ...')
+vlm = None
+for svc in ['/reid/query', '/vlm/query']:
+    try:
+        rospy.wait_for_service(svc, timeout=5.0)
+        vlm = rospy.ServiceProxy(svc, VLMQuery)
+        print(f'Connected to {svc}\n')
+        break
+    except Exception:
+        print(f'{svc} not available, trying next...')
+if vlm is None:
+    print('ERROR: No recognition service found. Start reid_server.py or vlm_server.py on laptop.')
+    exit(1)
+
+def capture():
+    msg = rospy.wait_for_message(CAMERA_TOPIC, RosImage, timeout=5.0)
+    img = bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+    _, buf = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 85])
+    return base64.b64encode(buf.tobytes()).decode('utf-8')
+
+# --- Clear previous ---
+vlm(query_type='clear_faces', image_base64='', context='')
+print('Cleared old face data.\n')
+
+# --- Save guest 1 ---
+input('[ STEP 1 ] Person 1 (e.g. Alice) stand in front of robot, then press Enter...')
+img = capture()
+r = vlm(query_type='save_face', image_base64=img, context='Alice')
+print(f'  save_face -> {r.answer}  ({r.reason})\n')
+
+# --- Save guest 2 ---
+input('[ STEP 2 ] Person 2 (e.g. Bob) stand in front of robot, then press Enter...')
+img = capture()
+r = vlm(query_type='save_face', image_base64=img, context='Bob')
+print(f'  save_face -> {r.answer}  ({r.reason})\n')
+
+# --- Recognize ---
+while True:
+    input('[ RECOGNIZE ] Someone stand in front, then press Enter (Ctrl+C to quit)...')
+    img = capture()
+    r = vlm(query_type='recognize_person', image_base64=img, context='')
+    print(f'  --> Recognized: {r.answer}  (success={r.success})')
+    print(f'      raw: {r.reason}\n')

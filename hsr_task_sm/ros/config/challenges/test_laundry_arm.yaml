@@ -87,3 +87,4 @@ states:
     transitions:
       succeeded: SUCCEEDED
       failed: SUCCEEDED
+      failed_after_retrying: FAILED
