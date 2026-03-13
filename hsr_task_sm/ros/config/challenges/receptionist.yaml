@@ -48,25 +48,25 @@ states:
 
   # Uncomment when navigation is configured:
 
-  - name: NAV_TO_RECEPTION_1
-    type: NavigateTo
-    params:
-      destination: "greeting"
-      retries: 3
-    transitions:
-      succeeded: GREET_GUEST_1
-      failed: NAV_TO_RECEPTION_1
-      failed_after_retrying: SAY_NAV_FAILED
-
-
   # - name: NAV_TO_RECEPTION_1
-  #   type: Speak
+  #   type: NavigateTo
   #   params:
-  #     text: "MOvinging to reception one"
+  #     destination: "greeting"
+  #     retries: 3
   #   transitions:
   #     succeeded: GREET_GUEST_1
   #     failed: NAV_TO_RECEPTION_1
   #     failed_after_retrying: SAY_NAV_FAILED
+
+
+  - name: NAV_TO_RECEPTION_1
+    type: Speak
+    params:
+      text: "MOvinging to reception one"
+    transitions:
+      succeeded: GREET_GUEST_1
+      failed: NAV_TO_RECEPTION_1
+      failed_after_retrying: SAY_NAV_FAILED
 
   
 
@@ -139,24 +139,24 @@ states:
   # ========== GUEST 1: SEATING ===========
 
   # Uncomment when navigation is configured:
-  - name: NAV_TO_SEATING_1
-    type: NavigateTo
-    params:
-      destination: "seating_four"
-      retries: 3
-    transitions:
-      succeeded: SAY_TAKE_SEAT_1
-      failed: SAY_TAKE_SEAT_1
-      failed_after_retrying: SAY_TAKE_SEAT_1
-
   # - name: NAV_TO_SEATING_1
-  #   type: Speak
+  #   type: NavigateTo
   #   params:
-  #     text: "Move to seatinging one"
+  #     destination: "seating_four"
+  #     retries: 3
   #   transitions:
   #     succeeded: SAY_TAKE_SEAT_1
   #     failed: SAY_TAKE_SEAT_1
   #     failed_after_retrying: SAY_TAKE_SEAT_1
+
+  - name: NAV_TO_SEATING_1
+    type: Speak
+    params:
+      text: "Move to seatinging one"
+    transitions:
+      succeeded: SAY_TAKE_SEAT_1
+      failed: SAY_TAKE_SEAT_1
+      failed_after_retrying: SAY_TAKE_SEAT_1
 
   - name: SAY_TAKE_SEAT_1
     type: Speak
@@ -169,24 +169,24 @@ states:
 
   # ========== GUEST 2: RECEPTION ===========
    # Uncomment when navigation is configured:
-  - name: NAV_TO_RECEPTION_2
-    type: NavigateTo
-    params:
-      destination: "greeting"
-      retries: 3
-    transitions:
-      succeeded: GREET_GUEST_2
-      failed: GREET_GUEST_2
-      failed_after_retrying: GREET_GUEST_2
-
   # - name: NAV_TO_RECEPTION_2
-  #   type: Speak
+  #   type: NavigateTo
   #   params:
-  #     text: "Move to reception 2"
+  #     destination: "greeting"
+  #     retries: 3
   #   transitions:
   #     succeeded: GREET_GUEST_2
   #     failed: GREET_GUEST_2
   #     failed_after_retrying: GREET_GUEST_2
+
+  - name: NAV_TO_RECEPTION_2
+    type: Speak
+    params:
+      text: "Move to reception 2"
+    transitions:
+      succeeded: GREET_GUEST_2
+      failed: GREET_GUEST_2
+      failed_after_retrying: GREET_GUEST_2
 
  
 
@@ -243,25 +243,25 @@ states:
 
   # ========== GUEST 2: SEATING ===========
   # Uncomment when navigation is configured:
-  - name: NAV_TO_SEATING_2
-    type: NavigateTo
-    params:
-      destination: "seating_four"
-      retries: 3
-    transitions:
-      succeeded: SAY_TAKE_SEAT_2
-      failed: SAY_TAKE_SEAT_2
-      failed_after_retrying: SAY_TAKE_SEAT_2
-
-  
   # - name: NAV_TO_SEATING_2
-  #   type: Speak
+  #   type: NavigateTo
   #   params:
-  #     text: "Move to seating 2."
+  #     destination: "seating_four"
+  #     retries: 3
   #   transitions:
   #     succeeded: SAY_TAKE_SEAT_2
   #     failed: SAY_TAKE_SEAT_2
   #     failed_after_retrying: SAY_TAKE_SEAT_2
+
+  
+  - name: NAV_TO_SEATING_2
+    type: Speak
+    params:
+      text: "Move to seating 2."
+    transitions:
+      succeeded: SAY_TAKE_SEAT_2
+      failed: SAY_TAKE_SEAT_2
+      failed_after_retrying: SAY_TAKE_SEAT_2
 
   - name: SAY_TAKE_SEAT_2
     type: Speak

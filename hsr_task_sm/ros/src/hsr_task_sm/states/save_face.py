@@ -13,6 +13,7 @@ import numpy as np
 from datetime import datetime
 from geometry_msgs.msg import Twist
 import moveit_commander
+import json
 
 try:
     import mediapipe as mp
@@ -51,7 +52,7 @@ class SaveFace(smach.State):
                  guest_number=1,
                  image_topic='/hsrb/head_rgbd_sensor/rgb/image_raw',
                  save_dir='/tmp/hri_faces',
-                 min_confidence=0.7,
+                 min_confidence=0.6,
                  timeout=10.0,
                  retries=3):
         smach.State.__init__(
@@ -172,10 +173,6 @@ class SaveFace(smach.State):
                             filename = f'guest{self.guest_number}_{timestamp}.jpg'
                             saved_path = os.path.join(self.save_dir, filename)
                             cv2.imwrite(saved_path, annotated)
-                            
-                            rospy.loginfo('[SaveFace] Saved face to: %s', saved_path)
-                            face_detected = True
-                            break
                 
                 if face_detected:
                     break

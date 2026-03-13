@@ -9,6 +9,7 @@ import rospy
 import smach
 
 from std_msgs.msg import String
+import re
 
 
 class Speak(smach.State):
@@ -46,6 +47,47 @@ class Speak(smach.State):
         self.retry_count = 0
         self.pub = None
 
+
+    # ── TTS timing ─────────────────────────────────────────────────────────────
+    #
+    # HSR uses a TTS engine with a measured speaking rate of ~130 wpm.
+    # We add punctuation pauses on top so "Hello. What is your name?" waits
+    # longer than a same-length unpunctuated string.
+    #
+    # To recalibrate for your robot:
+    #   1. Call _say("one two three four five")   (5 words, no punctuation)
+    #   2. Time how long the robot actually speaks
+    #   3. Set _TTS_SECS_PER_WORD = measured_seconds / 5
+    #
+    _TTS_SECS_PER_WORD = 0.43   # ~130 wpm
+    _TTS_PAUSE_PERIOD  = 0.45   # extra pause per  .  !  ?
+    _TTS_PAUSE_COMMA   = 0.20   # extra pause per  ,  ;  :
+    _TTS_TAIL_BUFFER   = 0.35   # silence after last word before mic opens
+    _TTS_MIN_DURATION  = 1.0    # floor for very short utterances
+ 
+    def _tts_duration(self, text: str) -> float:
+        """
+        Estimate how many seconds the HSR will take to speak *text*.
+ 
+        duration = (words x secs_per_word)
+                 + (sentence-end punctuation x pause_period)
+                 + (mid-sentence punctuation x pause_comma)
+                 + tail_buffer
+        """
+        words         = len(text.split())
+        sentence_ends = len(re.findall(r'[.!?]', text))
+        mid_pauses    = len(re.findall(r'[,;:]',  text))
+        duration = (
+            words         * self._TTS_SECS_PER_WORD
+            + sentence_ends * self._TTS_PAUSE_PERIOD
+            + mid_pauses    * self._TTS_PAUSE_COMMA
+            + self._TTS_TAIL_BUFFER
+        )
+        if duration > 10:
+            return 10
+        else:
+            return max(self._TTS_MIN_DURATION, duration)
+
     def execute(self, userdata):
         if self.pub is None:
             self.pub = rospy.Publisher(self.topic, String, queue_size=1)
@@ -64,7 +106,9 @@ class Speak(smach.State):
         
         try:
             self.pub.publish(String(data=text_to_speak))
-            rospy.sleep(0.5)  # Brief pause after speaking
+            sleep=self._tts_duration(text_to_speak)
+            rospy.logwarn(f'[Speak] Sleep count {sleep}')
+            rospy.sleep(sleep)  # Brief pause after speaking
             self.retry_count = 0
             return 'succeeded'
         except Exception as e:
